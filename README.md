@@ -10,6 +10,8 @@ Spillene indtil nu:
   samme iPad. Tre baner, tre sværhedsgrader, turbofelter.
 - **Klatbold**: to klatter, én bold, to mål. Løb med siderne, hop med midten,
   først til fem mål. 1 spiller mod AI eller 2 spillere.
+- **Bobler**: skyd boblerne med snoren, så de deler sig, til de er væk. Ti
+  baner, ingen liv. To spillere hjælper hinanden og vinder sammen.
 
 ## Kom i gang
 
@@ -42,8 +44,14 @@ games/klatbold/
   js/input.js           multi-touch med tre knapper pr. spiller
   js/game.js            menu, tegning, lyd
 
+games/bobler/
+  js/physics.js         bobler, snor, svimmel og de ti baner — ingen DOM
+  js/input.js           multi-touch med tre knapper pr. spiller
+  js/game.js            menu, tegning, lyd
+
 test/racer.test.js      kører 3 omgange på hver bane uden browser
 test/klatbold.test.js   mål, overligger, hop, AI og en hel kamp mellem to AI'er
+test/bobler.test.js     en robot spiller alle ti baner igennem
 ```
 
 `physics.js` rører hverken DOM eller canvas. Det er derfor testen kan køre i
@@ -113,6 +121,15 @@ sjove for 6-årige, og de er det første testen brokker sig over.
 `INDSTIL` øverst i `games/klatbold/js/physics.js`: tyngde, hoppehøjde, boldens
 hop, målhøjde og hvor mange mål der skal til. `SVAERHED` sætter AI'ens fart,
 reaktionstid og hoppelyst for 1, 2 og 3 stjerner. Kør `npm test` bagefter.
+
+## Skrue på Bobler
+
+`INDSTIL` øverst i `games/bobler/js/physics.js`: boblernes størrelser, hvor højt
+de hopper, snorens fart og hvor længe man er svimmel. Banerne ligger i `BANER`
+lige under som lister af bobler: x, størrelse (0 = størst), retning og
+starthøjde. Tilføj en bane ved at skrive en linje til. `npm test` lader en robot
+spille alle baner igennem og brokker sig, hvis en bane ikke kan klares på fem
+minutter.
 
 ## Lave et nyt spil
 

@@ -35,5 +35,19 @@ window.SPIL = [
          '<circle cx="44" cy="24" r="2" fill="#12261f"/>' +
          '<rect x="4" y="44" width="52" height="6" rx="3" fill="#4cb944"/>' +
          '</svg>'
+  },
+  {
+    id: 'bobler',
+    navn: 'Bobler',
+    tekst: 'Skyd boblerne, så de deler sig. Hjælp hinanden. 1 eller 2 spillere.',
+    farve: '#ffb38a',
+    sti: 'games/bobler/',
+    art: '<svg class="art" width="120" height="120" viewBox="0 0 60 60">' +
+         '<circle cx="20" cy="18" r="13" fill="#3aa7e0" fill-opacity="0.85" stroke="#12261f" stroke-width="3"/>' +
+         '<circle cx="44" cy="30" r="8" fill="#ffd23f" stroke="#12261f" stroke-width="3"/>' +
+         '<circle cx="30" cy="46" r="9" fill="#e8442e" stroke="#12261f" stroke-width="3"/>' +
+         '<circle cx="27" cy="44" r="2" fill="#fff"/><circle cx="33" cy="44" r="2" fill="#fff"/>' +
+         '<path d="M30 37v-14" stroke="#12261f" stroke-width="3" stroke-linecap="round"/>' +
+         '</svg>'
   }
 ];
