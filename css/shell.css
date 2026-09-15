@@ -60,7 +60,7 @@ h1{
   flex-direction:column;
   justify-content:flex-end;
   gap:6px;
-  min-height:190px;
+  min-height:214px;
   padding:18px;
   border:var(--kant) solid var(--skov-dyb);
   border-radius:26px;
@@ -77,8 +77,10 @@ h1{
 .card:focus-visible{outline:5px solid var(--kridt);outline-offset:4px}
 
 .card .art{
+  /* Oppe i hoejre hjoerne, saa den ikke ligger oven i titlen og teksten nederst */
   position:absolute;
-  inset:auto -10px 46px auto;
+  inset:10px 10px auto auto;
+  width:92px;height:92px;
   opacity:.9;
   pointer-events:none;
 }
