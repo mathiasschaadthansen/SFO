@@ -169,6 +169,50 @@ for (const meta of baner) {
     frames / 60 / 3 > 10 && frames / 60 / 3 < 60,
     (sekunder / 3).toFixed(1) + ' s pr. omgang');
 
+  // Styrehjaelp: en spillerbil uden nogen finger nede skal komme rundt,
+  // men den skal ogsaa i graesset undervejs — ellers er styringen ligegyldig.
+  const alene = {
+    x: bane.start.x, y: bane.start.y, vinkel: bane.startVinkel,
+    fart: 0, omgang: 0, næsteCp: 1, graestid: 0, genstart: 0, erAI: false
+  };
+  let graesFrames = 0;
+  frames = 0;
+  while (alene.omgang < 3 && frames < 60 * 240) {
+    Fysik.opdaterBil(alene, bane, 0, dt);
+    if (!bane.paaAsfalt(alene.x, alene.y)) graesFrames++;
+    frames++;
+  }
+  tjek('styrehjaelp faar en bil uden fingre rundt', alene.omgang >= 3,
+    'naaede omgang ' + alene.omgang);
+  tjek('styrehjaelp goer ikke styringen overfloedig', graesFrames > 60,
+    (graesFrames / 60).toFixed(1) + ' s i graesset');
+
+  // Elastik: mod en lige saa god modstander skal AI'en hverken stikke af
+  // eller tabe pusten. Den maa aldrig vaere hurtigere end spillerens topfart.
+  const vinkelret2 = bane.startVinkel + Math.PI / 2;
+  const lav = (erAI, f) => ({
+    x: bane.start.x + Math.cos(vinkelret2) * f * 46,
+    y: bane.start.y + Math.sin(vinkelret2) * f * 46,
+    vinkel: bane.startVinkel, fart: 0, omgang: 0, næsteCp: 1, graestid: 0, genstart: 0, erAI
+  });
+  const spiller = lav(false, -0.5), ai = lav(true, 0.5);
+  let forspringMin = 0, forspringMax = 0, aiTop = 0;
+  frames = 0;
+  while (spiller.omgang < 3 && frames < 60 * 240) {
+    Fysik.opdaterBil(spiller, bane, Fysik.aiStyring(spiller, bane), dt);
+    Fysik.opdaterBil(ai, bane, Fysik.aiStyring(ai, bane, spiller), dt);
+    const f = Fysik.fremdrift(ai, bane) - Fysik.fremdrift(spiller, bane);
+    forspringMin = Math.min(forspringMin, f);
+    forspringMax = Math.max(forspringMax, f);
+    aiTop = Math.max(aiTop, ai.fart);
+    frames++;
+  }
+  tjek('AI med elastik holder sig taet paa spilleren',
+    forspringMin >= -6 && forspringMax <= 6,
+    'forspring ' + forspringMin + ' til ' + forspringMax + ' checkpoints');
+  tjek('AI bliver aldrig hurtigere end spillerens topfart',
+    aiTop <= Fysik.INDSTIL.topfart + 0.5, aiTop.toFixed(0) + ' px/s');
+
   console.log('');
 }
 

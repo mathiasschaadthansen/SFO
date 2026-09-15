@@ -22,7 +22,10 @@
     aiFart:         0.93,  // andel af spillerens topfart
     aiSigte:        30,    // hvor langt frem ad midterlinjen AI'en kigger
     svingBremse:    0.45,  // laveste fartloft i et skarpt sving
-    fastIGraes:     2.6    // sekunder i graesset foer bilen saettes tilbage
+    fastIGraes:     2.6,   // sekunder i graesset foer bilen saettes tilbage
+    aiElastik:      0.25,  // hvor meget AI'en saenker/haever farten efter afstand til spilleren
+    styrehjaelp:    0.20,  // hvor meget bilen selv traekker mod vejen naar ingen finger er nede
+    styrehjaelpSigte: 14   // hvor langt frem styrehjaelpen kigger
   };
 
   function nærmesteIndeks(bil, bane) {
@@ -58,6 +61,22 @@
     return Math.min(1, forskel / 0.85);
   }
 
+  /** Hvor mange checkpoints bilen har naaet i alt, paa tvaers af omgange. */
+  function fremdrift(bil, bane) {
+    return bil.omgang * bane.checkpoints.length + bil.næsteCp;
+  }
+
+  /** -1, 0 eller 1: hvilken vej skal der drejes for at ramme punktet `sigte` foran. */
+  function drejMod(bil, bane, indeks, sigte, doedzone) {
+    var linje = bane.linje;
+    var mål = linje[(indeks + sigte) % linje.length];
+    var ønsket = Math.atan2(mål.y - bil.y, mål.x - bil.x);
+    var forskel = Math.atan2(Math.sin(ønsket - bil.vinkel), Math.cos(ønsket - bil.vinkel));
+    if (forskel > doedzone) return 1;
+    if (forskel < -doedzone) return -1;
+    return 0;
+  }
+
   /**
    * Styrer AI-bilen og saetter samtidig dens fartloft.
    *
@@ -65,24 +84,39 @@
    *   1. den letter foden foer svinget i stedet for at braemse i det
    *   2. den kigger laengere frem naar den koerer staerkt
    * Uden dem koerer den lige ud i graesset paa de snoede baner.
+   *
+   * modstander (valgfri): spillerens bil. Er den med, faar AI'en elastik:
+   * den letter foden naar den er foran og giver gas naar den er bagud, saa
+   * loebet bliver taet, og barnet vinder cirka hver anden gang.
    */
-  function aiStyring(bil, bane) {
-    var linje = bane.linje;
+  function aiStyring(bil, bane, modstander) {
     var i = nærmesteIndeks(bil, bane);
 
     var sving = svingForude(i, bane);
     bil.fartLoft = 1 - sving * (1 - INDSTIL.svingBremse);
 
+    if (modstander) {
+      var forspring = fremdrift(bil, bane) - fremdrift(modstander, bane);
+      var andel = Math.max(-1, Math.min(1, forspring / 6));
+      bil.fartLoft *= 1 - INDSTIL.aiElastik * andel;
+    }
+
     var fartAndel = Math.min(1, bil.fart / INDSTIL.topfart);
     var sigte = Math.round(INDSTIL.aiSigte * (0.45 + 0.55 * fartAndel) * (1 - sving * 0.45));
     sigte = Math.max(6, sigte);
 
-    var mål = linje[(i + sigte) % linje.length];
-    var ønsket = Math.atan2(mål.y - bil.y, mål.x - bil.x);
-    var forskel = Math.atan2(Math.sin(ønsket - bil.vinkel), Math.cos(ønsket - bil.vinkel));
-    if (forskel > 0.04) return 1;
-    if (forskel < -0.04) return -1;
-    return 0;
+    return drejMod(bil, bane, i, sigte, 0.04);
+  }
+
+  /**
+   * Blid styrehjaelp til spillerbiler: naar ingen finger er nede, traekker
+   * bilen en anelse mod vejen. De 8-aarige maerker det knap, de 6-aarige
+   * koerer markant mindre i graesset. Returnerer en brøkdel af fuldt udslag.
+   */
+  function styrehjaelp(bil, bane) {
+    if (INDSTIL.styrehjaelp <= 0) return 0;
+    var i = nærmesteIndeks(bil, bane);
+    return drejMod(bil, bane, i, INDSTIL.styrehjaelpSigte, 0.08) * INDSTIL.styrehjaelp;
   }
 
   /**
@@ -93,14 +127,21 @@
   function opdaterBil(bil, bane, ret, dt) {
     var påAsfalt = bane.paaAsfalt(bil.x, bil.y);
 
-    var top = INDSTIL.topfart * (bil.erAI ? INDSTIL.aiFart : 1) * (bil.fartLoft || 1);
+    // AI'ens elastik maa aldrig goere den hurtigere end spillerens topfart.
+    var top = bil.erAI
+      ? INDSTIL.topfart * Math.min(1, INDSTIL.aiFart * (bil.fartLoft || 1))
+      : INDSTIL.topfart * (bil.fartLoft || 1);
     var mål = påAsfalt ? top : INDSTIL.graesfart;
     var hastighed = påAsfalt ? INDSTIL.accel : INDSTIL.opbremsning;
     bil.fart += (mål - bil.fart) * Math.min(1, hastighed * dt);
 
+    // Ingen finger nede? Saa hjaelper bilen selv lidt med at blive paa vejen.
+    var udslag = ret;
+    if (ret === 0 && !bil.erAI) udslag = styrehjaelp(bil, bane);
+
     // Drej mindre naar bilen naesten holder stille, ellers snurrer den paa stedet
     var greb = Math.min(1, bil.fart / 90);
-    bil.vinkel += ret * INDSTIL.drejehastighed * greb * dt;
+    bil.vinkel += udslag * INDSTIL.drejehastighed * greb * dt;
 
     bil.x += Math.cos(bil.vinkel) * bil.fart * dt;
     bil.y += Math.sin(bil.vinkel) * bil.fart * dt;
@@ -156,6 +197,8 @@
     aiStyring: aiStyring,
     skubFraHinanden: skubFraHinanden,
     svingForude: svingForude,
+    styrehjaelp: styrehjaelp,
+    fremdrift: fremdrift,
     nærmesteIndeks: nærmesteIndeks
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);

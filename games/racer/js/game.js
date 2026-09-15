@@ -120,14 +120,26 @@
   /* ---------- opdatering ---------- */
 
   function opdaterBil(bil, dt) {
-    var ret = bil.erAI ? Fysik.aiStyring(bil, bane) : styring.retning(bil.spiller);
+    var modstander = biler[1 - bil.spiller];
+    var ret;
+    if (bil.faerdig) {
+      // Aeresrunde: bilen koerer selv videre i roligt tempo, til alle er i maal.
+      ret = Fysik.aiStyring(bil, bane);
+      bil.fartLoft = (bil.fartLoft || 1) * 0.6;
+    } else if (bil.erAI) {
+      ret = Fysik.aiStyring(bil, bane, modstander);
+    } else {
+      ret = styring.retning(bil.spiller);
+    }
+
     var nyOmgang = Fysik.opdaterBil(bil, bane, ret, dt);
 
-    if (nyOmgang) {
+    if (nyOmgang && !bil.faerdig) {
       if (!bil.erAI) tone(bil.omgang >= INDSTIL.omgange ? 880 : 660, 0.18);
-      if (bil.omgang >= INDSTIL.omgange && !bil.faerdig) {
+      if (bil.omgang >= INDSTIL.omgange) {
         bil.faerdig = true;
         bil.placering = biler.filter(function (b) { return b.faerdig; }).length;
+        if (bil.placering === 1) tone(990, 0.35, 0.2);
       }
     }
   }
@@ -197,24 +209,49 @@
       ctx.strokeStyle = '#12261f';
       ctx.stroke();
     }
+    // Ternet flag naar bilen er i maal
+    if (bil.faerdig) tegnFlag(INDSTIL.omgange * 26 - 4, -12);
     ctx.restore();
   }
 
-  function tegnPile(x, bredde, højde) {
-    ctx.save();
-    ctx.globalAlpha = 0.16;
-    ctx.fillStyle = '#fff';
+  function tegnFlag(x, y) {
+    var felt = 6;
+    ctx.fillStyle = '#12261f';
+    ctx.fillRect(x - 2, y - 2, felt * 4 + 4, felt * 4 + 4);
+    for (var r = 0; r < 4; r++) {
+      for (var k = 0; k < 4; k++) {
+        ctx.fillStyle = (r + k) % 2 ? '#12261f' : '#f7f3e8';
+        ctx.fillRect(x + k * felt, y + r * felt, felt, felt);
+      }
+    }
+  }
+
+  /**
+   * Styrepile i bunden. Den side barnet trykker paa lyser op, saa det
+   * aldrig er i tvivl om fingeren virker.
+   */
+  function tegnPile(x, bredde, højde, spiller) {
+    var ret = styring.retning(spiller);
     var midt = x + bredde / 2;
     var y = højde - 78;
     [[midt - bredde * 0.28, -1], [midt + bredde * 0.28, 1]].forEach(function (p) {
+      var aktiv = ret === p[1];
+      ctx.save();
+      ctx.globalAlpha = aktiv ? 0.9 : 0.28;
+      ctx.fillStyle = aktiv ? '#ffd23f' : '#fff';
+      ctx.strokeStyle = '#12261f';
+      ctx.lineWidth = aktiv ? 5 : 0;
+      ctx.lineJoin = 'round';
+      var s = aktiv ? 1.3 : 1;
       ctx.beginPath();
-      ctx.moveTo(p[0] + 16 * p[1], y - 20);
-      ctx.lineTo(p[0] - 14 * p[1], y);
-      ctx.lineTo(p[0] + 16 * p[1], y + 20);
+      ctx.moveTo(p[0] + 18 * s * p[1], y - 24 * s);
+      ctx.lineTo(p[0] - 16 * s * p[1], y);
+      ctx.lineTo(p[0] + 18 * s * p[1], y + 24 * s);
       ctx.closePath();
+      if (aktiv) ctx.stroke();
       ctx.fill();
+      ctx.restore();
     });
-    ctx.restore();
   }
 
   function tegn() {
@@ -225,13 +262,13 @@
 
     if (antalSpillere === 1) {
       tegnUdsnit(biler[0], 0, 0, B, H);
-      tegnPile(0, B, H);
+      tegnPile(0, B, H, 0);
     } else {
       var halv = Math.floor(B / 2);
       tegnUdsnit(biler[0], 0, 0, halv, H);
       tegnUdsnit(biler[1], halv, 0, B - halv, H);
-      tegnPile(0, halv, H);
-      tegnPile(halv, B - halv, H);
+      tegnPile(0, halv, H, 0);
+      tegnPile(halv, B - halv, H, 1);
       ctx.fillStyle = '#12261f';
       ctx.fillRect(halv - 3, 0, 6, H);
     }
@@ -265,9 +302,11 @@
       if (efter !== før && efter >= 0) tone(efter > 0 ? 440 : 780, 0.2);
       if (nedtaelling <= -0.6) tilstand = 'koerer';
     } else if (tilstand === 'koerer') {
-      biler.forEach(function (b) { if (!b.faerdig) opdaterBil(b, dt); });
+      biler.forEach(function (b) { opdaterBil(b, dt); });
       Fysik.skubFraHinanden(biler[0], biler[1]);
-      if (biler.some(function (b) { return b.faerdig; })) afslut();
+      // Loebet slutter foerst naar alle boern er i maal. Ingen faar taget
+      // skaermen vaek midt i sin omgang, heller ikke hvis AI'en vandt.
+      if (biler.every(function (b) { return b.erAI || b.faerdig; })) afslut();
     }
 
     tegn();
@@ -280,7 +319,8 @@
     tilstand = 'faerdig';
     tone(660, 0.15); setTimeout(function () { tone(880, 0.3); }, 150);
 
-    var vinder = biler.filter(function (b) { return b.faerdig; })[0];
+    var vinder = biler.filter(function (b) { return b.faerdig; })
+      .sort(function (a, b) { return a.placering - b.placering; })[0];
     var titel;
     if (antalSpillere === 1) {
       titel = vinder.erAI ? 'Den blå bil vandt' : 'Du vandt!';

@@ -51,6 +51,8 @@ Alt ligger i `INDSTIL` øverst i `games/racer/js/physics.js`.
 | `drejehastighed` | Hvor skarpt der kan svinges |
 | `svingBremse` | Hvor meget AI'en letter foden før et sving |
 | `fastIGraes` | Sekunder i græsset før bilen sættes tilbage på banen |
+| `aiElastik` | Hvor meget AI'en letter foden når den er foran, og giver gas når den er bagud |
+| `styrehjaelp` | Hvor meget bilen selv trækker mod vejen, når ingen finger er nede. 0 slår det fra |
 | `omgange` | Antal omgange i et løb |
 
 Kør `npm test` bagefter. Testen fanger hvis en ændring gør banerne uigennemførlige
