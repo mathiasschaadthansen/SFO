@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Klatbold</title>
+<meta name="theme-color" content="#1b4d3e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="../../icons/icon-192.png">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{
+    margin:0;height:100%;overflow:hidden;
+    background:#1b4d3e;color:#f7f3e8;
+    font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,sans-serif;
+    -webkit-user-select:none;user-select:none;
+    overscroll-behavior:none;touch-action:none;
+  }
+  #spil{display:block;position:absolute;inset:0;touch-action:none}
+
+  #overlay{
+    position:absolute;inset:0;z-index:10;
+    display:grid;place-items:center;
+    background:rgba(18,38,31,.86);
+    padding:20px;
+  }
+  #overlay[hidden]{display:none}
+
+  .kort{
+    width:min(460px,100%);
+    display:flex;flex-direction:column;gap:12px;
+    background:#f7f3e8;color:#12261f;
+    border:4px solid #12261f;border-radius:28px;
+    box-shadow:8px 8px 0 #0b1712;
+    padding:26px;
+    text-align:center;
+  }
+  .kort.bred{width:min(780px,100%)}
+  .kort h2{margin:0;font-size:34px;font-weight:800}
+  .hjaelp{margin:0 0 4px;font-size:16px;font-weight:600;opacity:.72}
+  .raekke{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
+  .raekke.bund{justify-content:space-between;margin:6px 0 0}
+  .raekke.bund .knap.lille{flex:1 1 auto}
+
+  .knap{
+    font:inherit;font-weight:800;font-size:22px;
+    padding:15px 20px;
+    background:#f7f3e8;color:#12261f;
+    border:4px solid #12261f;border-radius:18px;
+    box-shadow:4px 4px 0 #12261f;
+    cursor:pointer;text-decoration:none;display:block;
+    transition:transform .08s,box-shadow .08s;
+  }
+  .knap:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #12261f}
+  .knap:focus-visible{outline:4px solid #3aa7e0;outline-offset:3px}
+  .knap.gul{background:#ffd23f}
+  .knap.smal{flex:1 1 auto;font-size:17px;padding:11px 14px}
+  .knap.smal.valgt{background:#3aa7e0;color:#f7f3e8}
+  .knap.lille{font-size:17px;padding:10px 14px;box-shadow:none;border-width:3px;opacity:.75}
+  .knap.stor{font-size:28px;padding:18px 24px}
+  .knap.ikon{display:flex;align-items:center;justify-content:center;padding:10px 14px}
+  .knap.ikon svg{display:block}
+
+  /* Vaelg din klat */
+  .valg{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .spiller{
+    flex:1 1 260px;display:flex;flex-direction:column;gap:10px;align-items:center;
+    padding:12px;border:4px solid #12261f;border-radius:20px;background:#fff;
+  }
+  canvas.eksempel{width:150px;height:110px;align-self:center}
+  .former{display:flex;gap:8px}
+  .form{
+    width:64px;height:52px;padding:0;
+    border:3px solid #12261f;border-radius:12px;background:#f7f3e8;
+    box-shadow:3px 3px 0 #12261f;cursor:pointer;
+  }
+  .form.valgt{background:#ffd23f;transform:translate(2px,2px);box-shadow:1px 1px 0 #12261f}
+  .form canvas{width:100%;height:100%;display:block}
+  .farver{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .farve{width:46px;height:46px;border-radius:50%;padding:0;border:3px solid #12261f;cursor:pointer}
+  .farve.valgt{outline:4px solid #12261f;outline-offset:3px}
+  .farve.optaget{opacity:.2;cursor:default}
+
+  @media (prefers-reduced-motion:reduce){.knap{transition:none}}
+</style>
+</head>
+<body>
+
+<canvas id="spil"></canvas>
+<div id="overlay" hidden></div>
+
+<script src="js/physics.js"></script>
+<script src="js/input.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

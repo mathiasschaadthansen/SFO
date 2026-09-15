@@ -4,8 +4,12 @@ Reklamefri spil til SFO'ens iPads. Ingen login, ingen sporing, ingen netværkska
 Alt kører lokalt i browseren, så der er ingen personoplysninger at indgå en
 databehandleraftale om.
 
-Første spil er **Racerbanen**: top-down racer med ét fingertryk, 1 eller 2
-spillere på den samme iPad.
+Spillene indtil nu:
+
+- **Racerbanen**: top-down racer med ét fingertryk, 1 eller 2 spillere på den
+  samme iPad. Tre baner, tre sværhedsgrader, turbofelter.
+- **Klatbold**: to klatter, én bold, to mål. Løb med siderne, hop med midten,
+  først til fem mål. 1 spiller mod AI eller 2 spillere.
 
 ## Kom i gang
 
@@ -33,7 +37,13 @@ games/racer/
   js/game.js            menu, kamera, split screen og tegning
   tracks/*.json         banerne
 
+games/klatbold/
+  js/physics.js         bold, klatter, mål og AI — ingen DOM
+  js/input.js           multi-touch med tre knapper pr. spiller
+  js/game.js            menu, tegning, lyd
+
 test/racer.test.js      kører 3 omgange på hver bane uden browser
+test/klatbold.test.js   mål, overligger, hop, AI og en hel kamp mellem to AI'er
 ```
 
 `physics.js` rører hverken DOM eller canvas. Det er derfor testen kan køre i
@@ -53,6 +63,21 @@ Alt ligger i `INDSTIL` øverst i `games/racer/js/physics.js`.
 | `fastIGraes` | Sekunder i græsset før bilen sættes tilbage på banen |
 | `aiElastik` | Hvor meget AI'en letter foden når den er foran, og giver gas når den er bagud |
 | `styrehjaelp` | Hvor meget bilen selv trækker mod vejen, når ingen finger er nede. 0 slår det fra |
+| `turboFaktor` | Hvor meget et turbofelt ganger farten op |
+| `turboTid` | Sekunder turboen virker |
+
+Sværhedsgraderne (1, 2 eller 3 stjerner i menuen) ligger i `SVAERHED` lige under
+`INDSTIL`. Hver grad sætter `aiFart`, `aiElastik`, `styrehjaelp`, `svingBremse`,
+`aiSigte`, om AI'en må tage turbo, og antallet af ekstra AI-biler. Testen kører
+alle tre grader på alle baner.
+
+`aiSigte` er den værdi der betyder mest for hvor hurtig AI'en er. Den bestemmer
+hvor langt frem ad midterlinjen AI'en sigter. 30 giver en bred, langsom linje,
+20 en stram og hurtig. Under 18 begynder den at køre i græsset.
+
+Turbofelterne bygges i `track.js` ud fra checkpoints, forskudt skiftevis til højre
+og venstre for midten. Man skal styre efter dem for at få skubbet. AI'en kører midt
+på vejen og rammer dem sjældent, så de belønner den der styrer aktivt.
 | `omgange` | Antal omgange i et løb |
 
 Kør `npm test` bagefter. Testen fanger hvis en ændring gør banerne uigennemførlige
@@ -82,6 +107,12 @@ og asfalt, kantsten, kollisionsmaske og checkpoints bygges ud fra linjen.
 
 Hold `vejbredde` på mindst 150 hvis banen har skarpe sving. Smalle baner er ikke
 sjove for 6-årige, og de er det første testen brokker sig over.
+
+## Skrue på Klatbold
+
+`INDSTIL` øverst i `games/klatbold/js/physics.js`: tyngde, hoppehøjde, boldens
+hop, målhøjde og hvor mange mål der skal til. `SVAERHED` sætter AI'ens fart,
+reaktionstid og hoppelyst for 1, 2 og 3 stjerner. Kør `npm test` bagefter.
 
 ## Lave et nyt spil
 

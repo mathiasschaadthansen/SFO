@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v2';
+const VERSION = 'sfo-spil-v10';
 
 const FILER = [
   './',
@@ -25,7 +25,12 @@ const FILER = [
   'games/racer/tracks/index.js',
   'games/racer/tracks/rundbanen.json',
   'games/racer/tracks/bakkebanen.json',
-  'games/racer/tracks/slangen.json'
+  'games/racer/tracks/slangen.json',
+  'games/klatbold/',
+  'games/klatbold/index.html',
+  'games/klatbold/js/physics.js',
+  'games/klatbold/js/input.js',
+  'games/klatbold/js/game.js'
 ];
 
 self.addEventListener('install', (e) => {

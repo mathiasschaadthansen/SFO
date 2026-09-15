@@ -5,9 +5,11 @@ struktur og opsætning.
 
 ## Kør altid testen
 
-`npm test` efter enhver ændring i `games/racer/js/physics.js` eller i en bane.
-Testen kører 3 fulde omgange på hver bane uden browser og fanger, hvis en
-ændring gør en bane uigennemførlig. Den har allerede fanget den fejl én gang.
+`npm test` efter enhver ændring i `games/racer/js/physics.js`, i en bane eller
+i `games/klatbold/js/physics.js`. Racertesten kører 3 fulde omgange på hver
+bane uden browser og fanger, hvis en ændring gør en bane uigennemførlig. Den
+har allerede fanget den fejl én gang. Klatbold-testen tjekker mål, overligger,
+hop og at AI'en kan nå bolden.
 
 ## Rammer der ikke skal brydes
 
