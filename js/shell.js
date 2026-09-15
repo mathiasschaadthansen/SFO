@@ -29,5 +29,12 @@
         console.warn('Service worker blev ikke registreret:', fejl);
       });
     });
+    // Naar en ny version af service workeren tager over, genindlaeses menuen,
+    // saa man aldrig ser en blanding af gamle og nye filer.
+    var havdeController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (havdeController) window.location.reload();
+      havdeController = true;
+    });
   }
 })();

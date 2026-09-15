@@ -42,6 +42,7 @@ function lavCanvasStub() {
     setLineDash() {},
     save() {}, restore() {},
     fillRect() {}, drawImage() {}, arc() {}, fill() {},
+    translate() {}, rotate() {}, strokeRect() {},
     scale(s) { this._skala = s; },
     stroke() {
       // Kun den hvide streg paa maske-canvas er interessant
@@ -210,8 +211,62 @@ for (const meta of baner) {
   tjek('AI med elastik holder sig taet paa spilleren',
     forspringMin >= -6 && forspringMax <= 6,
     'forspring ' + forspringMin + ' til ' + forspringMax + ' checkpoints');
-  tjek('AI bliver aldrig hurtigere end spillerens topfart',
+  tjek('AI bliver aldrig hurtigere end spillerens topfart paa 1 stjerne',
     aiTop <= Fysik.INDSTIL.topfart + 0.5, aiTop.toFixed(0) + ' px/s');
+
+  // Turbofelter skal ligge paa asfalten, ellers kan ingen naa dem
+  let turboUdenfor = 0;
+  bane.turbo.forEach(f => { if (!bane.paaAsfalt(f.x, f.y)) turboUdenfor++; });
+  tjek('alle turbofelter ligger paa vejen', bane.turbo.length > 0 && turboUdenfor === 0,
+    bane.turbo.length + ' felter, ' + turboUdenfor + ' udenfor');
+
+  // Alle svaerhedsgrader: AI'en skal stadig kunne gennemfoere uden at koere fast
+  Fysik.SVAERHED.forEach((s, niveau) => {
+    Fysik.saetSvaerhed(niveau);
+    const b = {
+      x: bane.start.x, y: bane.start.y, vinkel: bane.startVinkel,
+      fart: 0, omgang: 0, næsteCp: 1, graestid: 0, genstart: 0, erAI: true
+    };
+    let f = 0;
+    while (b.omgang < 3 && f < 60 * 180) {
+      Fysik.opdaterBil(b, bane, Fysik.aiStyring(b, bane), dt);
+      f++;
+    }
+    tjek('AI gennemfoerer 3 omgange paa ' + (niveau + 1) + ' stjerne(r) uden at koere fast',
+      b.omgang >= 3 && b.genstart === 0,
+      'omgang ' + b.omgang + ', ' + b.genstart + ' genstarter, ' + (f / 60 / 3).toFixed(1) + ' s pr. omgang');
+  });
+  // 3 stjerner skal vaere en reel udfordring: AI'en i sin egen koerebane
+  // skal koere hurtigere end en spiller der holder fuld fart paa midterlinjen.
+  Fysik.saetSvaerhed(0);
+  const midt = {
+    x: bane.start.x, y: bane.start.y, vinkel: bane.startVinkel,
+    fart: 0, omgang: 0, næsteCp: 1, graestid: 0, genstart: 0, erAI: false
+  };
+  let fMidt = 0;
+  while (midt.omgang < 3 && fMidt < 60 * 240) {
+    const r = Fysik.aiStyring(midt, bane);
+    midt.fartLoft = 1;
+    Fysik.opdaterBil(midt, bane, r, dt);
+    fMidt++;
+  }
+  Fysik.saetSvaerhed(2);
+  Fysik.INDSTIL.aiTurbo = false;
+  [0.7, -0.7].forEach(koerebane => {
+    const svaer = {
+      x: bane.start.x, y: bane.start.y, vinkel: bane.startVinkel,
+      fart: 0, omgang: 0, næsteCp: 1, graestid: 0, genstart: 0, erAI: true, koerebane
+    };
+    let fS = 0;
+    while (svaer.omgang < 3 && fS < 60 * 240) {
+      Fysik.opdaterBil(svaer, bane, Fysik.aiStyring(svaer, bane), dt);
+      fS++;
+    }
+    tjek('3 stjerner i koerebane ' + koerebane + ' er hurtigere end midterlinjen og koerer ikke fast',
+      svaer.omgang >= 3 && svaer.genstart === 0 && fS < fMidt,
+      'AI ' + (fS / 60 / 3).toFixed(1) + ' s, midterlinje ' + (fMidt / 60 / 3).toFixed(1) + ' s pr. omgang, ' + svaer.genstart + ' genstarter');
+  });
+  Fysik.saetSvaerhed(0);
 
   console.log('');
 }

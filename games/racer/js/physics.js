@@ -25,8 +25,45 @@
     fastIGraes:     2.6,   // sekunder i graesset foer bilen saettes tilbage
     aiElastik:      0.25,  // hvor meget AI'en saenker/haever farten efter afstand til spilleren
     styrehjaelp:    0.20,  // hvor meget bilen selv traekker mod vejen naar ingen finger er nede
-    styrehjaelpSigte: 14   // hvor langt frem styrehjaelpen kigger
+    styrehjaelpSigte: 14,  // hvor langt frem styrehjaelpen kigger
+    turboFaktor:    1.35,  // fart ganget op mens turboen virker
+    turboTid:       1.1,   // sekunder turboen virker efter et turbofelt
+    turboPause:     1.5,   // sekunder foer samme bil kan tage turbo igen
+    aiTurbo:        false  // maa AI'en tage turbofelter? Saettes af svaerhedsgraden
   };
+
+  /**
+   * Svaerhedsgrader. Vaelges i menuen med 1, 2 eller 3 stjerner.
+   * Vaerdierne kopieres ind i INDSTIL naar et loeb starter.
+   *
+   *   1 stjerne: til de mindste. AI'en holder sig taet paa, koerer en blid
+   *              linje og bremser foer sving. Bilen faar hjaelp til at blive
+   *              paa vejen.
+   *   2 stjerner: AI'en koerer lige saa hurtigt som spilleren, strammere
+   *              linje, bremser kun lidt. Mindre hjaelp.
+   *   3 stjerner: to AI-biler der koerer den stramme linje uden at bremse
+   *              og tager turbofelterne. Ingen hjaelp, ingen elastik.
+   *
+   * aiSigte er det der betyder mest: 30 giver en bred, langsom linje,
+   * 20 en stram og hurtig. Maalt i simulering: paa Slangen koerer AI'en
+   * en omgang paa 14,7 s med sigte 30 og 10,1 s med sigte 20.
+   */
+  var SVAERHED = [
+    { aiFart: 0.93, aiElastik: 0.25, styrehjaelp: 0.20, svingBremse: 0.45, aiSigte: 30, ekstraAI: 0, aiTurbo: false },
+    { aiFart: 1.00, aiElastik: 0.10, styrehjaelp: 0.10, svingBremse: 0.85, aiSigte: 24, ekstraAI: 0, aiTurbo: false },
+    { aiFart: 1.00, aiElastik: 0.00, styrehjaelp: 0.00, svingBremse: 1.00, aiSigte: 20, ekstraAI: 1, aiTurbo: true }
+  ];
+
+  function saetSvaerhed(niveau) {
+    var s = SVAERHED[Math.max(0, Math.min(SVAERHED.length - 1, niveau | 0))];
+    INDSTIL.aiFart = s.aiFart;
+    INDSTIL.aiElastik = s.aiElastik;
+    INDSTIL.styrehjaelp = s.styrehjaelp;
+    INDSTIL.svingBremse = s.svingBremse;
+    INDSTIL.aiSigte = s.aiSigte;
+    INDSTIL.aiTurbo = s.aiTurbo;
+    return s;
+  }
 
   function nærmesteIndeks(bil, bane) {
     // Soeger kun omkring det checkpoint bilen er paa vej mod, saa det ikke
@@ -66,11 +103,22 @@
     return bil.omgang * bane.checkpoints.length + bil.næsteCp;
   }
 
-  /** -1, 0 eller 1: hvilken vej skal der drejes for at ramme punktet `sigte` foran. */
-  function drejMod(bil, bane, indeks, sigte, doedzone) {
+  /**
+   * -1, 0 eller 1: hvilken vej skal der drejes for at ramme punktet `sigte` foran.
+   * forskyd: hvor langt til siden for midterlinjen maalet ligger (px, + = hoejre).
+   */
+  function drejMod(bil, bane, indeks, sigte, doedzone, forskyd) {
     var linje = bane.linje;
-    var mål = linje[(indeks + sigte) % linje.length];
-    var ønsket = Math.atan2(mål.y - bil.y, mål.x - bil.x);
+    var n = linje.length;
+    var mål = linje[(indeks + sigte) % n];
+    var mx = mål.x, my = mål.y;
+    if (forskyd) {
+      var næste = linje[(indeks + sigte + 3) % n];
+      var v = Math.atan2(næste.y - mål.y, næste.x - mål.x) + Math.PI / 2;
+      mx += Math.cos(v) * forskyd;
+      my += Math.sin(v) * forskyd;
+    }
+    var ønsket = Math.atan2(my - bil.y, mx - bil.x);
     var forskel = Math.atan2(Math.sin(ønsket - bil.vinkel), Math.cos(ønsket - bil.vinkel));
     if (forskel > doedzone) return 1;
     if (forskel < -doedzone) return -1;
@@ -105,7 +153,12 @@
     var sigte = Math.round(INDSTIL.aiSigte * (0.45 + 0.55 * fartAndel) * (1 - sving * 0.45));
     sigte = Math.max(6, sigte);
 
-    return drejMod(bil, bane, i, sigte, 0.04);
+    // Hver AI-bil har sin egen koerebane (bil.koerebane, -1..1), saa to
+    // AI-biler ikke ligger og skubber til hinanden paa samme linje.
+    // I skarpe sving traekkes de ind mod midten igen.
+    var forskyd = (bil.koerebane || 0) * bane.vejbredde * 0.2 * (1 - sving);
+
+    return drejMod(bil, bane, i, sigte, 0.04, forskyd);
   }
 
   /**
@@ -127,10 +180,29 @@
   function opdaterBil(bil, bane, ret, dt) {
     var påAsfalt = bane.paaAsfalt(bil.x, bil.y);
 
-    // AI'ens elastik maa aldrig goere den hurtigere end spillerens topfart.
+    // Elastikken maa ikke goere AI'en hurtigere end svaerhedsgraden tillader:
+    // hoejst spillerens topfart, eller aiFart hvis den er sat over 1.
     var top = bil.erAI
-      ? INDSTIL.topfart * Math.min(1, INDSTIL.aiFart * (bil.fartLoft || 1))
+      ? INDSTIL.topfart * Math.min(Math.max(1, INDSTIL.aiFart), INDSTIL.aiFart * (bil.fartLoft || 1))
       : INDSTIL.topfart * (bil.fartLoft || 1);
+
+    // Turbofelter: koer hen over et felt og faa et kort skub. Baade boern og
+    // AI kan tage dem, men AI'en koerer midt paa vejen og rammer dem sjaeldent.
+    bil.turbo = Math.max(0, (bil.turbo || 0) - dt);
+    bil.turboPause = Math.max(0, (bil.turboPause || 0) - dt);
+    if (bil.turboPause <= 0 && bane.turbo && (!bil.erAI || INDSTIL.aiTurbo)) {
+      for (var t = 0; t < bane.turbo.length; t++) {
+        var felt = bane.turbo[t];
+        var fx = felt.x - bil.x, fy = felt.y - bil.y;
+        if (fx * fx + fy * fy < felt.r * felt.r) {
+          bil.turbo = INDSTIL.turboTid;
+          bil.turboPause = INDSTIL.turboTid + INDSTIL.turboPause;
+          bil.turboTaget = (bil.turboTaget || 0) + 1;
+          break;
+        }
+      }
+    }
+    if (bil.turbo > 0) top *= INDSTIL.turboFaktor;
     var mål = påAsfalt ? top : INDSTIL.graesfart;
     var hastighed = påAsfalt ? INDSTIL.accel : INDSTIL.opbremsning;
     bil.fart += (mål - bil.fart) * Math.min(1, hastighed * dt);
@@ -178,6 +250,11 @@
     return false;
   }
 
+  /**
+   * Skubber to biler fra hinanden naar de rammer sammen. Kun den bil der
+   * koerer ind i den anden mister fart. Den der bliver ramt bagfra, koerer
+   * videre — ellers kan man bremse den foerende ved bare at ligge og skubbe.
+   */
   function skubFraHinanden(a, b) {
     var dx = b.x - a.x, dy = b.y - a.y;
     var af = Math.hypot(dx, dy);
@@ -187,12 +264,18 @@
       var nx = dx / af, ny = dy / af;
       a.x -= nx * skub; a.y -= ny * skub;
       b.x += nx * skub; b.y += ny * skub;
-      a.fart *= 0.86; b.fart *= 0.86;
+      // Hvem koerer mod den anden?
+      var aMod = Math.cos(a.vinkel) * nx + Math.sin(a.vinkel) * ny;
+      var bMod = -(Math.cos(b.vinkel) * nx + Math.sin(b.vinkel) * ny);
+      if (aMod > 0.3) a.fart *= 0.94;
+      if (bMod > 0.3) b.fart *= 0.94;
     }
   }
 
   rod.Fysik = {
     INDSTIL: INDSTIL,
+    SVAERHED: SVAERHED,
+    saetSvaerhed: saetSvaerhed,
     opdaterBil: opdaterBil,
     aiStyring: aiStyring,
     skubFraHinanden: skubFraHinanden,

@@ -4,8 +4,9 @@
  * Styring: hold fingeren i venstre eller hoejre side af din halvdel.
  * Bilen koerer af sig selv. Ingen speeder, ingen bremse, ingen game over.
  *
- * Denne fil er kun skaerm: menu, kamera, split screen og tegning.
- * Fysik, AI og alle tal der bestemmer hvordan det FOELES ligger i js/physics.js.
+ * Denne fil er kun skaerm og lyd: menu, kamera, split screen, tegning,
+ * partikler og toner. Fysik, AI og alle tal der bestemmer hvordan det
+ * FOELES ligger i js/physics.js.
  */
 (function () {
   'use strict';
@@ -25,10 +26,25 @@
     };
   }
 
+  // Farver boernene kan vaelge. lak = karosseri, tag = tag/vinduer.
   var FARVER = [
     { lak: '#e8442e', tag: '#ffd23f', navn: 'Rød' },
-    { lak: '#3aa7e0', tag: '#f7f3e8', navn: 'Blå' }
+    { lak: '#3aa7e0', tag: '#f7f3e8', navn: 'Blå' },
+    { lak: '#4cb944', tag: '#f7f3e8', navn: 'Grøn' },
+    { lak: '#ffd23f', tag: '#12261f', navn: 'Gul' },
+    { lak: '#9b5de5', tag: '#f7f3e8', navn: 'Lilla' },
+    { lak: '#ff8c42', tag: '#f7f3e8', navn: 'Orange' }
   ];
+  var FORMER = ['racer', 'bus', 'truck'];
+
+  // Hvad hver spiller har valgt. Ligger kun i hukommelsen, saa det
+  // forsvinder naar siden lukkes. Intet gemmes om boernene.
+  var valg = [
+    { farve: 0, form: 0 },
+    { farve: 1, form: 0 }
+  ];
+  var svaerhed = 0;       // 0, 1 eller 2 stjerner ud over den foerste
+  var lydTil = true;      // paedagogerne kan slaa lyden fra i menuen
 
   var lærred = document.getElementById('spil');
   var ctx = lærred.getContext('2d');
@@ -43,22 +59,85 @@
   var sidsteTid = 0;
   var lyd = null;
 
+  var partikler = [];          // stoev, gnister og puf
+  var spor = null;             // bremsespor, tegnes oven paa banen
+  var vinderCanvas = null;     // konfetti paa slutskaermen
+  var konfetti = [];
+
   /* ---------- lyd (ingen filer, kun toner) ---------- */
 
+  function lydKontekst() {
+    if (!lyd) lyd = new (window.AudioContext || window.webkitAudioContext)();
+    if (lyd.state === 'suspended') lyd.resume();
+    return lyd;
+  }
+
   function tone(frekvens, længde, styrke) {
+    if (!lydTil) return;
     try {
-      if (!lyd) lyd = new (window.AudioContext || window.webkitAudioContext)();
-      if (lyd.state === 'suspended') lyd.resume();
-      var o = lyd.createOscillator();
-      var g = lyd.createGain();
+      var k = lydKontekst();
+      var o = k.createOscillator();
+      var g = k.createGain();
       o.type = 'triangle';
       o.frequency.value = frekvens;
       g.gain.value = styrke || 0.16;
-      g.gain.exponentialRampToValueAtTime(0.0001, lyd.currentTime + længde);
-      o.connect(g).connect(lyd.destination);
+      g.gain.exponentialRampToValueAtTime(0.0001, k.currentTime + længde);
+      o.connect(g).connect(k.destination);
       o.start();
-      o.stop(lyd.currentTime + længde);
+      o.stop(k.currentTime + længde);
     } catch (e) { /* lyd er pynt, aldrig kritisk */ }
+  }
+
+  /** Flere toner efter hinanden, fx et lille hurra. */
+  function melodi(toner, mellemrum) {
+    toner.forEach(function (f, i) {
+      setTimeout(function () { tone(f, 0.16, 0.14); }, i * mellemrum);
+    });
+  }
+
+  /**
+   * Motorlyd: en savtak gennem et lavpasfilter pr. spillerbil.
+   * Tonehoejden foelger farten, saa man kan hoere naar man rammer turbo
+   * eller koerer i graesset.
+   */
+  function startMotorer() {
+    if (!lydTil) return;
+    try {
+      var k = lydKontekst();
+      biler.forEach(function (bil) {
+        if (bil.erAI) return;
+        var o = k.createOscillator();
+        var f = k.createBiquadFilter();
+        var g = k.createGain();
+        o.type = 'sawtooth';
+        o.frequency.value = 60;
+        f.type = 'lowpass';
+        f.frequency.value = 320;
+        g.gain.value = 0;
+        o.connect(f).connect(g).connect(k.destination);
+        o.start();
+        bil.motor = { o: o, g: g };
+      });
+    } catch (e) { /* ingen motorlyd, spillet koerer alligevel */ }
+  }
+
+  function opdaterMotor(bil, påAsfalt) {
+    if (!bil.motor || !lyd) return;
+    var f = 55 + bil.fart * 0.42 + (bil.turbo > 0 ? 70 : 0);
+    var styrke = bil.faerdig ? 0.012 : (påAsfalt ? 0.035 : 0.022);
+    bil.motor.o.frequency.setTargetAtTime(f, lyd.currentTime, 0.06);
+    bil.motor.g.gain.setTargetAtTime(styrke, lyd.currentTime, 0.12);
+  }
+
+  function stopMotorer() {
+    biler.forEach(function (bil) {
+      if (!bil.motor) return;
+      try {
+        bil.motor.g.gain.setTargetAtTime(0, lyd.currentTime, 0.05);
+        bil.motor.o.stop(lyd.currentTime + 0.4);
+      } catch (e) { /* ignorer */ }
+      bil.motor = null;
+    });
   }
 
   /* ---------- lærred ---------- */
@@ -89,20 +168,31 @@
 
   /* ---------- biler ---------- */
 
-  function nyBil(indeks, erAI) {
+  function ledigFarve(brugte) {
+    for (var i = 0; i < FARVER.length; i++) {
+      if (brugte.indexOf(i) < 0) return i;
+    }
+    return 0;
+  }
+
+  /** plads og antal bestemmer hvor paa startlinjen bilen staar. */
+  function nyBil(spiller, erAI, plads, antal, v) {
     var vinkelret = bane.startVinkel + Math.PI / 2;
-    var forskyd = (indeks - 0.5) * 46;
+    var forskyd = (plads - (antal - 1) / 2) * 42;
     return {
       x: bane.start.x + Math.cos(vinkelret) * forskyd,
       y: bane.start.y + Math.sin(vinkelret) * forskyd,
       vinkel: bane.startVinkel,
       fart: 0,
-      farve: FARVER[indeks],
+      farve: FARVER[v.farve],
+      form: FORMER[v.form],
       omgang: 0,
       næsteCp: 1,
       graestid: 0,
+      genstart: 0,
+      turbo: 0,
       erAI: !!erAI,
-      spiller: indeks,
+      spiller: spiller,
       placering: 0,
       faerdig: false
     };
@@ -110,71 +200,268 @@
 
   function nulstilLøb(spillere) {
     antalSpillere = spillere;
-    biler = [nyBil(0, false), nyBil(1, spillere === 1)];
+    var niveau = Fysik.saetSvaerhed(svaerhed);
+    var antalAI = (spillere === 1 ? 1 : 0) + niveau.ekstraAI;
+    var antal = spillere + antalAI;
+    var brugte = [];
+
+    biler = [];
+    for (var s = 0; s < spillere; s++) {
+      brugte.push(valg[s].farve);
+      biler.push(nyBil(s, false, s, antal, valg[s]));
+    }
+    // AI'erne tager farver ingen boern har valgt og en tilfaeldig form.
+    // Er der to, faar de hver sin koerebane, saa de ikke skubber til hinanden.
+    for (var a = 0; a < antalAI; a++) {
+      var farve = ledigFarve(brugte);
+      brugte.push(farve);
+      var ai = nyBil(spillere + a, true, spillere + a, antal,
+        { farve: farve, form: Math.floor(Math.random() * FORMER.length) });
+      ai.koerebane = antalAI > 1 ? (a === 0 ? 0.7 : -0.7) : 0;
+      biler.push(ai);
+    }
+
+    partikler = [];
+    nulstilSpor();
     tilstand = 'nedtaelling';
     nedtaelling = 3.2;
     styring.nulstil();
     opdaterZoner();
+    startMotorer();
+  }
+
+  function mennesker() {
+    return biler.filter(function (b) { return !b.erAI; });
+  }
+
+  /** Den spiller der er laengst fremme. AI'ens elastik maaler sig mod den. */
+  function foerendeMenneske() {
+    var bedst = null, bedstF = -1;
+    biler.forEach(function (b) {
+      if (b.erAI) return;
+      var f = Fysik.fremdrift(b, bane);
+      if (f > bedstF) { bedstF = f; bedst = b; }
+    });
+    return bedst;
+  }
+
+  /* ---------- partikler og spor ---------- */
+
+  function puf(x, y, farve, antal, fart, r, liv) {
+    for (var i = 0; i < antal; i++) {
+      if (partikler.length > 320) return;
+      var v = Math.random() * Math.PI * 2;
+      var f = fart * (0.4 + Math.random() * 0.6);
+      partikler.push({
+        x: x, y: y,
+        vx: Math.cos(v) * f, vy: Math.sin(v) * f,
+        liv: liv, maxLiv: liv, r: r * (0.6 + Math.random() * 0.8), farve: farve
+      });
+    }
+  }
+
+  function opdaterPartikler(dt) {
+    for (var i = partikler.length - 1; i >= 0; i--) {
+      var p = partikler[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vx *= 0.92;
+      p.vy *= 0.92;
+      p.liv -= dt;
+      if (p.liv <= 0) partikler.splice(i, 1);
+    }
+  }
+
+  function tegnPartikler() {
+    partikler.forEach(function (p) {
+      ctx.globalAlpha = Math.max(0, p.liv / p.maxLiv) * 0.8;
+      ctx.fillStyle = p.farve;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  function nulstilSpor() {
+    if (!spor || spor.width !== bane.bredde || spor.height !== bane.hoejde) {
+      spor = document.createElement('canvas');
+      spor.width = bane.bredde;
+      spor.height = bane.hoejde;
+    }
+    spor.getContext('2d').clearRect(0, 0, spor.width, spor.height);
+  }
+
+  /** Moerke maerker efter baghjulene naar man svinger haardt i fart. */
+  function tegnSpor(bil) {
+    var c = spor.getContext('2d');
+    var L = INDSTIL.bilLaengde, B = INDSTIL.bilBredde;
+    var cos = Math.cos(bil.vinkel), sin = Math.sin(bil.vinkel);
+    c.fillStyle = 'rgba(20,20,20,0.16)';
+    [-1, 1].forEach(function (side) {
+      var lx = -L / 2 + 8, ly = side * B / 2;
+      var x = bil.x + lx * cos - ly * sin;
+      var y = bil.y + lx * sin + ly * cos;
+      c.beginPath();
+      c.arc(x, y, 2.6, 0, Math.PI * 2);
+      c.fill();
+    });
   }
 
   /* ---------- opdatering ---------- */
 
   function opdaterBil(bil, dt) {
-    var modstander = biler[1 - bil.spiller];
     var ret;
     if (bil.faerdig) {
       // Aeresrunde: bilen koerer selv videre i roligt tempo, til alle er i maal.
       ret = Fysik.aiStyring(bil, bane);
       bil.fartLoft = (bil.fartLoft || 1) * 0.6;
     } else if (bil.erAI) {
-      ret = Fysik.aiStyring(bil, bane, modstander);
+      ret = Fysik.aiStyring(bil, bane, foerendeMenneske());
     } else {
       ret = styring.retning(bil.spiller);
     }
 
+    var turboFør = bil.turbo > 0;
+    var genstartFør = bil.genstart;
     var nyOmgang = Fysik.opdaterBil(bil, bane, ret, dt);
+    var påAsfalt = bane.paaAsfalt(bil.x, bil.y);
+
+    if (!turboFør && bil.turbo > 0) {
+      if (!bil.erAI) melodi([660, 990], 60);
+      puf(bil.x, bil.y, '#ffd23f', 14, 160, 3, 0.5);
+    }
+    if (bil.genstart > genstartFør) {
+      // Sat tilbage paa vejen: et lille puf, saa man ser hvad der skete
+      puf(bil.x, bil.y, '#f7f3e8', 22, 120, 4, 0.7);
+      if (!bil.erAI) tone(220, 0.3, 0.12);
+    }
+    if (bil.turbo > 0 && Math.random() < 0.7) {
+      puf(bil.x - Math.cos(bil.vinkel) * 14, bil.y - Math.sin(bil.vinkel) * 14, '#ffd23f', 1, 60, 2.5, 0.35);
+    }
+    if (!påAsfalt && bil.fart > 50 && Math.random() < 0.6) {
+      puf(bil.x - Math.cos(bil.vinkel) * 10, bil.y - Math.sin(bil.vinkel) * 10, '#8a6d3b', 1, 40, 3, 0.6);
+    }
+    if (påAsfalt && ret !== 0 && bil.fart > 200 && !bil.faerdig) tegnSpor(bil);
 
     if (nyOmgang && !bil.faerdig) {
-      if (!bil.erAI) tone(bil.omgang >= INDSTIL.omgange ? 880 : 660, 0.18);
+      if (!bil.erAI) melodi(bil.omgang >= INDSTIL.omgange ? [660, 880, 1100, 1320] : [660, 880], 90);
       if (bil.omgang >= INDSTIL.omgange) {
         bil.faerdig = true;
         bil.placering = biler.filter(function (b) { return b.faerdig; }).length;
-        if (bil.placering === 1) tone(990, 0.35, 0.2);
       }
     }
+
+    if (!bil.erAI) opdaterMotor(bil, påAsfalt);
   }
 
   /* ---------- tegning ---------- */
 
-  function tegnBil(bil) {
+  /**
+   * Tegner et karosseri omkring (0,0) med fronten mod hoejre.
+   * Bruges baade paa banen og i vaelg-din-bil-skaermen, derfor faar den
+   * sin egen context. Alle tre former har samme laengde og bredde, saa
+   * kollisionen i physics.js er ens for dem alle.
+   */
+  function tegnKaross(c, farve, form) {
     var L = INDSTIL.bilLaengde, B = INDSTIL.bilBredde;
+
+    c.fillStyle = 'rgba(0,0,0,0.22)';
+    c.beginPath();
+    c.roundRect(-L / 2 + 3, -B / 2 + 4, L, B, 7);
+    c.fill();
+
+    c.strokeStyle = '#12261f';
+    c.lineWidth = 3;
+
+    if (form === 'truck') {
+      // Monstertruck: store hjul, lille foererhus, lad bagpaa
+      c.fillStyle = '#12261f';
+      c.fillRect(-L / 2 + 1, -B / 2 - 6, 11, B + 12);
+      c.fillRect(L / 2 - 12, -B / 2 - 6, 11, B + 12);
+      c.fillStyle = farve.lak;
+      c.beginPath();
+      c.roundRect(-L / 2, -B / 2, L, B, 5);
+      c.fill();
+      c.stroke();
+      c.fillStyle = farve.tag;
+      c.beginPath();
+      c.roundRect(3, -B / 2 + 3, 10, B - 6, 3);
+      c.fill();
+      c.lineWidth = 2;
+      c.strokeRect(-L / 2 + 4, -B / 2 + 3, 13, B - 6);
+    } else if (form === 'bus') {
+      // Bus: lang kasse med en raekke vinduer
+      c.fillStyle = '#12261f';
+      c.fillRect(-L / 2 + 5, -B / 2 - 3, 7, B + 6);
+      c.fillRect(L / 2 - 12, -B / 2 - 3, 7, B + 6);
+      c.fillStyle = farve.lak;
+      c.beginPath();
+      c.roundRect(-L / 2, -B / 2 - 1, L, B + 2, 4);
+      c.fill();
+      c.stroke();
+      c.fillStyle = farve.tag;
+      for (var i = 0; i < 3; i++) {
+        c.beginPath();
+        c.roundRect(-L / 2 + 5 + i * 8, -B / 2 + 3, 5, B - 6, 2);
+        c.fill();
+      }
+      c.beginPath();
+      c.roundRect(L / 2 - 7, -B / 2 + 3, 4, B - 6, 2);
+      c.fill();
+    } else {
+      // Racer: den klassiske, nu med haekvinge
+      c.fillStyle = '#12261f';
+      c.fillRect(-L / 2 + 4, -B / 2 - 3, 8, B + 6);
+      c.fillRect(L / 2 - 12, -B / 2 - 3, 8, B + 6);
+      c.fillStyle = farve.lak;
+      c.beginPath();
+      c.roundRect(-L / 2, -B / 2, L, B, 7);
+      c.fill();
+      c.stroke();
+      c.fillStyle = farve.tag;
+      c.beginPath();
+      c.roundRect(-4, -B / 2 + 4, 13, B - 8, 4);
+      c.fill();
+      c.fillStyle = '#12261f';
+      c.fillRect(-L / 2 - 3, -B / 2 - 2, 4, B + 4);
+    }
+  }
+
+  function tegnBil(bil) {
     ctx.save();
+    // En bil paa aeresrunde tegnes gennemsigtig: den er ude af loebet
+    if (bil.faerdig) ctx.globalAlpha = 0.55;
     ctx.translate(bil.x, bil.y);
     ctx.rotate(bil.vinkel);
-
-    ctx.fillStyle = 'rgba(0,0,0,0.22)';
-    ctx.beginPath();
-    ctx.roundRect(-L / 2 + 3, -B / 2 + 4, L, B, 7);
-    ctx.fill();
-
-    ctx.fillStyle = '#12261f';
-    ctx.fillRect(-L / 2 + 4, -B / 2 - 3, 8, B + 6);
-    ctx.fillRect(L / 2 - 12, -B / 2 - 3, 8, B + 6);
-
-    ctx.fillStyle = bil.farve.lak;
-    ctx.strokeStyle = '#12261f';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.roundRect(-L / 2, -B / 2, L, B, 7);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = bil.farve.tag;
-    ctx.beginPath();
-    ctx.roundRect(-4, -B / 2 + 4, 13, B - 8, 4);
-    ctx.fill();
-
+    if (bil.turbo > 0) {
+      // Gul glød og flammer bagud mens turboen virker
+      ctx.fillStyle = 'rgba(255,210,63,0.35)';
+      ctx.beginPath();
+      ctx.arc(0, 0, INDSTIL.bilLaengde * 0.75, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ff8c42';
+      ctx.beginPath();
+      ctx.moveTo(-INDSTIL.bilLaengde / 2 - 2, -6);
+      ctx.lineTo(-INDSTIL.bilLaengde / 2 - 14 - Math.random() * 8, 0);
+      ctx.lineTo(-INDSTIL.bilLaengde / 2 - 2, 6);
+      ctx.closePath();
+      ctx.fill();
+    }
+    tegnKaross(ctx, bil.farve, bil.form);
     ctx.restore();
+  }
+
+  /** Tegner en bil stor og med fronten opad i et lille canvas i menuen. */
+  function tegnEksempel(canvas, farve, form, skala) {
+    var c = canvas.getContext('2d');
+    c.clearRect(0, 0, canvas.width, canvas.height);
+    c.save();
+    c.translate(canvas.width / 2, canvas.height / 2);
+    c.scale(skala, skala);
+    c.rotate(-Math.PI / 2);
+    tegnKaross(c, farve, form);
+    c.restore();
   }
 
   function tegnUdsnit(bil, x, y, bredde, højde) {
@@ -194,6 +481,8 @@
     ctx.translate(bredde / (2 * skala) - kx, højde / (2 * skala) - ky);
 
     ctx.drawImage(bane.billede, 0, 0);
+    if (spor) ctx.drawImage(spor, 0, 0);
+    tegnPartikler();
     biler.forEach(tegnBil);
     ctx.restore();
 
@@ -244,14 +533,56 @@
       ctx.lineJoin = 'round';
       var s = aktiv ? 1.3 : 1;
       ctx.beginPath();
-      ctx.moveTo(p[0] + 18 * s * p[1], y - 24 * s);
-      ctx.lineTo(p[0] - 16 * s * p[1], y);
-      ctx.lineTo(p[0] + 18 * s * p[1], y + 24 * s);
+      ctx.moveTo(p[0] - 18 * s * p[1], y - 24 * s);
+      ctx.lineTo(p[0] + 16 * s * p[1], y);
+      ctx.lineTo(p[0] - 18 * s * p[1], y + 24 * s);
       ctx.closePath();
       if (aktiv) ctx.stroke();
       ctx.fill();
       ctx.restore();
     });
+  }
+
+  /**
+   * Nedtaelling som lyskurv: tre roede lys taendes ét ad gangen, saa
+   * bliver alle groenne. Roed, gul, groen forstaar alle, ogsaa uden tal.
+   */
+  function tegnLyskurv(B, H) {
+    var tal = Math.ceil(nedtaelling - 0.2);
+    var taendt = Math.max(0, Math.min(3, 4 - tal));
+    var groen = tal <= 0;
+    var r = 26, gab = 70;
+    var cx = B / 2, cy = H / 2 - 30;
+
+    ctx.save();
+    ctx.fillStyle = '#12261f';
+    ctx.beginPath();
+    ctx.roundRect(cx - gab - r - 18, cy - r - 18, gab * 2 + r * 2 + 36, r * 2 + 36, 24);
+    ctx.fill();
+    for (var i = 0; i < 3; i++) {
+      var lys = groen || i < taendt;
+      ctx.beginPath();
+      ctx.arc(cx + (i - 1) * gab, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = !lys ? '#2c3a35' : (groen ? '#4cb944' : '#e8442e');
+      ctx.fill();
+      if (lys) {
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.beginPath();
+        ctx.arc(cx + (i - 1) * gab - 8, cy - 8, r * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    if (groen) {
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '800 96px ui-rounded, system-ui, sans-serif';
+      ctx.lineWidth = 10;
+      ctx.strokeStyle = '#12261f';
+      ctx.fillStyle = '#ffd23f';
+      ctx.strokeText('KØR!', cx, cy + 110);
+      ctx.fillText('KØR!', cx, cy + 110);
+    }
+    ctx.restore();
   }
 
   function tegn() {
@@ -260,33 +591,60 @@
 
     if (!bane) return;
 
-    if (antalSpillere === 1) {
-      tegnUdsnit(biler[0], 0, 0, B, H);
+    var spillere = mennesker();
+    if (spillere.length === 1) {
+      tegnUdsnit(spillere[0], 0, 0, B, H);
       tegnPile(0, B, H, 0);
-    } else {
+    } else if (spillere.length === 2) {
       var halv = Math.floor(B / 2);
-      tegnUdsnit(biler[0], 0, 0, halv, H);
-      tegnUdsnit(biler[1], halv, 0, B - halv, H);
+      tegnUdsnit(spillere[0], 0, 0, halv, H);
+      tegnUdsnit(spillere[1], halv, 0, B - halv, H);
       tegnPile(0, halv, H, 0);
       tegnPile(halv, B - halv, H, 1);
       ctx.fillStyle = '#12261f';
       ctx.fillRect(halv - 3, 0, 6, H);
     }
 
-    if (tilstand === 'nedtaelling') {
-      var tal = Math.ceil(nedtaelling - 0.2);
-      ctx.save();
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = '800 150px ui-rounded, system-ui, sans-serif';
-      ctx.lineWidth = 12;
-      ctx.strokeStyle = '#12261f';
-      ctx.fillStyle = '#ffd23f';
-      var tekst = tal > 0 ? String(tal) : 'KØR!';
-      ctx.strokeText(tekst, B / 2, H / 2);
-      ctx.fillText(tekst, B / 2, H / 2);
-      ctx.restore();
+    if (tilstand === 'nedtaelling') tegnLyskurv(B, H);
+  }
+
+  /* ---------- slutskaerm med konfetti ---------- */
+
+  function startKonfetti(canvas) {
+    konfetti = [];
+    var farver = ['#e8442e', '#3aa7e0', '#4cb944', '#ffd23f', '#9b5de5', '#ff8c42'];
+    for (var i = 0; i < 70; i++) {
+      konfetti.push({
+        x: Math.random() * canvas.width,
+        y: -Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 40,
+        vy: 60 + Math.random() * 90,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 6,
+        b: 6 + Math.random() * 6,
+        h: 4 + Math.random() * 4,
+        farve: farver[i % farver.length]
+      });
     }
+  }
+
+  function tegnVinder(dt) {
+    if (!vinderCanvas || !vinderCanvas.isConnected) { vinderCanvas = null; return; }
+    var c = vinderCanvas.getContext('2d');
+    var vinder = vinderCanvas._vinder;
+    tegnEksempel(vinderCanvas, vinder.farve, vinder.form, 4.5);
+    konfetti.forEach(function (k) {
+      k.x += k.vx * dt;
+      k.y += k.vy * dt;
+      k.rot += k.vr * dt;
+      if (k.y > vinderCanvas.height + 10) { k.y = -10; k.x = Math.random() * vinderCanvas.width; }
+      c.save();
+      c.translate(k.x, k.y);
+      c.rotate(k.rot);
+      c.fillStyle = k.farve;
+      c.fillRect(-k.b / 2, -k.h / 2, k.b, k.h);
+      c.restore();
+    });
   }
 
   /* ---------- loop ---------- */
@@ -301,12 +659,22 @@
       var efter = Math.ceil(nedtaelling - 0.2);
       if (efter !== før && efter >= 0) tone(efter > 0 ? 440 : 780, 0.2);
       if (nedtaelling <= -0.6) tilstand = 'koerer';
+      biler.forEach(function (b) { if (!b.erAI) opdaterMotor(b, true); });
     } else if (tilstand === 'koerer') {
       biler.forEach(function (b) { opdaterBil(b, dt); });
-      Fysik.skubFraHinanden(biler[0], biler[1]);
+      // Biler paa aeresrunde maa ikke staa i vejen for dem der stadig koerer
+      for (var i = 0; i < biler.length; i++) {
+        for (var j = i + 1; j < biler.length; j++) {
+          if (!biler[i].faerdig && !biler[j].faerdig) Fysik.skubFraHinanden(biler[i], biler[j]);
+        }
+      }
+      opdaterPartikler(dt);
       // Loebet slutter foerst naar alle boern er i maal. Ingen faar taget
       // skaermen vaek midt i sin omgang, heller ikke hvis AI'en vandt.
       if (biler.every(function (b) { return b.erAI || b.faerdig; })) afslut();
+    } else if (tilstand === 'faerdig') {
+      opdaterPartikler(dt);
+      tegnVinder(dt);
     }
 
     tegn();
@@ -317,23 +685,25 @@
 
   function afslut() {
     tilstand = 'faerdig';
-    tone(660, 0.15); setTimeout(function () { tone(880, 0.3); }, 150);
+    stopMotorer();
+    melodi([660, 880, 1100, 1320, 1760], 110);
 
     var vinder = biler.filter(function (b) { return b.faerdig; })
       .sort(function (a, b) { return a.placering - b.placering; })[0];
-    var titel;
-    if (antalSpillere === 1) {
-      titel = vinder.erAI ? 'Den blå bil vandt' : 'Du vandt!';
-    } else {
-      titel = vinder.farve.navn + ' bil vandt!';
-    }
+    // Vinderen vises som tegning, saa man ikke behoever at kunne laese
+    var titel = antalSpillere === 1 && !vinder.erAI ? 'Du vandt!' : 'Vinder!';
     visOverlay(
       '<div class="kort">' +
       '<h2>' + titel + '</h2>' +
+      '<canvas class="eksempel" width="300" height="180" style="' + EKSEMPEL_STIL + '"></canvas>' +
       '<button class="knap gul" data-handling="igen">Kør igen</button>' +
+      '<button class="knap" data-handling="bilvalg">Vælg bil</button>' +
       '<button class="knap" data-handling="menu">Vælg bane</button>' +
       '</div>'
     );
+    vinderCanvas = overlay.querySelector('canvas.eksempel');
+    vinderCanvas._vinder = vinder;
+    startKonfetti(vinderCanvas);
   }
 
   function visOverlay(html) {
@@ -344,15 +714,51 @@
   function skjulOverlay() {
     overlay.hidden = true;
     overlay.innerHTML = '';
+    vinderCanvas = null;
   }
 
   var valgtBane = 'tracks/rundbanen.json';
 
+  /** Tre stjerner, hvoraf `fyldt` er gule. Ingen tekst. */
+  function stjerner(fyldt) {
+    var s = '<svg class="stjerner" width="84" height="26" viewBox="0 0 84 26" aria-hidden="true">';
+    for (var i = 0; i < 3; i++) {
+      var cx = 13 + i * 29, cy = 13;
+      var d = '';
+      for (var k = 0; k < 10; k++) {
+        var r = k % 2 ? 5 : 12;
+        var v = -Math.PI / 2 + k * Math.PI / 5;
+        d += (k ? 'L' : 'M') + (cx + Math.cos(v) * r).toFixed(1) + ' ' + (cy + Math.sin(v) * r).toFixed(1);
+      }
+      s += '<path d="' + d + 'Z" fill="' + (i < fyldt ? '#ffd23f' : '#d9d4c7') +
+           '" stroke="#12261f" stroke-width="2" stroke-linejoin="round"/>';
+    }
+    return s + '</svg>';
+  }
+
+  function lydIkon(til) {
+    return '<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">' +
+      '<path d="M4 11h6l7-6v20l-7-6H4z" fill="#12261f"/>' +
+      (til
+        ? '<path d="M20 10c2 2.5 2 7.5 0 10M23.5 7c3.5 4.5 3.5 11.5 0 16" fill="none" stroke="#12261f" stroke-width="2.5" stroke-linecap="round"/>'
+        : '<path d="M20 11l7 8M27 11l-7 8" fill="none" stroke="#e8442e" stroke-width="3" stroke-linecap="round"/>') +
+      '</svg>';
+  }
+
   function visMenu() {
     tilstand = 'venter';
+    stopMotorer();
+    vinderCanvas = null;
+
     var baneKnapper = window.BANER.map(function (b) {
       return '<button class="knap smal' + (b.fil === valgtBane ? ' valgt' : '') +
              '" data-handling="bane" data-fil="' + b.fil + '">' + b.navn + '</button>';
+    }).join('');
+
+    var stjerneKnapper = [0, 1, 2].map(function (n) {
+      return '<button class="knap smal ikon' + (n === svaerhed ? ' valgt' : '') +
+             '" data-handling="svaerhed" data-n="' + n + '" aria-label="' + (n + 1) + ' stjerner">' +
+             stjerner(n + 1) + '</button>';
     }).join('');
 
     visOverlay(
@@ -360,11 +766,69 @@
       '<h2>Racerbanen</h2>' +
       '<p class="hjaelp">Hold fingeren i venstre eller højre side. Bilen kører selv.</p>' +
       '<div class="raekke">' + baneKnapper + '</div>' +
+      '<div class="raekke">' + stjerneKnapper + '</div>' +
       '<button class="knap gul" data-handling="start" data-spillere="1">1 spiller</button>' +
       '<button class="knap gul" data-handling="start" data-spillere="2">2 spillere</button>' +
+      '<div class="raekke bund">' +
       '<a class="knap lille" href="../../">Tilbage</a>' +
+      '<button class="knap lille ikon" data-handling="lyd" aria-label="Lyd til eller fra">' + lydIkon(lydTil) + '</button>' +
+      '</div>' +
       '</div>'
     );
+  }
+
+  var EKSEMPEL_STIL = 'position:static;display:block;width:150px;height:90px;align-self:center';
+  var MINI_STIL = 'position:static;display:block;width:100%;height:100%';
+
+  /**
+   * Vaelg din bil. Hver spiller faar sin egen soejle med en stor tegning,
+   * tre former og seks farver. Ingen tekst ud over overskriften.
+   * En farve den anden spiller har taget, er graa, saa bilerne kan kendes
+   * fra hinanden paa banen.
+   */
+  function visBilValg() {
+    tilstand = 'venter';
+    var soejler = '';
+    for (var s = 0; s < antalSpillere; s++) {
+      var v = valg[s];
+      var anden = antalSpillere === 2 ? valg[1 - s] : null;
+
+      var former = FORMER.map(function (f, i) {
+        return '<button class="form' + (i === v.form ? ' valgt' : '') +
+               '" data-handling="form" data-spiller="' + s + '" data-i="' + i + '" aria-label="' + f + '">' +
+               '<canvas width="128" height="96" style="' + MINI_STIL + '" data-form="' + i + '" data-farve="' + v.farve + '"></canvas>' +
+               '</button>';
+      }).join('');
+
+      var farver = FARVER.map(function (f, i) {
+        var optaget = anden && anden.farve === i;
+        return '<button class="farve' + (i === v.farve ? ' valgt' : '') + (optaget ? ' optaget' : '') +
+               '" style="background:' + f.lak + '" data-handling="farve" data-spiller="' + s +
+               '" data-i="' + i + '"' + (optaget ? ' disabled' : '') + ' aria-label="' + f.navn + '"></button>';
+      }).join('');
+
+      soejler += '<div class="spiller" style="border-color:' + FARVER[v.farve].lak + '">' +
+                 '<canvas class="eksempel" width="300" height="180" style="' + EKSEMPEL_STIL + '" data-spiller="' + s + '"></canvas>' +
+                 '<div class="former">' + former + '</div>' +
+                 '<div class="farver">' + farver + '</div>' +
+                 '</div>';
+    }
+
+    visOverlay(
+      '<div class="kort' + (antalSpillere === 2 ? ' bred' : '') + '">' +
+      '<h2>Vælg din bil</h2>' +
+      '<div class="valg">' + soejler + '</div>' +
+      '<button class="knap gul stor" data-handling="koer">Kør!</button>' +
+      '</div>'
+    );
+
+    overlay.querySelectorAll('canvas[data-form]').forEach(function (cv) {
+      tegnEksempel(cv, FARVER[+cv.dataset.farve], FORMER[+cv.dataset.form], 2.2);
+    });
+    overlay.querySelectorAll('canvas.eksempel[data-spiller]').forEach(function (cv) {
+      var v = valg[+cv.dataset.spiller];
+      tegnEksempel(cv, FARVER[v.farve], FORMER[v.form], 4.5);
+    });
   }
 
   overlay.addEventListener('click', function (e) {
@@ -374,11 +838,31 @@
 
     if (h === 'bane') {
       valgtBane = knap.dataset.fil;
+      tone(520, 0.08);
+      visMenu();
+    } else if (h === 'svaerhed') {
+      svaerhed = parseInt(knap.dataset.n, 10);
+      melodi([520, 660, 780].slice(0, svaerhed + 1), 70);
+      visMenu();
+    } else if (h === 'lyd') {
+      lydTil = !lydTil;
+      if (lydTil) tone(660, 0.12);
       visMenu();
     } else if (h === 'start') {
-      var spillere = parseInt(knap.dataset.spillere, 10);
+      antalSpillere = parseInt(knap.dataset.spillere, 10);
+      tone(520, 0.08);
+      visBilValg();
+    } else if (h === 'form' || h === 'farve') {
+      var v = valg[parseInt(knap.dataset.spiller, 10)];
+      v[h] = parseInt(knap.dataset.i, 10);
+      tone(h === 'form' ? 600 : 700, 0.08);
+      visBilValg();
+    } else if (h === 'bilvalg') {
+      stopMotorer();
+      visBilValg();
+    } else if (h === 'koer') {
       skjulOverlay();
-      indlæsBane(valgtBane).then(function () { nulstilLøb(spillere); });
+      indlæsBane(valgtBane).then(function () { nulstilLøb(antalSpillere); });
     } else if (h === 'igen') {
       skjulOverlay();
       nulstilLøb(antalSpillere);
@@ -407,6 +891,8 @@
     return {
       tilstand: tilstand,
       spillere: antalSpillere,
+      svaerhed: svaerhed,
+      lyd: lydTil,
       bane: bane ? bane.navn : null,
       styring: [styring.retning(0), styring.retning(1)],
       biler: biler.map(function (b) {
@@ -414,6 +900,8 @@
           spiller: b.spiller, erAI: b.erAI,
           x: Math.round(b.x), y: Math.round(b.y),
           fart: Math.round(b.fart), omgang: b.omgang, cp: b.næsteCp,
+          turbo: +(b.turbo || 0).toFixed(2), turboTaget: b.turboTaget || 0,
+          faerdig: b.faerdig,
           paaAsfalt: bane ? bane.paaAsfalt(b.x, b.y) : null
         };
       })

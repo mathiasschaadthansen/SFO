@@ -62,9 +62,37 @@
     this.vejbredde = data.vejbredde;
     this.linje = udjaevn(data.punkter, 24);
 
-    this._byg();
     this._checkpoints(data.checkpoints || 24);
+    this._turbofelter();
+    this._byg();
   }
+
+  /**
+   * Turbofelter: smaa pile paa asfalten, forskudt fra midten skiftevis til
+   * hoejre og venstre. Man skal styre efter dem for at faa skubbet, saa de
+   * beloenner den der styrer aktivt uden at straffe den der ikke goer.
+   */
+  Bane.prototype._turbofelter = function () {
+    var felter = [];
+    var linje = this.linje;
+    var n = linje.length;
+    var antal = this.checkpoints.length;
+    var side = 1;
+    for (var c = 3; c < antal; c += 5) {
+      var i = Math.floor((c / antal) * n);
+      var a = linje[i], b = linje[(i + 4) % n];
+      var vinkel = Math.atan2(b.y - a.y, b.x - a.x);
+      var forskyd = this.vejbredde * 0.22 * side;
+      felter.push({
+        x: a.x + Math.cos(vinkel + Math.PI / 2) * forskyd,
+        y: a.y + Math.sin(vinkel + Math.PI / 2) * forskyd,
+        r: this.vejbredde * 0.2,
+        vinkel: vinkel
+      });
+      side = -side;
+    }
+    this.turbo = felter;
+  };
 
   Bane.prototype._byg = function () {
     var b = this.bredde, h = this.hoejde, v = this.vejbredde;
@@ -88,6 +116,29 @@
     tegnLinje(c, this.linje, v + 26, '#f2e9d8');   // kantsten
     tegnLinje(c, this.linje, v, '#5a5f68');        // asfalt
     tegnLinje(c, this.linje, 5, 'rgba(255,255,255,0.55)', [26, 34]); // midterstribe
+
+    // Turbofelter: to gule vinkler i koereretningen
+    this.turbo.forEach(function (f) {
+      c.save();
+      c.translate(f.x, f.y);
+      c.rotate(f.vinkel);
+      c.fillStyle = '#ffd23f';
+      c.strokeStyle = '#12261f';
+      c.lineWidth = 2;
+      for (var k = -1; k <= 0; k++) {
+        c.beginPath();
+        c.moveTo(k * 14 - 8, -14);
+        c.lineTo(k * 14 + 4, 0);
+        c.lineTo(k * 14 - 8, 14);
+        c.lineTo(k * 14 - 2, 14);
+        c.lineTo(k * 14 + 10, 0);
+        c.lineTo(k * 14 - 2, -14);
+        c.closePath();
+        c.fill();
+        c.stroke();
+      }
+      c.restore();
+    });
 
     this.billede = lag;
 
