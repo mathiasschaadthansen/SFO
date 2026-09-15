@@ -1,0 +1,94 @@
+:root{
+  --skov:#1b4d3e;
+  --skov-dyb:#12261f;
+  --sol:#ffd23f;
+  --tomat:#e8442e;
+  --himmel:#3aa7e0;
+  --kridt:#f7f3e8;
+  --kant:4px;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+html,body{
+  margin:0;
+  min-height:100%;
+  background:var(--skov);
+  color:var(--kridt);
+  font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-user-select:none;
+  user-select:none;
+  overscroll-behavior:none;
+}
+
+body{
+  display:flex;
+  flex-direction:column;
+  padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));
+  gap:28px;
+}
+
+.top{display:flex;align-items:center;gap:14px}
+
+.badge{
+  flex:0 0 auto;
+  width:56px;height:56px;
+  display:grid;place-items:center;
+  background:var(--kridt);
+  border:var(--kant) solid var(--skov-dyb);
+  border-radius:18px;
+  box-shadow:5px 5px 0 var(--skov-dyb);
+}
+
+h1{
+  margin:0;
+  font-size:clamp(30px,6vw,46px);
+  font-weight:800;
+  letter-spacing:-0.02em;
+}
+
+.grid{
+  flex:1;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:20px;
+  align-content:start;
+}
+
+.card{
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  gap:6px;
+  min-height:190px;
+  padding:18px;
+  border:var(--kant) solid var(--skov-dyb);
+  border-radius:26px;
+  box-shadow:7px 7px 0 var(--skov-dyb);
+  color:var(--skov-dyb);
+  text-decoration:none;
+  position:relative;
+  overflow:hidden;
+  transition:transform .09s,box-shadow .09s;
+}
+
+.card:active{transform:translate(5px,5px);box-shadow:2px 2px 0 var(--skov-dyb)}
+
+.card:focus-visible{outline:5px solid var(--kridt);outline-offset:4px}
+
+.card .art{
+  position:absolute;
+  inset:auto -10px 46px auto;
+  opacity:.9;
+  pointer-events:none;
+}
+
+.card h2{margin:0;font-size:27px;font-weight:800}
+.card p{margin:0;font-size:16px;font-weight:600;opacity:.78}
+
+.foot{text-align:center;font-size:15px;font-weight:600;opacity:.6}
+.foot p{margin:0}
+
+@media (prefers-reduced-motion:reduce){
+  .card{transition:none}
+}
