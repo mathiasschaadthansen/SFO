@@ -10,8 +10,10 @@ Spillene indtil nu:
   samme iPad. Tre baner, tre sværhedsgrader, turbofelter.
 - **Klatbold**: to klatter, én bold, to mål. Løb med siderne, hop med midten,
   først til fem mål. 1 spiller mod AI eller 2 spillere.
-- **Bobler**: skyd boblerne med snoren, så de deler sig, til de er væk. Ti
-  baner, ingen liv. To spillere hjælper hinanden og vinder sammen.
+- **Bobler**: skyd boblerne med snoren, så de deler sig, til de er væk. Tolv
+  baner i tre verdener med platforme og bobler der drypper ned, fire specials
+  (dobbeltsnor, klæbesnor, frys, skjold), ingen liv. To spillere hjælper
+  hinanden og vinder sammen.
 
 ## Kom i gang
 
@@ -125,11 +127,15 @@ reaktionstid og hoppelyst for 1, 2 og 3 stjerner. Kør `npm test` bagefter.
 ## Skrue på Bobler
 
 `INDSTIL` øverst i `games/bobler/js/physics.js`: boblernes størrelser, hvor højt
-de hopper, snorens fart og hvor længe man er svimmel. Banerne ligger i `BANER`
-lige under som lister af bobler: x, størrelse (0 = størst), retning og
-starthøjde. Tilføj en bane ved at skrive en linje til. `npm test` lader en robot
-spille alle baner igennem og brokker sig, hvis en bane ikke kan klares på fem
-minutter.
+de hopper, snorens fart, hvor længe man er svimmel, og hvor tit og hvor længe
+specials virker. Banerne ligger i `BANER` lige under. En bane har et tema
+(`strand`, `nat` eller `bjerge`), et tempo, en liste af bobler (x, størrelse
+med 0 = størst, retning, starthøjde og valgfrit hvor mange sekunder inde i
+banen den drypper ned fra oven) og valgfrit platforme (x, højde, bredde), som
+boblerne hopper på. Snoren går igennem platforme, så ingen boble kan blive
+umulig at nå. Tilføj en bane ved at skrive en linje til. `npm test` lader en
+robot spille alle baner igennem uden specials og brokker sig, hvis det tager
+over ti minutter.
 
 ## Lave et nyt spil
 

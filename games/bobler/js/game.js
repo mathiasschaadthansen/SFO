@@ -172,7 +172,16 @@
         tone(200, 0.35, 0.14, 'triangle', 90);
         puf(s.x, INDSTIL.spillerRadius, '#fff', 10, 120, 3, 0.4);
       }
+      if (s.prellede) {
+        tone(700, 0.2, 0.12, 'triangle', 1200);
+        puf(s.x, INDSTIL.spillerRadius * 1.5, '#7fd0f5', 16, 200, 4, 0.5);
+      }
+      if (s.samlede) {
+        melodi(s.samlede === 'frys' ? [880, 660, 440] : [660, 880, 1100], 60);
+        puf(s.x, INDSTIL.spillerRadius, SPECIALFARVE[s.samlede], 14, 180, 4, 0.6);
+      }
     });
+    if (spil.dryppede) tone(300, 0.2, 0.08, 'sine', 150);
     spil.poppet.forEach(function (p) {
       tone(420 + p.str * 240, 0.14, 0.14, 'sine');
       puf(p.x, p.y, BOBLEFARVER[p.str], 12 + (2 - p.str) * 6, 220, 4, 0.6);
@@ -190,36 +199,154 @@
 
   /* ---------- tegning ---------- */
 
+  var TEMAER = {
+    strand: { himmel: ['#5b4b9e', '#e8735a', '#ffd08a'], jord: '#f2d69b', kant: '#e4c27f', platform: '#c98f4a' },
+    nat:    { himmel: ['#0b1730', '#1b2f5c', '#3e4f8a'], jord: '#2f4a3a', kant: '#3f6a4c', platform: '#6d5a8a' },
+    bjerge: { himmel: ['#4aa3e0', '#9fd4f5', '#e6f6ff'], jord: '#5fb35a', kant: '#4a9a48', platform: '#8b6b4a' }
+  };
+
   function tegnBaggrund() {
     var B = window.innerWidth, H = window.innerHeight;
+    var tema = TEMAER[spil ? spil.tema : 'strand'];
     var himmel = ctx.createLinearGradient(0, 0, 0, H);
-    himmel.addColorStop(0, '#5b4b9e');
-    himmel.addColorStop(0.55, '#e8735a');
-    himmel.addColorStop(1, '#ffd08a');
+    himmel.addColorStop(0, tema.himmel[0]);
+    himmel.addColorStop(0.55, tema.himmel[1]);
+    himmel.addColorStop(1, tema.himmel[2]);
     ctx.fillStyle = himmel;
     ctx.fillRect(0, 0, B, H);
+    var s = visning.skala, i;
 
-    // Aftensol
-    ctx.fillStyle = '#ffd23f';
-    ctx.beginPath();
-    ctx.arc(sx(780), sy(120), 60 * visning.skala, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Hav
-    ctx.fillStyle = '#2f7fb8';
-    ctx.fillRect(0, sy(70), B, 70 * visning.skala);
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    for (var i = 0; i < 12; i++) {
-      var wx = sx(i * 90 + ((tid * 30) % 90)), wy = sy(40 + (i % 3) * 8);
+    if (!spil || spil.tema === 'strand') {
+      ctx.fillStyle = '#ffd23f';
+      ctx.beginPath(); ctx.arc(sx(780), sy(120), 60 * s, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#2f7fb8';
+      ctx.fillRect(0, sy(70), B, 70 * s);
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      for (i = 0; i < 12; i++) {
+        ctx.beginPath();
+        ctx.ellipse(sx(i * 90 + ((tid * 30) % 90)), sy(40 + (i % 3) * 8), 30 * s, 4 * s, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (spil.tema === 'nat') {
+      ctx.fillStyle = '#f7f3e8';
+      for (i = 0; i < 40; i++) {
+        var stx = (i * 137) % 1000, sty = 220 + (i * 71) % 370;
+        var blink = 0.5 + 0.5 * Math.sin(tid * 2 + i);
+        ctx.globalAlpha = 0.4 + 0.6 * blink;
+        ctx.beginPath(); ctx.arc(sx(stx), sy(sty), (1.2 + (i % 3) * 0.6) * s, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#fff6c9';
+      ctx.beginPath(); ctx.arc(sx(820), sy(480), 44 * s, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = tema.himmel[0];
+      ctx.beginPath(); ctx.arc(sx(836), sy(492), 38 * s, 0, Math.PI * 2); ctx.fill();
+      // Bakker i silhuet
+      ctx.fillStyle = '#132a22';
       ctx.beginPath();
-      ctx.ellipse(wx, wy, 30 * visning.skala, 4 * visning.skala, 0, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(sx(0), sy(0));
+      for (i = 0; i <= 10; i++) ctx.lineTo(sx(i * 100), sy(30 + 40 * Math.abs(Math.sin(i * 1.3))));
+      ctx.lineTo(sx(1000), sy(0));
+      ctx.closePath(); ctx.fill();
+    } else {
+      ctx.fillStyle = '#ffd23f';
+      ctx.beginPath(); ctx.arc(sx(150), sy(520), 40 * s, 0, Math.PI * 2); ctx.fill();
+      // Bjerge
+      ctx.fillStyle = '#7d9bb5';
+      ctx.beginPath();
+      ctx.moveTo(sx(0), sy(0));
+      [[0, 120], [120, 300], [260, 160], [400, 340], [520, 200], [650, 380], [800, 180], [920, 280], [1000, 140]].forEach(function (p) { ctx.lineTo(sx(p[0]), sy(p[1])); });
+      ctx.lineTo(sx(1000), sy(0));
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#f7f3e8';
+      [[120, 300], [400, 340], [650, 380]].forEach(function (p) {
+        ctx.beginPath();
+        ctx.moveTo(sx(p[0]), sy(p[1]));
+        ctx.lineTo(sx(p[0] - 28), sy(p[1] - 45));
+        ctx.lineTo(sx(p[0] + 28), sy(p[1] - 45));
+        ctx.closePath(); ctx.fill();
+      });
+      ctx.fillStyle = '#4cb944';
+      ctx.beginPath();
+      ctx.moveTo(sx(0), sy(0));
+      for (i = 0; i <= 10; i++) ctx.lineTo(sx(i * 100), sy(20 + 50 * Math.abs(Math.cos(i * 0.9))));
+      ctx.lineTo(sx(1000), sy(0));
+      ctx.closePath(); ctx.fill();
     }
-    // Sand (jorden)
-    ctx.fillStyle = '#f2d69b';
+
+    // Jorden
+    ctx.fillStyle = tema.jord;
     ctx.fillRect(0, sy(0), B, H - sy(0));
-    ctx.fillStyle = '#e4c27f';
-    ctx.fillRect(0, sy(0), B, 8 * visning.skala);
+    ctx.fillStyle = tema.kant;
+    ctx.fillRect(0, sy(0), B, 8 * s);
+  }
+
+  function tegnPlatforme() {
+    var tema = TEMAER[spil.tema], s = visning.skala;
+    spil.platforme.forEach(function (p) {
+      ctx.fillStyle = tema.platform;
+      ctx.strokeStyle = '#12261f';
+      ctx.lineWidth = 3 * s;
+      ctx.beginPath();
+      ctx.roundRect(sx(p.x), sy(p.y + p.tykkelse), p.bredde * s, p.tykkelse * s, 6 * s);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.fillRect(sx(p.x) + 6 * s, sy(p.y + p.tykkelse) + 3 * s, p.bredde * s - 12 * s, 4 * s);
+    });
+  }
+
+  /* ---------- specials ---------- */
+
+  var SPECIALFARVE = { dobbelt: '#ffd23f', klaebe: '#ff8c42', frys: '#7fd0f5', skjold: '#4cb944' };
+
+  /** Ikon for en special, tegnet omkring (0,0) i en cirkel med radius r. */
+  function tegnSpecialIkon(c, type, r) {
+    c.fillStyle = SPECIALFARVE[type];
+    c.strokeStyle = '#12261f';
+    c.lineWidth = 3;
+    c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.lineWidth = 2.5;
+    c.lineCap = 'round';
+    if (type === 'dobbelt') {
+      [-1, 1].forEach(function (d) {
+        c.beginPath(); c.moveTo(d * r * 0.35, r * 0.55); c.lineTo(d * r * 0.35, -r * 0.4); c.stroke();
+        c.fillStyle = '#12261f';
+        c.beginPath(); c.moveTo(d * r * 0.35, -r * 0.65); c.lineTo(d * r * 0.35 - 5, -r * 0.35); c.lineTo(d * r * 0.35 + 5, -r * 0.35); c.closePath(); c.fill();
+      });
+    } else if (type === 'klaebe') {
+      c.beginPath(); c.moveTo(0, r * 0.55); c.lineTo(0, -r * 0.3); c.stroke();
+      c.beginPath(); c.arc(0, -r * 0.35, r * 0.28, Math.PI, Math.PI * 2.2); c.stroke();
+      c.fillStyle = '#12261f';
+      c.fillRect(-r * 0.6, -r * 0.75, r * 1.2, 4);
+    } else if (type === 'frys') {
+      for (var k = 0; k < 3; k++) {
+        c.save(); c.rotate(k * Math.PI / 3);
+        c.beginPath(); c.moveTo(0, -r * 0.65); c.lineTo(0, r * 0.65); c.stroke();
+        [-1, 1].forEach(function (d) {
+          c.beginPath(); c.moveTo(0, d * r * 0.45); c.lineTo(4, d * r * 0.25); c.stroke();
+          c.beginPath(); c.moveTo(0, d * r * 0.45); c.lineTo(-4, d * r * 0.25); c.stroke();
+        });
+        c.restore();
+      }
+    } else {
+      c.fillStyle = '#f7f3e8';
+      c.beginPath();
+      c.moveTo(0, r * 0.65); c.lineTo(-r * 0.55, r * 0.25); c.lineTo(-r * 0.5, -r * 0.5); c.lineTo(r * 0.5, -r * 0.5); c.lineTo(r * 0.55, r * 0.25);
+      c.closePath(); c.fill(); c.stroke();
+    }
+  }
+
+  function tegnSpecials() {
+    var s = visning.skala;
+    spil.specials.forEach(function (sp) {
+      var blinker = sp.tid < 2 && Math.floor(sp.tid * 6) % 2 === 0;
+      if (blinker) return;
+      ctx.save();
+      ctx.translate(sx(sp.x), sy(sp.y + Math.sin(tid * 5) * 3));
+      ctx.scale(s, s);
+      tegnSpecialIkon(ctx, sp.type, INDSTIL.specialRadius);
+      ctx.restore();
+    });
   }
 
   function tegnBoble(b) {
@@ -227,7 +354,7 @@
     var x = sx(b.x), y = sy(b.y);
     ctx.save();
     ctx.globalAlpha = 0.85;
-    ctx.fillStyle = BOBLEFARVER[b.str];
+    ctx.fillStyle = spil.frys > 0 ? '#c9ecfb' : BOBLEFARVER[b.str];
     ctx.strokeStyle = '#12261f';
     ctx.lineWidth = 3 * s;
     ctx.beginPath();
@@ -346,33 +473,36 @@
   function tegnSpiller(s, i) {
     var u = udseende[i];
     var sk = visning.skala, R = INDSTIL.spillerRadius;
-    // Snor
-    if (s.skud) {
+    // Snore. En klaebesnor der haenger, tegnes fra loftet og ned til der hvor den blev skudt fra.
+    s.skud.forEach(function (k) {
       ctx.save();
       ctx.strokeStyle = '#12261f';
       ctx.lineWidth = 6 * sk;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      var fra = R * 1.6, til = s.skud.y;
+      var fra = k.haenger > 0 ? R * 0.5 : R * 1.6, til = k.y;
       for (var y = fra; y <= til; y += 8) {
-        var x = s.skud.x + Math.sin(y * 0.15 + tid * 30) * 4;
+        var x = k.x + Math.sin(y * 0.15 + tid * 30) * (k.haenger > 0 ? 1.5 : 4);
         if (y === fra) ctx.moveTo(sx(x), sy(y)); else ctx.lineTo(sx(x), sy(y));
       }
       ctx.stroke();
-      ctx.strokeStyle = '#ffd23f';
+      ctx.strokeStyle = k.klaeber ? '#ff8c42' : '#ffd23f';
       ctx.lineWidth = 2.5 * sk;
       ctx.stroke();
-      // Spids
-      ctx.fillStyle = '#ffd23f';
+      ctx.fillStyle = k.klaeber ? '#ff8c42' : '#ffd23f';
       ctx.beginPath();
-      ctx.moveTo(sx(s.skud.x), sy(til + 14));
-      ctx.lineTo(sx(s.skud.x - 8), sy(til));
-      ctx.lineTo(sx(s.skud.x + 8), sy(til));
-      ctx.closePath();
+      if (k.haenger > 0) {
+        ctx.arc(sx(k.x), sy(til - 6), 7 * sk, 0, Math.PI * 2);
+      } else {
+        ctx.moveTo(sx(k.x), sy(til + 14));
+        ctx.lineTo(sx(k.x - 8), sy(til));
+        ctx.lineTo(sx(k.x + 8), sy(til));
+        ctx.closePath();
+      }
       ctx.fill();
       ctx.stroke();
       ctx.restore();
-    }
+    });
     // Skygge
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     ctx.beginPath();
@@ -383,7 +513,25 @@
     ctx.save();
     ctx.translate(sx(s.x), sy(R));
     ctx.scale(sk, sk);
+    if (s.skjold) {
+      ctx.fillStyle = 'rgba(76,185,68,0.28)';
+      ctx.strokeStyle = '#4cb944';
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(0, 0, R * 1.45 + Math.sin(tid * 6) * 2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
     tegnFigurForm(ctx, u.farve, u.hat, b ? b.x - s.x : 1, b ? -(b.y - R) : -0.3, s.vx !== 0 ? s.x : 0, s.svimmel);
+    // Aktiv special over hovedet med en ring der loeber ud
+    var aktiv = s.dobbelt > 0 ? ['dobbelt', s.dobbelt / INDSTIL.dobbeltTid] : (s.klaebe > 0 ? ['klaebe', s.klaebe / INDSTIL.klaebeTid] : null);
+    if (aktiv) {
+      ctx.save();
+      ctx.translate(0, -R * 2.1);
+      ctx.scale(0.65, 0.65);
+      tegnSpecialIkon(ctx, aktiv[0], INDSTIL.specialRadius);
+      ctx.strokeStyle = '#12261f';
+      ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(0, 0, INDSTIL.specialRadius + 5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * aktiv[1]); ctx.stroke();
+      ctx.restore();
+    }
     ctx.restore();
   }
 
@@ -456,9 +604,15 @@
     ctx.clearRect(0, 0, B, H);
     tegnBaggrund();
     if (!spil) return;
+    tegnPlatforme();
     tegnPartikler();
+    tegnSpecials();
     spil.bobler.forEach(tegnBoble);
     spil.spillere.forEach(tegnSpiller);
+    if (spil.frys > 0) {
+      ctx.fillStyle = 'rgba(127,208,245,' + (0.12 + 0.1 * Math.min(1, spil.frys)) + ')';
+      ctx.fillRect(0, 0, B, H);
+    }
     tegnFremskridt();
     tegnKnapper();
 
@@ -589,7 +743,7 @@
     visOverlay(
       '<div class="kort">' +
       '<h2>Bobler</h2>' +
-      '<p class="hjaelp">Løb med siderne, skyd med midten. Skyd alle boblerne sammen.</p>' +
+      '<p class="hjaelp">Løb med siderne, skyd med midten. Saml det, der falder ned.</p>' +
       '<div class="raekke">' + stjerneKnapper + '</div>' +
       '<button class="knap gul" data-handling="start" data-spillere="1">1 spiller</button>' +
       '<button class="knap gul" data-handling="start" data-spillere="2">2 spillere</button>' +
@@ -682,8 +836,10 @@
     return {
       tilstand: tilstand, spillere: antalSpillere, svaerhed: svaerhed, lyd: lydTil,
       bane: spil ? spil.bane : null, faerdig: spil ? spil.faerdig : null,
+      tema: spil ? spil.tema : null, frys: spil ? +spil.frys.toFixed(2) : null,
+      specials: spil ? spil.specials.map(function (p) { return { x: Math.round(p.x), y: Math.round(p.y), type: p.type }; }) : null,
       bobler: spil ? spil.bobler.map(function (b) { return { x: Math.round(b.x), y: Math.round(b.y), str: b.str }; }) : null,
-      spillere_: spil ? spil.spillere.map(function (s) { return { x: Math.round(s.x), svimmel: +s.svimmel.toFixed(2), skud: !!s.skud, poppede: s.poppede }; }) : null,
+      spillere_: spil ? spil.spillere.map(function (s) { return { x: Math.round(s.x), svimmel: +s.svimmel.toFixed(2), skud: s.skud.length, dobbelt: +s.dobbelt.toFixed(1), klaebe: +s.klaebe.toFixed(1), skjold: s.skjold, poppede: s.poppede }; }) : null,
       input: [styring.input(0), styring.input(1)]
     };
   };

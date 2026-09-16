@@ -9,7 +9,7 @@ struktur og opsætning.
 Racertesten kører 3 fulde omgange på hver bane uden browser og fanger, hvis en
 ændring gør en bane uigennemførlig. Den har allerede fanget den fejl én gang.
 Klatbold-testen tjekker mål, overligger, hop og at AI'en kan nå bolden.
-Bobler-testen lader en robot spille alle ti baner igennem på alle tre
+Bobler-testen lader en robot spille alle tolv baner igennem på alle tre
 sværhedsgrader, så ingen bane kan blive umulig.
 
 ## Rammer der ikke skal brydes
