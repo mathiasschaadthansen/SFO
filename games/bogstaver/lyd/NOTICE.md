@@ -1,10 +1,8 @@
 # Lydklip
 
-Bogstavnavne, tal, ord og spørgsmål som små MP3-filer. Lavet med
-`vaerktoej/lav-lyd.py` og Piper, en offline talesyntese, med den danske stemme
-`da_DK-talesyntese-medium`. Stemmen er trænet på data fra Nasjonalbiblioteket
-(Sprakbanken) udgivet under CC0. Piper selv er MIT-licens. Klippene her er
-projektets egne.
+Her ligger rigtige optagelser til Bogstaver, hvis der er nogen. `klip.json`
+er listen over de klip, der findes; spillet bruger et klip, når det står der,
+og ellers iPad'ens egen talesyntese.
 
 Filnavne:
 
@@ -13,6 +11,5 @@ Filnavne:
 - `tal_<0-9>.mp3` talord
 - `ord_<navn>.mp3` tingene, navn som SVG-filen i ting/
 
-Vil man have en rigtig stemme, fx en pædagog, optager man de samme ord og
-gemmer dem under de samme filnavne. Spillet er ligeglad med, hvor lyden kommer
-fra. Mangler et klip, bruger spillet enhedens egen talesyntese.
+Optag med `vaerktoej/optag.html`, pak med `vaerktoej/lav-lyd.py --optagelser`,
+se README. Optagelser lavet til projektet er projektets egne.

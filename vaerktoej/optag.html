@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Optag stemme til Bogstaver</title>
+<style>
+  body{margin:0;font-family:ui-rounded,system-ui,sans-serif;background:#1b4d3e;color:#f7f3e8;display:grid;place-items:center;min-height:100vh}
+  .kort{width:min(560px,94vw);background:#f7f3e8;color:#12261f;border:4px solid #12261f;border-radius:28px;box-shadow:8px 8px 0 #0b1712;padding:26px;text-align:center}
+  h1{margin:0 0 6px;font-size:22px}
+  .hjaelp{margin:0 0 14px;font-size:15px;opacity:.75}
+  .ord{font-size:64px;font-weight:800;margin:10px 0;min-height:80px}
+  .ord img{height:110px;vertical-align:middle;margin-left:16px}
+  .sig{font-size:18px;opacity:.75;min-height:24px}
+  .raekke{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+  button{font:inherit;font-weight:800;font-size:20px;padding:14px 20px;background:#f7f3e8;border:4px solid #12261f;border-radius:18px;box-shadow:4px 4px 0 #12261f;cursor:pointer}
+  button:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #12261f}
+  button.gul{background:#ffd23f} button.roed{background:#e8442e;color:#fff} button.lille{font-size:15px;padding:8px 12px;box-shadow:none;border-width:3px}
+  .taeller{margin-top:14px;font-size:15px;opacity:.7}
+  .niveau{height:10px;background:#d9d4c7;border-radius:5px;margin-top:12px;overflow:hidden}
+  .niveau div{height:100%;width:0;background:#4cb944}
+  .ok{color:#4cb944;font-weight:800}
+</style>
+</head>
+<body>
+<div class="kort">
+  <h1>Optag stemme til Bogstaver</h1>
+  <p class="hjaelp">Åbn siden i Chrome på en computer med mikrofon. Tryk Optag, sig det der står, tryk Stop. Klippet gemmes i Overførsler med det rigtige filnavn. Læg bagefter alle filerne i én mappe og kør <code>vaerktoej/lav-lyd.py --optagelser mappen</code>.</p>
+  <div class="ord" id="ord"></div>
+  <div class="sig" id="sig"></div>
+  <div class="niveau"><div id="niveau"></div></div>
+  <div class="raekke">
+    <button class="lille" id="forrige">◀ Forrige</button>
+    <button class="roed" id="optag">● Optag</button>
+    <button id="lyt" disabled>▶ Lyt</button>
+    <button class="gul" id="naeste">Næste ▶</button>
+  </div>
+  <div class="taeller" id="taeller"></div>
+</div>
+<script src="../games/bogstaver/js/glyffer.js"></script>
+<script src="../games/bogstaver/js/ting.js"></script>
+<script>
+(function () {
+  'use strict';
+  // Samme navne som i lav-lyd.py: hvordan bogstaverne siges
+  var NAVNE = { A: 'a', B: 'be', C: 'se', D: 'de', E: 'e', F: 'æf', G: 'ge', H: 'hå', I: 'i', J: 'jåd', K: 'kå', L: 'æl', M: 'æm', N: 'æn',
+    O: 'o', P: 'pe', Q: 'ku', R: 'ær', S: 'æs', T: 'te', U: 'u', V: 've', W: 'dobbelt-ve', X: 'æks', Y: 'y', Z: 'sæt', AE: 'æ', OE: 'ø', AA: 'å' };
+  var TAL = ['nul', 'en', 'to', 'tre', 'fire', 'fem', 'seks', 'syv', 'otte', 'ni'];
+  var liste = [];
+  Glyffer.BOGSTAVER.forEach(function (n) {
+    liste.push({ fil: 'bogstav_' + n, vis: Glyffer.GLYFFER[n].tegn, sig: 'Sig bogstavets navn: "' + NAVNE[n] + '"' });
+  });
+  Glyffer.TAL.forEach(function (n, i) { liste.push({ fil: 'tal_' + n, vis: n, sig: 'Sig: "' + TAL[i] + '"' }); });
+  Glyffer.BOGSTAVER.forEach(function (n) {
+    (Ting.TING[n] || []).forEach(function (t) {
+      var navn = t.fil ? t.fil.replace('ting/', '').replace('.svg', '') : ({ 'xylofon': 'xylofon', 'ål': 'aal' })[t.ord];
+      liste.push({ fil: 'ord_' + navn, vis: t.ord, billede: t.fil ? '../games/bogstaver/' + t.fil : null, sig: 'Sig ordet tydeligt' });
+    });
+  });
+  Glyffer.BOGSTAVER.forEach(function (n) {
+    liste.push({ fil: 'spoerg_' + n, vis: 'Hvad starter med ' + Glyffer.GLYFFER[n].tegn + '?', sig: 'Sig spørgsmålet, med bogstavets navn "' + NAVNE[n] + '"' });
+  });
+
+  var i = 0, ctx = null, kilde = null, processor = null, stroem = null, buffere = [], optager = false, sidsteBlob = null;
+  var ord = document.getElementById('ord'), sig = document.getElementById('sig'), taeller = document.getElementById('taeller'), niveau = document.getElementById('niveau');
+  var knapOptag = document.getElementById('optag'), knapLyt = document.getElementById('lyt');
+  var gjort = {};
+
+  function vis() {
+    var p = liste[i];
+    ord.innerHTML = p.vis + (p.billede ? '<img src="' + p.billede + '" alt="">' : '');
+    sig.textContent = p.sig;
+    taeller.innerHTML = (i + 1) + ' af ' + liste.length + ' &nbsp; <code>' + p.fil + '.wav</code>' + (gjort[p.fil] ? ' <span class="ok">✓ gemt</span>' : '');
+    knapLyt.disabled = !gjort[p.fil];
+  }
+
+  function wav(samples, rate) {
+    var b = new ArrayBuffer(44 + samples.length * 2), v = new DataView(b);
+    function str(o, s) { for (var k = 0; k < s.length; k++) v.setUint8(o + k, s.charCodeAt(k)); }
+    str(0, 'RIFF'); v.setUint32(4, 36 + samples.length * 2, true); str(8, 'WAVE'); str(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true);
+    v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); str(36, 'data'); v.setUint32(40, samples.length * 2, true);
+    for (var k = 0; k < samples.length; k++) { var s = Math.max(-1, Math.min(1, samples[k])); v.setInt16(44 + k * 2, s < 0 ? s * 32768 : s * 32767, true); }
+    return new Blob([b], { type: 'audio/wav' });
+  }
+
+  async function start() {
+    if (!stroem) {
+      stroem = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true } });
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      kilde = ctx.createMediaStreamSource(stroem);
+      processor = ctx.createScriptProcessor(4096, 1, 1);
+      processor.onaudioprocess = function (e) {
+        var d = e.inputBuffer.getChannelData(0);
+        var top = 0; for (var k = 0; k < d.length; k += 8) top = Math.max(top, Math.abs(d[k]));
+        niveau.style.width = Math.min(100, top * 160) + '%';
+        if (optager) buffere.push(new Float32Array(d));
+      };
+      kilde.connect(processor); processor.connect(ctx.destination);
+    }
+    buffere = []; optager = true;
+    knapOptag.textContent = '■ Stop'; knapOptag.classList.remove('roed'); knapOptag.classList.add('gul');
+  }
+
+  function stop() {
+    optager = false;
+    knapOptag.textContent = '● Optag'; knapOptag.classList.add('roed'); knapOptag.classList.remove('gul');
+    var n = buffere.reduce(function (a, b) { return a + b.length; }, 0), alle = new Float32Array(n), o = 0;
+    buffere.forEach(function (b) { alle.set(b, o); o += b.length; });
+    sidsteBlob = wav(alle, ctx.sampleRate);
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(sidsteBlob); a.download = liste[i].fil + '.wav';
+    document.body.appendChild(a); a.click(); a.remove();
+    gjort[liste[i].fil] = sidsteBlob;
+    vis();
+  }
+
+  knapOptag.addEventListener('click', function () { if (optager) stop(); else start().catch(function (e) { sig.textContent = 'Kunne ikke bruge mikrofonen: ' + e.message; }); });
+  knapLyt.addEventListener('click', function () { var b = gjort[liste[i].fil]; if (b) new Audio(URL.createObjectURL(b)).play(); });
+  document.getElementById('naeste').addEventListener('click', function () { i = (i + 1) % liste.length; vis(); });
+  document.getElementById('forrige').addEventListener('click', function () { i = (i - 1 + liste.length) % liste.length; vis(); });
+  window.addEventListener('keydown', function (e) {
+    if (e.key === ' ') { e.preventDefault(); knapOptag.click(); }
+    if (e.key === 'ArrowRight') document.getElementById('naeste').click();
+    if (e.key === 'ArrowLeft') document.getElementById('forrige').click();
+  });
+  vis();
+})();
+</script>
+</body>
+</html>

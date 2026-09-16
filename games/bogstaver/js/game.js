@@ -136,14 +136,18 @@
   }
 
   /**
-   * Lydklip: bogstavnavne, tal, ord og spoergsmaal ligger som smaa MP3-filer i
-   * lyd/ (lavet med vaerktoej/lav-lyd.py, kan erstattes af rigtige optagelser).
-   * De afspilles gennem den samme AudioContext som tonerne, saa iOS tillader
-   * dem efter det foerste tryk. Mangler et klip, bruges talesyntesen.
+   * Stemmen er enhedens egen talesyntese (sig). Ligger der rigtige optagelser
+   * i lyd/ (lavet med vaerktoej/optag.html og lav-lyd.py, listet i klip.json),
+   * bruges de i stedet, afspillet gennem den samme AudioContext som tonerne,
+   * saa iOS tillader dem efter det foerste tryk.
    */
   var buffere = {};
   var aktivtKlip = null;
   var afspillet = 0;
+  var klipFindes = {};        // filnavne fra lyd/klip.json: rigtige optagelser, hvis der er nogen
+  fetch('lyd/klip.json').then(function (r) { return r.ok ? r.json() : []; })
+    .then(function (liste) { liste.forEach(function (f) { klipFindes[f] = true; }); })
+    .catch(function () { /* ingen klip, enhedens stemme bruges */ });
 
   function hentKlip(fil) {
     if (!buffere[fil]) {
@@ -158,6 +162,7 @@
 
   function afspil(fil, reserveTekst) {
     if (!lydTil) return;
+    if (!klipFindes[fil]) { sig(reserveTekst); return; }   // ingen optagelse: enhedens stemme
     hentKlip(fil).then(function (buf) {
       var k = lydKontekst();
       if (aktivtKlip) { try { aktivtKlip.stop(); } catch (e) { /* allerede stoppet */ } }
@@ -914,7 +919,7 @@
       } else {
         tegnMaengde(ctx, n, B / 2, 50 + ms * 0.62, ms * 0.34);
       }
-    } else if ((svaerhed === 2 || trin === 2) && lydTil) {
+    } else if ((svaerhed === 2 || trin === 2) && lydTil && (stemme || klipFindes['bogstav_' + String(maal).toUpperCase() + '.mp3'])) {
       // Lyt og find: skyen siger bogstavet i stedet for at vise det. Tryk for at hoere igen.
       ctx.save();
       ctx.translate(B / 2, 50 + ms * 0.62);

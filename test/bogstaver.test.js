@@ -153,26 +153,21 @@ function foelg(glyf, tolerance, afvig) {
   tjek('licensen ligger ved siden af tegningerne', fs.existsSync(path.join(ROD, '..', 'ting', 'LICENSE')) && fs.existsSync(path.join(ROD, '..', 'ting', 'NOTICE.md')));
 }
 
-/* Lydklip: der findes et klip for hvert bogstav, tal, ord og spoergsmaal, og de er i cachen */
+/* Lydklip: rigtige optagelser (hvis der er nogen) er listet i klip.json og i cachen */
 {
   const fs = require('fs');
   const LYD = path.join(ROD, '..', 'lyd');
   const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
-  const mangler = [];
-  const kraevet = [];
-  Glyffer.BOGSTAVER.forEach(n => { kraevet.push('bogstav_' + n + '.mp3'); kraevet.push('spoerg_' + n + '.mp3'); });
-  Glyffer.TAL.forEach(n => kraevet.push('tal_' + n + '.mp3'));
-  Glyffer.BOGSTAVER.forEach(n => (Ting.TING[n] || []).forEach(t => {
-    const navn = t.fil ? t.fil.replace('ting/', '').replace('.svg', '') : ({ 'xylofon': 'xylofon', 'ål': 'aal' })[t.ord];
-    kraevet.push('ord_' + navn + '.mp3');
-  }));
-  kraevet.forEach(f => { if (!fs.existsSync(path.join(LYD, f))) mangler.push(f); });
-  const ikkeICache = kraevet.filter(f => !sw.includes("'games/bogstaver/lyd/" + f + "'"));
-  const tomme = kraevet.filter(f => fs.existsSync(path.join(LYD, f)) && fs.statSync(path.join(LYD, f)).size < 500);
-  tjek('der er et lydklip for hvert bogstav, tal, ord og spoergsmaal (' + kraevet.length + ')', mangler.length === 0, 'mangler: ' + mangler.slice(0, 5));
-  tjek('alle lydklip er med i service workerens FILER', ikkeICache.length === 0, 'mangler: ' + ikkeICache.slice(0, 5));
-  tjek('ingen lydklip er tomme', tomme.length === 0, 'tomme: ' + tomme);
-  tjek('lydklippene har en NOTICE', fs.existsSync(path.join(LYD, 'NOTICE.md')));
+  const klip = JSON.parse(fs.readFileSync(path.join(LYD, 'klip.json'), 'utf8'));
+  const iMappen = fs.readdirSync(LYD).filter(f => f.endsWith('.mp3'));
+  const ikkeListet = iMappen.filter(f => !klip.includes(f));
+  const manglerFil = klip.filter(f => !fs.existsSync(path.join(LYD, f)));
+  const ikkeICache = klip.filter(f => !sw.includes("'games/bogstaver/lyd/" + f + "'"));
+  tjek('klip.json findes og er en liste', Array.isArray(klip));
+  tjek('alle mp3-filer i lyd/ staar i klip.json', ikkeListet.length === 0, 'ikke listet: ' + ikkeListet.slice(0, 5));
+  tjek('alle klip i klip.json findes', manglerFil.length === 0, 'mangler: ' + manglerFil.slice(0, 5));
+  tjek('alle klip i klip.json er med i service workerens FILER', ikkeICache.length === 0, 'mangler: ' + ikkeICache.slice(0, 5));
+  tjek('klip.json er med i service workerens FILER', sw.includes("'games/bogstaver/lyd/klip.json'"));
 }
 
 console.log(fejl ? '\n' + fejl + ' test(s) fejlede.' : '\nAlle tests bestaaet.');

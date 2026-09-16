@@ -65,8 +65,9 @@ games/bogstaver/
   js/ting.js            en ting pr. bogstav til "hvad starter med"
   ting/*.svg            tingenes tegninger, Noto Emoji (Apache 2.0, se ting/NOTICE.md)
   js/game.js            tegn- og find-legen, minispillet, menu, stemme
-  lyd/*.mp3             bogstavnavne, tal, ord og spørgsmål som klip (se lyd/NOTICE.md)
-vaerktoej/lav-lyd.py    laver lydklippene med Piper, offline talesyntese
+  lyd/klip.json         rigtige optagelser, hvis der er nogen (se lyd/NOTICE.md)
+vaerktoej/lav-lyd.py    pakker optagelser som MP3 og skriver klip.json
+vaerktoej/optag.html    optagerside: siger man de 146 ord ind, får man WAV-filer med rigtige navne
 
 test/bobler.test.js     en robot spiller alle tolv baner igennem
 test/bogstaver.test.js  alle 39 tegn kan tegnes af en finger langs stregen
@@ -181,6 +182,23 @@ Biler, klatter, figurer og raketten er sprites fra Kenney (CC0), se
 så intet venter på et billede. Farver, der ikke findes i pakken, laves med
 `Sprites.tint()`, der bytter farvetone og beholder lys og skygge. Nye sprites
 skal med i `FILER` i `sw.js`; testen `test/assets.test.js` brokker sig ellers.
+
+## Indtale stemmen selv
+
+Bogstaver bruger iPad'ens egen stemme. Den kan erstattes af en rigtig på en time:
+
+1. Åbn `vaerktoej/optag.html` i Chrome på en computer med mikrofon (via
+   `npm start` eller den offentlige adresse). Siden viser hvert ord, og hvert
+   klip gemmes i Overførsler med det rigtige filnavn. Mellemrumstasten
+   starter og stopper, piletasterne skifter ord.
+2. Læg WAV-filerne i én mappe og kør
+   `python3 vaerktoej/lav-lyd.py --optagelser <mappen>`. Stilhed klippes væk,
+   lydstyrken sættes ens, og MP3-filerne lægges i `games/bogstaver/lyd/`.
+3. Tilføj de nye mp3-filer til `FILER` i `sw.js`, `npm test`, tæl `VERSION`
+   op, commit.
+
+Man behøver ikke indtale alt på én gang. Kun de ord, der er optaget, bruger
+optagelsen, resten siges stadig af iPad'en.
 
 ## Lave et nyt spil
 

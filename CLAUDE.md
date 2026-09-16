@@ -14,12 +14,12 @@ sværhedsgrader, så ingen bane kan blive umulig. Bogstav-testen tjekker, at all
 68 tegn kan tegnes færdige af en finger, der følger stregen, også en skæv og en
 hurtig finger.
 
-**Stemme.** Bogstaver siger bogstavnavne, tal, ord og spørgsmål fra små
-MP3-klip i `games/bogstaver/lyd/`, lavet én gang med `vaerktoej/lav-lyd.py`
-(Piper, offline talesyntese) og lagt i repoet. Klippene kan erstattes af
-rigtige optagelser med samme filnavne. Mangler et klip, bruges enhedens egen
-talesyntese, kun stemmer med `localService`, så der aldrig går noget over
-nettet.
+**Stemme.** Bogstaver bruger enhedens egen talesyntese til bogstavnavne, tal,
+ord og spørgsmål. Kun stemmer med `localService` bruges, så der aldrig går
+noget over nettet. Syntetiske klip fra Piper blev prøvet og forkastet: iPad'ens
+stemme udtaler bogstaverne bedre. Rigtige optagelser kan lægges ind med
+`vaerktoej/optag.html` og `lav-lyd.py`; ligger et klip i `lyd/klip.json`,
+bruges det i stedet for talesyntesen.
 
 ## Rammer der ikke skal brydes
 
