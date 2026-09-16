@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v12';
+const VERSION = 'sfo-spil-v15';
 
 const FILER = [
   './',
@@ -35,7 +35,12 @@ const FILER = [
   'games/bobler/index.html',
   'games/bobler/js/physics.js',
   'games/bobler/js/input.js',
-  'games/bobler/js/game.js'
+  'games/bobler/js/game.js',
+  'games/bogstaver/',
+  'games/bogstaver/index.html',
+  'games/bogstaver/js/glyffer.js',
+  'games/bogstaver/js/spor.js',
+  'games/bogstaver/js/game.js'
 ];
 
 self.addEventListener('install', (e) => {

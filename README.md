@@ -14,6 +14,10 @@ Spillene indtil nu:
   baner i tre verdener med platforme og bobler der drypper ned, fire specials
   (dobbeltsnor, klæbesnor, frys, skjold), ingen liv. To spillere hjælper
   hinanden og vinder sammen.
+- **Bogstaver**: kør en bil, en raket eller en pensel langs A-Å, a-å og 0-9,
+  eller find det rigtige bogstav blandt bobler. Tal vises også som æbler, der
+  tælles. På 3 stjerner siger skyen bogstavet i stedet for at vise det. Navnene
+  siges med iPad'ens indbyggede danske stemme, hvis der er en.
 
 ## Kom i gang
 
@@ -47,13 +51,19 @@ games/klatbold/
   js/game.js            menu, tegning, lyd
 
 games/bobler/
-  js/physics.js         bobler, snor, svimmel og de ti baner — ingen DOM
+  js/physics.js         bobler, snor, specials og de tolv baner — ingen DOM
   js/input.js           multi-touch med tre knapper pr. spiller
   js/game.js            menu, tegning, lyd
 
 test/racer.test.js      kører 3 omgange på hver bane uden browser
 test/klatbold.test.js   mål, overligger, hop, AI og en hel kamp mellem to AI'er
-test/bobler.test.js     en robot spiller alle ti baner igennem
+games/bogstaver/
+  js/glyffer.js         A-Å og 0-9 som streger i skriveretning — ingen DOM
+  js/spor.js            følger fingeren langs stregerne — ingen DOM
+  js/game.js            tegn- og find-legen, menu, stemme
+
+test/bobler.test.js     en robot spiller alle tolv baner igennem
+test/bogstaver.test.js  alle 39 tegn kan tegnes af en finger langs stregen
 ```
 
 `physics.js` rører hverken DOM eller canvas. Det er derfor testen kan køre i
@@ -136,6 +146,21 @@ boblerne hopper på. Snoren går igennem platforme, så ingen boble kan blive
 umulig at nå. Tilføj en bane ved at skrive en linje til. `npm test` lader en
 robot spille alle baner igennem uden specials og brokker sig, hvis det tager
 over ti minutter.
+
+## Skrue på Bogstaver
+
+Tegnene ligger i `games/bogstaver/js/glyffer.js` som streger i en kasse på
+100 x 100, i den rækkefølge og retning man skriver dem. Buer laves med `bue()`.
+Små bogstaver står på en grundlinje ved y=80. Tilføj et tegn ved at skrive en
+linje til og sætte navnet ind i `BOGSTAVER`, `SMAA` eller `TAL`.
+
+Spillet skruer selv op og ned inden for en omgang: tegnes et tegn med højst én
+afvej, bliver tolerancen strammere næste gang, og fingerhjælpen forsvinder.
+Driller det, bliver den bredere igen. I Find giver tre rigtige i træk otte
+bobler og blanding af store og små bogstaver, seks i træk giver lyt-og-find.
+Tre stjerner øverst til højre viser trinnet. Intet gemmes, når siden lukkes. Hvor tæt fingeren skal følge stregen, styres af `TOLERANCE` i
+`game.js`, én værdi pr. stjerne. `npm test` tjekker, at hvert tegn kan tegnes
+færdigt af en finger, der følger stregen.
 
 ## Lave et nyt spil
 

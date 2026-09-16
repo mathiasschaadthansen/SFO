@@ -49,5 +49,17 @@ window.SPIL = [
          '<circle cx="27" cy="44" r="2" fill="#fff"/><circle cx="33" cy="44" r="2" fill="#fff"/>' +
          '<path d="M30 37v-14" stroke="#12261f" stroke-width="3" stroke-linecap="round"/>' +
          '</svg>'
+  },
+  {
+    id: 'bogstaver',
+    navn: 'Bogstaver',
+    tekst: 'Tegn bogstaver og tal med fingeren, eller find det rigtige i boblerne.',
+    farve: '#c9ecfb',
+    sti: 'games/bogstaver/',
+    art: '<svg class="art" width="120" height="120" viewBox="0 0 60 60">' +
+         '<path d="M12 46L28 12l16 34M19 34h18" fill="none" stroke="#ff8c42" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>' +
+         '<path d="M12 46L28 12l16 34M19 34h18" fill="none" stroke="#12261f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>' +
+         '<circle cx="12" cy="46" r="5" fill="#4cb944" stroke="#12261f" stroke-width="2"/>' +
+         '</svg>'
   }
 ];

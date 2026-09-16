@@ -10,7 +10,13 @@ Racertesten kører 3 fulde omgange på hver bane uden browser og fanger, hvis en
 ændring gør en bane uigennemførlig. Den har allerede fanget den fejl én gang.
 Klatbold-testen tjekker mål, overligger, hop og at AI'en kan nå bolden.
 Bobler-testen lader en robot spille alle tolv baner igennem på alle tre
-sværhedsgrader, så ingen bane kan blive umulig.
+sværhedsgrader, så ingen bane kan blive umulig. Bogstav-testen tjekker, at alle
+68 tegn kan tegnes færdige af en finger, der følger stregen, også en skæv og en
+hurtig finger.
+
+**Stemme.** Bogstaver bruger iPad'ens indbyggede talesyntese til at sige
+bogstavernes navne. Kun stemmer med `localService` bruges, så der aldrig går
+noget over nettet. Findes der ingen lokal dansk stemme, er spillet stille.
 
 ## Rammer der ikke skal brydes
 
