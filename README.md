@@ -35,6 +35,8 @@ hardware — det er det eneste sted man kan mærke om styringen føles rigtig.
 ```
 index.html              menuen — bygges ud fra js/games.js
 js/games.js             spil-registret. Tilføj et spil = én blok her
+js/sprites.js           fælles indlæsning og omfarvning af sprites
+assets/kenney/          sprites fra Kenney (CC0): biler, klatter, figurer, raket
 sw.js                   offline-cache. Nye filer skal tilføjes til FILER
 manifest.webmanifest    gør siden til en app på hjemmeskærmen
 
@@ -169,6 +171,14 @@ bobler og blanding af store og små bogstaver, seks i træk giver lyt-og-find.
 Tre stjerner øverst til højre viser trinnet. Intet gemmes, når siden lukkes. Hvor tæt fingeren skal følge stregen, styres af `TOLERANCE` i
 `game.js`, én værdi pr. stjerne. `npm test` tjekker, at hvert tegn kan tegnes
 færdigt af en finger, der følger stregen.
+
+## Sprites
+
+Biler, klatter, figurer og raketten er sprites fra Kenney (CC0), se
+`assets/kenney/NOTICE.md`. Hvert spil har stadig sin tegning i kode som reserve,
+så intet venter på et billede. Farver, der ikke findes i pakken, laves med
+`Sprites.tint()`, der bytter farvetone og beholder lys og skygge. Nye sprites
+skal med i `FILER` i `sw.js`; testen `test/assets.test.js` brokker sig ellers.
 
 ## Lave et nyt spil
 

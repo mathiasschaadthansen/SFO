@@ -33,10 +33,11 @@
     { lak: '#9b5de5', navn: 'Lilla' },
     { lak: '#ff8c42', navn: 'Orange' }
   ];
-  var HATTE = ['kasket', 'hjelm', 'sloejfe'];
+  var FIGURER = ['dreng', 'pige'];          // sprites fra Kenneys Platformer Characters
+  var HATTE = ['kasket', 'hjelm', 'sloejfe']; // kodetegningens hatte, bruges kun som reserve
   var BOBLEFARVER = ['#3aa7e0', '#4cb944', '#ffd23f'];
 
-  var valg = [{ farve: 0, form: 0 }, { farve: 1, form: 0 }];
+  var valg = [{ farve: 0, form: 0 }, { farve: 1, form: 1 }];
   var svaerhed = 0;
   var lydTil = true;
 
@@ -127,7 +128,7 @@
     antalSpillere = spillere;
     Bobler.saetSvaerhed(svaerhed);
     spil = Bobler.nytSpil(spillere);
-    for (var i = 0; i < spillere; i++) udseende[i] = { farve: FARVER[valg[i].farve], hat: HATTE[valg[i].form] };
+    for (var i = 0; i < spillere; i++) udseende[i] = { farve: FARVER[valg[i].farve], hat: HATTE[valg[i].form % HATTE.length], figur: FIGURER[valg[i].form] };
     partikler = [];
     flotTekst = 0;
     tilstand = 'spiller';
@@ -370,7 +371,42 @@
   }
 
   /** Figuren: rund krop, oejne der kigger mod naermeste boble, hat, ben. */
-  function tegnFigurForm(c, farve, hat, kigX, kigY, gang, svimmel) {
+  /** Sprite-udgaven: figur fra Kenney med pose efter hvad der sker. Returnerer false hvis ikke hentet. */
+  function tegnFigurSprite(c, farve, figur, kigX, gang, svimmel, jubler) {
+    var R = INDSTIL.spillerRadius;
+    var pose = svimmel > 0 ? 'hurt' : (jubler ? (Math.floor(tid * 6) % 2 ? 'cheer1' : 'cheer2') : (gang ? (Math.floor(gang / 14) % 2 ? 'walk1' : 'walk2') : 'idle'));
+    var img = Sprites.hent('../../assets/kenney/' + figur + '_' + pose + '.png');
+    if (!Sprites.klar(img)) return false;
+    var h = R * 2.7, w = h * 80 / 110;
+    // Farvet maatte under figuren, saa man ved hvilken der er ens
+    c.fillStyle = farve.lak;
+    c.globalAlpha = 0.55;
+    c.beginPath(); c.ellipse(0, R - 2, w * 0.6, 7, 0, 0, Math.PI * 2); c.fill();
+    c.globalAlpha = 1;
+    c.save();
+    if (kigX < 0) c.scale(-1, 1);
+    if (svimmel > 0) c.rotate(Math.sin(tid * 12) * 0.08);
+    c.drawImage(img, -w / 2, R - h, w, h);
+    c.restore();
+    if (svimmel > 0) {
+      c.fillStyle = '#ffd23f';
+      for (var k = 0; k < 3; k++) {
+        var v = tid * 5 + k * Math.PI * 2 / 3;
+        var x = Math.cos(v) * 22, y = R - h - 6 + Math.sin(v) * 5;
+        c.beginPath();
+        for (var j = 0; j < 10; j++) {
+          var rr = j % 2 ? 2.5 : 6, vv = -Math.PI / 2 + j * Math.PI / 5;
+          c.lineTo(x + Math.cos(vv) * rr, y + Math.sin(vv) * rr);
+        }
+        c.closePath();
+        c.fill();
+      }
+    }
+    return true;
+  }
+
+  function tegnFigurForm(c, farve, hat, kigX, kigY, gang, svimmel, figur, jubler) {
+    if (figur && tegnFigurSprite(c, farve, figur, kigX, gang, svimmel, jubler)) return;
     var R = INDSTIL.spillerRadius;
     c.save();
     if (svimmel > 0) c.rotate(Math.sin(tid * 12) * 0.12);
@@ -519,7 +555,8 @@
       ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(0, 0, R * 1.45 + Math.sin(tid * 6) * 2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     }
-    tegnFigurForm(ctx, u.farve, u.hat, b ? b.x - s.x : 1, b ? -(b.y - R) : -0.3, s.vx !== 0 ? s.x : 0, s.svimmel);
+    var retning = b ? b.x - s.x : (s.vx < 0 ? -1 : 1);   // kigger mod naermeste boble
+    tegnFigurForm(ctx, u.farve, u.hat, retning, b ? -(b.y - R) : -0.3, s.vx !== 0 ? s.x : 0, s.svimmel, u.figur, flotTekst > 0 || spil.faerdig);
     // Aktiv special over hovedet med en ring der loeber ud
     var aktiv = s.dobbelt > 0 ? ['dobbelt', s.dobbelt / INDSTIL.dobbeltTid] : (s.klaebe > 0 ? ['klaebe', s.klaebe / INDSTIL.klaebeTid] : null);
     if (aktiv) {
@@ -635,13 +672,13 @@
 
   /* ---------- slutskaerm ---------- */
 
-  function tegnEksempel(canvas, farve, hat, skala) {
+  function tegnEksempel(canvas, farve, hat, skala, figur) {
     var c = canvas.getContext('2d');
     c.clearRect(0, 0, canvas.width, canvas.height);
     c.save();
     c.translate(canvas.width / 2, canvas.height * 0.58);
     c.scale(skala, skala);
-    tegnFigurForm(c, farve, hat, 1, -0.3, 0, 0);
+    tegnFigurForm(c, farve, hat, 1, -0.3, 0, 0, figur, false);
     c.restore();
   }
 
@@ -666,7 +703,7 @@
       c.save();
       c.translate(vinderCanvas.width * (n === 1 ? 0.5 : 0.3 + i * 0.4), vinderCanvas.height * 0.58);
       c.scale(2.2, 2.2);
-      tegnFigurForm(c, udseende[i].farve, udseende[i].hat, i === 0 ? 1 : -1, -0.3, 0, 0);
+      tegnFigurForm(c, udseende[i].farve, udseende[i].hat, i === 0 ? 1 : -1, -0.3, 0, 0, udseende[i].figur, true);
       c.restore();
     }
     konfetti.forEach(function (k) {
@@ -764,7 +801,7 @@
     for (var s = 0; s < antalSpillere; s++) {
       var v = valg[s];
       var anden = antalSpillere === 2 ? valg[1 - s] : null;
-      var former = HATTE.map(function (f, i) {
+      var former = FIGURER.map(function (f, i) {
         return '<button class="form' + (i === v.form ? ' valgt' : '') + '" data-handling="form" data-spiller="' + s +
                '" data-i="' + i + '" aria-label="' + f + '">' +
                '<canvas width="128" height="104" style="' + MINI_STIL + '" data-form="' + i + '" data-farve="' + v.farve + '"></canvas></button>';
@@ -788,12 +825,14 @@
       '</div>'
     );
     overlay.querySelectorAll('canvas[data-form]').forEach(function (cv) {
-      tegnEksempel(cv, FARVER[+cv.dataset.farve], HATTE[+cv.dataset.form], 1.3);
+      tegnEksempel(cv, FARVER[+cv.dataset.farve], HATTE[+cv.dataset.form % HATTE.length], 1.1, FIGURER[+cv.dataset.form]);
     });
     overlay.querySelectorAll('canvas.eksempel[data-spiller]').forEach(function (cv) {
       var v = valg[+cv.dataset.spiller];
-      tegnEksempel(cv, FARVER[v.farve], HATTE[v.form], 2.6);
+      tegnEksempel(cv, FARVER[v.farve], HATTE[v.form % HATTE.length], 2.2, FIGURER[v.form]);
     });
+    // Sprites kan vaere paa vej: tegn igen naar de er hentet
+    setTimeout(function () { if (tilstand === 'venter' && overlay.querySelector('canvas[data-form]')) visFigurValg(); }, 400);
   }
 
   overlay.addEventListener('click', function (e) {

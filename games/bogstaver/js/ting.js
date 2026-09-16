@@ -1,9 +1,9 @@
 /**
  * Ting der starter med et bogstav, til minispillet efter et tegnet bogstav.
  *
- * Hvert bogstav har ét ord, en SVG-tegning (Noto Emoji, Apache 2.0, se
- * ting/NOTICE.md) og en tegning i kode som reserve, hvis SVG'en mangler
- * eller ikke er hentet. Xylofon og aal findes ikke som emoji og bruger
+ * Hvert bogstav har to til fire ting med SVG-tegning (Noto Emoji, Apache
+ * 2.0, se ting/NOTICE.md). Den foerste har ogsaa en tegning i kode som
+ * reserve, hvis SVG'en ikke er hentet. Xylofon og aal findes ikke som emoji og bruger
  * kun kodetegningen. Q, W og Z har ingen gode danske boerneord og er
  * derfor ikke med — for dem springes minispillet over.
  *
@@ -30,7 +30,7 @@
   function prik(c, x, y, r) { c.fillStyle = K; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); }
   function smil(c, x, y, r) { c.beginPath(); c.arc(x, y, r, 0.15 * Math.PI, 0.85 * Math.PI); c.stroke(); }
 
-  var TING = {
+  var TEGN = {
     A: { fil: 'ting/and.svg', ord: 'and', tegn: function (c) {
       ellipse(c, 0, 12, 34, 22, '#ffd23f');
       cirkel(c, 22, -16, 16, '#ffd23f');
@@ -231,8 +231,86 @@
     } }
   };
 
-  // Samme ord for smaa bogstaver: navnene i glyffer.js er a, b, ... ae, oe, aa
+  /**
+   * Ekstra ting pr. bogstav, kun som SVG. Saa er det ikke altid "bold" ved B.
+   * Format: bogstav, ord, filnavn (uden ae/oe/aa).
+   */
+  var EKSTRA = [
+    ['A', 'abe', 'abe'],
+    ['A', 'ananas', 'ananas'],
+    ['B', 'bil', 'bil'],
+    ['B', 'banan', 'banan'],
+    ['B', 'bi', 'bi'],
+    ['C', 'citron', 'citron'],
+    ['C', 'cirkus', 'cirkus'],
+    ['D', 'delfin', 'delfin'],
+    ['D', 'dør', 'doer'],
+    ['E', 'edderkop', 'edderkop'],
+    ['E', 'egern', 'egern'],
+    ['F', 'frø', 'froe'],
+    ['F', 'fugl', 'fugl'],
+    ['F', 'fly', 'fly'],
+    ['G', 'giraf', 'giraf'],
+    ['G', 'gave', 'gave'],
+    ['G', 'gulerod', 'gulerod'],
+    ['H', 'hest', 'hest'],
+    ['H', 'hat', 'hat'],
+    ['H', 'hund', 'hund'],
+    ['I', 'ild', 'ild'],
+    ['J', 'jakke', 'jakke'],
+    ['J', 'juletræ', 'juletrae'],
+    ['K', 'ko', 'ko'],
+    ['K', 'kage', 'kage'],
+    ['K', 'krone', 'krone'],
+    ['L', 'lastbil', 'lastbil'],
+    ['L', 'lampe', 'lampe'],
+    ['M', 'mus', 'mus'],
+    ['M', 'mælk', 'maelk'],
+    ['N', 'næse', 'naese'],
+    ['N', 'nød', 'noed'],
+    ['O', 'orm', 'orm'],
+    ['P', 'pandekage', 'pandekage'],
+    ['P', 'pingvin', 'pingvin'],
+    ['P', 'pizza', 'pizza'],
+    ['R', 'raket', 'raket'],
+    ['R', 'robot', 'robot'],
+    ['R', 'ræv', 'raev'],
+    ['S', 'slange', 'slange'],
+    ['S', 'sko', 'sko'],
+    ['S', 'sommerfugl', 'sommerfugl'],
+    ['T', 'tog', 'tog'],
+    ['T', 'tiger', 'tiger'],
+    ['T', 'tomat', 'tomat'],
+    ['U', 'ugle', 'ugle'],
+    ['V', 'vandmelon', 'vandmelon'],
+    ['V', 'vulkan', 'vulkan'],
+    ['AE', 'æg', 'aeg'],
+    ['AE', 'æsel', 'aesel'],
+    ['OE', 'ø', 'oe'],
+    ['OE', 'ørn', 'oern'],
+  ];
+
+  // TING[bogstav] = liste af ting: den foerste har ogsaa en tegning i kode som reserve.
+  var TING = {};
+  Object.keys(TEGN).forEach(function (n) { TING[n] = [TEGN[n]]; });
+  EKSTRA.forEach(function (e) {
+    if (!TING[e[0]]) TING[e[0]] = [];
+    TING[e[0]].push({ ord: e[1], fil: 'ting/' + e[2] + '.svg' });
+  });
+
+  // Samme ting for smaa bogstaver: navnene i glyffer.js er a, b, ... ae, oe, aa
   Object.keys(TING).forEach(function (n) { TING[n.toLowerCase()] = TING[n]; });
 
-  rod.Ting = { TING: TING };
+  /** Vaelg en ting for et bogstav, helst ikke den samme som sidst. */
+  var sidste = {};
+  function vaelg(navn) {
+    var liste = TING[navn];
+    if (!liste || !liste.length) return null;
+    var kandidater = liste.length > 1 ? liste.filter(function (t) { return t !== sidste[navn]; }) : liste;
+    var t = kandidater[Math.floor(Math.random() * kandidater.length)];
+    sidste[navn] = t;
+    return t;
+  }
+
+  rod.Ting = { TING: TING, vaelg: vaelg };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);

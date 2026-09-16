@@ -125,23 +125,31 @@ function foelg(glyf, tolerance, afvig) {
 /* Ting til minispillet: ordet starter med bogstavet, og alle dets bogstaver kan tegnes */
 {
   const tilNavn = ch => ({ 'æ': 'ae', 'ø': 'oe', 'å': 'aa' }[ch] || ch);
-  const med = Glyffer.BOGSTAVER.filter(n => Ting.TING[n]);
-  const forkertStart = med.filter(n => tilNavn(Ting.TING[n].ord[0]) !== n.toLowerCase());
-  const manglerGlyf = med.filter(n => Ting.TING[n].ord.split('').some(ch => !Glyffer.GLYFFER[tilNavn(ch)]));
-  const udenTegning = med.filter(n => typeof Ting.TING[n].tegn !== 'function');
-  tjek('mindst 25 bogstaver har en ting', med.length >= 25, med.length + ' har');
+  const med = Glyffer.BOGSTAVER.filter(n => Ting.TING[n] && Ting.TING[n].length);
+  const alleTing = [].concat(...med.map(n => Ting.TING[n].map(t => Object.assign({ bogstav: n }, t))));
+  const forkertStart = alleTing.filter(t => tilNavn(t.ord[0]) !== t.bogstav.toLowerCase()).map(t => t.ord);
+  const manglerGlyf = alleTing.filter(t => t.ord.split('').some(ch => !Glyffer.GLYFFER[tilNavn(ch)])).map(t => t.ord);
+  const udenTegning = med.filter(n => typeof Ting.TING[n][0].tegn !== 'function');
+  const faaTing = med.filter(n => Ting.TING[n].length < 2 && !['X', 'Y', 'AA'].includes(n));
+  tjek('mindst 25 bogstaver har ting', med.length >= 25, med.length + ' har');
+  tjek('der er mindst 70 ting i alt', alleTing.length >= 70, alleTing.length + ' ting');
+  tjek('alle bogstaver har mindst to ting (undtagen X, Y og Å)', faaTing.length === 0, 'kun én: ' + faaTing);
   tjek('hver ting starter med sit bogstav', forkertStart.length === 0, 'forkert: ' + forkertStart);
   tjek('alle bogstaver i ordene kan tegnes', manglerGlyf.length === 0, 'mangler: ' + manglerGlyf);
-  tjek('hver ting har en tegning i kode', udenTegning.length === 0, 'uden: ' + udenTegning);
+  tjek('den foerste ting pr. bogstav har en tegning i kode som reserve', udenTegning.length === 0, 'uden: ' + udenTegning);
   tjek('smaa bogstaver deler ting med de store', Glyffer.SMAA.filter(n => Ting.TING[n]).length === med.length);
-  const ord = med.map(n => Ting.TING[n].ord);
-  tjek('ingen to bogstaver har samme ord', new Set(ord).size === ord.length);
+  const ord = alleTing.map(t => t.ord);
+  tjek('ingen to ting har samme ord', new Set(ord).size === ord.length);
   const fs = require('fs');
-  const manglerFil = med.filter(n => Ting.TING[n].fil && !fs.existsSync(path.join(ROD, '..', Ting.TING[n].fil)));
+  const manglerFil = alleTing.filter(t => t.fil && !fs.existsSync(path.join(ROD, '..', t.fil))).map(t => t.ord);
   tjek('alle SVG-tegninger findes paa disken', manglerFil.length === 0, 'mangler: ' + manglerFil);
   const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
-  const ikkeICache = med.filter(n => Ting.TING[n].fil && !sw.includes("'games/bogstaver/" + Ting.TING[n].fil + "'"));
+  const ikkeICache = alleTing.filter(t => t.fil && !sw.includes("'games/bogstaver/" + t.fil + "'")).map(t => t.ord);
   tjek('alle SVG-tegninger er med i service workerens FILER', ikkeICache.length === 0, 'mangler: ' + ikkeICache);
+  // vaelg() skifter ting naar der er flere at vaelge imellem
+  let skiftede = 0;
+  for (let i = 0; i < 20; i++) { const a = Ting.vaelg('B'), b = Ting.vaelg('B'); if (a !== b) skiftede++; }
+  tjek('vaelg() giver aldrig den samme ting to gange i traek', skiftede === 20, skiftede + ' af 20');
   tjek('licensen ligger ved siden af tegningerne', fs.existsSync(path.join(ROD, '..', 'ting', 'LICENSE')) && fs.existsSync(path.join(ROD, '..', 'ting', 'NOTICE.md')));
 }
 

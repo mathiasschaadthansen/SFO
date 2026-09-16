@@ -27,15 +27,25 @@
   }
 
   // Farver boernene kan vaelge. lak = karosseri, tag = tag/vinduer.
+  // sprite: farven i Kenneys bilpakke. Lilla og orange findes ikke og laves
+  // ved at farve en blaa og en roed bil om (tint).
   var FARVER = [
-    { lak: '#e8442e', tag: '#ffd23f', navn: 'Rød' },
-    { lak: '#3aa7e0', tag: '#f7f3e8', navn: 'Blå' },
-    { lak: '#4cb944', tag: '#f7f3e8', navn: 'Grøn' },
-    { lak: '#ffd23f', tag: '#12261f', navn: 'Gul' },
-    { lak: '#9b5de5', tag: '#f7f3e8', navn: 'Lilla' },
-    { lak: '#ff8c42', tag: '#f7f3e8', navn: 'Orange' }
+    { lak: '#e8442e', tag: '#ffd23f', navn: 'Rød', sprite: 'red' },
+    { lak: '#3aa7e0', tag: '#f7f3e8', navn: 'Blå', sprite: 'blue' },
+    { lak: '#4cb944', tag: '#f7f3e8', navn: 'Grøn', sprite: 'green' },
+    { lak: '#ffd23f', tag: '#12261f', navn: 'Gul', sprite: 'yellow' },
+    { lak: '#9b5de5', tag: '#f7f3e8', navn: 'Lilla', sprite: 'blue', tint: '#9b5de5' },
+    { lak: '#ff8c42', tag: '#f7f3e8', navn: 'Orange', sprite: 'red', tint: '#ff8c42' }
   ];
   var FORMER = ['racer', 'bus', 'truck'];
+  var SPRITE_NR = { racer: 1, bus: 2, truck: 4 };   // bilform -> nummer i Kenneys pakke
+
+  /** Sprite for en bil, eller null hvis det ikke er hentet endnu (saa tegnes den i kode). */
+  function bilSprite(farve, form) {
+    var img = Sprites.hent('../../assets/kenney/bil_' + farve.sprite + '_' + SPRITE_NR[form] + '.png');
+    if (!Sprites.klar(img)) return null;
+    return farve.tint ? Sprites.tint(img, farve.tint) : img;
+  }
 
   // Hvad hver spiller har valgt. Ligger kun i hukommelsen, saa det
   // forsvinder naar siden lukkes. Intet gemmes om boernene.
@@ -370,6 +380,17 @@
     c.beginPath();
     c.roundRect(-L / 2 + 3, -B / 2 + 4, L, B, 7);
     c.fill();
+
+    // Sprite fra Kenney naar det er klar. Spriten peger opad, bilen koerer mod +x.
+    var sp = bilSprite(farve, form);
+    if (sp) {
+      var sk = (L + 4) / 131;
+      c.save();
+      c.rotate(Math.PI / 2);
+      c.drawImage(sp, -71 * sk / 2, -131 * sk / 2, 71 * sk, 131 * sk);
+      c.restore();
+      return;
+    }
 
     c.strokeStyle = '#12261f';
     c.lineWidth = 3;

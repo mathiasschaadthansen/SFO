@@ -40,11 +40,12 @@
   // Tingenes SVG-tegninger hentes én gang. Ligger i cachen, saa det virker offline.
   var billeder = {};
   Object.keys(Ting.TING).forEach(function (n) {
-    var t = Ting.TING[n];
-    if (!t.fil || billeder[t.fil]) return;
-    var img = new Image();
-    img.src = t.fil;
-    billeder[t.fil] = img;
+    Ting.TING[n].forEach(function (t) {
+      if (!t.fil || billeder[t.fil]) return;
+      var img = new Image();
+      img.src = t.fil;
+      billeder[t.fil] = img;
+    });
   });
 
   // Progression inden for denne omgang, kun i hukommelsen. Spillet skruer
@@ -393,12 +394,14 @@
     vaelgNavn = navn;
     vaelgLoest = false;
     vaelgPause = 0.6;
+    // Én ting der starter med bogstavet, og to fra andre bogstaver. Tingene
+    // vaelges tilfaeldigt blandt bogstavets ting, saa det ikke altid er bold ved B.
     var andre = bland(navneI(kategori).filter(function (n) { return n !== navn && Ting.TING[n]; })).slice(0, 2);
     var navne = bland([navn].concat(andre));
     var B = window.innerWidth, H = window.innerHeight;
     var str = Math.min(B * 0.22, H * 0.34);
     kort = navne.map(function (n, i) {
-      return { navn: n, x: B / 2 + (i - 1) * (str + 34), y: H * 0.6, str: str, vip: 0, vist: 0, rigtig: n === navn };
+      return { navn: n, ting: Ting.vaelg(n), x: B / 2 + (i - 1) * (str + 34), y: H * 0.6, str: str, vip: 0, vist: 0, rigtig: n === navn };
     });
     setTimeout(function () { if (tilstand === 'vaelg') sig('Hvad starter med ' + G[navn].tegn + '?'); }, 300);
   }
@@ -415,7 +418,7 @@
     for (var i = 0; i < kort.length; i++) {
       var k = kort[i];
       if (Math.abs(x - k.x) < k.str / 2 && Math.abs(y - k.y) < k.str / 2) {
-        sig(Ting.TING[k.navn].ord);
+        sig(k.ting.ord);
         if (k.rigtig) {
           vaelgLoest = true;
           k.vist = 99;
@@ -451,7 +454,7 @@
     tegnGlyf(ctx, G[vaelgNavn], B / 2 - ms / 2, 50 + ms * 0.1, ms, STREGFARVE, 12);
 
     kort.forEach(function (k) {
-      var t = Ting.TING[k.navn];
+      var t = k.ting;
       ctx.save();
       ctx.translate(k.x, k.y);
       if (k.vip > 0) ctx.rotate(Math.sin(k.vip * 40) * 0.12);
@@ -465,10 +468,14 @@
       if (img && img.complete && img.naturalWidth > 0) {
         var bs = k.str * 0.62;
         ctx.drawImage(img, -bs / 2, -bs / 2, bs, bs);
-      } else {
+      } else if (t.tegn) {
         ctx.scale(k.str / 130, k.str / 130);
         ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
         t.tegn(ctx);
+      } else {
+        // Billedet er ikke hentet endnu: en blid plads-holder
+        ctx.fillStyle = '#e6e1d4';
+        ctx.beginPath(); ctx.arc(0, 0, k.str * 0.25, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
       if (k.vist > 0) tegnOrd(t.ord, 0, k.str * 0.36, k.str * 0.17);
@@ -480,6 +487,23 @@
   function tegnKoeretoej(c, hvad, iGang, andel) {
     c.strokeStyle = '#12261f';
     c.lineWidth = 1.6;
+    // Sprites fra Kenney for bil og raket. De peger opad, koeretoejet koerer mod +x.
+    if (hvad === 'bil' || hvad === 'raket') {
+      var img = Sprites.hent('../../assets/kenney/' + (hvad === 'bil' ? 'bil_lille' : 'raket') + '.png');
+      if (Sprites.klar(img)) {
+        if (hvad === 'raket' && iGang) {
+          c.fillStyle = '#ff8c42';
+          c.beginPath(); c.moveTo(-10, -3); c.lineTo(-18 - Math.random() * 6, 0); c.lineTo(-10, 3); c.closePath(); c.fill();
+        }
+        var l = hvad === 'bil' ? 26 : 28;
+        var sk = l / img.naturalHeight, w = img.naturalWidth * sk;
+        c.save();
+        c.rotate(Math.PI / 2);
+        c.drawImage(img, -w / 2, -l / 2, w, l);
+        c.restore();
+        return;
+      }
+    }
     if (hvad === 'bil') {
       c.fillStyle = '#12261f';
       c.fillRect(-7, -6.5, 4, 13); c.fillRect(3, -6.5, 4, 13);
@@ -1199,7 +1223,7 @@
       tegn: tilstand === 'tegn' ? { navn: liste[plads], plads: plads, andel: +spor.andel().toFixed(2), aktiv: spor.aktiv, holder: spor.holder, jubel: +jubel.toFixed(2) } : null,
       find: tilstand === 'find' ? { maal: maal, fundet: fundet, bobler: bobler.map(function (b) { return { navn: b.navn, x: Math.round(b.x), y: Math.round(b.y), r: Math.round(b.r) }; }) } : null,
       aebler: aebler, flow: flow, raekke: raekke, tolerance: +tolerance().toFixed(1),
-      vaelg: tilstand === 'vaelg' ? { navn: vaelgNavn, loest: vaelgLoest, kort: kort.map(function (k) { return { navn: k.navn, x: Math.round(k.x), y: Math.round(k.y), rigtig: k.rigtig }; }) } : null,
+      vaelg: tilstand === 'vaelg' ? { navn: vaelgNavn, loest: vaelgLoest, kort: kort.map(function (k) { return { navn: k.navn, ord: k.ting.ord, x: Math.round(k.x), y: Math.round(k.y), rigtig: k.rigtig }; }) } : null,
       kasse: kasse
     };
   };

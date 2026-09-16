@@ -23,15 +23,17 @@
     };
   }
 
+  // Farverne er dem der findes i Kenneys Shape Characters (sprite-navn).
   var FARVER = [
-    { lak: '#e8442e', navn: 'Rød' },
-    { lak: '#3aa7e0', navn: 'Blå' },
-    { lak: '#4cb944', navn: 'Grøn' },
-    { lak: '#ffd23f', navn: 'Gul' },
-    { lak: '#9b5de5', navn: 'Lilla' },
-    { lak: '#ff8c42', navn: 'Orange' }
+    { lak: '#e8442e', navn: 'Rød', sprite: 'red' },
+    { lak: '#3aa7e0', navn: 'Blå', sprite: 'blue' },
+    { lak: '#4cb944', navn: 'Grøn', sprite: 'green' },
+    { lak: '#ffd23f', navn: 'Gul', sprite: 'yellow' },
+    { lak: '#9b5de5', navn: 'Lilla', sprite: 'purple' },
+    { lak: '#f28cc0', navn: 'Pink', sprite: 'pink' }
   ];
-  var FJAES = ['glad', 'sej', 'stjerne'];
+  var FJAES = ['glad', 'sej', 'soed'];
+  var ANSIGT = { glad: 'a', sej: 'e', soed: 'c', jubel: 'c', sur: 'k' };   // -> assets/kenney/ansigt_<x>.png
 
   // Kun i hukommelsen. Intet gemmes om boernene.
   var valg = [
@@ -312,6 +314,26 @@
     var R = INDSTIL.klatRadius;
     var sqx = 1 + sq * 0.25, sqy = 1 - sq * 0.3;
     stemning = stemning || 0;
+
+    // Sprite fra Kenney: en rund krop klippet til en halvcirkel, og et ansigt
+    // der kigger lidt mod bolden. Falder tilbage til kodetegningen til det er hentet.
+    var krop = Sprites.hent('../../assets/kenney/klat_' + farve.sprite + '.png');
+    var ansigt = Sprites.hent('../../assets/kenney/ansigt_' + (stemning > 0 ? ANSIGT.jubel : (stemning < 0 ? ANSIGT.sur : ANSIGT[fjaes] || 'a')) + '.png');
+    if (Sprites.klar(krop) && Sprites.klar(ansigt)) {
+      c.save();
+      c.scale(sqx, sqy);
+      c.beginPath();
+      c.rect(-R - 4, -R - 4, R * 2 + 8, R + 4);
+      c.clip();
+      c.drawImage(krop, -R, -R, R * 2, R * 2);
+      c.restore();
+      var side = kigX >= 0 ? 1 : -1;
+      var aw = R * 1.05, ah = aw * 29 / 50;
+      var dx = Math.max(-1, Math.min(1, kigX / 200)) * R * 0.08;
+      c.drawImage(ansigt, -aw / 2 + dx + side * R * 0.05, -R * 0.78 + Math.max(0, stemning) * -2, aw, ah);
+      return;
+    }
+
     c.save();
     c.scale(sqx, sqy);
     // Krop: halvcirkel
