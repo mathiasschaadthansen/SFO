@@ -60,7 +60,8 @@ test/klatbold.test.js   mål, overligger, hop, AI og en hel kamp mellem to AI'er
 games/bogstaver/
   js/glyffer.js         A-Å og 0-9 som streger i skriveretning — ingen DOM
   js/spor.js            følger fingeren langs stregerne — ingen DOM
-  js/ting.js            en ting pr. bogstav, tegnet i kode, til "hvad starter med"
+  js/ting.js            en ting pr. bogstav til "hvad starter med"
+  ting/*.svg            tingenes tegninger, Noto Emoji (Apache 2.0, se ting/NOTICE.md)
   js/game.js            tegn- og find-legen, minispillet, menu, stemme
 
 test/bobler.test.js     en robot spiller alle tolv baner igennem
@@ -157,8 +158,9 @@ linje til og sætte navnet ind i `BOGSTAVER`, `SMAA` eller `TAL`.
 
 Efter et tegnet bogstav kommer et minispil: tre ting, og barnet skal trykke på
 den, der starter med bogstavet. Tingene ligger i `games/bogstaver/js/ting.js`
-med ét ord og én tegning i kode pr. bogstav. Tilføj en ting ved at skrive en
-blok til. Q, W og Z har ingen ting og springer minispillet over.
+med ét ord, en SVG i `ting/` og en tegning i kode som reserve pr. bogstav. Se
+`ting/NOTICE.md` for hvordan man tilføjer en ting. Q, W og Z har ingen ting og
+springer minispillet over.
 
 Spillet skruer selv op og ned inden for en omgang: tegnes et tegn med højst én
 afvej, bliver tolerancen strammere næste gang, og fingerhjælpen forsvinder.

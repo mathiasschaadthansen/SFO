@@ -37,6 +37,16 @@
   var kategori = 'bogstaver';        // bogstaver | tal
   var KOERETOEJER = ['bil', 'raket', 'pensel'];
 
+  // Tingenes SVG-tegninger hentes én gang. Ligger i cachen, saa det virker offline.
+  var billeder = {};
+  Object.keys(Ting.TING).forEach(function (n) {
+    var t = Ting.TING[n];
+    if (!t.fil || billeder[t.fil]) return;
+    var img = new Image();
+    img.src = t.fil;
+    billeder[t.fil] = img;
+  });
+
   // Progression inden for denne omgang, kun i hukommelsen. Spillet skruer
   // selv op naar det gaar godt og ned naar det driller, saa barnet ikke selv
   // skal vaelge svaerhed. Stjernerne er stadig udgangspunktet.
@@ -451,9 +461,15 @@
       ctx.beginPath(); ctx.roundRect(-k.str / 2, -k.str / 2, k.str, k.str, 24); ctx.fill(); ctx.stroke();
       ctx.save();
       ctx.translate(0, k.vist > 0 ? -k.str * 0.1 : 0);
-      ctx.scale(k.str / 130, k.str / 130);
-      ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-      t.tegn(ctx);
+      var img = t.fil && billeder[t.fil];
+      if (img && img.complete && img.naturalWidth > 0) {
+        var bs = k.str * 0.62;
+        ctx.drawImage(img, -bs / 2, -bs / 2, bs, bs);
+      } else {
+        ctx.scale(k.str / 130, k.str / 130);
+        ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        t.tegn(ctx);
+      }
       ctx.restore();
       if (k.vist > 0) tegnOrd(t.ord, 0, k.str * 0.36, k.str * 0.17);
       ctx.restore();

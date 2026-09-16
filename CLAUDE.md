@@ -29,10 +29,13 @@ barn skal ikke bygges. Det trækker persondata ind i noget der i dag er
 fuldstændig neutralt.
 
 **Ingen ophavsretsligt materiale.** Ingen figurer, navne, lyde eller grafik
-fra kommercielle spil. Al grafik tegnes i kode eller er CC0.
+fra kommercielle spil. Al grafik tegnes i kode eller har en fri licens (CC0,
+Apache 2.0, CC BY) med licensteksten liggende i repoet ved siden af filerne.
+Eksempel: `games/bogstaver/ting/` bruger Noto Emoji under Apache 2.0.
 
-**Ingen binære assets uden grund.** Grafik tegnes med canvas, lyd laves med
-oscillatorer. Det holder repoet lille og offline-cachen hurtig.
+**Ingen binære assets uden grund.** Grafik tegnes med canvas eller er SVG
+(tekst, små filer), lyd laves med oscillatorer. Det holder repoet lille og
+offline-cachen hurtig. Nye filer skal med i `FILER` i `sw.js`.
 
 ## Designregler for 6-årige
 

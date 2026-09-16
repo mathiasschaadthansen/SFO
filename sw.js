@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v16';
+const VERSION = 'sfo-spil-v17';
 
 const FILER = [
   './',
@@ -41,7 +41,31 @@ const FILER = [
   'games/bogstaver/js/glyffer.js',
   'games/bogstaver/js/spor.js',
   'games/bogstaver/js/ting.js',
-  'games/bogstaver/js/game.js'
+  'games/bogstaver/js/game.js',
+  'games/bogstaver/ting/aeble.svg',
+  'games/bogstaver/ting/and.svg',
+  'games/bogstaver/ting/bold.svg',
+  'games/bogstaver/ting/cykel.svg',
+  'games/bogstaver/ting/drage.svg',
+  'games/bogstaver/ting/elefant.svg',
+  'games/bogstaver/ting/fisk.svg',
+  'games/bogstaver/ting/gris.svg',
+  'games/bogstaver/ting/hus.svg',
+  'games/bogstaver/ting/is.svg',
+  'games/bogstaver/ting/jordbaer.svg',
+  'games/bogstaver/ting/kat.svg',
+  'games/bogstaver/ting/loeve.svg',
+  'games/bogstaver/ting/maane.svg',
+  'games/bogstaver/ting/noegle.svg',
+  'games/bogstaver/ting/oeje.svg',
+  'games/bogstaver/ting/ost.svg',
+  'games/bogstaver/ting/paraply.svg',
+  'games/bogstaver/ting/regnbue.svg',
+  'games/bogstaver/ting/sol.svg',
+  'games/bogstaver/ting/trae.svg',
+  'games/bogstaver/ting/ur.svg',
+  'games/bogstaver/ting/vante.svg',
+  'games/bogstaver/ting/yoyo.svg'
 ];
 
 self.addEventListener('install', (e) => {

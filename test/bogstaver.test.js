@@ -136,6 +136,13 @@ function foelg(glyf, tolerance, afvig) {
   tjek('smaa bogstaver deler ting med de store', Glyffer.SMAA.filter(n => Ting.TING[n]).length === med.length);
   const ord = med.map(n => Ting.TING[n].ord);
   tjek('ingen to bogstaver har samme ord', new Set(ord).size === ord.length);
+  const fs = require('fs');
+  const manglerFil = med.filter(n => Ting.TING[n].fil && !fs.existsSync(path.join(ROD, '..', Ting.TING[n].fil)));
+  tjek('alle SVG-tegninger findes paa disken', manglerFil.length === 0, 'mangler: ' + manglerFil);
+  const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
+  const ikkeICache = med.filter(n => Ting.TING[n].fil && !sw.includes("'games/bogstaver/" + Ting.TING[n].fil + "'"));
+  tjek('alle SVG-tegninger er med i service workerens FILER', ikkeICache.length === 0, 'mangler: ' + ikkeICache);
+  tjek('licensen ligger ved siden af tegningerne', fs.existsSync(path.join(ROD, '..', 'ting', 'LICENSE')) && fs.existsSync(path.join(ROD, '..', 'ting', 'NOTICE.md')));
 }
 
 console.log(fejl ? '\n' + fejl + ' test(s) fejlede.' : '\nAlle tests bestaaet.');
