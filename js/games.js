@@ -14,12 +14,10 @@ window.SPIL = [
     tekst: 'Hold fingeren i siden for at styre. 1 eller 2 spillere.',
     sti: 'games/racer/',
     farve: '#ffd23f',
-    art: '<svg class="art" width="120" height="120" viewBox="0 0 60 60">' +
-         '<rect x="18" y="8" width="24" height="44" rx="9" fill="#e8442e" stroke="#12261f" stroke-width="3"/>' +
-         '<rect x="22" y="16" width="16" height="12" rx="4" fill="#f7f3e8" stroke="#12261f" stroke-width="3"/>' +
-         '<circle cx="18" cy="20" r="5" fill="#12261f"/><circle cx="42" cy="20" r="5" fill="#12261f"/>' +
-         '<circle cx="18" cy="44" r="5" fill="#12261f"/><circle cx="42" cy="44" r="5" fill="#12261f"/>' +
-         '</svg>'
+    art: '<div class="art">' +
+         '<img src="assets/kenney/bil_red_1.png" alt="" style="left:6px;top:4px;height:96px;transform:rotate(-14deg)">' +
+         '<img src="assets/kenney/bil_blue_2.png" alt="" style="left:52px;top:14px;height:96px;transform:rotate(10deg)">' +
+         '</div>'
   },
   {
     id: 'klatbold',
@@ -27,14 +25,15 @@ window.SPIL = [
     tekst: 'To klatter og én bold. Løb, hop og skyd. 1 eller 2 spillere.',
     sti: 'games/klatbold/',
     farve: '#7fd0f5',
-    art: '<svg class="art" width="120" height="120" viewBox="0 0 60 60">' +
-         '<path d="M6 44a14 14 0 0 1 28 0z" fill="#e8442e" stroke="#12261f" stroke-width="3"/>' +
-         '<circle cx="24" cy="36" r="3.5" fill="#fff" stroke="#12261f" stroke-width="2"/>' +
-         '<circle cx="25.5" cy="36.5" r="1.5" fill="#12261f"/>' +
-         '<circle cx="44" cy="24" r="8" fill="#fff" stroke="#12261f" stroke-width="3"/>' +
-         '<circle cx="44" cy="24" r="2" fill="#12261f"/>' +
-         '<rect x="4" y="44" width="52" height="6" rx="3" fill="#4cb944"/>' +
-         '</svg>'
+    art: '<div class="art">' +
+         '<img src="assets/kenney/klat_red.png" alt="" style="left:2px;top:22px;width:78px;clip-path:inset(0 0 50% 0)">' +
+         '<img src="assets/kenney/ansigt_a.png" alt="" style="left:14px;top:30px;width:54px">' +
+         '<svg viewBox="0 0 40 40" style="position:absolute;left:68px;top:4px;width:38px;height:38px">' +
+         '<circle cx="20" cy="20" r="17" fill="#fff" stroke="#12261f" stroke-width="3"/>' +
+         '<circle cx="20" cy="20" r="4" fill="#12261f"/><circle cx="20" cy="9" r="3" fill="#12261f"/><circle cx="30" cy="16" r="3" fill="#12261f"/>' +
+         '<circle cx="27" cy="29" r="3" fill="#12261f"/><circle cx="13" cy="29" r="3" fill="#12261f"/><circle cx="10" cy="16" r="3" fill="#12261f"/>' +
+         '</svg>' +
+         '</div>'
   },
   {
     id: 'bobler',
@@ -42,13 +41,14 @@ window.SPIL = [
     tekst: 'Skyd boblerne, så de deler sig. Hjælp hinanden. 1 eller 2 spillere.',
     farve: '#ffb38a',
     sti: 'games/bobler/',
-    art: '<svg class="art" width="120" height="120" viewBox="0 0 60 60">' +
-         '<circle cx="20" cy="18" r="13" fill="#3aa7e0" fill-opacity="0.85" stroke="#12261f" stroke-width="3"/>' +
-         '<circle cx="44" cy="30" r="8" fill="#ffd23f" stroke="#12261f" stroke-width="3"/>' +
-         '<circle cx="30" cy="46" r="9" fill="#e8442e" stroke="#12261f" stroke-width="3"/>' +
-         '<circle cx="27" cy="44" r="2" fill="#fff"/><circle cx="33" cy="44" r="2" fill="#fff"/>' +
-         '<path d="M30 37v-14" stroke="#12261f" stroke-width="3" stroke-linecap="round"/>' +
-         '</svg>'
+    art: '<div class="art">' +
+         '<svg viewBox="0 0 40 40" style="position:absolute;left:58px;top:0;width:50px;height:50px">' +
+         '<circle cx="20" cy="20" r="17" fill="#3aa7e0" fill-opacity=".85" stroke="#12261f" stroke-width="3"/>' +
+         '<ellipse cx="13" cy="12" rx="5" ry="3" fill="#fff" fill-opacity=".6" transform="rotate(-30 13 12)"/></svg>' +
+         '<svg viewBox="0 0 40 40" style="position:absolute;left:44px;top:44px;width:30px;height:30px">' +
+         '<circle cx="20" cy="20" r="17" fill="#4cb944" fill-opacity=".85" stroke="#12261f" stroke-width="3"/></svg>' +
+         '<img src="assets/kenney/dreng_idle.png" alt="" style="left:0;top:22px;height:84px">' +
+         '</div>'
   },
   {
     id: 'bogstaver',
@@ -56,10 +56,13 @@ window.SPIL = [
     tekst: 'Tegn bogstaver og tal med fingeren, eller find det rigtige i boblerne.',
     farve: '#c9ecfb',
     sti: 'games/bogstaver/',
-    art: '<svg class="art" width="120" height="120" viewBox="0 0 60 60">' +
-         '<path d="M12 46L28 12l16 34M19 34h18" fill="none" stroke="#ff8c42" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>' +
-         '<path d="M12 46L28 12l16 34M19 34h18" fill="none" stroke="#12261f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>' +
-         '<circle cx="12" cy="46" r="5" fill="#4cb944" stroke="#12261f" stroke-width="2"/>' +
-         '</svg>'
+    art: '<div class="art">' +
+         '<svg viewBox="0 0 100 100" style="position:absolute;left:4px;top:0;width:100px;height:100px">' +
+         '<path d="M20 90L50 10l30 80M32 62h36" fill="none" stroke="#8a8f97" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>' +
+         '<path d="M20 90L50 10l30 80M32 62h36" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 5"/>' +
+         '<path d="M20 90L50 10" fill="none" stroke="#ff8c42" stroke-width="15" stroke-linecap="round"/></svg>' +
+         '<img src="assets/kenney/bil_lille.png" alt="" style="left:36px;top:2px;height:44px;transform:rotate(20deg)">' +
+         '<img src="games/bogstaver/ting/aeble.svg" alt="" style="left:64px;top:56px;width:44px">' +
+         '</div>'
   }
 ];

@@ -60,7 +60,7 @@ h1{
   flex-direction:column;
   justify-content:flex-end;
   gap:6px;
-  min-height:214px;
+  min-height:230px;
   padding:18px;
   border:var(--kant) solid var(--skov-dyb);
   border-radius:26px;
@@ -77,13 +77,14 @@ h1{
 .card:focus-visible{outline:5px solid var(--kridt);outline-offset:4px}
 
 .card .art{
-  /* Oppe i hoejre hjoerne, saa den ikke ligger oven i titlen og teksten nederst */
+  /* Oppe i hoejre hjoerne, saa den ikke ligger oven i titlen og teksten nederst.
+     Et felt med lag af sprites (img og svg), hver placeret med left/top. */
   position:absolute;
-  inset:10px 10px auto auto;
-  width:92px;height:92px;
-  opacity:.9;
+  inset:12px 12px auto auto;
+  width:112px;height:108px;
   pointer-events:none;
 }
+.card .art img,.card .art svg{position:absolute;display:block;filter:drop-shadow(2px 3px 0 rgba(18,38,31,.25))}
 
 .card h2{margin:0;font-size:27px;font-weight:800}
 .card p{margin:0;font-size:16px;font-weight:600;opacity:.78}
