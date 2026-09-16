@@ -473,7 +473,7 @@
     [0, 1].forEach(function (side) {
       var u = udseende[side];
       for (var i = 0; i < INDSTIL.maal; i++) {
-        var x = side === 0 ? sx(30) + i * 30 * s : sx(INDSTIL.bredde - 30) - i * 30 * s;
+        var x = side === 0 ? Math.max(sx(30), 74) + i * 30 * s : sx(INDSTIL.bredde - 30) - i * 30 * s;
         ctx.beginPath();
         ctx.arc(x, y, 10 * s, 0, Math.PI * 2);
         ctx.fillStyle = i < kamp.maal[side] ? u.farve.lak : 'rgba(255,255,255,0.5)';
@@ -674,7 +674,6 @@
       '<button class="knap gul" data-handling="start" data-spillere="1">1 spiller</button>' +
       '<button class="knap gul" data-handling="start" data-spillere="2">2 spillere</button>' +
       '<div class="raekke bund">' +
-      '<a class="knap lille" href="../../">Tilbage</a>' +
       '<button class="knap lille ikon" data-handling="lyd" aria-label="Lyd til eller fra">' + lydIkon(lydTil) + '</button>' +
       '</div>' +
       '</div>'

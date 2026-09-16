@@ -43,8 +43,7 @@
   .kort h2{margin:0;font-size:34px;font-weight:800}
   .hjaelp{margin:0 0 4px;font-size:16px;font-weight:600;opacity:.72}
   .raekke{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
-  .raekke.bund{justify-content:space-between;margin:6px 0 0}
-  .raekke.bund .knap.lille{flex:1 1 auto}
+  .raekke.bund{justify-content:center;margin:6px 0 0}
 
   .knap{
     font:inherit;font-weight:800;font-size:22px;
@@ -100,11 +99,12 @@
   @media (prefers-reduced-motion:reduce){.knap{transition:none}}
 </style>
 </head>
-<body>
+<body data-portraet="ok">
 
 <canvas id="spil"></canvas>
 <div id="overlay" hidden></div>
 
+<script src="../../js/skal.js"></script>
 <script src="../../js/sprites.js"></script>
 <script src="js/glyffer.js"></script>
 <script src="js/spor.js"></script>

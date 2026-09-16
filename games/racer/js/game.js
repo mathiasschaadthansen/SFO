@@ -509,7 +509,8 @@
 
     // Omgangstæller — cirkler i stedet for tal, saa 6-aarige kan aflaese den
     ctx.save();
-    ctx.translate(x + 18, y + 22);
+    // Til hoejre for hjem-knappen i det foerste udsnit
+    ctx.translate(x + (x === 0 ? 74 : 18), y + 32);
     for (var i = 0; i < INDSTIL.omgange; i++) {
       ctx.beginPath();
       ctx.arc(i * 26, 0, 9, 0, Math.PI * 2);
@@ -791,7 +792,6 @@
       '<button class="knap gul" data-handling="start" data-spillere="1">1 spiller</button>' +
       '<button class="knap gul" data-handling="start" data-spillere="2">2 spillere</button>' +
       '<div class="raekke bund">' +
-      '<a class="knap lille" href="../../">Tilbage</a>' +
       '<button class="knap lille ikon" data-handling="lyd" aria-label="Lyd til eller fra">' + lydIkon(lydTil) + '</button>' +
       '</div>' +
       '</div>'

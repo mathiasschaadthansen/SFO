@@ -37,6 +37,8 @@
     text-align:center;
   }
   .kort h2{margin:0;font-size:34px;font-weight:800}
+  /* Lave skaerme (iPhone paa siden): kortet ruller i stedet for at gaa ud over kanten */
+  .kort{max-height:calc(100vh - 24px);overflow:auto}
   .hjaelp{margin:0 0 4px;font-size:16px;font-weight:600;opacity:.72}
 
   .raekke{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
@@ -59,8 +61,7 @@
   .knap.stor{font-size:28px;padding:18px 24px}
   .knap.ikon{display:flex;align-items:center;justify-content:center;padding:10px 14px}
   .knap.ikon svg{display:block}
-  .raekke.bund{justify-content:space-between;margin:6px 0 0}
-  .raekke.bund .knap.lille{flex:1 1 auto}
+  .raekke.bund{justify-content:center;margin:6px 0 0}
 
   /* Vaelg din bil */
   .kort.bred{width:min(780px,100%)}
@@ -94,6 +95,7 @@
 <canvas id="spil"></canvas>
 <div id="overlay" hidden></div>
 
+<script src="../../js/skal.js"></script>
 <script src="../../js/sprites.js"></script>
 <script src="tracks/index.js"></script>
 <script src="js/track.js"></script>

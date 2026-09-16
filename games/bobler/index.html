@@ -38,10 +38,11 @@
   }
   .kort.bred{width:min(780px,100%)}
   .kort h2{margin:0;font-size:34px;font-weight:800}
+  /* Lave skaerme (iPhone paa siden): kortet ruller i stedet for at gaa ud over kanten */
+  .kort{max-height:calc(100vh - 24px);overflow:auto}
   .hjaelp{margin:0 0 4px;font-size:16px;font-weight:600;opacity:.72}
   .raekke{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
-  .raekke.bund{justify-content:space-between;margin:6px 0 0}
-  .raekke.bund .knap.lille{flex:1 1 auto}
+  .raekke.bund{justify-content:center;margin:6px 0 0}
 
   .knap{
     font:inherit;font-weight:800;font-size:22px;
@@ -90,6 +91,7 @@
 <canvas id="spil"></canvas>
 <div id="overlay" hidden></div>
 
+<script src="../../js/skal.js"></script>
 <script src="../../js/sprites.js"></script>
 <script src="js/physics.js"></script>
 <script src="js/input.js"></script>

@@ -785,7 +785,6 @@
       '<button class="knap gul" data-handling="start" data-spillere="1">1 spiller</button>' +
       '<button class="knap gul" data-handling="start" data-spillere="2">2 spillere</button>' +
       '<div class="raekke bund">' +
-      '<a class="knap lille" href="../../">Tilbage</a>' +
       '<button class="knap lille ikon" data-handling="lyd" aria-label="Lyd til eller fra">' + lydIkon(lydTil) + '</button>' +
       '</div>' +
       '</div>'

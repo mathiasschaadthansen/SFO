@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v19';
+const VERSION = 'sfo-spil-v20';
 
 const FILER = [
   './',
@@ -15,6 +15,7 @@ const FILER = [
   'js/games.js',
   'js/shell.js',
   'js/sprites.js',
+  'js/skal.js',
   'icons/icon-192.png',
   'icons/icon-512.png',
   'games/racer/',

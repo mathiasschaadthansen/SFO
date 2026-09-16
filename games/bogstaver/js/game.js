@@ -157,7 +157,8 @@
     lærred.style.height = window.innerHeight + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var B = window.innerWidth, H = window.innerHeight;
-    kasse.str = Math.min(B * 0.55, H * 0.74);
+    // Landskab: tegnet fylder hoejden. Portraet (iPhone): tegnet fylder bredden.
+    kasse.str = H > B ? Math.min(B * 0.86, H * 0.5) : Math.min(B * 0.55, H * 0.74);
     kasse.x = (B - kasse.str) / 2;
     kasse.y = (H - kasse.str) / 2 + H * 0.03;
   }
@@ -399,9 +400,10 @@
     var andre = bland(navneI(kategori).filter(function (n) { return n !== navn && Ting.TING[n]; })).slice(0, 2);
     var navne = bland([navn].concat(andre));
     var B = window.innerWidth, H = window.innerHeight;
-    var str = Math.min(B * 0.22, H * 0.34);
+    var str = Math.min(B * 0.3, H * 0.34, 260);
+    var gab = Math.min(34, B * 0.03);
     kort = navne.map(function (n, i) {
-      return { navn: n, ting: Ting.vaelg(n), x: B / 2 + (i - 1) * (str + 34), y: H * 0.6, str: str, vip: 0, vist: 0, rigtig: n === navn };
+      return { navn: n, ting: Ting.vaelg(n), x: B / 2 + (i - 1) * (str + gab), y: H * 0.6, str: str, vip: 0, vist: 0, rigtig: n === navn };
     });
     setTimeout(function () { if (tilstand === 'vaelg') sig('Hvad starter med ' + G[navn].tegn + '?'); }, 300);
   }
@@ -686,11 +688,15 @@
     var B = window.innerWidth;
     var y = 28;
     var vis = Math.min(antal, 12);
+    // Paa en smal skaerm (iPhone i portraet) skal prikkerne holde sig fri af
+    // hjem-knappen til venstre og stjernerne til hoejre.
+    var afstand = Math.min(26, (B - 230) / vis);
+    var r = Math.min(8, afstand * 0.4);
     for (var i = 0; i < vis; i++) {
-      var x = B / 2 + (i - (vis - 1) / 2) * 26;
+      var x = B / 2 + (i - (vis - 1) / 2) * afstand;
       var fyldt = antal <= 12 ? i < gjort : i < Math.round(gjort / antal * vis);
       ctx.beginPath();
-      ctx.arc(x, y, 8, 0, Math.PI * 2);
+      ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fillStyle = fyldt ? '#ffd23f' : 'rgba(255,255,255,0.35)';
       ctx.fill();
       ctx.lineWidth = 3;
@@ -923,21 +929,6 @@
     });
   }
 
-  /** Lille husknap oeverst til venstre, saa man kan komme tilbage til menuen. */
-  function tegnHus() {
-    ctx.save();
-    ctx.translate(30, 30);
-    ctx.globalAlpha = 0.75;
-    ctx.fillStyle = '#f7f3e8';
-    ctx.strokeStyle = '#12261f';
-    ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#12261f';
-    ctx.beginPath(); ctx.moveTo(-11, 1); ctx.lineTo(0, -10); ctx.lineTo(11, 1); ctx.closePath(); ctx.fill();
-    ctx.fillRect(-8, 1, 16, 9);
-    ctx.restore();
-  }
-
   /** Tre smaa stjerner oeverst til hoejre, der fyldes naar spillet skruer op. */
   function tegnTrin(fyldt) {
     var B = window.innerWidth;
@@ -966,19 +957,16 @@
       tegnPartikler();
       tegnFremskridt(liste.length, tegnet);
       tegnTrin(Math.max(0, Math.min(3, Math.ceil(flow * 3 / 4))));
-      tegnHus();
     } else if (tilstand === 'vaelg') {
       tegnVaelgSkaerm();
       tegnPartikler();
       tegnFremskridt(liste.length, tegnet);
       tegnTrin(Math.max(0, Math.min(3, Math.ceil(flow * 3 / 4))));
-      tegnHus();
     } else if (tilstand === 'find') {
       tegnFindSkaerm();
       tegnPartikler();
       tegnFremskridt(FIND_ANTAL, fundet);
       tegnTrin((raekke >= 3 ? 1 : 0) + (raekke >= 6 ? 1 : 0) + (raekke >= 9 ? 1 : 0));
-      tegnHus();
     } else {
       tegnPartikler();
     }
@@ -1107,7 +1095,6 @@
       '<button class="knap gul" data-handling="find">' + luppIkon() + 'Find</button>' +
       '</div>' +
       '<div class="raekke bund">' +
-      '<a class="knap lille" href="../../">Tilbage</a>' +
       '<button class="knap lille ikon" data-handling="lyd" aria-label="Lyd til eller fra">' + lydIkon(lydTil) + '</button>' +
       '</div>' +
       '</div>'
@@ -1198,13 +1185,6 @@
 
   lærred.addEventListener('pointerdown', function (e) {
     e.preventDefault();
-    // Husknappen oeverst til venstre
-    var r = lærred.getBoundingClientRect();
-    if (Math.hypot(e.clientX - r.left - 30, e.clientY - r.top - 30) < 24 && (tilstand === 'tegn' || tilstand === 'find' || tilstand === 'vaelg')) {
-      window.speechSynthesis && window.speechSynthesis.cancel();
-      visMenu();
-      return;
-    }
     if (tilstand === 'tegn') tegnNed(e);
     else if (tilstand === 'vaelg') vaelgTryk(e);
     else if (tilstand === 'find') findTryk(e);

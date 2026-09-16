@@ -44,6 +44,10 @@ tjek('licens og NOTICE ligger ved siden af sprites',
 const total = iMappen.reduce((a, n) => a + fs.statSync(path.join(ROD, 'assets', 'kenney', n)).size, 0);
 tjek('sprites fylder under 300 KB i alt', total < 300 * 1024, Math.round(total / 1024) + ' KB');
 tjek('sprites.js er med i service workerens FILER', sw.includes("'js/sprites.js'"));
+tjek('skal.js er med i service workerens FILER', sw.includes("'js/skal.js'"));
+const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
+tjek('alle spilsider har skallen med hjem-knappen', spilSider.every(h => h.includes('js/skal.js')));
+tjek('alle spilsider lader menukortet rulle paa lave skaerme', spilSider.every(h => h.includes('.kort{max-height')));
 
 console.log(fejl ? '\n' + fejl + ' test(s) fejlede.' : '\nAlle tests bestaaet.');
 process.exit(fejl ? 1 : 0);
