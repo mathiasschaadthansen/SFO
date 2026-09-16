@@ -65,6 +65,8 @@ games/bogstaver/
   js/ting.js            en ting pr. bogstav til "hvad starter med"
   ting/*.svg            tingenes tegninger, Noto Emoji (Apache 2.0, se ting/NOTICE.md)
   js/game.js            tegn- og find-legen, minispillet, menu, stemme
+  lyd/*.mp3             bogstavnavne, tal, ord og spørgsmål som klip (se lyd/NOTICE.md)
+vaerktoej/lav-lyd.py    laver lydklippene med Piper, offline talesyntese
 
 test/bobler.test.js     en robot spiller alle tolv baner igennem
 test/bogstaver.test.js  alle 39 tegn kan tegnes af en finger langs stregen

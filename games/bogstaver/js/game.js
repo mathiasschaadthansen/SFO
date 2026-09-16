@@ -135,6 +135,60 @@
     window.speechSynthesis.onvoiceschanged = findStemme;
   }
 
+  /**
+   * Lydklip: bogstavnavne, tal, ord og spoergsmaal ligger som smaa MP3-filer i
+   * lyd/ (lavet med vaerktoej/lav-lyd.py, kan erstattes af rigtige optagelser).
+   * De afspilles gennem den samme AudioContext som tonerne, saa iOS tillader
+   * dem efter det foerste tryk. Mangler et klip, bruges talesyntesen.
+   */
+  var buffere = {};
+  var aktivtKlip = null;
+  var afspillet = 0;
+
+  function hentKlip(fil) {
+    if (!buffere[fil]) {
+      buffere[fil] = fetch('lyd/' + fil)
+        .then(function (r) { if (!r.ok) throw new Error(fil); return r.arrayBuffer(); })
+        .then(function (ab) {
+          return new Promise(function (ok, nej) { lydKontekst().decodeAudioData(ab, ok, nej); });
+        });
+    }
+    return buffere[fil];
+  }
+
+  function afspil(fil, reserveTekst) {
+    if (!lydTil) return;
+    hentKlip(fil).then(function (buf) {
+      var k = lydKontekst();
+      if (aktivtKlip) { try { aktivtKlip.stop(); } catch (e) { /* allerede stoppet */ } }
+      var kilde = k.createBufferSource();
+      kilde.buffer = buf;
+      kilde.connect(k.destination);
+      kilde.start();
+      aktivtKlip = kilde;
+      afspillet++;
+    }).catch(function () { sig(reserveTekst); });
+  }
+
+  function stopKlip() {
+    if (aktivtKlip) { try { aktivtKlip.stop(); } catch (e) { /* ignorer */ } aktivtKlip = null; }
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* ignorer */ }
+  }
+
+  /** Siger navnet paa et tegn: glyf-navn som 'A', 'ae', '7'. */
+  function sigNavn(navn) {
+    var n = String(navn);
+    if (/^\d$/.test(n)) afspil('tal_' + n + '.mp3', n);
+    else afspil('bogstav_' + n.toUpperCase() + '.mp3', G[n] ? G[n].tegn : n);
+  }
+  function sigSpoerg(navn) {
+    afspil('spoerg_' + String(navn).toUpperCase() + '.mp3', 'Hvad starter med ' + G[navn].tegn + '?');
+  }
+  function ordFil(t) {
+    return t.fil ? t.fil.replace('ting/', '').replace('.svg', '') : ({ 'xylofon': 'xylofon', 'ål': 'aal' })[t.ord];
+  }
+  function sigOrd(t) { afspil('ord_' + ordFil(t) + '.mp3', t.ord); }
+
   function sig(tekst) {
     if (!lydTil || !stemme) return;
     try {
@@ -275,7 +329,7 @@
     sidsteNode = -1;
     koerer = 0;
     fingerId = null;
-    sig(G[liste[plads]].tegn);
+    sigNavn(liste[plads]);
   }
 
   /** Hvor koeretoejet staar lige nu: naeste punkt paa stregen og stregens retning der. */
@@ -347,7 +401,7 @@
     else if (spor.afveje >= 4) flow = Math.max(-1, flow - 1);
     melodi([660, 880, 1100, 1320], 90);
     fest(kasse.x + kasse.str / 2, kasse.y + kasse.str / 2);
-    setTimeout(function () { sig(G[liste[plads]].tegn); }, 350);
+    setTimeout(function () { sigNavn(liste[plads]); }, 350);
     if (tegnet % 5 === 0) setTimeout(fyrvaerkeri, 600);
 
     // Tal: aeblerne dukker op ét ad gangen, og stemmen taeller med
@@ -361,7 +415,7 @@
             if (tilstand !== 'tegn') return;
             aebler = k;
             tone(440 + k * 60, 0.15, 0.12);
-            sig(String(k));
+            sigNavn(String(k));
           }, 1000 + k * 450);
         })(i);
       }
@@ -405,7 +459,7 @@
     kort = navne.map(function (n, i) {
       return { navn: n, ting: Ting.vaelg(n), x: B / 2 + (i - 1) * (str + gab), y: H * 0.6, str: str, vip: 0, vist: 0, rigtig: n === navn };
     });
-    setTimeout(function () { if (tilstand === 'vaelg') sig('Hvad starter med ' + G[navn].tegn + '?'); }, 300);
+    setTimeout(function () { if (tilstand === 'vaelg') sigSpoerg(navn); }, 300);
   }
 
   function opdaterVaelg(dt) {
@@ -420,7 +474,7 @@
     for (var i = 0; i < kort.length; i++) {
       var k = kort[i];
       if (Math.abs(x - k.x) < k.str / 2 && Math.abs(y - k.y) < k.str / 2) {
-        sig(k.ting.ord);
+        sigOrd(k.ting);
         if (k.rigtig) {
           vaelgLoest = true;
           k.vist = 99;
@@ -789,7 +843,7 @@
       };
     });
     findPause = 0.4;
-    sig(G[maal].tegn);
+    sigNavn(maal);
   }
 
   function opdaterFind(dt) {
@@ -812,7 +866,7 @@
     var x = e.clientX - r.left, y = e.clientY - r.top;
     // Tryk paa skyen: hoer maalet igen
     var B = window.innerWidth, ms = Math.min(B, window.innerHeight) * 0.16;
-    if (Math.abs(x - B / 2) < ms * 0.8 && y > 50 && y < 50 + ms * 1.25) { sig(G[maal].tegn); return; }
+    if (Math.abs(x - B / 2) < ms * 0.8 && y > 50 && y < 50 + ms * 1.25) { sigNavn(maal); return; }
     for (var i = 0; i < bobler.length; i++) {
       var b = bobler[i];
       if (Math.hypot(x - b.x, y - b.y) <= b.r * 1.15) {
@@ -823,7 +877,7 @@
           melodi([660, 880, 1100], 80);
           fest(b.x, b.y);
           puf(b.x, b.y, b.farve, 24, 420, 6, 0.7);
-          setTimeout(function () { sig(G[maal].tegn); }, 300);
+          setTimeout(function () { sigNavn(maal); }, 300);
           bobler.splice(i, 1);
           findPause = 1.3;
           if (fundet >= FIND_ANTAL) setTimeout(function () { afslut('find'); }, 900);
@@ -860,7 +914,7 @@
       } else {
         tegnMaengde(ctx, n, B / 2, 50 + ms * 0.62, ms * 0.34);
       }
-    } else if ((svaerhed === 2 || trin === 2) && stemme) {
+    } else if ((svaerhed === 2 || trin === 2) && lydTil) {
       // Lyt og find: skyen siger bogstavet i stedet for at vise det. Tryk for at hoere igen.
       ctx.save();
       ctx.translate(B / 2, 50 + ms * 0.62);
@@ -1073,6 +1127,7 @@
   function visMenu() {
     tilstand = 'venter';
     vinderCanvas = null;
+    stopKlip();
     var stjerneKnapper = [0, 1, 2].map(function (n) {
       return '<button class="knap smal ikon' + (n === svaerhed ? ' valgt' : '') +
              '" data-handling="svaerhed" data-n="' + n + '" aria-label="' + (n + 1) + ' stjerner">' + stjerner(n + 1) + '</button>';
@@ -1199,7 +1254,7 @@
 
   window.__debug = function () {
     return {
-      tilstand: tilstand, kategori: kategori, svaerhed: svaerhed, lyd: lydTil, stemme: stemme ? stemme.name : null, koeretoej: koeretoej,
+      tilstand: tilstand, kategori: kategori, svaerhed: svaerhed, lyd: lydTil, stemme: stemme ? stemme.name : null, koeretoej: koeretoej, afspillet: afspillet,
       tegn: tilstand === 'tegn' ? { navn: liste[plads], plads: plads, andel: +spor.andel().toFixed(2), aktiv: spor.aktiv, holder: spor.holder, jubel: +jubel.toFixed(2) } : null,
       find: tilstand === 'find' ? { maal: maal, fundet: fundet, bobler: bobler.map(function (b) { return { navn: b.navn, x: Math.round(b.x), y: Math.round(b.y), r: Math.round(b.r) }; }) } : null,
       aebler: aebler, flow: flow, raekke: raekke, tolerance: +tolerance().toFixed(1),

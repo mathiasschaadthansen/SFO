@@ -14,9 +14,12 @@ sværhedsgrader, så ingen bane kan blive umulig. Bogstav-testen tjekker, at all
 68 tegn kan tegnes færdige af en finger, der følger stregen, også en skæv og en
 hurtig finger.
 
-**Stemme.** Bogstaver bruger iPad'ens indbyggede talesyntese til at sige
-bogstavernes navne. Kun stemmer med `localService` bruges, så der aldrig går
-noget over nettet. Findes der ingen lokal dansk stemme, er spillet stille.
+**Stemme.** Bogstaver siger bogstavnavne, tal, ord og spørgsmål fra små
+MP3-klip i `games/bogstaver/lyd/`, lavet én gang med `vaerktoej/lav-lyd.py`
+(Piper, offline talesyntese) og lagt i repoet. Klippene kan erstattes af
+rigtige optagelser med samme filnavne. Mangler et klip, bruges enhedens egen
+talesyntese, kun stemmer med `localService`, så der aldrig går noget over
+nettet.
 
 ## Rammer der ikke skal brydes
 

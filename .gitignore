@@ -1,3 +1,8 @@
 node_modules/
 .DS_Store
 *.log
+
+# Stemmemodel og raa lyd til vaerktoej/lav-lyd.py ligger ikke i repoet
+*.onnx
+*.onnx.json
+*.wav
