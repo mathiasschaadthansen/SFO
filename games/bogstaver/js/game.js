@@ -49,7 +49,7 @@
   var ctx = lærred.getContext('2d');
   var overlay = document.getElementById('overlay');
 
-  var tilstand = 'venter';           // venter | tegn | find | faerdig
+  var tilstand = 'venter';           // venter | tegn | vaelg | find | faerdig
   var sidsteTid = 0;
   var tid = 0;
   var lyd = null;
@@ -68,6 +68,12 @@
   var tegnet = 0;                    // hvor mange tegn der er tegnet i denne omgang
   var sidsteNode = -1;               // sidste tone der blev spillet langs stregen
   var koerer = 0;                    // sekunder siden fingeren sidst flyttede koeretoejet (til flammer og stoev)
+
+  // VAELG: hvad starter med bogstavet?
+  var kort = [];                     // tre ting: { navn, x, y, str, vip, vist, rigtig }
+  var vaelgNavn = null;              // bogstavet der lige er tegnet
+  var vaelgPause = 0;
+  var vaelgLoest = false;
 
   // FIND
   var bobler = [];
@@ -356,11 +362,102 @@
     if (jubel > 0) {
       jubel -= dt;
       if (jubel <= 0) {
-        plads++;
-        if (plads >= liste.length) afslut('tegn');
-        else nytTegn();
+        if (kategori !== 'tal' && Ting.TING[liste[plads]]) startVaelg(liste[plads]);
+        else naesteTegn();
       }
     }
+  }
+
+  function naesteTegn() {
+    plads++;
+    if (plads >= liste.length) afslut('tegn');
+    else { tilstand = 'tegn'; nytTegn(); }
+  }
+
+  /* ---------- VAELG: hvad starter med bogstavet? ---------- */
+
+  function tingNavn(ch) { return ({ 'æ': 'ae', 'ø': 'oe', 'å': 'aa' }[ch] || ch); }
+
+  function startVaelg(navn) {
+    tilstand = 'vaelg';
+    vaelgNavn = navn;
+    vaelgLoest = false;
+    vaelgPause = 0.6;
+    var andre = bland(navneI(kategori).filter(function (n) { return n !== navn && Ting.TING[n]; })).slice(0, 2);
+    var navne = bland([navn].concat(andre));
+    var B = window.innerWidth, H = window.innerHeight;
+    var str = Math.min(B * 0.22, H * 0.34);
+    kort = navne.map(function (n, i) {
+      return { navn: n, x: B / 2 + (i - 1) * (str + 34), y: H * 0.6, str: str, vip: 0, vist: 0, rigtig: n === navn };
+    });
+    setTimeout(function () { if (tilstand === 'vaelg') sig('Hvad starter med ' + G[navn].tegn + '?'); }, 300);
+  }
+
+  function opdaterVaelg(dt) {
+    vaelgPause = Math.max(0, vaelgPause - dt);
+    kort.forEach(function (k) { k.vip = Math.max(0, k.vip - dt); k.vist = Math.max(0, k.vist - dt); });
+  }
+
+  function vaelgTryk(e) {
+    if (tilstand !== 'vaelg' || vaelgPause > 0 || vaelgLoest) return;
+    var r = lærred.getBoundingClientRect();
+    var x = e.clientX - r.left, y = e.clientY - r.top;
+    for (var i = 0; i < kort.length; i++) {
+      var k = kort[i];
+      if (Math.abs(x - k.x) < k.str / 2 && Math.abs(y - k.y) < k.str / 2) {
+        sig(Ting.TING[k.navn].ord);
+        if (k.rigtig) {
+          vaelgLoest = true;
+          k.vist = 99;
+          melodi([660, 880, 1100, 1320], 90);
+          fest(k.x, k.y);
+          setTimeout(naesteTegn, 2600);
+        } else {
+          k.vip = 0.7;
+          k.vist = 1.6;      // ordet vises kort, saa man kan se det starter med noget andet
+          melodi([880, 1046], 70);
+        }
+        return;
+      }
+    }
+  }
+
+  /** Et ord skrevet med spillets egne streger, centreret om (cx, cy). Store eller smaa efter kategori. */
+  function tegnOrd(ord, cx, cy, hoejde) {
+    var bogstaver = ord.split('').map(function (ch) { return kategori === 'smaa' ? tingNavn(ch) : tingNavn(ch).toUpperCase(); });
+    var b = hoejde * 0.72;
+    var x0 = cx - bogstaver.length * b / 2;
+    bogstaver.forEach(function (n, i) {
+      if (G[n]) tegnGlyf(ctx, G[n], x0 + i * b, cy - hoejde / 2, hoejde, '#12261f', 9);
+    });
+  }
+
+  function tegnVaelgSkaerm() {
+    var B = window.innerWidth, H = window.innerHeight;
+    // Bogstavet i en sky oeverst, som i Find
+    var ms = Math.min(B, H) * 0.14;
+    ctx.fillStyle = '#f7f3e8'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.roundRect(B / 2 - ms * 0.75, 44, ms * 1.5, ms * 1.2, 24); ctx.fill(); ctx.stroke();
+    tegnGlyf(ctx, G[vaelgNavn], B / 2 - ms / 2, 50 + ms * 0.1, ms, STREGFARVE, 12);
+
+    kort.forEach(function (k) {
+      var t = Ting.TING[k.navn];
+      ctx.save();
+      ctx.translate(k.x, k.y);
+      if (k.vip > 0) ctx.rotate(Math.sin(k.vip * 40) * 0.12);
+      if (vaelgLoest && k.rigtig) ctx.scale(1 + Math.sin(tid * 8) * 0.04, 1 + Math.sin(tid * 8) * 0.04);
+      ctx.fillStyle = vaelgLoest && k.rigtig ? '#ffd23f' : '#f7f3e8';
+      ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.roundRect(-k.str / 2, -k.str / 2, k.str, k.str, 24); ctx.fill(); ctx.stroke();
+      ctx.save();
+      ctx.translate(0, k.vist > 0 ? -k.str * 0.1 : 0);
+      ctx.scale(k.str / 130, k.str / 130);
+      ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      t.tegn(ctx);
+      ctx.restore();
+      if (k.vist > 0) tegnOrd(t.ord, 0, k.str * 0.36, k.str * 0.17);
+      ctx.restore();
+    });
   }
 
   /** Koeretoejet, tegnet omkring (0,0) med fronten mod +x, i kasse-enheder. */
@@ -830,6 +927,12 @@
       tegnFremskridt(liste.length, tegnet);
       tegnTrin(Math.max(0, Math.min(3, Math.ceil(flow * 3 / 4))));
       tegnHus();
+    } else if (tilstand === 'vaelg') {
+      tegnVaelgSkaerm();
+      tegnPartikler();
+      tegnFremskridt(liste.length, tegnet);
+      tegnTrin(Math.max(0, Math.min(3, Math.ceil(flow * 3 / 4))));
+      tegnHus();
     } else if (tilstand === 'find') {
       tegnFindSkaerm();
       tegnPartikler();
@@ -893,6 +996,7 @@
     sidsteTid = t;
     tid += dt;
     if (tilstand === 'tegn') opdaterTegn(dt);
+    else if (tilstand === 'vaelg') opdaterVaelg(dt);
     else if (tilstand === 'find') opdaterFind(dt);
     else if (tilstand === 'faerdig') tegnVinder(dt);
     opdaterPartikler(dt);
@@ -1056,12 +1160,13 @@
     e.preventDefault();
     // Husknappen oeverst til venstre
     var r = lærred.getBoundingClientRect();
-    if (Math.hypot(e.clientX - r.left - 30, e.clientY - r.top - 30) < 24 && (tilstand === 'tegn' || tilstand === 'find')) {
+    if (Math.hypot(e.clientX - r.left - 30, e.clientY - r.top - 30) < 24 && (tilstand === 'tegn' || tilstand === 'find' || tilstand === 'vaelg')) {
       window.speechSynthesis && window.speechSynthesis.cancel();
       visMenu();
       return;
     }
     if (tilstand === 'tegn') tegnNed(e);
+    else if (tilstand === 'vaelg') vaelgTryk(e);
     else if (tilstand === 'find') findTryk(e);
   }, { passive: false });
   lærred.addEventListener('pointermove', function (e) { if (tilstand === 'tegn') tegnFlyt(e); }, { passive: false });
@@ -1078,6 +1183,7 @@
       tegn: tilstand === 'tegn' ? { navn: liste[plads], plads: plads, andel: +spor.andel().toFixed(2), aktiv: spor.aktiv, holder: spor.holder, jubel: +jubel.toFixed(2) } : null,
       find: tilstand === 'find' ? { maal: maal, fundet: fundet, bobler: bobler.map(function (b) { return { navn: b.navn, x: Math.round(b.x), y: Math.round(b.y), r: Math.round(b.r) }; }) } : null,
       aebler: aebler, flow: flow, raekke: raekke, tolerance: +tolerance().toFixed(1),
+      vaelg: tilstand === 'vaelg' ? { navn: vaelgNavn, loest: vaelgLoest, kort: kort.map(function (k) { return { navn: k.navn, x: Math.round(k.x), y: Math.round(k.y), rigtig: k.rigtig }; }) } : null,
       kasse: kasse
     };
   };

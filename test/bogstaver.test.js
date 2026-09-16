@@ -7,6 +7,7 @@ const path = require('path');
 const ROD = path.join(__dirname, '..', 'games', 'bogstaver', 'js');
 const { Glyffer } = require(path.join(ROD, 'glyffer.js'));
 const { Spor } = require(path.join(ROD, 'spor.js'));
+const { Ting } = require(path.join(ROD, 'ting.js'));
 
 let fejl = 0;
 function tjek(navn, betingelse, detalje) {
@@ -119,6 +120,22 @@ function foelg(glyf, tolerance, afvig) {
   const spor = new Spor(Glyffer.GLYFFER.I, 8);
   spor.start(50, 10); spor.flyt(50, 90);
   tjek('et hop til slutpunktet taeller ikke som at tegne stregen', spor.faerdig === false && spor.andel() < 0.5, 'andel=' + spor.andel().toFixed(2));
+}
+
+/* Ting til minispillet: ordet starter med bogstavet, og alle dets bogstaver kan tegnes */
+{
+  const tilNavn = ch => ({ 'æ': 'ae', 'ø': 'oe', 'å': 'aa' }[ch] || ch);
+  const med = Glyffer.BOGSTAVER.filter(n => Ting.TING[n]);
+  const forkertStart = med.filter(n => tilNavn(Ting.TING[n].ord[0]) !== n.toLowerCase());
+  const manglerGlyf = med.filter(n => Ting.TING[n].ord.split('').some(ch => !Glyffer.GLYFFER[tilNavn(ch)]));
+  const udenTegning = med.filter(n => typeof Ting.TING[n].tegn !== 'function');
+  tjek('mindst 25 bogstaver har en ting', med.length >= 25, med.length + ' har');
+  tjek('hver ting starter med sit bogstav', forkertStart.length === 0, 'forkert: ' + forkertStart);
+  tjek('alle bogstaver i ordene kan tegnes', manglerGlyf.length === 0, 'mangler: ' + manglerGlyf);
+  tjek('hver ting har en tegning i kode', udenTegning.length === 0, 'uden: ' + udenTegning);
+  tjek('smaa bogstaver deler ting med de store', Glyffer.SMAA.filter(n => Ting.TING[n]).length === med.length);
+  const ord = med.map(n => Ting.TING[n].ord);
+  tjek('ingen to bogstaver har samme ord', new Set(ord).size === ord.length);
 }
 
 console.log(fejl ? '\n' + fejl + ' test(s) fejlede.' : '\nAlle tests bestaaet.');

@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v15';
+const VERSION = 'sfo-spil-v16';
 
 const FILER = [
   './',
@@ -40,6 +40,7 @@ const FILER = [
   'games/bogstaver/index.html',
   'games/bogstaver/js/glyffer.js',
   'games/bogstaver/js/spor.js',
+  'games/bogstaver/js/ting.js',
   'games/bogstaver/js/game.js'
 ];
 
