@@ -121,6 +121,17 @@
     var zoner = [];
     var knapper = ['venstre', 'hop', 'hoejre'];
     var spillere = antalSpillere === 1 ? 1 : 2;
+    // Telefon med én spiller: den holdes i begge haender, og tommelfingrene
+    // sidder i hjoernerne. Venstre og hoejre samles under venstre tommel,
+    // og hop er hele hoejre side. iPad beholder de tre lige store felter.
+    if (spillere === 1 && window.innerWidth < 900) {
+      styring.saetZoner([
+        { x0: 0,   x1: 0.2, y0: 0, y1: 1, spiller: 0, knap: 'venstre' },
+        { x0: 0.2, x1: 0.4, y0: 0, y1: 1, spiller: 0, knap: 'hoejre' },
+        { x0: 0.4, x1: 1,   y0: 0, y1: 1, spiller: 0, knap: 'hop' }
+      ]);
+      return;
+    }
     for (var s = 0; s < spillere; s++) {
       for (var k = 0; k < 3; k++) {
         var start = s / spillere + k / (3 * spillere);
