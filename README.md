@@ -274,9 +274,14 @@ ingredienserne op på tallerkenen og ringer på klokken. En forkert ingrediens
 hopper bare tilbage, der er ingen tid og ingen sure kunder. To børn har hver
 sin station og serverer mod det samme mål, så de arbejder sammen.
 
-Hver ret laves først med tre tryk: pizzadejen rulles ud, bøffen vendes på
-panden, og pandekagerne bages og flyver over på stakken. Først derefter kommer
-ingredienserne på. Kunden spiser retten i tre bidder. I **Fri leg** er der
+Hver ret laves først, og hver ret bruger fingeren på sin egen måde: pizzadejen
+rulles ud ved at gnide frem og tilbage, bøffen svirpes op i luften for at blive
+vendt, og pandekagedejen hældes på panden ved at holde fingeren nede. Tre trin
+pr. ret. Et almindeligt tryk tæller altid som et trin, så ingen sidder fast,
+hvis bevægelsen driller. Ingredienser kan trykkes eller trækkes op på retten.
+Kunden spiser retten i tre bidder, og bagefter tørres tallerken og disk af med
+svampen, før den næste kunde kommer. Alle fingre følges via `pointerId`, så to
+børn kan rulle og tørre af samtidig. I **Fri leg** er der
 ingen bestilling: kunden vil bare have en pizza, burger eller pandekager, og
 barnet bestemmer selv, hvad der kommer på.
 
