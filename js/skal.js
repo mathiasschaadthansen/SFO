@@ -58,4 +58,34 @@
     document.body.appendChild(vend);
   }
   if (document.body) saet(); else document.addEventListener('DOMContentLoaded', saet);
+
+  /*
+   * Lyd paa iPhone. Spillenes lyd laves med Web Audio, og den regner iOS for "ringelyd": staar
+   * knappen paa siden af telefonen paa lydloes, er spillet helt stumt, selv om lydstyrken er skruet
+   * op. Her bedes iOS om at behandle siden som et spil (medieafspilning), saa lyden foelger
+   * lydstyrke-knapperne i stedet. Nyere iOS har navigator.audioSession til det. Paa aeldre iOS
+   * goer en loekke af stilhed i et <audio>-element det samme. Stilheden laves her i koden, saa
+   * der hverken er en fil eller et netvaerkskald.
+   */
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* ikke understoettet */ }
+
+  var erIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (erIOS && !navigator.audioSession) {
+    var stilhed = null;
+    var startStilhed = function () {
+      if (stilhed) { if (stilhed.paused) stilhed.play().catch(function () { /* naeste tryk proever igen */ }); return; }
+      var n = 4000, buf = new ArrayBuffer(44 + n), v = new DataView(buf);
+      function tekst(sted, t) { for (var i = 0; i < t.length; i++) v.setUint8(sted + i, t.charCodeAt(i)); }
+      tekst(0, 'RIFF'); v.setUint32(4, 36 + n, true); tekst(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+      v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); tekst(36, 'data'); v.setUint32(40, n, true);
+      for (var i = 0; i < n; i++) v.setUint8(44 + i, 128);
+      stilhed = document.createElement('audio');
+      stilhed.setAttribute('playsinline', ''); stilhed.loop = true;
+      stilhed.src = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+      stilhed.play().catch(function () { /* naeste tryk proever igen */ });
+    };
+    document.addEventListener('touchend', startStilhed, true);
+    document.addEventListener('click', startStilhed, true);
+    document.addEventListener('visibilitychange', function () { if (stilhed && document.hidden) stilhed.pause(); });
+  }
 })();

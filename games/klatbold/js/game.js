@@ -73,9 +73,14 @@
 
   function lydKontekst() {
     if (!lyd) lyd = new (window.AudioContext || window.webkitAudioContext)();
-    if (lyd.state === 'suspended') lyd.resume();
+    if (lyd.state !== 'running') lyd.resume();      // iOS bruger ogsaa 'interrupted', fx efter et opkald
     return lyd;
   }
+  // iOS laaser kun lyden op i et rigtigt tryk (touchend eller click), ikke i pointerdown, en timer
+  // eller et svar fra fetch. Derfor vaekkes lyden ved hvert tryk, uanset hvad der ellers sker.
+  ['touchend', 'click'].forEach(function (type) {
+    document.addEventListener(type, function () { try { lydKontekst(); } catch (e) { /* lyd er pynt */ } }, true);
+  });
 
   function tone(frekvens, længde, styrke, type) {
     if (!lydTil) return;

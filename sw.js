@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v30';
+const VERSION = 'sfo-spil-v31';
 
 const FILER = [
   './',
@@ -103,6 +103,7 @@ const FILER = [
   'games/bogstaver/lyd/bogstav_Z.mp3',
   'games/bogstaver/lyd/ord_aal.mp3',
   'games/bogstaver/lyd/ord_abe.mp3',
+  'games/bogstaver/lyd/ord_aeble.mp3',
   'games/bogstaver/lyd/ord_aeg.mp3',
   'games/bogstaver/lyd/ord_aesel.mp3',
   'games/bogstaver/lyd/ord_ananas.mp3',
@@ -128,6 +129,7 @@ const FILER = [
   'games/bogstaver/lyd/ord_giraf.mp3',
   'games/bogstaver/lyd/ord_gris.mp3',
   'games/bogstaver/lyd/ord_gulerod.mp3',
+  'games/bogstaver/lyd/ord_hat.mp3',
   'games/bogstaver/lyd/ord_hest.mp3',
   'games/bogstaver/lyd/ord_hund.mp3',
   'games/bogstaver/lyd/ord_hus.mp3',
@@ -138,6 +140,7 @@ const FILER = [
   'games/bogstaver/lyd/ord_juletrae.mp3',
   'games/bogstaver/lyd/ord_kage.mp3',
   'games/bogstaver/lyd/ord_kat.mp3',
+  'games/bogstaver/lyd/ord_ko.mp3',
   'games/bogstaver/lyd/ord_krone.mp3',
   'games/bogstaver/lyd/ord_lampe.mp3',
   'games/bogstaver/lyd/ord_lastbil.mp3',
@@ -148,6 +151,7 @@ const FILER = [
   'games/bogstaver/lyd/ord_naese.mp3',
   'games/bogstaver/lyd/ord_noed.mp3',
   'games/bogstaver/lyd/ord_noegle.mp3',
+  'games/bogstaver/lyd/ord_oe.mp3',
   'games/bogstaver/lyd/ord_oeje.mp3',
   'games/bogstaver/lyd/ord_oern.mp3',
   'games/bogstaver/lyd/ord_orm.mp3',

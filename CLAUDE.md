@@ -64,6 +64,11 @@ offline-cachen hurtig. Nye filer skal med i `FILER` i `sw.js`.
   Safari under version 16.
 - **Lyd på iOS.** Første tone skal udløses af et tryk. Derfor starter lyden
   først efter menuknappen.
+- **Lydløs-knappen på iPhone.** Web Audio er stum, når knappen på siden står på
+  lydløs. `js/skal.js` sætter `navigator.audioSession.type = 'playback'` (og en
+  løkke af stilhed på ældre iOS), så lyden følger lydstyrken som i andre spil.
+  AudioContext genoptages ved enhver tilstand, der ikke er `running`, fordi iOS
+  også bruger `interrupted`.
 - **Service worker.** Nye filer skal tilføjes til `FILER` i `sw.js`, og
   `VERSION` skal tælles op. Ellers henter iPad'en den gamle version.
 
