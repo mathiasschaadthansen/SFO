@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v24';
+const VERSION = 'sfo-spil-v25';
 
 const FILER = [
   './',
@@ -28,6 +28,9 @@ const FILER = [
   'games/racer/tracks/rundbanen.json',
   'games/racer/tracks/bakkebanen.json',
   'games/racer/tracks/slangen.json',
+  'games/racer/tracks/boennen.json',
+  'games/racer/tracks/trekanten.json',
+  'games/racer/tracks/hesteskoen.json',
   'games/klatbold/',
   'games/klatbold/index.html',
   'games/klatbold/js/physics.js',

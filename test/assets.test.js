@@ -47,7 +47,11 @@ tjek('sprites.js er med i service workerens FILER', sw.includes("'js/sprites.js'
 tjek('skal.js er med i service workerens FILER', sw.includes("'js/skal.js'"));
 const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
 tjek('alle spilsider har skallen med hjem-knappen', spilSider.every(h => h.includes('js/skal.js')));
-tjek('alle spilsider lader menukortet rulle paa lave skaerme', spilSider.every(h => h.includes('.kort{max-height')));
+// Overlayet skal vaere det der ruller (ikke kortet med en hoejde i vh: paa iOS er 100vh hoejere
+// end det synlige felt, saa knappen i bunden fjedrede tilbage), og lave skaerme skal have et kompakt layout.
+tjek('alle spilsider lader overlayet rulle og centrerer kortet med margin:auto',
+  spilSider.every(h => h.includes('overflow-y:auto') && h.includes('.kort{margin:auto') && !h.includes('.kort{max-height')));
+tjek('alle spilsider har et kompakt layout til lave skaerme', spilSider.every(h => h.includes('@media (max-height:520px)')));
 
 console.log(fejl ? '\n' + fejl + ' test(s) fejlede.' : '\nAlle tests bestaaet.');
 process.exit(fejl ? 1 : 0);

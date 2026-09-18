@@ -25,6 +25,7 @@
     spillerRadius: 26,
     spillerFart:   380,    // px/s
     skudFart:      950,    // px/s snoren vokser opad
+    skudPause:     0.22,   // sekunder mellem to skud naar knappen holdes nede
     // Tre stoerrelser: stor -> 2 mellem -> 4 smaa = 7 skud pr. stor boble.
     bobleStr:      [58, 40, 24],         // radius pr. stoerrelse, 0 = stoerst
     bobleHop:      [330, 275, 215],      // hvor hoejt hver stoerrelse hopper
@@ -154,14 +155,19 @@
     s.dobbelt = Math.max(0, s.dobbelt - dt);
     s.klaebe = Math.max(0, s.klaebe - dt);
 
+    // Boern holder knappen nede. Saa skydes der igen, saa snart der er plads til
+    // en ny snor, med en lille pause imellem, saa to snore ikke ligger oven i
+    // hinanden. Et nyt tryk skyder med det samme.
     var maksSnore = s.dobbelt > 0 ? 2 : 1;
     var voksende = s.skud.filter(function (k) { return !k.haenger; }).length;
-    if (input.skyd && voksende < maksSnore && s.svimmel <= 0 && !s.harSkudt) {
+    s.skudPause = Math.max(0, (s.skudPause || 0) - dt);
+    var nytTryk = input.skyd && !s.holdtSkyd;
+    if (input.skyd && voksende < maksSnore && s.svimmel <= 0 && (nytTryk || s.skudPause <= 0)) {
       s.skud.push({ x: s.x, y: R * 2, klaeber: s.klaebe > 0, haenger: 0 });
       s.skoed = true;
+      s.skudPause = INDSTIL.skudPause;
     }
-    // Én snor pr. tryk, saa man ikke faar to snore oven i hinanden ved at holde nede
-    s.harSkudt = !!input.skyd;
+    s.holdtSkyd = !!input.skyd;
 
     for (var i = s.skud.length - 1; i >= 0; i--) {
       var k = s.skud[i];

@@ -7,5 +7,8 @@
 window.BANER = [
   { navn: 'Rundbanen', fil: 'tracks/rundbanen.json' },
   { navn: 'Bakkebanen', fil: 'tracks/bakkebanen.json' },
-  { navn: 'Slangen', fil: 'tracks/slangen.json' }
+  { navn: 'Slangen', fil: 'tracks/slangen.json' },
+  { navn: 'Bønnen', fil: 'tracks/boennen.json' },
+  { navn: 'Trekanten', fil: 'tracks/trekanten.json' },
+  { navn: 'Hesteskoen', fil: 'tracks/hesteskoen.json' }
 ];

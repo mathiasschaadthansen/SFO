@@ -67,6 +67,7 @@ games/bogstaver/
   js/game.js            tegn- og find-legen, minispillet, menu, stemme
   lyd/klip.json         rigtige optagelser, hvis der er nogen (se lyd/NOTICE.md)
 vaerktoej/lav-lyd.py    pakker optagelser som MP3 og skriver klip.json
+vaerktoej/lav-lyd-elevenlabs.py  laver klippene med ElevenLabs, én gang, med din egen nøgle
 vaerktoej/optag.html    optagerside: siger man de 146 ord ind, får man WAV-filer med rigtige navne
 
 test/bobler.test.js     en robot spiller alle tolv baner igennem
@@ -131,6 +132,12 @@ og asfalt, kantsten, kollisionsmaske og checkpoints bygges ud fra linjen.
 2. Tilføj den i `games/racer/tracks/index.js`
 3. Tilføj filstien i `FILER` i `sw.js` og tæl `VERSION` op
 4. `npm test` — den tjekker at banen kan gennemføres
+
+AI'en sigter et antal punkter frem ad midterlinjen, og der er 24 punkter mellem
+to af banens punkter. Ligger punkterne langt fra hinanden i en kurve, sigter
+AI'en for langt og skærer ind over græsset: læg flere punkter i kurven. Har
+banen lange lige stykker, kan `"aiSigteFaktor": 1.3` i JSON-filen give AI'en
+et længere sigte på netop den bane.
 
 Hold `vejbredde` på mindst 150 hvis banen har skarpe sving. Smalle baner er ikke
 sjove for 6-årige, og de er det første testen brokker sig over.
@@ -199,6 +206,17 @@ Bogstaver bruger iPad'ens egen stemme. Den kan erstattes af en rigtig på en tim
 
 Man behøver ikke indtale alt på én gang. Kun de ord, der er optaget, bruger
 optagelsen, resten siges stadig af iPad'en.
+
+## Stemme fra ElevenLabs
+
+Alternativ til at indtale selv: `vaerktoej/lav-lyd-elevenlabs.py` laver de 146
+klip med en stemme fra ElevenLabs. Det sker én gang på din computer med din
+egen nøgle i miljøvariablen `ELEVENLABS_API_KEY`; nøglen ligger aldrig i
+repoet, og spillet kalder aldrig ElevenLabs. Kør `--stemmer` for at finde en
+dansk kvindestemme, lav bogstaverne først med `--kun bogstaver`, lyt, ret
+udtalen i `NAVNE` om nødvendigt, og lav så resten. Scriptet skriver
+`klip.json` og lægger filerne i `sw.js`. Gratis-planen kræver kreditering,
+den står i `lyd/NOTICE.md`.
 
 ## Lave et nyt spil
 

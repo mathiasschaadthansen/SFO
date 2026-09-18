@@ -150,7 +150,7 @@
     }
 
     var fartAndel = Math.min(1, bil.fart / INDSTIL.topfart);
-    var sigte = Math.round(INDSTIL.aiSigte * (0.45 + 0.55 * fartAndel) * (1 - sving * 0.45));
+    var sigte = Math.round(INDSTIL.aiSigte * (bane.aiSigteFaktor || 1) * (0.45 + 0.55 * fartAndel) * (1 - sving * 0.45));
     sigte = Math.max(6, sigte);
 
     // Hver AI-bil har sin egen koerebane (bil.koerebane, -1..1), saa to

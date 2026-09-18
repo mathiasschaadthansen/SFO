@@ -27,6 +27,35 @@
     return !!img && img.complete && img.naturalWidth > 0;
   }
 
+  /** Billedet er paa vej. Saa tegnes ingenting — kodetegningen bruges kun hvis billedet fejler. */
+  function venter(img) {
+    return !!img && !img.complete;
+  }
+
+  /** Hent en liste af sprites med det samme, saa de er klar foer spillet starter. */
+  function forhent(stier) {
+    return stier.map(hent);
+  }
+
+  /**
+   * Kald fn naar de sprites der stadig er paa vej, er hentet (eller fejlet).
+   * Er alt allerede hentet, kaldes fn IKKE: der er intet at tegne om. Det er
+   * vigtigt, for fn tegner typisk skaermen igen og ender her paany — et
+   * synkront kald ville give en uendelig loekke.
+   */
+  function naarKlar(stier, fn) {
+    var billeder = forhent(stier);
+    var tilbage = billeder.filter(function (b) { return !b.complete; });
+    if (!tilbage.length) return false;
+    var mangler = tilbage.length;
+    tilbage.forEach(function (b) {
+      function faerdig() { mangler--; if (mangler === 0) fn(); }
+      b.addEventListener('load', faerdig, { once: true });
+      b.addEventListener('error', faerdig, { once: true });
+    });
+    return true;
+  }
+
   function tint(img, farve) {
     if (!klar(img)) return null;
     var noegle = img.src + '|' + farve;
@@ -45,5 +74,5 @@
     return c;
   }
 
-  window.Sprites = { hent: hent, klar: klar, tint: tint };
+  window.Sprites = { hent: hent, klar: klar, venter: venter, forhent: forhent, naarKlar: naarKlar, tint: tint };
 })();

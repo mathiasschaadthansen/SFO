@@ -122,7 +122,11 @@ console.log('\nBobler\n');
   spil.bobler = [];
   spil.ventende = [{ x: 500, str: 2, retning: 1, tid: 99, tempo: 1 }];   // holder banen aaben
   koer(spil, 0.2, () => [{ retning: 0, skyd: true }]);
-  tjek('at holde skyd nede giver kun én snor', spil.spillere[0].skud.length === 1, spil.spillere[0].skud.length + ' snore');
+  tjek('at holde skyd nede giver kun én snor ad gangen', spil.spillere[0].skud.length === 1, spil.spillere[0].skud.length + ' snore');
+  // Holder barnet knappen nede, skal der komme en ny snor, naar den foerste er vaek
+  let skud = 0;
+  koer(spil, 3, () => [{ retning: 0, skyd: true }], s => { if (s.spillere[0].skoed) skud++; });
+  tjek('holder man skyd nede, bliver der ved med at komme snore', skud >= 3, skud + ' skud paa 3 sekunder');
 }
 
 /* At blive ramt goer én svimmel, og man kan ikke skyde imens */

@@ -20,8 +20,8 @@
     this.tastKort = {
       ArrowLeft:  { spiller: 0, retning: -1 },
       ArrowRight: { spiller: 0, retning:  1 },
-      a: { spiller: 1, retning: -1 },
-      d: { spiller: 1, retning:  1 }
+      KeyA: { spiller: 1, retning: -1 },
+      KeyD: { spiller: 1, retning:  1 }
     };
 
     var self = this;
@@ -56,10 +56,18 @@
     element.addEventListener('pointerup', this._op);
     element.addEventListener('pointercancel', this._op);
     element.addEventListener('pointerleave', this._op);
+    // Loeftes fingeren over en anden flade (hjem-knappen, en menu), eller afbryder
+    // iOS beroeringen, kommer slippet ikke til laerredet. Lyt ogsaa paa vinduet,
+    // saa en knap aldrig bliver haengende.
+    window.addEventListener('pointerup', this._op);
+    window.addEventListener('pointercancel', this._op);
+    document.addEventListener('visibilitychange', function () { self.fingre.clear(); self.taster.clear(); });
     element.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
-    window.addEventListener('keydown', function (e) { self.taster.add(e.key); });
-    window.addEventListener('keyup', function (e) { self.taster.delete(e.key); });
+    // e.code er tastens fysiske plads. e.key skifter mellem "a" og "A" med Shift og
+    // Caps Lock, saa et slip kunne komme med et andet navn end trykket, og tasten blev haengende.
+    window.addEventListener('keydown', function (e) { self.taster.add(e.code); });
+    window.addEventListener('keyup', function (e) { self.taster.delete(e.code); });
     window.addEventListener('blur', function () {
       self.fingre.clear();
       self.taster.clear();

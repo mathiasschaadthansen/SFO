@@ -34,6 +34,10 @@
   ];
   var FJAES = ['glad', 'sej', 'soed'];
   var ANSIGT = { glad: 'a', sej: 'e', soed: 'c', jubel: 'c', sur: 'k' };   // -> assets/kenney/ansigt_<x>.png
+  // Alle sprites hentes med det samme, saa de er klar foer foerste kamp
+  var ALLE_SPRITES = ['red', 'blue', 'green', 'yellow', 'purple', 'pink'].map(function (f) { return '../../assets/kenney/klat_' + f + '.png'; })
+    .concat(['a', 'c', 'e', 'k'].map(function (a) { return '../../assets/kenney/ansigt_' + a + '.png'; }));
+  Sprites.forhent(ALLE_SPRITES);
 
   // Kun i hukommelsen. Intet gemmes om boernene.
   var valg = [
@@ -330,6 +334,8 @@
     // der kigger lidt mod bolden. Falder tilbage til kodetegningen til det er hentet.
     var krop = Sprites.hent('../../assets/kenney/klat_' + farve.sprite + '.png');
     var ansigt = Sprites.hent('../../assets/kenney/ansigt_' + (stemning > 0 ? ANSIGT.jubel : (stemning < 0 ? ANSIGT.sur : ANSIGT[fjaes] || 'a')) + '.png');
+    // Paa vej: tegn ingenting, saa den gamle kodetegning ikke blinker frem foerst
+    if (Sprites.venter(krop) || Sprites.venter(ansigt)) return;
     if (Sprites.klar(krop) && Sprites.klar(ansigt)) {
       c.save();
       c.scale(sqx, sqy);
@@ -682,8 +688,10 @@
       '<h2>Klatbold</h2>' +
       '<p class="hjaelp">Løb med siderne, hop med midten. Først til fem mål.</p>' +
       '<div class="raekke">' + stjerneKnapper + '</div>' +
+      '<div class="raekke start">' +
       '<button class="knap gul" data-handling="start" data-spillere="1">1 spiller</button>' +
       '<button class="knap gul" data-handling="start" data-spillere="2">2 spillere</button>' +
+      '</div>' +
       '<div class="raekke bund">' +
       '<button class="knap lille ikon" data-handling="lyd" aria-label="Lyd til eller fra">' + lydIkon(lydTil) + '</button>' +
       '</div>' +
@@ -730,6 +738,9 @@
       var v = valg[+cv.dataset.spiller];
       tegnEksempel(cv, FARVER[v.farve], FJAES[v.form], 1.6);
     });
+    if (!visKlatValg.venter) {
+      visKlatValg.venter = Sprites.naarKlar(ALLE_SPRITES, function () { visKlatValg.venter = false; if (overlay.querySelector('canvas[data-form]')) visKlatValg(); });
+    }
   }
 
   overlay.addEventListener('click', function (e) {

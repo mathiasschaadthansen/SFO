@@ -34,6 +34,10 @@
     { lak: '#ff8c42', navn: 'Orange' }
   ];
   var FIGURER = ['dreng', 'pige'];          // sprites fra Kenneys Platformer Characters
+  // Alle poser hentes med det samme, saa de er klar foer foerste bane
+  var ALLE_SPRITES = [];
+  ['dreng', 'pige'].forEach(function (f) { ['idle', 'walk1', 'walk2', 'hurt', 'cheer1', 'cheer2'].forEach(function (p) { ALLE_SPRITES.push('../../assets/kenney/' + f + '_' + p + '.png'); }); });
+  Sprites.forhent(ALLE_SPRITES);
   var HATTE = ['kasket', 'hjelm', 'sloejfe']; // kodetegningens hatte, bruges kun som reserve
   var BOBLEFARVER = ['#3aa7e0', '#4cb944', '#ffd23f'];
 
@@ -387,7 +391,8 @@
     var R = INDSTIL.spillerRadius;
     var pose = svimmel > 0 ? 'hurt' : (jubler ? (Math.floor(tid * 6) % 2 ? 'cheer1' : 'cheer2') : (gang ? (Math.floor(gang / 14) % 2 ? 'walk1' : 'walk2') : 'idle'));
     var img = Sprites.hent('../../assets/kenney/' + figur + '_' + pose + '.png');
-    if (!Sprites.klar(img)) return false;
+    if (Sprites.venter(img)) return true;     // paa vej: tegn ingenting, saa den gamle figur ikke blinker frem
+    if (!Sprites.klar(img)) return false;     // fejlet: brug kodetegningen
     var h = R * 2.7, w = h * 80 / 110;
     // Farvet maatte under figuren, saa man ved hvilken der er ens
     c.fillStyle = farve.lak;
@@ -793,8 +798,10 @@
       '<h2>Bobler</h2>' +
       '<p class="hjaelp">Løb med siderne, skyd med midten. Saml det, der falder ned.</p>' +
       '<div class="raekke">' + stjerneKnapper + '</div>' +
+      '<div class="raekke start">' +
       '<button class="knap gul" data-handling="start" data-spillere="1">1 spiller</button>' +
       '<button class="knap gul" data-handling="start" data-spillere="2">2 spillere</button>' +
+      '</div>' +
       '<div class="raekke bund">' +
       '<button class="knap lille ikon" data-handling="lyd" aria-label="Lyd til eller fra">' + lydIkon(lydTil) + '</button>' +
       '</div>' +
@@ -842,7 +849,9 @@
       tegnEksempel(cv, FARVER[v.farve], HATTE[v.form % HATTE.length], 2.2, FIGURER[v.form]);
     });
     // Sprites kan vaere paa vej: tegn igen naar de er hentet
-    setTimeout(function () { if (tilstand === 'venter' && overlay.querySelector('canvas[data-form]')) visFigurValg(); }, 400);
+    if (!visFigurValg.venter) {
+      visFigurValg.venter = Sprites.naarKlar(ALLE_SPRITES, function () { visFigurValg.venter = false; if (overlay.querySelector('canvas[data-form]')) visFigurValg(); });
+    }
   }
 
   overlay.addEventListener('click', function (e) {

@@ -40,10 +40,17 @@
   var FORMER = ['racer', 'bus', 'truck'];
   var SPRITE_NR = { racer: 1, bus: 2, truck: 4 };   // bilform -> nummer i Kenneys pakke
 
-  /** Sprite for en bil, eller null hvis det ikke er hentet endnu (saa tegnes den i kode). */
+  function bilSti(farve, form) { return '../../assets/kenney/bil_' + farve.sprite + '_' + SPRITE_NR[form] + '.png'; }
+
+  // Alle bilsprites hentes med det samme, saa de er klar foer foerste loeb
+  var ALLE_BILER = [];
+  ['red', 'blue', 'green', 'yellow'].forEach(function (f) { [1, 2, 4].forEach(function (n) { ALLE_BILER.push('../../assets/kenney/bil_' + f + '_' + n + '.png'); }); });
+  Sprites.forhent(ALLE_BILER);
+
+  /** Sprite for en bil. null = ikke klar; venter = true betyder "tegn ingenting endnu". */
   function bilSprite(farve, form) {
-    var img = Sprites.hent('../../assets/kenney/bil_' + farve.sprite + '_' + SPRITE_NR[form] + '.png');
-    if (!Sprites.klar(img)) return null;
+    var img = Sprites.hent(bilSti(farve, form));
+    if (!Sprites.klar(img)) return Sprites.venter(img) ? 'venter' : null;
     return farve.tint ? Sprites.tint(img, farve.tint) : img;
   }
 
@@ -376,13 +383,16 @@
   function tegnKaross(c, farve, form) {
     var L = INDSTIL.bilLaengde, B = INDSTIL.bilBredde;
 
+    // Sprite fra Kenney. Er billedet paa vej, tegnes ingenting, saa den gamle
+    // kodetegning ikke blinker frem foerst. Kodetegningen bruges kun hvis billedet fejler.
+    var sp = bilSprite(farve, form);
+    if (sp === 'venter') return;
+
     c.fillStyle = 'rgba(0,0,0,0.22)';
     c.beginPath();
     c.roundRect(-L / 2 + 3, -B / 2 + 4, L, B, 7);
     c.fill();
 
-    // Sprite fra Kenney naar det er klar. Spriten peger opad, bilen koerer mod +x.
-    var sp = bilSprite(farve, form);
     if (sp) {
       var sk = (L + 4) / 131;
       c.save();
@@ -741,6 +751,19 @@
 
   var valgtBane = 'tracks/rundbanen.json';
 
+  // Banernes punkter hentes én gang til de smaa tegninger i menuen
+  var baneData = {};
+  function tegnMiniaturer() {
+    overlay.querySelectorAll('canvas[data-bane]').forEach(function (cv) {
+      var d = baneData[cv.dataset.bane];
+      if (d) Bane.miniature(d, cv);
+    });
+  }
+  window.BANER.forEach(function (b) {
+    fetch(b.fil).then(function (r) { return r.json(); }).then(function (d) { baneData[b.fil] = d; tegnMiniaturer(); })
+      .catch(function () { /* uden tegning vises kun navnet */ });
+  });
+
   /** Tre stjerner, hvoraf `fyldt` er gule. Ingen tekst. */
   function stjerner(fyldt) {
     var s = '<svg class="stjerner" width="84" height="26" viewBox="0 0 84 26" aria-hidden="true">';
@@ -772,9 +795,12 @@
     stopMotorer();
     vinderCanvas = null;
 
+    // Banerne vises som smaa tegninger, saa man kan vaelge uden at laese navnet
     var baneKnapper = window.BANER.map(function (b) {
-      return '<button class="knap smal' + (b.fil === valgtBane ? ' valgt' : '') +
-             '" data-handling="bane" data-fil="' + b.fil + '">' + b.navn + '</button>';
+      return '<button class="bane' + (b.fil === valgtBane ? ' valgt' : '') +
+             '" data-handling="bane" data-fil="' + b.fil + '" aria-label="' + b.navn + '">' +
+             '<canvas width="180" height="126" style="position:static;display:block;width:100%;height:auto" data-bane="' + b.fil + '"></canvas>' +
+             '<span>' + b.navn + '</span></button>';
     }).join('');
 
     var stjerneKnapper = [0, 1, 2].map(function (n) {
@@ -787,15 +813,18 @@
       '<div class="kort">' +
       '<h2>Racerbanen</h2>' +
       '<p class="hjaelp">Hold fingeren i venstre eller højre side. Bilen kører selv.</p>' +
-      '<div class="raekke">' + baneKnapper + '</div>' +
+      '<div class="baner">' + baneKnapper + '</div>' +
       '<div class="raekke">' + stjerneKnapper + '</div>' +
+      '<div class="raekke start">' +
       '<button class="knap gul" data-handling="start" data-spillere="1">1 spiller</button>' +
       '<button class="knap gul" data-handling="start" data-spillere="2">2 spillere</button>' +
+      '</div>' +
       '<div class="raekke bund">' +
       '<button class="knap lille ikon" data-handling="lyd" aria-label="Lyd til eller fra">' + lydIkon(lydTil) + '</button>' +
       '</div>' +
       '</div>'
     );
+    tegnMiniaturer();
   }
 
   var EKSEMPEL_STIL = 'position:static;display:block;width:150px;height:90px;align-self:center';
@@ -850,6 +879,9 @@
       var v = valg[+cv.dataset.spiller];
       tegnEksempel(cv, FARVER[v.farve], FORMER[v.form], 4.5);
     });
+    if (!visBilValg.venter) {
+      visBilValg.venter = Sprites.naarKlar(ALLE_BILER, function () { visBilValg.venter = false; if (overlay.querySelector('canvas[data-form]')) visBilValg(); });
+    }
   }
 
   overlay.addEventListener('click', function (e) {

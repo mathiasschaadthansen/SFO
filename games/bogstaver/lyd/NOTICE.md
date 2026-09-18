@@ -12,4 +12,7 @@ Filnavne:
 - `ord_<navn>.mp3` tingene, navn som SVG-filen i ting/
 
 Optag med `vaerktoej/optag.html`, pak med `vaerktoej/lav-lyd.py --optagelser`,
-se README. Optagelser lavet til projektet er projektets egne.
+eller lav klippene med `vaerktoej/lav-lyd-elevenlabs.py`, se README.
+Optagelser lavet til projektet er projektets egne. Er klippene lavet med
+ElevenLabs på gratis-planen, gælder deres krav om kreditering: stemmen er
+genereret med elevenlabs.io.

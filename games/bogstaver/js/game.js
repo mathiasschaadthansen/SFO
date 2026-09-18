@@ -36,6 +36,8 @@
   var lydTil = true;
   var kategori = 'bogstaver';        // bogstaver | tal
   var KOERETOEJER = ['bil', 'raket', 'pensel'];
+  var KOERETOEJ_SPRITES = ['../../assets/kenney/bil_lille.png', '../../assets/kenney/raket.png'];
+  Sprites.forhent(KOERETOEJ_SPRITES);
 
   // Tingenes SVG-tegninger hentes én gang. Ligger i cachen, saa det virker offline.
   var billeder = {};
@@ -551,6 +553,7 @@
     // Sprites fra Kenney for bil og raket. De peger opad, koeretoejet koerer mod +x.
     if (hvad === 'bil' || hvad === 'raket') {
       var img = Sprites.hent('../../assets/kenney/' + (hvad === 'bil' ? 'bil_lille' : 'raket') + '.png');
+      if (Sprites.venter(img)) return;   // paa vej: tegn ingenting, saa den gamle tegning ikke blinker frem
       if (Sprites.klar(img)) {
         if (hvad === 'raket' && iGang) {
           c.fillStyle = '#ff8c42';
@@ -1166,6 +1169,9 @@
       tegnKoeretoej(c, cv.dataset.koeretoej, cv.dataset.koeretoej === 'raket', 0.6);
       c.restore();
     });
+    if (!visMenu.venter) {
+      visMenu.venter = Sprites.naarKlar(KOERETOEJ_SPRITES, function () { visMenu.venter = false; if (tilstand === 'venter' && overlay.querySelector('canvas[data-koeretoej]')) visMenu(); });
+    }
   }
 
   var EKSEMPEL_STIL = 'position:static;display:block;width:150px;height:110px;align-self:center';

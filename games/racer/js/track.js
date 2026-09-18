@@ -60,6 +60,9 @@
     this.bredde = data.bredde;
     this.hoejde = data.hoejde;
     this.vejbredde = data.vejbredde;
+    // Baner med lange lige stykker og faa sving koeres bedst med et laengere sigte.
+    // 1 = som svaerhedsgraden siger. Se aiSigte i physics.js.
+    this.aiSigteFaktor = data.aiSigteFaktor || 1;
     this.linje = udjaevn(data.punkter, 24);
 
     this._checkpoints(data.checkpoints || 24);
@@ -182,6 +185,33 @@
     var my = (y * MASKE_SKALA) | 0;
     if (mx < 0 || my < 0 || mx >= this.maskeB || my >= this.maskeH) return false;
     return this.maske[my * this.maskeB + mx] === 1;
+  };
+
+  /**
+   * Tegner banen som et lille billede til menuen: vej, kantsten og en startprik.
+   * Bygger hverken maske eller stort billede, saa det er billigt at tegne alle baner.
+   */
+  Bane.miniature = function (data, canvas) {
+    var c = canvas.getContext('2d');
+    var linje = udjaevn(data.punkter, 12);
+    var marg = 10;
+    var s = Math.min((canvas.width - marg * 2) / data.bredde, (canvas.height - marg * 2) / data.hoejde);
+    var ox = (canvas.width - data.bredde * s) / 2, oy = (canvas.height - data.hoejde * s) / 2;
+    c.clearRect(0, 0, canvas.width, canvas.height);
+    c.fillStyle = '#3f8f52';
+    c.beginPath();
+    if (c.roundRect) c.roundRect(0, 0, canvas.width, canvas.height, 14); else c.rect(0, 0, canvas.width, canvas.height);
+    c.fill();
+    c.save();
+    c.translate(ox, oy);
+    c.scale(s, s);
+    tegnLinje(c, linje, data.vejbredde + 60, '#f2e9d8');
+    tegnLinje(c, linje, data.vejbredde + 10, '#5a5f68');
+    c.fillStyle = '#ffd23f';
+    c.beginPath();
+    c.arc(linje[0].x, linje[0].y, data.vejbredde * 0.42, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
   };
 
   Bane.hent = function (fil) {

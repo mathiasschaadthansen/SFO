@@ -156,15 +156,18 @@ console.log('\nKlatbold\n');
 /* AI'en naar bolden og slaar den tilbage, paa alle svaerhedsgrader */
 Klatbold.SVAERHED.forEach((s, niveau) => {
   Klatbold.saetSvaerhed(niveau);
-  const kamp = Klatbold.nyKamp(1);
-  kamp.pause = 0;
-  kamp.bold.x = I.bredde * 0.6; kamp.bold.y = 300; kamp.bold.vx = 250; kamp.bold.vy = 0;
-  let ramte = false, vxEfter = 0;
-  const t = koer(kamp, 6, null, k => { if (k.klatter[1].ramteBold) { ramte = true; vxEfter = k.bold.vx; return true; } });
-  // Paa 1 stjerne er AI'en med vilje klodset, saa der kraeves kun at den naar bolden
+  // AI'en er med vilje klodset paa 1 og 2 stjerner (tager fejl af hvor bolden lander),
+  // saa den faar tre forsoeg. Mindst ét skal sende bolden tilbage.
+  let ramte = false, tilbage = false, sidsteVx = 0, t = 0;
+  for (let forsoeg = 0; forsoeg < 3 && !tilbage; forsoeg++) {
+    const kamp = Klatbold.nyKamp(1);
+    kamp.pause = 0;
+    kamp.bold.x = I.bredde * 0.6; kamp.bold.y = 300; kamp.bold.vx = 250; kamp.bold.vy = 0;
+    t = koer(kamp, 6, null, k => { if (k.klatter[1].ramteBold) { ramte = true; sidsteVx = k.bold.vx; if (sidsteVx < 0) tilbage = true; return true; } });
+  }
   tjek('AI paa ' + (niveau + 1) + ' stjerne(r) naar bolden' + (niveau ? ' og slaar den tilbage' : ''),
-    ramte && (niveau === 0 || vxEfter < 0),
-    'ramte=' + ramte + ' vx=' + vxEfter.toFixed(0) + ' efter ' + t.toFixed(1) + ' s');
+    ramte && (niveau === 0 || tilbage),
+    'ramte=' + ramte + ' vx=' + sidsteVx.toFixed(0) + ' efter ' + t.toFixed(1) + ' s');
 });
 Klatbold.saetSvaerhed(0);
 
