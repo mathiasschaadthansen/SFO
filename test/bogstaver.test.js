@@ -170,5 +170,24 @@ function foelg(glyf, tolerance, afvig) {
   tjek('klip.json er med i service workerens FILER', sw.includes("'games/bogstaver/lyd/klip.json'"));
 }
 
+/* Regnestykker efter tallene */
+{
+  const { Regn } = require('../games/bogstaver/js/regn.js');
+  let forkerte = [], minusPaaEt = 0, nulLed = 0, daarligeValg = [];
+  for (let niveau = 0; niveau < 3; niveau++) for (let svar = 0; svar <= 9; svar++) for (let n = 0; n < 200; n++) {
+    const o = Regn.opgave(svar, niveau);
+    const r = o.op === '+' ? o.a + o.b : o.a - o.b;
+    if (r !== svar || o.a < 0 || o.a > 9 || o.b < 0 || o.b > 9 || o.svar !== svar) forkerte.push(JSON.stringify(o));
+    if (niveau === 0 && o.op === '-' && svar > 0) minusPaaEt++;
+    if (o.op === '+' && svar >= 2 && (o.a === 0 || o.b === 0)) nulLed++;
+    const v = Regn.valg(svar);
+    if (v.length !== 3 || new Set(v).size !== 3 || !v.includes(svar) || v.some(x => x < 0 || x > 9)) daarligeValg.push(svar + ': ' + v);
+  }
+  tjek('regnestykker: svaret er altid det tegnede tal, og alle tal er 0-9', forkerte.length === 0, forkerte.slice(0, 3).join(' '));
+  tjek('regnestykker: 1 stjerne er kun plus (bortset fra 0)', minusPaaEt === 0, minusPaaEt + ' minusstykker');
+  tjek('regnestykker: plus bruger ikke 0 som led, naar svaret er 2 eller mere', nulLed === 0, nulLed + ' med 0');
+  tjek('regnestykker: tre forskellige svarmuligheder med det rigtige imellem', daarligeValg.length === 0, daarligeValg.slice(0, 3).join(' | '));
+}
+
 console.log(fejl ? '\n' + fejl + ' test(s) fejlede.' : '\nAlle tests bestaaet.');
 process.exit(fejl ? 1 : 0);

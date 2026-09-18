@@ -186,6 +186,14 @@ med ét ord, en SVG i `ting/` og en tegning i kode som reserve pr. bogstav. Se
 `ting/NOTICE.md` for hvordan man tilføjer en ting. Q, W og Z har ingen ting og
 springer minispillet over.
 
+Efter et tal kommer et regnestykke, hvor svaret er netop det tal, man har
+tegnet (`js/regn.js`): tre svarkort, og æbler under tallene at tælle på. En
+stjerne er kun plus, to stjerner er plus og minus, og på tre stjerner kommer
+æblerne først frem, hvis man svarer forkert. Ved minus er de æbler, der trækkes
+fra, streget over. Er `plus.mp3`, `minus.mp3` og eventuelt `er_lig_med.mp3`
+indtalt, siges stykket med klip ("to", "plus", "tre"); ellers siger enhedens
+stemme det.
+
 Spillet skruer selv op og ned inden for en omgang: tegnes et tegn med højst én
 afvej, bliver tolerancen strammere næste gang, og fingerhjælpen forsvinder.
 Driller det, bliver den bredere igen. I Find giver tre rigtige i træk otte

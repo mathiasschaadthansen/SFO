@@ -182,6 +182,22 @@
     }).catch(function () { sig(reserveTekst); });
   }
 
+  /** Flere klip lige efter hinanden: "to", "plus", "tre". Mangler et af dem, siges ingenting. */
+  function afspilRaekke(filer) {
+    if (!lydTil) return;
+    Promise.all(filer.map(hentKlip)).then(function (buffere) {
+      var k = lydKontekst(), start = k.currentTime + 0.02;
+      if (aktivtKlip) { try { aktivtKlip.stop(); } catch (e) { /* allerede stoppet */ } }
+      buffere.forEach(function (buf) {
+        var kilde = k.createBufferSource();
+        kilde.buffer = buf; kilde.connect(k.destination); kilde.start(start);
+        start += buf.duration - 0.04;
+        aktivtKlip = kilde;
+      });
+      afspillet++;
+    }).catch(function () { /* lyd er pynt */ });
+  }
+
   function stopKlip() {
     if (aktivtKlip) { try { aktivtKlip.stop(); } catch (e) { /* ignorer */ } aktivtKlip = null; }
     try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* ignorer */ }
@@ -440,7 +456,8 @@
     if (jubel > 0) {
       jubel -= dt;
       if (jubel <= 0) {
-        if (kategori !== 'tal' && Ting.TING[liste[plads]]) startVaelg(liste[plads]);
+        if (kategori === 'tal') startRegn(parseInt(liste[plads], 10));
+        else if (Ting.TING[liste[plads]]) startVaelg(liste[plads]);
         else naesteTegn();
       }
     }
@@ -458,6 +475,7 @@
 
   function startVaelg(navn) {
     tilstand = 'vaelg';
+    regn = null;
     vaelgNavn = navn;
     vaelgLoest = false;
     vaelgPause = 0.6;
@@ -474,6 +492,104 @@
     setTimeout(function () { if (tilstand === 'vaelg') sigSpoerg(navn); }, 300);
   }
 
+  /* ---------- REGN: et regnestykke, hvor svaret er det tal, man lige har tegnet ---------- */
+
+  var regn = null;      // { a, b, op, svar, hjaelp } mens et regnestykke er fremme, ellers null
+
+  function startRegn(svar) {
+    tilstand = 'vaelg';
+    vaelgNavn = String(svar);
+    vaelgLoest = false;
+    vaelgPause = 0.6;
+    regn = Regn.opgave(svar, svaerhed);
+    regn.hjaelp = svaerhed < 2;          // 3 stjerner: aeblerne kommer foerst frem efter et forkert svar
+    var B = window.innerWidth, H = window.innerHeight;
+    var str = Math.min(B * 0.22, H * 0.3, 200);
+    var gab = Math.min(34, B * 0.03);
+    kort = Regn.valg(svar).map(function (n, i) {
+      return { navn: String(n), tal: n, x: B / 2 + (i - 1) * (str + gab), y: H * 0.74, str: str, vip: 0, vist: 0, rigtig: n === svar };
+    });
+    setTimeout(function () { if (tilstand === 'vaelg' && regn) sigRegn(regn); }, 300);
+  }
+
+  /** "to plus tre": med klip, hvis plus og minus er indtalt, ellers siger enhedens stemme hele stykket. */
+  function sigRegn(o) {
+    var op = o.op === '+' ? 'plus.mp3' : 'minus.mp3';
+    if (klipFindes[op]) afspilRaekke(['tal_' + o.a + '.mp3', op, 'tal_' + o.b + '.mp3'].concat(klipFindes['er_lig_med.mp3'] ? ['er_lig_med.mp3'] : []));
+    else sig(o.a + (o.op === '+' ? ' plus ' : ' minus ') + o.b);
+  }
+
+  function regnTryk(k) {
+    if (k.rigtig) {
+      vaelgLoest = true;
+      sigNavn(k.navn);
+      melodi([660, 880, 1100, 1320], 90);
+      fest(k.x, k.y);
+      setTimeout(function () { if (tilstand === 'vaelg' && regn) { regn = null; naesteTegn(); } }, 3000);
+    } else {
+      k.vip = 0.7;
+      regn.hjaelp = true;                // forkert: ingen straf, men aeblerne kommer frem, saa man kan taelle
+      melodi([880, 1046], 70);
+    }
+  }
+
+  function tegnRegnSkaerm() {
+    var B = window.innerWidth, H = window.innerHeight;
+    var hh = Math.min(H * 0.2, B * 0.11);                 // taloejde i stykket
+    var trin = hh * 1.15, y0 = Math.max(60, H * 0.1);
+    var dele = [String(regn.a), regn.op, String(regn.b), '=', vaelgLoest ? String(regn.svar) : '?'];
+    var bred = dele.length * trin, x0 = B / 2 - bred / 2;
+    ctx.fillStyle = '#f7f3e8'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.roundRect(x0 - hh * 0.3, y0 - hh * 0.2, bred + hh * 0.6, hh * (regn.hjaelp ? 2.15 : 1.4), 26); ctx.fill(); ctx.stroke();
+    dele.forEach(function (d, i) {
+      var cx = x0 + (i + 0.5) * trin, cy = y0 + hh / 2;
+      ctx.strokeStyle = '#12261f'; ctx.lineWidth = Math.max(5, hh * 0.09); ctx.lineCap = 'round';
+      if (G[d]) tegnGlyf(ctx, G[d], cx - hh / 2, y0, hh, i === 4 ? '#ff8c42' : '#12261f', 11);
+      else if (d === '?') {
+        var p = 1 + Math.sin(tid * 5) * 0.06;
+        ctx.strokeStyle = '#ff8c42'; ctx.setLineDash([hh * 0.12, hh * 0.12]);
+        ctx.beginPath(); ctx.roundRect(cx - hh * 0.36 * p, cy - hh * 0.42 * p, hh * 0.72 * p, hh * 0.84 * p, 14); ctx.stroke(); ctx.setLineDash([]);
+      } else {
+        var l = hh * 0.24;
+        ctx.beginPath();
+        if (d === '=') { ctx.moveTo(cx - l, cy - l * 0.45); ctx.lineTo(cx + l, cy - l * 0.45); ctx.moveTo(cx - l, cy + l * 0.45); ctx.lineTo(cx + l, cy + l * 0.45); }
+        else { ctx.moveTo(cx - l, cy); ctx.lineTo(cx + l, cy); if (d === '+') { ctx.moveTo(cx, cy - l); ctx.lineTo(cx, cy + l); } }
+        ctx.stroke();
+      }
+    });
+    // Aebler at taelle paa. Plus: en bunke under hvert tal. Minus: alle aeblerne, og dem der traekkes fra, er streget over.
+    if (regn.hjaelp) {
+      var ay = y0 + hh * 1.5, r = Math.min(hh * 0.17, trin * 1.8 / (Math.max(regn.a, regn.b, 1) * 2.6));
+      if (regn.op === '+') {
+        tegnMaengde(ctx, regn.a, x0 + trin * 0.5, ay, r, undefined, true);
+        tegnMaengde(ctx, regn.b, x0 + trin * 2.5, ay, r, undefined, true);
+      } else {
+        var n = regn.a, rr = Math.min(r, trin * 3 / n / 2.6);
+        for (var i = 0; i < n; i++) {
+          var ax = x0 + trin * 1.5 + (i - (n - 1) / 2) * rr * 2.6, vaek = i >= n - regn.b;
+          ctx.globalAlpha = vaek ? 0.4 : 1; tegnAeble(ctx, ax, ay, rr); ctx.globalAlpha = 1;
+          if (vaek) {
+            ctx.strokeStyle = '#e8442e'; ctx.lineWidth = Math.max(3, rr * 0.3); ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(ax - rr, ay - rr); ctx.lineTo(ax + rr, ay + rr); ctx.moveTo(ax + rr, ay - rr); ctx.lineTo(ax - rr, ay + rr); ctx.stroke();
+          }
+        }
+      }
+    }
+    // Svarkortene
+    kort.forEach(function (k) {
+      ctx.save();
+      ctx.translate(k.x, k.y);
+      if (k.vip > 0) ctx.rotate(Math.sin(k.vip * 40) * 0.12);
+      if (vaelgLoest && k.rigtig) ctx.scale(1 + Math.sin(tid * 8) * 0.04, 1 + Math.sin(tid * 8) * 0.04);
+      ctx.globalAlpha = vaelgLoest && !k.rigtig ? 0.4 : 1;
+      ctx.fillStyle = vaelgLoest && k.rigtig ? '#ffd23f' : '#f7f3e8'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.roundRect(-k.str / 2, -k.str / 2, k.str, k.str, 26); ctx.fill(); ctx.stroke();
+      tegnGlyf(ctx, G[k.navn], -k.str * 0.32, -k.str * 0.32, k.str * 0.64, '#12261f', 11);
+      ctx.restore();
+    });
+    ctx.globalAlpha = 1;
+  }
+
   function opdaterVaelg(dt) {
     vaelgPause = Math.max(0, vaelgPause - dt);
     kort.forEach(function (k) { k.vip = Math.max(0, k.vip - dt); k.vist = Math.max(0, k.vist - dt); });
@@ -486,6 +602,7 @@
     for (var i = 0; i < kort.length; i++) {
       var k = kort[i];
       if (Math.abs(x - k.x) < k.str / 2 && Math.abs(y - k.y) < k.str / 2) {
+        if (regn) { regnTryk(k); return; }
         sigOrd(k.ting);
         if (k.rigtig) {
           vaelgLoest = true;
@@ -1036,7 +1153,7 @@
       tegnFremskridt(liste.length, tegnet);
       tegnTrin(Math.max(0, Math.min(3, Math.ceil(flow * 3 / 4))));
     } else if (tilstand === 'vaelg') {
-      tegnVaelgSkaerm();
+      if (regn) tegnRegnSkaerm(); else tegnVaelgSkaerm();
       tegnPartikler();
       tegnFremskridt(liste.length, tegnet);
       tegnTrin(Math.max(0, Math.min(3, Math.ceil(flow * 3 / 4))));
@@ -1150,6 +1267,7 @@
 
   function visMenu() {
     tilstand = 'venter';
+    regn = null;
     vinderCanvas = null;
     stopKlip();
     var stjerneKnapper = [0, 1, 2].map(function (n) {
@@ -1285,7 +1403,7 @@
       tegn: tilstand === 'tegn' ? { navn: liste[plads], plads: plads, andel: +spor.andel().toFixed(2), aktiv: spor.aktiv, holder: spor.holder, jubel: +jubel.toFixed(2) } : null,
       find: tilstand === 'find' ? { maal: maal, fundet: fundet, bobler: bobler.map(function (b) { return { navn: b.navn, x: Math.round(b.x), y: Math.round(b.y), r: Math.round(b.r) }; }) } : null,
       aebler: aebler, flow: flow, raekke: raekke, tolerance: +tolerance().toFixed(1),
-      vaelg: tilstand === 'vaelg' ? { navn: vaelgNavn, loest: vaelgLoest, kort: kort.map(function (k) { return { navn: k.navn, ord: k.ting.ord, x: Math.round(k.x), y: Math.round(k.y), rigtig: k.rigtig }; }) } : null,
+      regn: regn, vaelg: tilstand === 'vaelg' ? { navn: vaelgNavn, loest: vaelgLoest, kort: kort.map(function (k) { return { navn: k.navn, ord: k.ting ? k.ting.ord : k.navn, x: Math.round(k.x), y: Math.round(k.y), rigtig: k.rigtig }; }) } : null,
       kasse: kasse
     };
   };

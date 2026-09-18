@@ -16,7 +16,7 @@ Bagefter: npm test, tael VERSION op i sw.js, commit.
 Valg:
     --tilfoej <id>   laeg en stemme fra biblioteket ind paa din konto (API'et kan kun bruge "My Voices")
     --model <navn>   eleven_turbo_v2_5 (standard, tvinger dansk) eller eleven_multilingual_v2
-    --kun bogstaver|tal|ord|spoerg
+    --kun bogstaver|tal|ord|spoerg|regn
     --alle           lav ogsaa klip der findes i forvejen
     --registrer      lav ikke noget, men skriv klip.json og sw.js ud fra de mp3-filer der ligger i lyd/
                      (bruges naar klippene er lavet et andet sted, fx i en Claude-chat med ElevenLabs)
@@ -76,6 +76,8 @@ def opgaver(kun):
         ud += [('tal_%d.mp3' % i, t) for i, t in enumerate(TAL)]
     if kun in (None, 'ord'):
         ud += [('ord_%s.mp3' % fil, ord) for ord, fil in ting()]
+    if kun in (None, 'regn'):
+        ud += [('plus.mp3', 'plus'), ('minus.mp3', 'minus'), ('er_lig_med.mp3', 'er lig med')]
     if kun in (None, 'spoerg'):
         ud += [('spoerg_%s.mp3' % n, 'Hvad starter med %s?' % t) for n, t in NAVNE.items()]
     return ud

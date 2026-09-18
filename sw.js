@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v31';
+const VERSION = 'sfo-spil-v33';
 
 const FILER = [
   './',
@@ -46,6 +46,7 @@ const FILER = [
   'games/bogstaver/js/glyffer.js',
   'games/bogstaver/js/spor.js',
   'games/bogstaver/js/ting.js',
+  'games/bogstaver/js/regn.js',
   'games/bogstaver/js/game.js',
   'games/bogstaver/ting/aeble.svg',
   'games/bogstaver/ting/and.svg',
@@ -101,6 +102,8 @@ const FILER = [
   'games/bogstaver/lyd/bogstav_X.mp3',
   'games/bogstaver/lyd/bogstav_Y.mp3',
   'games/bogstaver/lyd/bogstav_Z.mp3',
+  'games/bogstaver/lyd/er_lig_med.mp3',
+  'games/bogstaver/lyd/minus.mp3',
   'games/bogstaver/lyd/ord_aal.mp3',
   'games/bogstaver/lyd/ord_abe.mp3',
   'games/bogstaver/lyd/ord_aeble.mp3',
@@ -179,6 +182,7 @@ const FILER = [
   'games/bogstaver/lyd/ord_vulkan.mp3',
   'games/bogstaver/lyd/ord_xylofon.mp3',
   'games/bogstaver/lyd/ord_yoyo.mp3',
+  'games/bogstaver/lyd/plus.mp3',
   'games/bogstaver/lyd/spoerg_A.mp3',
   'games/bogstaver/lyd/spoerg_AA.mp3',
   'games/bogstaver/lyd/spoerg_AE.mp3',
