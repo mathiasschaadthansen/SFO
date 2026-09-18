@@ -78,6 +78,11 @@ assets/noto/*.svg       mad og dyr, Noto Emoji (Apache 2.0, se assets/noto/NOTIC
 
 test/bobler.test.js     en robot spiller alle tolv baner igennem
 test/bogstaver.test.js  alle 39 tegn kan tegnes af en finger langs stregen
+games/tegn/
+  js/figurer.js         16 figurer i fire universer som streger og farver — ingen DOM
+  js/pusle.js           puslespillets brikker, tappe og klik-på-plads — ingen DOM
+  js/game.js            tegning med fingeren, puslespil, menu, lyd (bruger bogstavernes spor.js)
+test/tegn.test.js       alle figurer kan tegnes, og puslespillet kan samles på alle tre stjerner
 test/restaurant.test.js en robot serverer en hel dag for en og to spillere på alle tre stjerner
 ```
 
@@ -294,3 +299,24 @@ Bestillingerne er en fast liste i `koekken.js` med et id hver (`p1a`, `b2c` ...)
 så hver bestilling kan få sit eget stemmeklip: `lyd/bestil_<id>.mp3`, plus
 `tak_1.mp3` til `tak_3.mp3`, `ups.mp3`, `dag.mp3` og `fri.mp3`. Filer der står i
 `lyd/klip.json` bruges; resten siges af enhedens egen stemme.
+
+
+## Tegn og pusl
+
+Barnet vælger et univers (Havet, Dyrene, Maskiner, Haven) og tegner en figur
+ved at følge de stiplede streger med fingeren. Hver del får farve, så snart
+den er tegnet, og til sidst kommer øjne, smil og andet pynt af sig selv.
+Stemmen siger, hvad det blev til. Så bliver billedet til et puslespil med
+rigtige tappe, som samles ved at trække brikkerne ind på brættet. De klikker
+på plads, når de slippes tæt nok på. Fire figurer pr. univers, og til sidst
+hopper de alle fire på række.
+
+En stjerne er 4 brikker og et tydeligt skyggebillede på brættet, to stjerner
+er 6 brikker og et svagt, tre stjerner er 9 brikker og kun et gitter.
+Tegne-tolerancen strammes også pr. stjerne (`TOLERANCE` i `game.js`). Hver
+finger følges via `pointerId`, så to børn kan trække hver sin brik.
+
+En ny figur er en liste af dele i `figurer.js` i en kasse på 100 x 100: lukkede
+former får fyld, åbne streger bliver tykke farvede linjer, og dele med
+`pynt` skal ikke tegnes. `npm test` tjekker, at den kan tegnes af en præcis, en
+skæv og en hurtig finger.

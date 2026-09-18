@@ -76,5 +76,19 @@ window.SPIL = [
          '<img src="assets/noto/bjoern.svg" alt="" style="left:56px;top:0;width:54px">' +
          '<img src="assets/noto/klokke.svg" alt="" style="left:70px;top:64px;width:40px">' +
          '</div>'
+  },
+  {
+    id: 'tegn',
+    navn: 'Tegn og pusl',
+    tekst: 'Tegn en fisk, en raket eller et hus med fingeren, og saml den som puslespil.',
+    farve: '#d9f2c4',
+    sti: 'games/tegn/',
+    art: '<div class="art">' +
+         '<svg viewBox="0 0 100 100" style="position:absolute;left:6px;top:4px;width:100px;height:100px">' +
+         '<path d="M72 50L94 30v40z" fill="#ff8c42" stroke="#12261f" stroke-width="4" stroke-linejoin="round"/>' +
+         '<ellipse cx="44" cy="50" rx="32" ry="21" fill="#ffb13d" stroke="#12261f" stroke-width="4"/>' +
+         '<circle cx="28" cy="45" r="3.4" fill="#12261f"/>' +
+         '<path d="M44 29v14c6 0 6 8 0 8v20M12 50h12c0-6 8-6 8 0h12" fill="none" stroke="#12261f" stroke-width="2.5" stroke-dasharray="1 0"/>' +
+         '</svg></div>'
   }
 ];
