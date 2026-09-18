@@ -436,7 +436,9 @@
     var n = talVaerdi(liste[plads]);
     aebler = 0;
     if (n > 0) {
-      jubel = 1.2 + n * 0.45 + 1.2;
+      // Hvert talord faar tid til at blive sagt faerdigt (klippene varer op til 0,8 s), foer det naeste aeble kommer
+      var takt = 0.95;
+      jubel = 1.6 + n * takt + 0.9;
       for (var i = 1; i <= n; i++) {
         (function (k) {
           setTimeout(function () {
@@ -444,7 +446,7 @@
             aebler = k;
             tone(440 + k * 60, 0.15, 0.12);
             sigNavn(String(k));
-          }, 1000 + k * 450);
+          }, (1.6 + (k - 1) * takt) * 1000);
         })(i);
       }
     }
