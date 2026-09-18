@@ -30,6 +30,7 @@
   var STI = '../../assets/noto/';
 
   var svaerhed = 0;
+  var friLeg = false;
   var lydTil = true;
 
   var lærred = document.getElementById('spil');
@@ -84,6 +85,18 @@
     } catch (e) { /* lyd er pynt */ }
   }
 
+  function syd(længde) {
+    if (!lydTil) return;
+    try {
+      var k = lydKontekst(), n = Math.floor(k.sampleRate * længde);
+      var buf = k.createBuffer(1, n, k.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+      var kilde = k.createBufferSource(), f = k.createBiquadFilter(), g = k.createGain();
+      f.type = 'highpass'; f.frequency.value = 3000; g.gain.value = 0.12;
+      kilde.buffer = buf; kilde.connect(f).connect(g).connect(k.destination); kilde.start();
+    } catch (e) { /* lyd er pynt */ }
+  }
+
   function melodi(toner, mellemrum) {
     toner.forEach(function (f, i) { setTimeout(function () { tone(f, 0.16, 0.14); }, i * mellemrum); });
   }
@@ -132,7 +145,10 @@
   }
 
   var TAK = ['Mmm, tak!', 'Det smager dejligt!', 'Tusind tak!'];
-  function sigBestilling(b) { afspil('bestil_' + b.id + '.mp3', K.saetning(b), 3.5); }
+  function sigBestilling(b) {
+    if (b.fri) afspil('fri.mp3', 'Overrask mig!', 1.8);
+    else afspil('bestil_' + b.id + '.mp3', K.saetning(b), 3.5);
+  }
 
   /* ---------- laerred ---------- */
 
@@ -176,12 +192,12 @@
   /* ---------- dag ---------- */
 
   function nyVisning(i) {
-    return { ind: 0, flyvere: [], ryst: null, serverer: 0, gammel: null, bobleTil: 0, glad: 0, sidsteUps: -9 };
+    return { ind: 0, flyvere: [], ryst: null, serverer: 0, gammel: null, bobleTil: 0, glad: 0, sidsteUps: -9, vend: 0, vink: 0, bidder: 0 };
   }
 
   function nyDag(spillere) {
     antalSpillere = spillere;
-    dag = K.nyDag(spillere, svaerhed);
+    dag = K.nyDag(spillere, svaerhed, friLeg);
     visning = dag.stationer.map(function (s, i) { return nyVisning(i); });
     serverede = [];
     partikler = [];
@@ -193,7 +209,7 @@
   function kundeKommer(i, forsinkelse) {
     var v = visning[i];
     v.ind = -(forsinkelse || 0);
-    v.bobleTil = tid + (forsinkelse || 0) + 0.6 + (K.INDSTIL.huskeTid[svaerhed] || 1e9);
+    v.bobleTil = tid + (forsinkelse || 0) + 0.6 + ((!friLeg && K.INDSTIL.huskeTid[svaerhed]) || 1e9);
     setTimeout(function () {
       if (tilstand !== 'spiller' || !dag.stationer[i].bestilling) return;
       tone(880, 0.12, 0.08);
@@ -244,8 +260,22 @@
       // Kunden eller boblen: hoer og se bestillingen igen
       var iBoble = x > p.boble.x && x < p.boble.x + p.boble.b && y > p.boble.y && y < p.boble.y + p.boble.h;
       if (iBoble || Math.hypot(x - p.kunde.x, y - p.kunde.y) < p.kunde.str * 0.6) {
-        v.bobleTil = tid + (K.INDSTIL.huskeTid[svaerhed] || 1e9);
+        v.bobleTil = tid + ((!friLeg && K.INDSTIL.huskeTid[svaerhed]) || 1e9);
         sigBestilling(s.bestilling);
+        return;
+      }
+      // Foerst laves retten: rul dejen ud, vend boeffen, bag pandekagerne. Et tryk er et trin.
+      if (!K.forberedtFaerdig(dag, i)) {
+        if (Math.hypot(x - p.ret.x, y - p.ret.y) < p.ret.r * 1.6) {
+          K.forbered(dag, i);
+          v.vend = 0.35;
+          var ret = s.bestilling.ret;
+          if (ret === 'pizza') { tone(300 + s.forberedt * 80, 0.12, 0.12, 'sine'); puf(p.ret.x, p.ret.y, '#fff', 10, 160, 4, 0.5); }
+          else { syd(0.35); tone(ret === 'burger' ? 200 : 440 + s.forberedt * 110, 0.1, 0.08); puf(p.ret.x, p.ret.y - p.ret.r * 0.3, 'rgba(255,255,255,0.7)', 6, 90, 6, 0.6); }
+          if (K.forberedtFaerdig(dag, i)) setTimeout(function () { melodi([660, 990], 90); }, 200);
+        } else if (y > window.innerHeight * 0.76) {
+          v.vink = 0.6;                       // tryk paa hylden for tidligt: retten vinker
+        }
         return;
       }
       // Klokken
@@ -297,11 +327,21 @@
     visning.forEach(function (v, i) {
       if (v.ind < 1) v.ind = Math.min(1, v.ind + dt * 2.2);
       v.flyvere.forEach(function (f) { f.t = Math.min(1, f.t + dt * 3.6); });
+      v.vend = Math.max(0, v.vend - dt); v.vink = Math.max(0, v.vink - dt);
+      if (v.serverer > 0) {
+        var bt = 2.0 - v.serverer, skal = bt > 1.3 ? 3 : bt > 1.05 ? 2 : bt > 0.8 ? 1 : 0;
+        if (skal > v.bidder) {
+          v.bidder = skal;
+          var pl = plan(i);
+          tone(180 - skal * 20, 0.09, 0.14, 'square');
+          puf(pl.kunde.x + pl.kunde.str * 0.1, pl.kunde.y + pl.kunde.str * 0.4, '#e8b96a', 8, 140, 4, 0.5);
+        }
+      }
       if (v.ryst) { v.ryst.t -= dt; if (v.ryst.t <= 0) v.ryst = null; }
       if (v.serverer > 0) {
         v.serverer -= dt;
         if (v.serverer <= 0) {
-          v.serverer = 0; v.gammel = null;
+          v.serverer = 0; v.gammel = null; v.bidder = 0;
           if (dag.faerdig) { if (visning.every(function (x) { return x.serverer <= 0; })) afslut(); }
           else kundeKommer(i, 0);
         }
@@ -392,9 +432,10 @@
     }
   }
 
-  function tegnPandekager(x, y, r, lagt) {
+  function tegnPandekager(x, y, r, lagt, antal) {
+    if (antal === undefined) antal = 3;
     ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3;
-    for (var k = 0; k < 3; k++) {
+    for (var k = 0; k < antal; k++) {
       var yy = y + r * 0.2 - k * r * 0.22, b = r * (0.98 - k * 0.04);
       ctx.fillStyle = '#c98f4a'; ctx.beginPath(); ctx.ellipse(x, yy + r * 0.12, b, r * 0.34, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#f0c27a'; ctx.beginPath(); ctx.ellipse(x, yy, b, r * 0.34, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -416,6 +457,41 @@
         plads++;
       }
     });
+  }
+
+  function pande(x, y, r) {
+    ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3;
+    ctx.fillStyle = '#3a3f47'; ctx.beginPath(); ctx.roundRect(x + r * 0.9, y - r * 0.09, r * 0.9, r * 0.18, r * 0.09); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#2b2f36'; ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.55, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#4a505a'; ctx.beginPath(); ctx.ellipse(x, y + r * 0.04, r * 0.84, r * 0.42, 0, 0, Math.PI * 2); ctx.fill();
+  }
+
+  /** Retten mens den laves: trin 0-2. vend er 1 lige efter et tryk og falder til 0. */
+  function tegnForberedelse(ret, x, y, r, trin, vend) {
+    ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3;
+    if (ret === 'pizza') {
+      ctx.fillStyle = '#d9b07a'; ctx.beginPath(); ctx.roundRect(x - r * 1.15, y - r * 1.05, r * 2.3, r * 2.1, 18); ctx.fill(); ctx.stroke();
+      var dr = r * [0.34, 0.56, 0.78][trin] * (1 + vend * 0.12);
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      [[-0.8, -0.6], [0.75, -0.7], [0.85, 0.5], [-0.7, 0.75], [0.1, -0.9]].forEach(function (m) { ctx.beginPath(); ctx.arc(x + m[0] * r, y + m[1] * r, r * 0.05, 0, Math.PI * 2); ctx.fill(); });
+      ctx.fillStyle = '#f3dcae'; ctx.beginPath(); ctx.ellipse(x, y, dr, dr * (1 - vend * 0.15), 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    } else if (ret === 'burger') {
+      pande(x, y + r * 0.2, r * 1.05);
+      var hop = Math.sin(vend * Math.PI) * r * 0.7, klem = Math.abs(Math.cos(vend * Math.PI));
+      ctx.fillStyle = ['#e89a9a', '#b8705a', '#8a5236'][trin];
+      ctx.beginPath(); ctx.ellipse(x, y + r * 0.2 - hop, r * 0.62, r * 0.3 * Math.max(0.15, klem), 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    } else {
+      tallerken(x - r * 0.55, y + r * 0.35, r * 0.75);
+      tegnPandekager(x - r * 0.55, y + r * 0.1, r * 0.72, [], vend > 0 ? trin - 1 : trin);
+      pande(x + r * 0.85, y + r * 0.3, r * 0.62);
+      // Den nye pandekage flyver fra panden over paa stakken
+      if (vend > 0 && trin > 0) {
+        var e = 1 - vend, fx = x + r * 0.85 - r * 1.4 * e, fy = y + r * 0.3 - r * 0.6 * e - Math.sin(e * Math.PI) * r * 0.9;
+        ctx.fillStyle = '#f0c27a'; ctx.beginPath(); ctx.ellipse(fx, fy, r * 0.5, r * 0.2 * Math.max(0.2, Math.abs(Math.cos(e * Math.PI * 2))), 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      } else {
+        ctx.fillStyle = '#f6dc9c'; ctx.beginPath(); ctx.ellipse(x + r * 0.85, y + r * 0.32, r * 0.42, r * 0.2, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      }
+    }
   }
 
   function tegnRet(ret, x, y, r, lagt, faerdig) {
@@ -454,6 +530,13 @@
     ctx.fillStyle = '#fff'; ctx.fillRect(b.x + 1, b.y + b.h * 0.44, 6, b.h * 0.27);
 
     var ting = s.bestilling.ting;
+    if (s.bestilling.fri) {
+      // Fri leg: kunden vil have retten, resten bestemmer kokken
+      tegnBillede(s.bestilling.ret, b.x + b.b * 0.3, b.y + b.h / 2, b.h * 0.75);
+      tegnBillede('hjerte', b.x + b.b * 0.68, b.y + b.h / 2 + Math.sin(tid * 4) * b.h * 0.05, b.h * 0.5);
+      ctx.restore();
+      return;
+    }
     if (!synlig) {
       // 3 stjerner: bestillingen skal huskes. Tryk paa kunden for at se den igen.
       ctx.fillStyle = '#d9d4c7';
@@ -510,9 +593,15 @@
       if (ser) {
         var tt = Math.min(1, (2.0 - v.serverer) / 0.6), e = tt * tt * (3 - 2 * tt);
         rx += (p.kunde.x + p.kunde.str * 0.1 - rx) * e; ry += (p.kunde.y + p.kunde.str * 0.45 - ry) * e; rr *= 1 - e * 0.55;
-        if (2.0 - v.serverer > 1.0) ctx.globalAlpha = Math.max(0, 1 - (2.0 - v.serverer - 1.0) * 2.5);
+        rr *= [1, 0.78, 0.55, 0][v.bidder];      // kunden spiser retten i tre bidder
       }
-      tegnRet(ret, rx, ry, rr, lagtPaa, ser || K.klar(dag, i));
+      if (!ser && !K.forberedtFaerdig(dag, i)) {
+        var vink = v.vink > 0 ? Math.sin(v.vink * 40) * rr * 0.06 : 0;
+        // En ring der pulserer viser, hvor man skal trykke
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.5 + Math.sin(tid * 5) * 0.3) + ')'; ctx.lineWidth = 6; ctx.setLineDash([14, 12]);
+        ctx.beginPath(); ctx.arc(rx, ry, rr * (1.45 + Math.sin(tid * 5) * 0.05), 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+        tegnForberedelse(ret, rx + vink, ry, rr, s.forberedt, v.vend / 0.35);
+      } else if (rr > 0) tegnRet(ret, rx, ry, rr, lagtPaa, ser || K.klar(dag, i));
       ctx.globalAlpha = 1;
     }
 
@@ -528,12 +617,14 @@
 
     // Hylden
     var klar = K.klar(dag, i);
+    if (!K.forberedtFaerdig(dag, i)) ctx.globalAlpha = 0.35;
     p.knapper.forEach(function (kn) {
       var ryst = v.ryst && v.ryst.ting === kn.ting ? Math.sin(v.ryst.t * 50) * kn.r * 0.18 : 0;
       ctx.fillStyle = '#fff6e3'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.arc(kn.x + ryst, kn.y, kn.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       tegnBillede(kn.ting, kn.x + ryst, kn.y, kn.r * 1.35);
     });
+    ctx.globalAlpha = 1;
     // Klokken lyser og vipper, naar retten er klar
     var kl = p.klokke, vip = klar ? Math.sin(tid * 9) * 0.18 : (v.ryst && v.ryst.ting === 'klokke' ? Math.sin(v.ryst.t * 50) * 0.12 : 0);
     ctx.fillStyle = klar ? '#ffd23f' : '#d9c7a8'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
@@ -641,13 +732,14 @@
     dag = null;
     stopTale();
     var stjerneKnapper = [0, 1, 2].map(function (n) {
-      return '<button class="knap smal ikon' + (n === svaerhed ? ' valgt' : '') + '" data-handling="svaerhed" data-n="' + n + '" aria-label="' + (n + 1) + ' stjerner">' + stjerner(n + 1) + '</button>';
+      return '<button class="knap smal ikon' + (n === svaerhed && !friLeg ? ' valgt' : '') + '" data-handling="svaerhed" data-n="' + n + '" aria-label="' + (n + 1) + ' stjerner">' + stjerner(n + 1) + '</button>';
     }).join('');
     visOverlay(
       '<div class="kort">' +
       '<h2>Restauranten</h2>' +
       '<p class="hjaelp">Se hvad kunden vil have. Tryk maden op på tallerkenen, og ring på klokken.</p>' +
       '<div class="raekke">' + stjerneKnapper + '</div>' +
+      '<div class="raekke"><button class="knap smal' + (friLeg ? ' valgt' : '') + '" data-handling="fri">Fri leg</button></div>' +
       '<div class="raekke start">' +
       '<button class="knap gul" data-handling="start" data-spillere="1">1 spiller</button>' +
       '<button class="knap gul" data-handling="start" data-spillere="2">2 spillere</button>' +
@@ -663,7 +755,8 @@
     var knap = e.target.closest('[data-handling]');
     if (!knap) return;
     var h = knap.dataset.handling;
-    if (h === 'svaerhed') { svaerhed = parseInt(knap.dataset.n, 10); melodi([520, 660, 780].slice(0, svaerhed + 1), 70); visMenu(); }
+    if (h === 'fri') { friLeg = !friLeg; tone(friLeg ? 880 : 520, 0.12); visMenu(); }
+    else if (h === 'svaerhed') { friLeg = false; svaerhed = parseInt(knap.dataset.n, 10); melodi([520, 660, 780].slice(0, svaerhed + 1), 70); visMenu(); }
     else if (h === 'lyd') { lydTil = !lydTil; if (lydTil) tone(660, 0.12); else stopTale(); visMenu(); }
     else if (h === 'start') { skjulOverlay(); nyDag(parseInt(knap.dataset.spillere, 10)); }
     else if (h === 'igen') { skjulOverlay(); nyDag(antalSpillere); }
@@ -681,7 +774,7 @@
       serveret: dag ? dag.serveret : null, maal: dag ? dag.maal : null,
       stationer: dag ? dag.stationer.map(function (s, i) {
         var p = plan(i);
-        return { kunde: s.kunde, bestilling: s.bestilling ? s.bestilling.id : null, ting: s.bestilling ? s.bestilling.ting : [], lagt: s.lagt.slice(), klar: s.bestilling ? K.klar(dag, i) : false,
+        return { kunde: s.kunde, bestilling: s.bestilling ? s.bestilling.id : null, ting: s.bestilling ? s.bestilling.ting : [], lagt: s.lagt.slice(), forberedt: s.forberedt, forberedtFaerdig: s.bestilling ? K.forberedtFaerdig(dag, i) : false, ret: { x: Math.round(p.ret.x), y: Math.round(p.ret.y) }, hylde: s.hylde.slice(), fri: friLeg, klar: s.bestilling ? K.klar(dag, i) : false,
           optaget: visning[i].serverer > 0 || visning[i].ind < 1,
           knapper: p.knapper.map(function (k) { return { ting: k.ting, x: Math.round(k.x), y: Math.round(k.y) }; }), klokke: { x: Math.round(p.klokke.x), y: Math.round(p.klokke.y) } };
       }) : null

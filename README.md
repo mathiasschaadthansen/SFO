@@ -274,6 +274,12 @@ ingredienserne op på tallerkenen og ringer på klokken. En forkert ingrediens
 hopper bare tilbage, der er ingen tid og ingen sure kunder. To børn har hver
 sin station og serverer mod det samme mål, så de arbejder sammen.
 
+Hver ret laves først med tre tryk: pizzadejen rulles ud, bøffen vendes på
+panden, og pandekagerne bages og flyver over på stakken. Først derefter kommer
+ingredienserne på. Kunden spiser retten i tre bidder. I **Fri leg** er der
+ingen bestilling: kunden vil bare have en pizza, burger eller pandekager, og
+barnet bestemmer selv, hvad der kommer på.
+
 En stjerne er to-tre ingredienser og fire ting på hylden. To stjerner er flere
 ingredienser og seks ting på hylden. Tre stjerner har dobbelte ingredienser, og
 boblen forsvinder efter fem sekunder, så bestillingen skal huskes. Et tryk på
@@ -281,5 +287,5 @@ kunden viser og siger den igen.
 
 Bestillingerne er en fast liste i `koekken.js` med et id hver (`p1a`, `b2c` ...),
 så hver bestilling kan få sit eget stemmeklip: `lyd/bestil_<id>.mp3`, plus
-`tak_1.mp3` til `tak_3.mp3`, `ups.mp3` og `dag.mp3`. Filer der står i
+`tak_1.mp3` til `tak_3.mp3`, `ups.mp3`, `dag.mp3` og `fri.mp3`. Filer der står i
 `lyd/klip.json` bruges; resten siges af enhedens egen stemme.

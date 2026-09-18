@@ -14,6 +14,8 @@
   'use strict';
 
   var INDSTIL = {
+    forberedTrin: 3,          // tryk for at rulle dej, vende boef eller bage pandekager
+    friMaks: 6,               // saa mange ting kan der ligge paa en ret i fri leg,
     kunderPrDag: [6, 8],     // hvor mange der skal serveres: [1 spiller, 2 spillere i alt]
     hyldeStr:    [4, 6, 6],  // hvor mange ingredienser der staar paa hylden pr. stjerne
     huskeTid:    [0, 0, 5]   // sekunder boblen vises paa 3 stjerner, foer man skal huske den. 0 = altid
@@ -102,6 +104,20 @@
 
   function nyKunde(dag, station) {
     var s = dag.stationer[station];
+    s.forberedt = 0;
+    if (dag.fri) {
+      // Fri leg: kunden vil overraskes. Retterne skifter, og alt paa hylden maa bruges.
+      var retter = Object.keys(RETTER);
+      s.friNr = (s.friNr === undefined ? station : s.friNr + 1);
+      var ret = retter[s.friNr % retter.length];
+      var opt = dag.stationer.map(function (x) { return x.kunde; });
+      s.bestilling = { id: 'fri', ret: ret, ting: [], fri: true, stjerner: 0 };
+      s.kunde = bland(KUNDER.filter(function (k) { return opt.indexOf(k) < 0 && k !== s.sidsteKunde; }))[0];
+      s.sidsteKunde = s.kunde;
+      s.lagt = [];
+      s.hylde = RETTER[ret].hylde.slice();
+      return;
+    }
     var mulige = BESTILLINGER.filter(function (b) { return b.stjerner === dag.niveau + 1 && b.id !== s.sidsteId; });
     // To stationer skal helst ikke have samme bestilling paa samme tid
     var andre = dag.stationer.filter(function (x, i) { return i !== station && x.bestilling; }).map(function (x) { return x.bestilling.id; });
@@ -120,10 +136,11 @@
     s.hylde = bland(brug.concat(resten).slice(0, Math.max(brug.length, INDSTIL.hyldeStr[dag.niveau])));
   }
 
-  function nyDag(antalSpillere, niveau) {
+  function nyDag(antalSpillere, niveau, fri) {
     niveau = Math.max(0, Math.min(2, niveau | 0));
     var dag = {
       niveau: niveau,
+      fri: !!fri,
       maal: INDSTIL.kunderPrDag[antalSpillere === 2 ? 1 : 0],
       serveret: 0,
       faerdig: false,
@@ -147,17 +164,38 @@
     return ud;
   }
 
+  /**
+   * Foer ingredienserne skal retten laves: dejen rulles ud, boeffen vendes, pandekagerne bages.
+   * Et tryk er et trin. Returnerer true, hvis trykket talte.
+   */
+  function forbered(dag, station) {
+    var s = dag.stationer[station];
+    if (dag.faerdig || !s.bestilling || s.forberedt >= INDSTIL.forberedTrin) return false;
+    s.forberedt++;
+    return true;
+  }
+
+  function forberedtFaerdig(dag, station) { return dag.stationer[station].forberedt >= INDSTIL.forberedTrin; }
+
   /** Laeg en ingrediens paa. 'ok' hvis den hoerer til og der mangler en, ellers 'forkert'. */
   function laeg(dag, station, ting) {
     var s = dag.stationer[station];
     if (dag.faerdig || !s.bestilling) return 'forkert';
+    if (s.forberedt < INDSTIL.forberedTrin) return 'vent';
+    if (s.bestilling.fri) {
+      if (s.lagt.length >= INDSTIL.friMaks || s.hylde.indexOf(ting) < 0) return 'forkert';
+      s.lagt.push(ting);
+      return 'ok';
+    }
     if (antalAf(s.lagt, ting) >= antalAf(s.bestilling.ting, ting)) return 'forkert';
     s.lagt.push(ting);
     return 'ok';
   }
 
   function klar(dag, station) {
-    return !!dag.stationer[station].bestilling && mangler(dag, station).length === 0;
+    var s = dag.stationer[station];
+    if (!s.bestilling || s.forberedt < INDSTIL.forberedTrin) return false;
+    return s.bestilling.fri ? s.lagt.length > 0 : mangler(dag, station).length === 0;
   }
 
   /** Ring paa klokken. Returnerer true hvis retten blev serveret. */
@@ -175,6 +213,6 @@
 
   rod.Koekken = {
     INDSTIL: INDSTIL, INGREDIENSER: INGREDIENSER, RETTER: RETTER, KUNDER: KUNDER, BESTILLINGER: BESTILLINGER,
-    saetning: saetning, nyDag: nyDag, laeg: laeg, klar: klar, server: server, mangler: mangler
+    saetning: saetning, nyDag: nyDag, forbered: forbered, forberedtFaerdig: forberedtFaerdig, laeg: laeg, klar: klar, server: server, mangler: mangler
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);

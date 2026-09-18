@@ -63,7 +63,7 @@ def restaurant():
             ) % os.path.join(ROD, 'games', 'restaurant', 'js', 'koekken.js')
     return [tuple(x) for x in json.loads(subprocess.check_output(['node', '-e', kode]))] + [
         ('tak_1.mp3', 'Mmm, tak!'), ('tak_2.mp3', 'Det smager dejligt!'), ('tak_3.mp3', 'Tusind tak!'),
-        ('ups.mp3', 'Ups, det bestilte jeg ikke.'), ('dag.mp3', 'Sikke en god dag i restauranten!')]
+        ('ups.mp3', 'Ups, det bestilte jeg ikke.'), ('dag.mp3', 'Sikke en god dag i restauranten!'), ('fri.mp3', 'Overrask mig!')]
 
 
 def opgaver(kun):
