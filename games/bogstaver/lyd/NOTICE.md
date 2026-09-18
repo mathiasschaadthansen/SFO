@@ -16,3 +16,7 @@ eller lav klippene med `vaerktoej/lav-lyd-elevenlabs.py`, se README.
 Optagelser lavet til projektet er projektets egne. Er klippene lavet med
 ElevenLabs på gratis-planen, gælder deres krav om kreditering: stemmen er
 genereret med elevenlabs.io.
+
+**Status september 2026:** Klippene er lavet med ElevenLabs, stemmen Camilla
+(`4RklGmuxoAskAbGXplXN`), og pakket ned til mono 22 kHz, 48 kbps med stilheden
+klippet væk. Stemmen er genereret med elevenlabs.io.

@@ -487,7 +487,7 @@
           k.vist = 99;
           melodi([660, 880, 1100, 1320], 90);
           fest(k.x, k.y);
-          setTimeout(naesteTegn, 2600);
+          setTimeout(naesteTegn, 3400);      // tid til at hoere og se ordet
         } else {
           k.vip = 0.7;
           k.vist = 1.6;      // ordet vises kort, saa man kan se det starter med noget andet
@@ -499,12 +499,12 @@
   }
 
   /** Et ord skrevet med spillets egne streger, centreret om (cx, cy). Store eller smaa efter kategori. */
-  function tegnOrd(ord, cx, cy, hoejde) {
+  function tegnOrd(ord, cx, cy, hoejde, fremhaev) {
     var bogstaver = ord.split('').map(function (ch) { return kategori === 'smaa' ? tingNavn(ch) : tingNavn(ch).toUpperCase(); });
     var b = hoejde * 0.72;
     var x0 = cx - bogstaver.length * b / 2;
     bogstaver.forEach(function (n, i) {
-      if (G[n]) tegnGlyf(ctx, G[n], x0 + i * b, cy - hoejde / 2, hoejde, '#12261f', 9);
+      if (G[n]) tegnGlyf(ctx, G[n], x0 + i * b, cy - hoejde / 2, hoejde, fremhaev && i === 0 ? fremhaev : '#12261f', fremhaev ? 11 : 9);
     });
   }
 
@@ -541,9 +541,20 @@
         ctx.beginPath(); ctx.arc(0, 0, k.str * 0.25, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
-      if (k.vist > 0) tegnOrd(t.ord, 0, k.str * 0.36, k.str * 0.17);
+      if (k.vist > 0 && !(vaelgLoest && k.rigtig)) tegnOrd(t.ord, 0, k.str * 0.36, k.str * 0.17);
       ctx.restore();
     });
+    // Rigtigt svar: ordet staar stort paa skaermen med forbogstavet i farve, mens stemmen siger det
+    if (vaelgLoest) {
+      var rigtig = kort.filter(function (k) { return k.rigtig; })[0];
+      if (rigtig) {
+        var ord = rigtig.ting.ord, hh = Math.min(H * 0.12, B * 0.8 / (ord.length * 0.72 + 1));
+        var bb = ord.length * hh * 0.72 + hh * 0.9, yy = H - hh * 1.6 - 12;
+        ctx.fillStyle = '#f7f3e8'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.roundRect(B / 2 - bb / 2, yy, bb, hh * 1.6, 26); ctx.fill(); ctx.stroke();
+        tegnOrd(ord, B / 2, yy + hh * 0.8, hh, '#ff8c42');
+      }
+    }
   }
 
   /** Koeretoejet, tegnet omkring (0,0) med fronten mod +x, i kasse-enheder. */

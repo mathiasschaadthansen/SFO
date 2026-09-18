@@ -6,3 +6,10 @@ node_modules/
 *.onnx
 *.onnx.json
 *.wav
+
+# Raa lydklip fra ElevenLabs, foer de er pakket ned i games/*/lyd/
+/Bogstaver/
+/Hvad starter med/
+/Ord/
+/Tal/
+__pycache__/

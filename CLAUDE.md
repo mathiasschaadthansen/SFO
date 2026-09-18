@@ -16,12 +16,13 @@ hurtig finger. Restaurant-testen lader en robot servere en hel dag og tjekker,
 at alle bestillinger kan laves med det, der står på hylden. Tegn-testen tjekker, at
 alle 16 figurer kan tegnes, og at puslespillet kan samles.
 
-**Stemme.** Bogstaver bruger enhedens egen talesyntese til bogstavnavne, tal,
-ord og spørgsmål. Kun stemmer med `localService` bruges, så der aldrig går
-noget over nettet. Syntetiske klip fra Piper blev prøvet og forkastet: iPad'ens
-stemme udtaler bogstaverne bedre. Rigtige optagelser kan lægges ind med
-`vaerktoej/optag.html` og `lav-lyd.py`; ligger et klip i `lyd/klip.json`,
-bruges det i stedet for talesyntesen.
+**Stemme.** Bogstaver bruger rigtige klip med en dansk stemme fra ElevenLabs
+(Camilla) til bogstavnavne, tal, ord og spørgsmål. Klippene ligger som små
+MP3-filer i `games/bogstaver/lyd/` og står i `lyd/klip.json`. Mangler et klip,
+siger enhedens egen talesyntese det i stedet, og kun stemmer med `localService`
+bruges, så der aldrig går noget over nettet. Klip laves én gang med
+`vaerktoej/lav-lyd-elevenlabs.py` eller lægges ind med `--registrer`. Piper blev
+prøvet og forkastet på udtalen.
 
 ## Rammer der ikke skal brydes
 
