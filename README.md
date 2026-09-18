@@ -70,8 +70,15 @@ vaerktoej/lav-lyd.py    pakker optagelser som MP3 og skriver klip.json
 vaerktoej/lav-lyd-elevenlabs.py  laver klippene med ElevenLabs, én gang, med din egen nøgle
 vaerktoej/optag.html    optagerside: siger man de 146 ord ind, får man WAV-filer med rigtige navne
 
+games/restaurant/
+  js/koekken.js         retter, ingredienser, de 36 bestillinger og reglerne — ingen DOM
+  js/game.js            kunder, tallerken, hylde, klokke, lyd og stemme
+  lyd/klip.json         stemmeklip til bestillingerne, hvis der er nogen
+assets/noto/*.svg       mad og dyr, Noto Emoji (Apache 2.0, se assets/noto/NOTICE.md)
+
 test/bobler.test.js     en robot spiller alle tolv baner igennem
 test/bogstaver.test.js  alle 39 tegn kan tegnes af en finger langs stregen
+test/restaurant.test.js en robot serverer en hel dag for en og to spillere på alle tre stjerner
 ```
 
 `physics.js` rører hverken DOM eller canvas. Det er derfor testen kan køre i
@@ -258,3 +265,21 @@ og om de er på asfalt.
 
 Al grafik tegnes i kode. Der er ingen figurer, navne eller lyde fra
 kommercielle spil i projektet, og der skal ikke lægges nogen ind.
+
+## Restauranten
+
+En dyrekunde bestiller pizza, burger eller pandekager. Boblen viser retten og
+ingredienserne som billeder, og stemmen siger bestillingen. Barnet trykker
+ingredienserne op på tallerkenen og ringer på klokken. En forkert ingrediens
+hopper bare tilbage, der er ingen tid og ingen sure kunder. To børn har hver
+sin station og serverer mod det samme mål, så de arbejder sammen.
+
+En stjerne er to-tre ingredienser og fire ting på hylden. To stjerner er flere
+ingredienser og seks ting på hylden. Tre stjerner har dobbelte ingredienser, og
+boblen forsvinder efter fem sekunder, så bestillingen skal huskes. Et tryk på
+kunden viser og siger den igen.
+
+Bestillingerne er en fast liste i `koekken.js` med et id hver (`p1a`, `b2c` ...),
+så hver bestilling kan få sit eget stemmeklip: `lyd/bestil_<id>.mp3`, plus
+`tak_1.mp3` til `tak_3.mp3`, `ups.mp3` og `dag.mp3`. Filer der står i
+`lyd/klip.json` bruges; resten siges af enhedens egen stemme.

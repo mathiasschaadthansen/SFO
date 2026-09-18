@@ -45,7 +45,7 @@ const total = iMappen.reduce((a, n) => a + fs.statSync(path.join(ROD, 'assets', 
 tjek('sprites fylder under 300 KB i alt', total < 300 * 1024, Math.round(total / 1024) + ' KB');
 tjek('sprites.js er med i service workerens FILER', sw.includes("'js/sprites.js'"));
 tjek('skal.js er med i service workerens FILER', sw.includes("'js/skal.js'"));
-const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
+const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
 tjek('alle spilsider har skallen med hjem-knappen', spilSider.every(h => h.includes('js/skal.js')));
 // Overlayet skal vaere det der ruller (ikke kortet med en hoejde i vh: paa iOS er 100vh hoejere
 // end det synlige felt, saa knappen i bunden fjedrede tilbage), og lave skaerme skal have et kompakt layout.

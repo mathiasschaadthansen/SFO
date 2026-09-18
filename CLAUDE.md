@@ -12,7 +12,8 @@ Klatbold-testen tjekker mål, overligger, hop og at AI'en kan nå bolden.
 Bobler-testen lader en robot spille alle tolv baner igennem på alle tre
 sværhedsgrader, så ingen bane kan blive umulig. Bogstav-testen tjekker, at alle
 68 tegn kan tegnes færdige af en finger, der følger stregen, også en skæv og en
-hurtig finger.
+hurtig finger. Restaurant-testen lader en robot servere en hel dag og tjekker,
+at alle bestillinger kan laves med det, der står på hylden.
 
 **Stemme.** Bogstaver bruger enhedens egen talesyntese til bogstavnavne, tal,
 ord og spørgsmål. Kun stemmer med `localService` bruges, så der aldrig går

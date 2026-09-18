@@ -64,5 +64,17 @@ window.SPIL = [
          '<img src="assets/kenney/bil_lille.png" alt="" style="left:36px;top:2px;height:44px;transform:rotate(20deg)">' +
          '<img src="games/bogstaver/ting/aeble.svg" alt="" style="left:64px;top:56px;width:44px">' +
          '</div>'
+  },
+  {
+    id: 'restaurant',
+    navn: 'Restauranten',
+    tekst: 'Lav pizza, burger og pandekager til dyrene. To kan lave mad sammen.',
+    farve: '#ffe0b8',
+    sti: 'games/restaurant/',
+    art: '<div class="art">' +
+         '<img src="assets/noto/pizza.svg" alt="" style="left:0;top:26px;width:74px">' +
+         '<img src="assets/noto/bjoern.svg" alt="" style="left:56px;top:0;width:54px">' +
+         '<img src="assets/noto/klokke.svg" alt="" style="left:70px;top:64px;width:40px">' +
+         '</div>'
   }
 ];

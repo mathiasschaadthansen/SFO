@@ -20,12 +20,14 @@ Valg:
     --alle           lav ogsaa klip der findes i forvejen
     --registrer      lav ikke noget, men skriv klip.json og sw.js ud fra de mp3-filer der ligger i lyd/
                      (bruges naar klippene er lavet et andet sted, fx i en Claude-chat med ElevenLabs)
+    --spil <navn>    bogstaver (standard) eller restaurant
     --proev          vis hvad der ville blive lavet, uden at kalde ElevenLabs
 """
 import json, os, re, sys, time, urllib.parse, urllib.request, urllib.error
 
 ROD = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-UD = os.path.join(ROD, 'games', 'bogstaver', 'lyd')
+SPIL = sys.argv[sys.argv.index('--spil') + 1] if '--spil' in sys.argv else 'bogstaver'   # bogstaver | restaurant
+UD = os.path.join(ROD, 'games', SPIL, 'lyd')
 API = 'https://api.elevenlabs.io/v1'
 
 # Bogstavernes navne som de siges. Ret her hvis et navn udtales forkert.
@@ -53,7 +55,20 @@ def ting():
     return json.loads(subprocess.check_output(['node', '-e', kode]))
 
 
+def restaurant():
+    """Bestillingerne fra koekken.js, laest via node saa listen kun findes ét sted."""
+    import subprocess
+    kode = ("const { Koekken: K } = require(%r);"
+            "console.log(JSON.stringify(K.BESTILLINGER.map(b => ['bestil_' + b.id + '.mp3', K.saetning(b)])));"
+            ) % os.path.join(ROD, 'games', 'restaurant', 'js', 'koekken.js')
+    return [tuple(x) for x in json.loads(subprocess.check_output(['node', '-e', kode]))] + [
+        ('tak_1.mp3', 'Mmm, tak!'), ('tak_2.mp3', 'Det smager dejligt!'), ('tak_3.mp3', 'Tusind tak!'),
+        ('ups.mp3', 'Ups, det bestilte jeg ikke.'), ('dag.mp3', 'Sikke en god dag i restauranten!')]
+
+
 def opgaver(kun):
+    if SPIL == 'restaurant':
+        return restaurant()
     ud = []
     if kun in (None, 'bogstaver'):
         ud += [('bogstav_%s.mp3' % n, t) for n, t in NAVNE.items()]
@@ -137,9 +152,9 @@ def registrer():
     json.dump(klip, open(os.path.join(UD, 'klip.json'), 'w'), indent=0)
     p = os.path.join(ROD, 'sw.js')
     s = open(p, encoding='utf-8').read()
-    s = re.sub(r"  'games/bogstaver/lyd/[^']+\.mp3',\n", '', s)
-    linjer = ''.join("  'games/bogstaver/lyd/%s',\n" % f for f in klip)
-    s = s.replace("  'games/bogstaver/lyd/klip.json',\n", "  'games/bogstaver/lyd/klip.json',\n" + linjer)
+    s = re.sub(r"  'games/%s/lyd/[^']+\.mp3',\n" % SPIL, '', s)
+    linjer = ''.join("  'games/%s/lyd/%s',\n" % (SPIL, f) for f in klip)
+    s = s.replace("  'games/%s/lyd/klip.json',\n" % SPIL, "  'games/%s/lyd/klip.json',\n" % SPIL + linjer)
     open(p, 'w', encoding='utf-8').write(s)
     forventet = set(f for f, _ in opgaver(None))
     mangler = sorted(forventet - set(klip))
