@@ -1438,26 +1438,6 @@
   function visOverlay(html) { overlay.innerHTML = html; overlay.hidden = false; }
   function skjulOverlay() { overlay.hidden = true; overlay.innerHTML = ''; vinderCanvas = null; }
 
-  function blyantIkon() {
-    return '<svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">' +
-      '<path d="M8 36l3-10L28 9l7 7-17 17z" fill="#ffd23f" stroke="#12261f" stroke-width="3" stroke-linejoin="round"/>' +
-      '<path d="M8 36l3-10 7 7z" fill="#12261f"/><path d="M25 12l7 7" stroke="#12261f" stroke-width="3"/></svg>';
-  }
-  function luppIkon() {
-    return '<svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">' +
-      '<circle cx="18" cy="18" r="11" fill="#7fd0f5" stroke="#12261f" stroke-width="3"/>' +
-      '<path d="M26 26l11 11" stroke="#12261f" stroke-width="5" stroke-linecap="round"/></svg>';
-  }
-  /** Et billede med tre bogstavkasser under: ordet tegnes ud fra tingen. */
-  function ordIkon() {
-    return '<svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">' +
-      '<rect x="12" y="3" width="20" height="18" rx="4" fill="#f7f3e8" stroke="#12261f" stroke-width="3"/>' +
-      '<circle cx="19" cy="10" r="3" fill="#ffd23f"/>' +
-      '<path d="M14 19l6-6 4 4 3-3 5 5" fill="#4cb944" stroke="#12261f" stroke-width="2" stroke-linejoin="round"/>' +
-      '<rect x="4" y="27" width="10" height="12" rx="2" fill="#ff8c42" stroke="#12261f" stroke-width="2.5"/>' +
-      '<rect x="17" y="27" width="10" height="12" rx="2" fill="#f7f3e8" stroke="#12261f" stroke-width="2.5"/>' +
-      '<rect x="30" y="27" width="10" height="12" rx="2" fill="#f7f3e8" stroke="#12261f" stroke-width="2.5"/></svg>';
-  }
 
   function visMenu() {
     tilstand = 'venter';
@@ -1480,10 +1460,11 @@
       }).join('') + '</div>' +
       Menu.stjerneRaekke(svaerhed) +
       // De tre lege som store groenne knapper: det er dem, man trykker paa for at gaa i gang
+      // Hver leg vises som et lille billede af selve legen, tegnet med spillets egne streger
       '<div class="raekke lege">' +
-      '<button class="knap groen" data-handling="gitter" aria-label="Tegn">' + blyantIkon() + '</button>' +
-      '<button class="knap groen" data-handling="find" aria-label="Find">' + luppIkon() + '</button>' +
-      '<button class="knap groen" data-handling="ord" aria-label="Ord">' + ordIkon() + '</button>' +
+      '<button class="knap groen" data-handling="gitter" aria-label="Tegn bogstaver"><canvas width="220" height="170" style="' + FLISE_STIL + '" data-leg="tegn"></canvas></button>' +
+      '<button class="knap groen" data-handling="find" aria-label="Find bogstavet"><canvas width="220" height="170" style="' + FLISE_STIL + '" data-leg="find"></canvas></button>' +
+      '<button class="knap groen" data-handling="ord" aria-label="Tegn ord"><canvas width="220" height="170" style="' + FLISE_STIL + '" data-leg="ord"></canvas></button>' +
       '</div>' +
       Menu.lydRaekke(lydTil) +
       '</div>'
@@ -1495,8 +1476,56 @@
       tegnKoeretoej(c, cv.dataset.koeretoej, cv.dataset.koeretoej === 'raket', 0.6);
       c.restore();
     });
+    overlay.querySelectorAll('canvas[data-leg]').forEach(tegnLegIkon);
+    // Kattens SVG kan vaere paa vej: tegn ordikonet igen, naar den er hentet
+    var kat = billeder['ting/kat.svg'];
+    if (kat && !(kat.complete && kat.naturalWidth > 0)) {
+      kat.addEventListener('load', function () { var cv = overlay.querySelector('canvas[data-leg="ord"]'); if (cv) tegnLegIkon(cv); }, { once: true });
+    }
     if (!visMenu.venter) {
       visMenu.venter = Sprites.naarKlar(KOERETOEJ_SPRITES, function () { visMenu.venter = false; if (tilstand === 'venter' && overlay.querySelector('canvas[data-koeretoej]')) visMenu(); });
+    }
+  }
+
+  /**
+   * Billedet paa hver legeknap: TEGN er et A, som bilen er ved at koere; FIND
+   * er bobler med bogstaver, hvor det rigtige er fremhaevet; ORD er katten med
+   * KAT skrevet under, halvt tegnet. Saa kan man se, hvad legen gaar ud paa,
+   * uden at laese.
+   */
+  function tegnLegIkon(cv) {
+    var c = cv.getContext('2d'), leg = cv.dataset.leg, B = cv.width, H = cv.height;
+    c.clearRect(0, 0, B, H);
+    c.fillStyle = '#f7f3e8'; c.strokeStyle = '#12261f'; c.lineWidth = 5;
+    c.beginPath(); c.roundRect(3, 3, B - 6, H - 6, 22); c.fill(); c.stroke();
+    if (leg === 'tegn') {
+      // Et A: vej i graat, foerste streg koert i orange, og bilen for enden af den
+      var s = 130, x = B / 2 - s / 2, y = 20;
+      tegnGlyf(c, G.A, x, y, s, '#8a8f97', 14);
+      tegnGlyf(c, G.A, x, y, s, STREGFARVE, 14, { aktiv: 0, indeks: G.A.streger[0].length - 1 });
+      var slut = G.A.streger[0][G.A.streger[0].length - 1], fra = G.A.streger[0][0];
+      c.save();
+      c.translate(x + slut[0] * s / 100, y + slut[1] * s / 100);
+      c.rotate(Math.atan2(slut[1] - fra[1], slut[0] - fra[0]));
+      c.scale(1.8, 1.8);
+      tegnKoeretoej(c, 'bil', true, 0.3);
+      c.restore();
+    } else if (leg === 'find') {
+      // Tre bobler med bogstaver; den midterste er fundet og lyser gult
+      [['K', 44, 98, '#7fd0f5'], ['A', 110, 72, '#ffd23f'], ['S', 176, 100, '#c9ecfb']].forEach(function (b) {
+        c.fillStyle = b[3]; c.strokeStyle = '#12261f'; c.lineWidth = 4;
+        c.beginPath(); c.arc(b[1], b[2], 36, 0, Math.PI * 2); c.fill(); c.stroke();
+        tegnGlyf(c, G[b[0]], b[1] - 23, b[2] - 24, 46, '#12261f', 7);
+      });
+    } else {
+      // Katten og ordet KAT under den, de to foerste bogstaver tegnet i orange
+      var img = billeder['ting/kat.svg'];
+      if (img && img.complete && img.naturalWidth > 0) c.drawImage(img, B / 2 - 40, 8, 80, 80);
+      else { c.save(); c.translate(B / 2, 48); c.scale(0.7, 0.7); c.strokeStyle = '#12261f'; c.lineWidth = 3; Ting.TING.K[0].tegn(c); c.restore(); }
+      var ord = ['K', 'A', 'T'], bs = 62, x0 = B / 2 - ord.length * bs * 0.72 / 2 - 4;
+      ord.forEach(function (n, i) {
+        tegnGlyf(c, G[n], x0 + i * bs * 0.72, 92, bs, i < 2 ? STREGFARVE : '#8a8f97', 9);
+      });
     }
   }
 
