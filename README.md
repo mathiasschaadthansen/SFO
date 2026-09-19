@@ -15,7 +15,8 @@ Spillene indtil nu:
   (dobbeltsnor, klæbesnor, frys, skjold), ingen liv. To spillere hjælper
   hinanden og vinder sammen.
 - **Bogstaver**: kør en bil, en raket eller en pensel langs A-Å, a-å og 0-9,
-  eller find det rigtige bogstav blandt bobler. Tal vises også som æbler, der
+  find det rigtige bogstav blandt bobler, eller tegn hele ord bogstav for
+  bogstav med billedet af tingen ved siden af. Tal vises også som æbler, der
   tælles. På 3 stjerner siger skyen bogstavet i stedet for at vise det. Navnene
   siges med iPad'ens indbyggede danske stemme, hvis der er en.
 
@@ -62,7 +63,7 @@ test/klatbold.test.js   mål, overligger, hop, AI og en hel kamp mellem to AI'er
 games/bogstaver/
   js/glyffer.js         A-Å og 0-9 som streger i skriveretning — ingen DOM
   js/spor.js            følger fingeren langs stregerne — ingen DOM
-  js/ting.js            en ting pr. bogstav til "hvad starter med"
+  js/ting.js            ting pr. bogstav til "hvad starter med" og til Ord
   ting/*.svg            tingenes tegninger, Noto Emoji (Apache 2.0, se ting/NOTICE.md)
   js/game.js            tegn- og find-legen, minispillet, menu, stemme
   lyd/klip.json         rigtige optagelser, hvis der er nogen (se lyd/NOTICE.md)
@@ -77,7 +78,7 @@ games/restaurant/
 assets/noto/*.svg       mad og dyr, Noto Emoji (Apache 2.0, se assets/noto/NOTICE.md)
 
 test/bobler.test.js     en robot spiller alle tolv baner igennem
-test/bogstaver.test.js  alle 39 tegn kan tegnes af en finger langs stregen
+test/bogstaver.test.js  alle 68 tegn kan tegnes af en finger langs stregen, ting, ord og regnestykker
 games/tegn/
   js/figurer.js         16 figurer i fire universer som streger og farver — ingen DOM
   js/pusle.js           puslespillets brikker, tappe og klik-på-plads — ingen DOM
@@ -180,11 +181,23 @@ Tegnene ligger i `games/bogstaver/js/glyffer.js` som streger i en kasse på
 Små bogstaver står på en grundlinje ved y=80. Tilføj et tegn ved at skrive en
 linje til og sætte navnet ind i `BOGSTAVER`, `SMAA` eller `TAL`.
 
-Efter et tegnet bogstav kommer et minispil: tre ting, og barnet skal trykke på
-den, der starter med bogstavet. Tingene ligger i `games/bogstaver/js/ting.js`
-med ét ord, en SVG i `ting/` og en tegning i kode som reserve pr. bogstav. Se
-`ting/NOTICE.md` for hvordan man tilføjer en ting. Q, W og Z har ingen ting og
-springer minispillet over.
+Efter et tegnet bogstav kommer et minispil: tre ting, og barnet skal finde
+den, der starter med bogstavet. Spørgsmålet stilles først. Et tryk på et kort
+vender det, så ordet står på bagsiden med forbogstavet i farve, og stemmen
+siger ordet. Kortene må vendes så tit man vil. Svaret gives med det grønne
+flueben under kortet, og et tryk på skyen gentager spørgsmålet. Forkert svar
+vender kortet og stiller spørgsmålet igen, ingen straf. Tingene ligger i
+`games/bogstaver/js/ting.js` med ét ord, en SVG i `ting/` og en tegning i kode
+som reserve pr. bogstav. Se `ting/NOTICE.md` for hvordan man tilføjer en ting.
+Q, W og Z har ingen ting og springer minispillet over.
+
+**Ord** tegner hele ord: billedet af tingen står i en sky, stemmen siger ordet,
+og bogstaverne tegnes ét ad gangen på en række med det samme køretøj som i Tegn.
+Færdige bogstaver bliver stående i farve, og til sidst siges ordet igen. Store
+eller små bogstaver følger ABC/abc i menuen. Stjernerne vælger ordlængden
+(`Ting.ORD_LAENGDE`): én stjerne er ord på højst tre bogstaver, to stjerner op
+til fem, tre stjerner alle 78. Kasserne er mindre end i Tegn, så tolerancen
+skrues op, så fingeren får omtrent samme plads på skærmen.
 
 Efter et tal kommer et regnestykke, hvor svaret er netop det tal, man har
 tegnet (`js/regn.js`): tre svarkort, og æbler under tallene at tælle på. En

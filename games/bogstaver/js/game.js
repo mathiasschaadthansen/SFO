@@ -1,9 +1,10 @@
 /**
  * Bogstaver.
  *
- * To lege: TEGN, hvor man foelger bogstavet med fingeren, og FIND, hvor
- * bogstaver svaever rundt i bobler, og man popper det rigtige.
- * Store bogstaver A-Å og tallene 0-9.
+ * Tre lege: TEGN, hvor man foelger bogstavet med fingeren, FIND, hvor
+ * bogstaver svaever rundt i bobler, og man popper det rigtige, og ORD, hvor
+ * et helt ord tegnes bogstav for bogstav med billedet af tingen ved siden af.
+ * Store bogstaver A-Å, smaa a-å og tallene 0-9.
  *
  * Bogstavernes navne siges med iPad'ens indbyggede danske stemme, hvis der
  * er en installeret lokalt. Ingen netvaerk: kun stemmer med localService.
@@ -62,7 +63,7 @@
   var ctx = lærred.getContext('2d');
   var overlay = document.getElementById('overlay');
 
-  var tilstand = 'venter';           // venter | tegn | vaelg | find | faerdig
+  var tilstand = 'venter';           // venter | tegn | vaelg | find | faerdig  (ORD koerer som tegn med ordet sat)
   var sidsteTid = 0;
   var tid = 0;
   var lyd = null;
@@ -83,10 +84,17 @@
   var koerer = 0;                    // sekunder siden fingeren sidst flyttede koeretoejet (til flammer og stoev)
 
   // VAELG: hvad starter med bogstavet?
-  var kort = [];                     // tre ting: { navn, x, y, str, vip, vist, rigtig }
+  var kort = [];                     // tre ting: { navn, ting, x, y, str, vip, vendt, drej, rigtig }
   var vaelgNavn = null;              // bogstavet der lige er tegnet
   var vaelgPause = 0;
   var vaelgLoest = false;
+  var vaelgKnapR = 40;               // radius paa fluebenet under hvert kort
+
+  // ORD: et helt ord, bogstav for bogstav
+  var ordet = null;                  // { ting, kasser: [{ x, y, str }] } mens et ord tegnes, ellers null
+  var ordListe = [];                 // tingene der skal tegnes i denne omgang
+  var ordPlads = 0;
+  var ORD_ANTAL = 6;
 
   // FIND
   var bobler = [];
@@ -239,10 +247,16 @@
     lærred.style.height = window.innerHeight + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var B = window.innerWidth, H = window.innerHeight;
-    // Landskab: tegnet fylder hoejden. Portraet (iPhone): tegnet fylder bredden.
-    kasse.str = H > B ? Math.min(B * 0.86, H * 0.5) : Math.min(B * 0.55, H * 0.74);
+    kasse.str = standardStr();
     kasse.x = (B - kasse.str) / 2;
     kasse.y = (H - kasse.str) / 2 + H * 0.03;
+    if (ordet) laegOrd();
+  }
+
+  /** Kassens stoerrelse for ét tegn. Landskab: tegnet fylder hoejden. Portraet (iPhone): tegnet fylder bredden. */
+  function standardStr() {
+    var B = window.innerWidth, H = window.innerHeight;
+    return H > B ? Math.min(B * 0.86, H * 0.5) : Math.min(B * 0.55, H * 0.74);
   }
 
   /* ---------- tegning af glyffer ---------- */
@@ -335,29 +349,34 @@
   /* ---------- TEGN ---------- */
 
   function startTegn(navne) {
+    ordet = null;
     liste = navne;
     plads = 0;
     tegnet = 0;
     tilstand = 'tegn';
     partikler = [];
+    tilpasStørrelse();
     nytTegn();
   }
 
   /** Tolerancen lige nu: stjernerne som udgangspunkt, strammere for hvert trin i flow. */
   function tolerance() {
     var t = TOLERANCE[svaerhed];
-    if (flow < 0) return t * 1.3;
-    return t * Math.pow(0.86, Math.min(3, flow));
+    t *= flow < 0 ? 1.3 : Math.pow(0.86, Math.min(3, flow));
+    // Ord: kasserne er mindre, saa tolerancen skrues op, og fingeren faar omtrent samme plads paa skaermen
+    if (ordet) t = Math.min(26, t * standardStr() / kasse.str);
+    return t;
   }
 
-  function nytTegn() {
+  function nytTegn(stille) {
+    if (ordet) laegOrd();
     spor = new Spor(G[liste[plads]], tolerance());
     jubel = 0;
     hint = 0;
     sidsteNode = -1;
     koerer = 0;
     fingerId = null;
-    sigNavn(liste[plads]);
+    if (!stille) sigNavn(liste[plads]);
   }
 
   /** Hvor koeretoejet staar lige nu: naeste punkt paa stregen og stregens retning der. */
@@ -421,12 +440,13 @@
   var aebler = 0;                    // hvor mange aebler der er dukket op under jubel (kun tal)
 
   function tegnFaerdigt() {
-    jubel = 2.4;
     tegnet++;
     tegnede[liste[plads]] = true;
     // Gik det let? Saa skrues der op naeste gang. Drillede det? Saa ned.
     if (spor.afveje <= 1) flow = Math.min(4, flow + 1);
     else if (spor.afveje >= 4) flow = Math.max(-1, flow - 1);
+    if (ordet) { ordBogstavFaerdigt(); return; }
+    jubel = 2.4;
     melodi([660, 880, 1100, 1320], 90);
     fest(kasse.x + kasse.str / 2, kasse.y + kasse.str / 2);
     setTimeout(function () { sigNavn(liste[plads]); }, 350);
@@ -458,7 +478,8 @@
     if (jubel > 0) {
       jubel -= dt;
       if (jubel <= 0) {
-        if (kategori === 'tal') startRegn(parseInt(liste[plads], 10));
+        if (ordet) naesteOrdTrin();
+        else if (kategori === 'tal') startRegn(parseInt(liste[plads], 10));
         else if (Ting.TING[liste[plads]]) startVaelg(liste[plads]);
         else naesteTegn();
       }
@@ -471,9 +492,103 @@
     else { tilstand = 'tegn'; nytTegn(); }
   }
 
-  /* ---------- VAELG: hvad starter med bogstavet? ---------- */
+  /* ---------- ORD: et helt ord, bogstav for bogstav ---------- */
 
   function tingNavn(ch) { return ({ 'æ': 'ae', 'ø': 'oe', 'å': 'aa' }[ch] || ch); }
+
+  /** Bogstavnavnene i et ord: smaa i kategorien abc, ellers store (tal tegner ord med store). */
+  function ordNavne(ord) {
+    return ord.split('').map(function (ch) { return kategori === 'smaa' ? tingNavn(ch) : tingNavn(ch).toUpperCase(); });
+  }
+
+  function startOrd() {
+    ordListe = bland(Ting.ordKandidater(svaerhed)).slice(0, ORD_ANTAL);
+    ordPlads = 0;
+    tegnet = 0;
+    tilstand = 'tegn';
+    regn = null;
+    partikler = [];
+    nytOrd();
+  }
+
+  function nytOrd() {
+    var t = ordListe[ordPlads];
+    ordet = { ting: t, kasser: [] };
+    liste = ordNavne(t.ord);
+    plads = 0;
+    nytTegn(true);
+    // Foerst ordet, saa det foerste bogstav. Ordklippene varer op til et sekund.
+    setTimeout(function () { if (ordet && ordet.ting === t) sigOrd(t); }, 300);
+    setTimeout(function () { if (ordet && ordet.ting === t && plads === 0 && tilstand === 'tegn') sigNavn(liste[0]); }, 1500);
+  }
+
+  /** Ordets kasser paa en raekke midt paa skaermen. kasse saettes til det bogstav, der tegnes nu. */
+  function laegOrd() {
+    var B = window.innerWidth, H = window.innerHeight;
+    var n = liste.length, gab = 0.8;   // kasserne overlapper lidt, som naar ordet skrives i tegnOrd
+    function stoerrelse(prRaekke, raekker) {
+      return Math.min(standardStr() * 0.9, (B - 70) / (gab * (prRaekke - 1) + 1), H * 0.46 / raekker);
+    }
+    var raekker = 1, s = stoerrelse(n, 1);
+    // Paa en smal skaerm bliver kasserne for smaa til en finger: saa deles ordet i to raekker
+    if (s < 96 && n > 2) { raekker = 2; s = stoerrelse(Math.ceil(n / 2), 2); }
+    var prRaekke = Math.ceil(n / raekker);
+    // Landskab: raekken staar under skyen. Portraet: midt paa skaermen, saa der ikke bliver et stort hul.
+    var midte = H > B ? H * 0.52 : H * 0.6;
+    ordet.kasser = liste.map(function (_, i) {
+      var r = Math.floor(i / prRaekke), j = i % prRaekke;
+      var iRaekken = Math.min(prRaekke, n - r * prRaekke);
+      var x0 = (B - s * (gab * (iRaekken - 1) + 1)) / 2;
+      return { x: x0 + j * s * gab, y: midte - s / 2 + (r - (raekker - 1) / 2) * s * 1.1, str: s };
+    });
+    var k = ordet.kasser[Math.min(plads, n - 1)];
+    kasse.x = k.x; kasse.y = k.y; kasse.str = k.str;
+  }
+
+  function ordBogstavFaerdigt() {
+    fest(kasse.x + kasse.str / 2, kasse.y + kasse.str / 2);
+    if (plads < liste.length - 1) {
+      jubel = 0.8;
+      melodi([660, 880], 80);
+      return;
+    }
+    // Hele ordet staar der: stemmen siger det, og der er fest
+    jubel = 3.0;
+    melodi([660, 880, 1100, 1320], 90);
+    setTimeout(function () { if (ordet) sigOrd(ordet.ting); }, 400);
+    setTimeout(function () { if (ordet) fyrvaerkeri(); }, 700);
+  }
+
+  function naesteOrdTrin() {
+    if (plads < liste.length - 1) { plads++; nytTegn(); return; }
+    ordPlads++;
+    if (ordPlads >= ordListe.length) afslut('ord');
+    else nytOrd();
+  }
+
+  /** Billedet af ordets ting i en sky oeverst, saa man kan se, hvad man skriver. */
+  function tegnOrdSky() {
+    var B = window.innerWidth, H = window.innerHeight;
+    var ms = Math.min(B, H) * 0.16;
+    var hop = jubel > 0 && plads >= liste.length - 1 ? Math.abs(Math.sin(jubel * 6)) * 8 : 0;
+    ctx.fillStyle = '#f7f3e8'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.roundRect(B / 2 - ms * 0.7, 40 - hop, ms * 1.4, ms * 1.25, 24); ctx.fill(); ctx.stroke();
+    tegnTing(ordet.ting, B / 2, 40 - hop + ms * 0.62, ms * 0.9);
+  }
+
+  /** Ord: de andre bogstaver i ordet. Faerdige i farve, kommende som blege skabeloner. */
+  function tegnOrdRundtOm() {
+    var skabelon = koeretoej === 'bil' ? '#8a8f97' : (koeretoej === 'raket' ? 'rgba(255,255,255,0.22)' : '#e6e1d4');
+    ordet.kasser.forEach(function (k, i) {
+      if (i === plads) return;
+      var glyf = G[liste[i]];
+      if (i >= plads) { tegnGlyf(ctx, glyf, k.x, k.y, k.str, skabelon, 13); return; }
+      if (koeretoej === 'pensel') tegnRegnbue(glyf.streger.map(Spor.sampl), k.x, k.y, k.str, null);
+      else tegnGlyf(ctx, glyf, k.x, k.y, k.str, koeretoej === 'raket' ? '#ffd23f' : STREGFARVE, 13);
+    });
+  }
+
+  /* ---------- VAELG: hvad starter med bogstavet? ---------- */
 
   function startVaelg(navn) {
     tilstand = 'vaelg';
@@ -489,10 +604,21 @@
     var str = Math.min(B * 0.3, H * 0.34, 260);
     var gab = Math.min(34, B * 0.03);
     kort = navne.map(function (n, i) {
-      return { navn: n, ting: Ting.vaelg(n), x: B / 2 + (i - 1) * (str + gab), y: H * 0.6, str: str, vip: 0, vist: 0, rigtig: n === navn };
+      return { navn: n, ting: Ting.vaelg(n), x: B / 2 + (i - 1) * (str + gab), y: H * 0.52, str: str, vip: 0, vendt: 0, drej: 0, rigtig: n === navn };
     });
+    vaelgKnapR = Math.max(30, Math.min(44, str * 0.19));
     setTimeout(function () { if (tilstand === 'vaelg') sigSpoerg(navn); }, 300);
   }
+
+  /** Skyen med bogstavet oeverst: hvor den staar, saa et tryk paa den kan gentage spoergsmaalet. */
+  function skyRect() {
+    var B = window.innerWidth, H = window.innerHeight;
+    var ms = Math.min(B, H) * 0.14;
+    return { x: B / 2 - ms * 0.75, y: 44, b: ms * 1.5, h: ms * 1.2, ms: ms };
+  }
+
+  /** Fluebenet sidder under kortet. */
+  function knapY(k) { return k.y + k.str / 2 + 14 + vaelgKnapR; }
 
   /* ---------- REGN: et regnestykke, hvor svaret er det tal, man lige har tegnet ---------- */
 
@@ -509,7 +635,7 @@
     var str = Math.min(B * 0.22, H * 0.3, 200);
     var gab = Math.min(34, B * 0.03);
     kort = Regn.valg(svar).map(function (n, i) {
-      return { navn: String(n), tal: n, x: B / 2 + (i - 1) * (str + gab), y: H * 0.74, str: str, vip: 0, vist: 0, rigtig: n === svar };
+      return { navn: String(n), tal: n, x: B / 2 + (i - 1) * (str + gab), y: H * 0.74, str: str, vip: 0, rigtig: n === svar };
     });
     setTimeout(function () { if (tilstand === 'vaelg' && regn) sigRegn(regn); }, 300);
   }
@@ -594,32 +720,103 @@
 
   function opdaterVaelg(dt) {
     vaelgPause = Math.max(0, vaelgPause - dt);
-    kort.forEach(function (k) { k.vip = Math.max(0, k.vip - dt); k.vist = Math.max(0, k.vist - dt); });
+    kort.forEach(function (k) {
+      k.vip = Math.max(0, k.vip - dt);
+      // Kortet drejer om sin lodrette akse, naar det vendes
+      var maal = k.vendt || 0;
+      if (k.drej < maal) k.drej = Math.min(maal, k.drej + dt * 4);
+      else if (k.drej > maal) k.drej = Math.max(maal, k.drej - dt * 4);
+    });
   }
 
+  /**
+   * Spoergsmaalet stilles foerst. Saa maa man vende kortene, saa tit man vil:
+   * billede paa den ene side, ordet paa den anden. Svaret gives med fluebenet
+   * under et kort. Saa er det at lytte og kigge, ikke at trykke sig frem.
+   */
   function vaelgTryk(e) {
     if (tilstand !== 'vaelg' || vaelgPause > 0 || vaelgLoest) return;
     var r = lærred.getBoundingClientRect();
     var x = e.clientX - r.left, y = e.clientY - r.top;
-    for (var i = 0; i < kort.length; i++) {
-      var k = kort[i];
+    var i, k;
+    if (regn) {
+      for (i = 0; i < kort.length; i++) {
+        k = kort[i];
+        if (Math.abs(x - k.x) < k.str / 2 && Math.abs(y - k.y) < k.str / 2) { regnTryk(k); return; }
+      }
+      return;
+    }
+    // Skyen med bogstavet: hoer spoergsmaalet igen
+    var sky = skyRect();
+    if (x > sky.x - 10 && x < sky.x + sky.b + 10 && y > sky.y - 10 && y < sky.y + sky.h + 10) { sigSpoerg(vaelgNavn); return; }
+    for (i = 0; i < kort.length; i++) {
+      k = kort[i];
+      if (Math.hypot(x - k.x, y - knapY(k)) < vaelgKnapR * 1.3) { vaelgSvar(k); return; }
       if (Math.abs(x - k.x) < k.str / 2 && Math.abs(y - k.y) < k.str / 2) {
-        if (regn) { regnTryk(k); return; }
-        sigOrd(k.ting);
-        if (k.rigtig) {
-          vaelgLoest = true;
-          k.vist = 99;
-          melodi([660, 880, 1100, 1320], 90);
-          fest(k.x, k.y);
-          setTimeout(naesteTegn, 3400);      // tid til at hoere og se ordet
-        } else {
-          k.vip = 0.7;
-          k.vist = 1.6;      // ordet vises kort, saa man kan se det starter med noget andet
-          melodi([880, 1046], 70);
-        }
+        k.vendt = k.vendt ? 0 : 1;
+        tone(k.vendt ? 520 : 440, 0.06, 0.06);
+        if (k.vendt) sigOrd(k.ting);
         return;
       }
     }
+  }
+
+  function vaelgSvar(k) {
+    sigOrd(k.ting);
+    if (k.rigtig) {
+      vaelgLoest = true;
+      k.vendt = 0;                       // billedet frem, ordet staar stort nedenunder
+      melodi([660, 880, 1100, 1320], 90);
+      fest(k.x, knapY(k));
+      setTimeout(naesteTegn, 3400);      // tid til at hoere og se ordet
+    } else {
+      k.vip = 0.7;
+      k.vendt = 1;                       // ordet vises, saa man kan se det starter med noget andet
+      melodi([880, 1046], 70);
+      vaelgPause = 1.2;
+      setTimeout(function () { if (tilstand === 'vaelg' && !vaelgLoest && !regn) sigSpoerg(vaelgNavn); }, 1700);
+    }
+  }
+
+  /** En ting (SVG, ellers tegningen i kode) centreret om (cx, cy). str er billedets bredde. */
+  function tegnTing(t, cx, cy, str) {
+    var img = t.fil && billeder[t.fil];
+    ctx.save();
+    ctx.translate(cx, cy);
+    if (img && img.complete && img.naturalWidth > 0) {
+      ctx.drawImage(img, -str / 2, -str / 2, str, str);
+    } else if (t.tegn) {
+      ctx.scale(str / 80, str / 80);
+      ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      t.tegn(ctx);
+    } else {
+      // Billedet er ikke hentet endnu: en blid plads-holder
+      ctx.fillStyle = '#e6e1d4';
+      ctx.beginPath(); ctx.arc(0, 0, str * 0.4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /** Groent flueben i en cirkel: knappen man svarer med. */
+  function tegnFlueben(x, y, r) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = '#4cb944'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#f7f3e8'; ctx.lineWidth = r * 0.24; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(-r * 0.45, 0.02 * r); ctx.lineTo(-r * 0.12, r * 0.34); ctx.lineTo(r * 0.48, -r * 0.32); ctx.stroke();
+    ctx.restore();
+  }
+
+  /** Lille hoejttaler i skyens hjoerne: her kan man hoere spoergsmaalet igen. */
+  function tegnHoejttaler(x, y, s) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = '#12261f';
+    ctx.beginPath(); ctx.moveTo(-s, -s * 0.35); ctx.lineTo(-s * 0.4, -s * 0.35); ctx.lineTo(s * 0.2, -s); ctx.lineTo(s * 0.2, s); ctx.lineTo(-s * 0.4, s * 0.35); ctx.lineTo(-s, s * 0.35); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#12261f'; ctx.lineWidth = s * 0.22; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(s * 0.3, 0, s * 0.7, -0.9, 0.9); ctx.stroke();
+    ctx.restore();
   }
 
   /** Et ord skrevet med spillets egne streger, centreret om (cx, cy). Store eller smaa efter kategori. */
@@ -634,39 +831,28 @@
 
   function tegnVaelgSkaerm() {
     var B = window.innerWidth, H = window.innerHeight;
-    // Bogstavet i en sky oeverst, som i Find
-    var ms = Math.min(B, H) * 0.14;
+    // Bogstavet i en sky oeverst, som i Find. Et tryk paa skyen gentager spoergsmaalet.
+    var sky = skyRect(), ms = sky.ms;
     ctx.fillStyle = '#f7f3e8'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.roundRect(B / 2 - ms * 0.75, 44, ms * 1.5, ms * 1.2, 24); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(sky.x, sky.y, sky.b, sky.h, 24); ctx.fill(); ctx.stroke();
     tegnGlyf(ctx, G[vaelgNavn], B / 2 - ms / 2, 50 + ms * 0.1, ms, STREGFARVE, 12);
+    tegnHoejttaler(sky.x + sky.b - 22, sky.y + sky.h - 20, 9);
 
     kort.forEach(function (k) {
       var t = k.ting;
+      var ordSide = k.drej >= 0.5;
       ctx.save();
       ctx.translate(k.x, k.y);
       if (k.vip > 0) ctx.rotate(Math.sin(k.vip * 40) * 0.12);
       if (vaelgLoest && k.rigtig) ctx.scale(1 + Math.sin(tid * 8) * 0.04, 1 + Math.sin(tid * 8) * 0.04);
-      ctx.fillStyle = vaelgLoest && k.rigtig ? '#ffd23f' : '#f7f3e8';
+      ctx.scale(Math.max(0.03, Math.abs(Math.cos(k.drej * Math.PI))), 1);   // vendes om den lodrette akse
+      ctx.fillStyle = vaelgLoest && k.rigtig ? '#ffd23f' : (ordSide ? '#fff8dc' : '#f7f3e8');
       ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.roundRect(-k.str / 2, -k.str / 2, k.str, k.str, 24); ctx.fill(); ctx.stroke();
-      ctx.save();
-      ctx.translate(0, k.vist > 0 ? -k.str * 0.1 : 0);
-      var img = t.fil && billeder[t.fil];
-      if (img && img.complete && img.naturalWidth > 0) {
-        var bs = k.str * 0.62;
-        ctx.drawImage(img, -bs / 2, -bs / 2, bs, bs);
-      } else if (t.tegn) {
-        ctx.scale(k.str / 130, k.str / 130);
-        ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-        t.tegn(ctx);
-      } else {
-        // Billedet er ikke hentet endnu: en blid plads-holder
-        ctx.fillStyle = '#e6e1d4';
-        ctx.beginPath(); ctx.arc(0, 0, k.str * 0.25, 0, Math.PI * 2); ctx.fill();
-      }
+      if (ordSide) tegnOrd(t.ord, 0, 0, Math.min(k.str * 0.3, k.str * 0.95 / (t.ord.length * 0.72 + 0.4)), '#ff8c42');
+      else tegnTing(t, 0, 0, k.str * 0.62);
       ctx.restore();
-      if (k.vist > 0 && !(vaelgLoest && k.rigtig)) tegnOrd(t.ord, 0, k.str * 0.36, k.str * 0.17);
-      ctx.restore();
+      if (!vaelgLoest) tegnFlueben(k.x, knapY(k), vaelgKnapR);
     });
     // Rigtigt svar: ordet staar stort paa skaermen med forbogstavet i farve, mens stemmen siger det
     if (vaelgLoest) {
@@ -758,36 +944,68 @@
     ctx.restore();
   }
 
+  /** Regnbue til penslen: hver streg i sin egen farve, og farven glider undervejs. indtil = null tegner alt. */
+  function tegnRegnbue(streger, x, y, s, indtil) {
+    var sk = s / 100;
+    ctx.save();
+    var alleN = streger.reduce(function (a, st) { return a + st.length; }, 0), talt = 0;
+    streger.forEach(function (streg, si) {
+      if (indtil && si > indtil.aktiv) return;
+      var til = indtil && si === indtil.aktiv ? indtil.indeks : streg.length - 1;
+      ctx.lineWidth = 13 * sk; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      for (var i = 1; i <= til; i++) {
+        ctx.strokeStyle = 'hsl(' + Math.floor((talt + i) / alleN * 360) + ',85%,60%)';
+        ctx.beginPath();
+        ctx.moveTo(x + streg[i - 1][0] * sk, y + streg[i - 1][1] * sk);
+        ctx.lineTo(x + streg[i][0] * sk, y + streg[i][1] * sk);
+        ctx.stroke();
+      }
+      talt += streg.length;
+    });
+    ctx.restore();
+  }
+
   function tegnTegnSkaerm() {
     var glyf = G[liste[plads]];
     var s = kasse.str, sk = s / 100;
     var bredde = 13;
+    // Pladen daekker ét tegn, eller hele ordet naar et ord tegnes
+    var pladeX = kasse.x, pladeY = kasse.y, pladeB = s, pladeH = s;
+    if (ordet) {
+      var x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+      ordet.kasser.forEach(function (k) { x1 = Math.min(x1, k.x); y1 = Math.min(y1, k.y); x2 = Math.max(x2, k.x + k.str); y2 = Math.max(y2, k.y + k.str); });
+      pladeX = x1; pladeY = y1; pladeB = x2 - x1; pladeH = y2 - y1;
+    }
     // Baggrundsplade: lys for bil og pensel, moerk stjernehimmel for raketten
     ctx.fillStyle = koeretoej === 'raket' ? '#1b2f5c' : '#f7f3e8';
     ctx.strokeStyle = '#12261f';
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.roundRect(kasse.x - 24, kasse.y - 24, s + 48, s + 48, 30);
+    ctx.roundRect(pladeX - 24, pladeY - 24, pladeB + 48, pladeH + 48, 30);
     ctx.fill();
     ctx.stroke();
     if (koeretoej === 'raket') {
       ctx.fillStyle = '#f7f3e8';
       for (var st = 0; st < 30; st++) {
-        var sx0 = kasse.x + ((st * 137) % 100) * sk, sy0 = kasse.y + ((st * 71) % 100) * sk;
+        var sx0 = pladeX + ((st * 137) % 100) / 100 * pladeB, sy0 = pladeY + ((st * 71) % 100) / 100 * pladeH;
         ctx.globalAlpha = 0.4 + 0.6 * Math.abs(Math.sin(tid * 2 + st));
         ctx.beginPath(); ctx.arc(sx0, sy0, 1.5 + (st % 3) * 0.7, 0, Math.PI * 2); ctx.fill();
       }
       ctx.globalAlpha = 1;
     }
+    if (ordet) tegnOrdSky();
 
-    // Jubel: tegnet hopper og vipper
+    // Jubel: tegnet hopper og vipper. Sidste bogstav i et ord: hele ordet hopper.
+    var sidsteIOrd = ordet && plads >= liste.length - 1;
     ctx.save();
     if (jubel > 0) {
-      ctx.translate(kasse.x + s / 2, kasse.y + s / 2);
-      ctx.rotate(Math.sin(jubel * 14) * 0.08);
+      var cx = sidsteIOrd ? pladeX + pladeB / 2 : kasse.x + s / 2, cy = sidsteIOrd ? pladeY + pladeH / 2 : kasse.y + s / 2;
+      ctx.translate(cx, cy);
+      ctx.rotate(Math.sin(jubel * 14) * (sidsteIOrd ? 0.03 : 0.08));
       ctx.scale(1 + Math.sin(jubel * 7) * 0.04, 1 + Math.sin(jubel * 7) * 0.04);
-      ctx.translate(-(kasse.x + s / 2), -(kasse.y + s / 2));
+      ctx.translate(-cx, -cy);
     }
+    if (ordet) tegnOrdRundtOm();
     // Skabelon: en vej for bilen, en stjernebane for raketten, et blegt strøg for penslen
     var skabelon = koeretoej === 'bil' ? '#8a8f97' : (koeretoej === 'raket' ? 'rgba(255,255,255,0.22)' : '#e6e1d4');
     tegnGlyf(ctx, glyf, kasse.x, kasse.y, s, skabelon, bredde);
@@ -799,23 +1017,7 @@
     // Det der er tegnet
     var indtil = spor.faerdig ? null : { aktiv: spor.aktiv, indeks: spor.indeks };
     if (koeretoej === 'pensel') {
-      // Regnbue: hver streg i sin egen farve, og farven glider undervejs
-      ctx.save();
-      var alleN = spor.streger.reduce(function (a, st) { return a + st.length; }, 0), talt = 0;
-      spor.streger.forEach(function (streg, si) {
-        if (indtil && si > indtil.aktiv) return;
-        var til = indtil && si === indtil.aktiv ? indtil.indeks : streg.length - 1;
-        ctx.lineWidth = bredde * sk; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-        for (var i = 1; i <= til; i++) {
-          ctx.strokeStyle = 'hsl(' + Math.floor((talt + i) / alleN * 360) + ',85%,60%)';
-          ctx.beginPath();
-          ctx.moveTo(kasse.x + streg[i - 1][0] * sk, kasse.y + streg[i - 1][1] * sk);
-          ctx.lineTo(kasse.x + streg[i][0] * sk, kasse.y + streg[i][1] * sk);
-          ctx.stroke();
-        }
-        talt += streg.length;
-      });
-      ctx.restore();
+      tegnRegnbue(spor.streger, kasse.x, kasse.y, s, indtil);
     } else {
       tegnGlyf(ctx, glyf, kasse.x, kasse.y, s, koeretoej === 'raket' ? '#ffd23f' : STREGFARVE, bredde, indtil, spor);
       if (koeretoej === 'bil') {
@@ -953,6 +1155,7 @@
 
   function startFind() {
     tilstand = 'find';
+    ordet = null;
     fundet = 0;
     partikler = [];
     nyFindRunde();
@@ -1152,7 +1355,8 @@
     if (tilstand === 'tegn') {
       tegnTegnSkaerm();
       tegnPartikler();
-      tegnFremskridt(liste.length, tegnet);
+      if (ordet) tegnFremskridt(ordListe.length, ordPlads);
+      else tegnFremskridt(liste.length, tegnet);
       tegnTrin(Math.max(0, Math.min(3, Math.ceil(flow * 3 / 4))));
     } else if (tilstand === 'vaelg') {
       if (regn) tegnRegnSkaerm(); else tegnVaelgSkaerm();
@@ -1200,17 +1404,18 @@
 
   function afslut(hvad) {
     tilstand = 'faerdig';
+    ordet = null;
     melodi([660, 880, 1100, 1320, 1760], 110);
     visOverlay(
       '<div class="kort">' +
       '<h2>Flot!</h2>' +
       '<canvas class="eksempel" width="300" height="220" style="' + EKSEMPEL_STIL + '"></canvas>' +
-      '<button class="knap gul" data-handling="' + (hvad === 'find' ? 'find' : 'tegn-alle') + '">Igen</button>' +
+      '<button class="knap gul" data-handling="' + (hvad === 'find' ? 'find' : (hvad === 'ord' ? 'ord' : 'tegn-alle')) + '">Igen</button>' +
       '<button class="knap" data-handling="menu">Menu</button>' +
       '</div>'
     );
     vinderCanvas = overlay.querySelector('canvas.eksempel');
-    vinderCanvas._navn = hvad === 'find' ? maal : liste[liste.length - 1];
+    vinderCanvas._navn = hvad === 'find' ? maal : (hvad === 'ord' ? liste[0] : liste[liste.length - 1]);
     startKonfetti(vinderCanvas);
   }
 
@@ -1266,10 +1471,21 @@
       '<circle cx="18" cy="18" r="11" fill="#7fd0f5" stroke="#12261f" stroke-width="3"/>' +
       '<path d="M26 26l11 11" stroke="#12261f" stroke-width="5" stroke-linecap="round"/></svg>';
   }
+  /** Et billede med tre bogstavkasser under: ordet tegnes ud fra tingen. */
+  function ordIkon() {
+    return '<svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">' +
+      '<rect x="12" y="3" width="20" height="18" rx="4" fill="#f7f3e8" stroke="#12261f" stroke-width="3"/>' +
+      '<circle cx="19" cy="10" r="3" fill="#ffd23f"/>' +
+      '<path d="M14 19l6-6 4 4 3-3 5 5" fill="#4cb944" stroke="#12261f" stroke-width="2" stroke-linejoin="round"/>' +
+      '<rect x="4" y="27" width="10" height="12" rx="2" fill="#ff8c42" stroke="#12261f" stroke-width="2.5"/>' +
+      '<rect x="17" y="27" width="10" height="12" rx="2" fill="#f7f3e8" stroke="#12261f" stroke-width="2.5"/>' +
+      '<rect x="30" y="27" width="10" height="12" rx="2" fill="#f7f3e8" stroke="#12261f" stroke-width="2.5"/></svg>';
+  }
 
   function visMenu() {
     tilstand = 'venter';
     regn = null;
+    ordet = null;
     vinderCanvas = null;
     stopKlip();
     var stjerneKnapper = [0, 1, 2].map(function (n) {
@@ -1289,9 +1505,10 @@
         return '<button class="knap smal ikon' + (k === koeretoej ? ' valgt' : '') + '" data-handling="koeretoej" data-k="' + k +
                '" aria-label="' + k + '"><canvas width="72" height="44" style="' + FLISE_STIL + ';width:56px;height:34px" data-koeretoej="' + k + '"></canvas></button>';
       }).join('') + '</div>' +
-      '<div class="raekke to">' +
+      '<div class="raekke lege">' +
       '<button class="knap gul" data-handling="gitter">' + blyantIkon() + 'Tegn</button>' +
       '<button class="knap gul" data-handling="find">' + luppIkon() + 'Find</button>' +
+      '<button class="knap gul" data-handling="ord">' + ordIkon() + 'Ord</button>' +
       '</div>' +
       '<div class="raekke bund">' +
       '<button class="knap lille ikon" data-handling="lyd" aria-label="Lyd til eller fra">' + lydIkon(lydTil) + '</button>' +
@@ -1378,6 +1595,9 @@
     } else if (h === 'find') {
       skjulOverlay();
       startFind();
+    } else if (h === 'ord') {
+      skjulOverlay();
+      startOrd();
     } else if (h === 'menu') {
       visMenu();
     }
@@ -1405,7 +1625,8 @@
       tegn: tilstand === 'tegn' ? { navn: liste[plads], plads: plads, andel: +spor.andel().toFixed(2), aktiv: spor.aktiv, holder: spor.holder, jubel: +jubel.toFixed(2) } : null,
       find: tilstand === 'find' ? { maal: maal, fundet: fundet, bobler: bobler.map(function (b) { return { navn: b.navn, x: Math.round(b.x), y: Math.round(b.y), r: Math.round(b.r) }; }) } : null,
       aebler: aebler, flow: flow, raekke: raekke, tolerance: +tolerance().toFixed(1),
-      regn: regn, vaelg: tilstand === 'vaelg' ? { navn: vaelgNavn, loest: vaelgLoest, kort: kort.map(function (k) { return { navn: k.navn, ord: k.ting ? k.ting.ord : k.navn, x: Math.round(k.x), y: Math.round(k.y), rigtig: k.rigtig }; }) } : null,
+      regn: regn, vaelg: tilstand === 'vaelg' ? { navn: vaelgNavn, loest: vaelgLoest, kort: kort.map(function (k) { return { navn: k.navn, ord: k.ting ? k.ting.ord : k.navn, x: Math.round(k.x), y: Math.round(k.y), vendt: !!k.vendt, rigtig: k.rigtig }; }) } : null,
+      ord: ordet ? { ord: ordet.ting.ord, nr: ordPlads, antal: ordListe.length, bogstav: plads, kasser: ordet.kasser.map(function (k) { return Math.round(k.x); }) } : null,
       kasse: kasse
     };
   };
