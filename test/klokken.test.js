@@ -53,35 +53,51 @@ tjek('halv fire: den roede viser staar midt mellem 3 og 4, den blaa paa 6', Math
   tjek('den roede kan traekkes over 12 (11:30 -> 12:30)', ur.t === 30, ur.t);
 }
 
-/* Planeturet: robotten stiller alle ure paa alle niveauer, med 1 og 2 spillere */
+/* Planeturet: robotten loeser baade 'stil'- og 'laes'-opgaver paa alle niveauer */
 {
-  let problemer = [], runder = 0;
+  let problemer = [], runder = 0, slags = { stil: 0, laes: 0 };
   for (let runde = 0; runde < 15; runde++) [0, 1, 2].forEach(niveau => [1, 2].forEach(spillere => {
     const r = U.nyRejse(spillere, niveau, 'stil');
     let vagt = 0;
     while (!r.faerdig && vagt++ < 100) {
       r.stationer.forEach((s, i) => {
         if (!s.opgave || r.faerdig) return;
-        const o = s.opgave;
+        const o = s.opgave, foer = o.t;
+        slags[o.slags]++;
         if (o.t % r.trin !== 0) problemer.push('tid uden for gitteret ' + o.t + ' niveau ' + niveau);
-        if (s.ur.t === o.t) problemer.push('uret staar allerede rigtigt ' + o.t);
+        if (niveau === 0 && o.slags !== 'stil') problemer.push('1 stjerne har laese-opgaver');
         if (niveau === 0 && (o.t % 60 !== 0 || s.ur.t % 60 !== 0)) problemer.push('1 stjerne har halve timer');
-        if (U.tjek(r, i)) problemer.push('tjek sagde ja, foer uret var stillet');
-        // Robotten traekker den roede viser til den rigtige vinkel; den blaa foelger med
-        U.traek(s.ur, 'time', U.timeVinkel(o.t), r.trin);
-        if (s.ur.t !== o.t) problemer.push('kunne ikke stille uret paa ' + o.t + ' fra ' + s.ur.t);
-        const foer = o.t;
-        if (!U.tjek(r, i)) problemer.push('tjek sagde nej, da uret stod rigtigt');
+        if (o.slags === 'stil') {
+          if (s.ur.t === o.t) problemer.push('uret staar allerede rigtigt ' + o.t);
+          if (U.tjek(r, i)) problemer.push('tjek sagde ja, foer uret var stillet');
+          // Robotten traekker den roede viser til den rigtige vinkel; den blaa foelger med
+          U.traek(s.ur, 'time', U.timeVinkel(o.t), r.trin);
+          if (s.ur.t !== o.t) problemer.push('kunne ikke stille uret paa ' + o.t + ' fra ' + s.ur.t);
+          if (!U.tjek(r, i)) problemer.push('tjek sagde nej, da uret stod rigtigt');
+        } else {
+          if (s.ur.t !== o.t) problemer.push('laese-opgaven viser ikke sin egen tid');
+          if (o.svar !== U.talFor(o.t)) problemer.push('forkert svar paa ' + o.t);
+          const forkert = o.svar === 12 ? 1 : o.svar + 1;
+          if (U.tjekTal(r, i, forkert) !== 'forkert') problemer.push('et forkert tal blev godtaget');
+          if (s.opgave !== o) problemer.push('opgaven skiftede efter et forkert tal');
+          if (U.tjek(r, i)) problemer.push('tjek loeste en laese-opgave');
+          if (U.tjekTal(r, i, o.svar) !== 'rigtigt') problemer.push('det rigtige tal blev afvist');
+        }
         if (s.opgave && s.opgave.t === foer) problemer.push('samme opgave to gange i raekke');
       });
     }
     if (!r.faerdig || r.klaret !== r.maal) problemer.push('rejsen blev ikke faerdig: ' + r.klaret + '/' + r.maal);
     runder++;
   }));
-  tjek('robotten stiller alle ure paa alle niveauer (' + runder + ' rejser)', problemer.length === 0, problemer.slice(0, 4).join(' | '));
+  tjek('robotten loeser alle opgaver paa alle niveauer (' + runder + ' rejser)', problemer.length === 0, problemer.slice(0, 4).join(' | '));
+  tjek('baade "stil uret" og "hvad er klokken" bliver brugt', slags.stil > 0 && slags.laes > 0, JSON.stringify(slags));
   const r1 = U.nyRejse(1, 0, 'stil'), r2 = U.nyRejse(2, 2, 'stil');
   tjek('6 planeter til én spiller, 8 til to', r1.maal === 6 && r2.maal === 8 && r2.stationer.length === 2);
   tjek('3 stjerner viser ikke det lille ur, 1 og 2 goer', !U.INDSTIL.visUr[2] && U.INDSTIL.visUr[0] && U.INDSTIL.visUr[1]);
+  tjek('1 stjerne har kun "stil uret", 2 og 3 har begge slags', !U.INDSTIL.laes[0] && U.INDSTIL.laes[1] && U.INDSTIL.laes[2]);
+  // Det tal, der siges: "klokken tre" er 3, "halv fire" er 4
+  tjek('tallet i tiden: klokken 3 er 3, halv fire er 4, halv et er 1, halv tolv er 12',
+    U.talFor(180) === 3 && U.talFor(210) === 4 && U.talFor(30) === 1 && U.talFor(690) === 12 && U.talFor(0) === 12);
   // Der findes halve timer paa 2 og 3 stjerner (ellers er stjernerne ens)
   let halve = 0;
   for (let i = 0; i < 40; i++) { const r = U.nyRejse(1, 1, 'stil'); if (r.stationer[0].opgave.t % 60 === 30) halve++; }
@@ -102,6 +118,7 @@ tjek('halv fire: den roede viser staar midt mellem 3 og 4, den blaa paa 6', Math
         if (o.kortene.filter(k => k === o.kort).length !== 1) problemer.push('det rigtige kort er der ikke praecis én gang: ' + o.kortene.join());
         if (new Set(o.kortene).size !== o.kortene.length) problemer.push('samme kort to gange');
         if (s.ur.t !== U.doegnTilUr(o.t)) problemer.push('uret viser ikke opgavens tid');
+        if (o.slags !== 'kort') problemer.push('Musens dag har en forkert slags opgave');
         const forkert = o.kortene.find(k => k !== o.kort);
         if (U.vaelg(r, i, forkert) !== 'forkert' || s.forsoeg !== 1) problemer.push('forkert kort blev ikke afvist');
         if (s.opgave !== o) problemer.push('opgaven skiftede efter et forkert kort');
@@ -157,6 +174,11 @@ tjek('halv fire: den roede viser staar midt mellem 3 og 4, den blaa paa 6', Math
   const klip = JSON.parse(fs.readFileSync(path.join(ROD, 'games', 'klokken', 'lyd', 'klip.json'), 'utf8'));
   const klipMangler = klip.filter(f => !fs.existsSync(path.join(ROD, 'games', 'klokken', 'lyd', f)) || !sw.includes("'games/klokken/lyd/" + f + "'"));
   tjek('alle klip i klip.json findes og er i FILER', klipMangler.length === 0, klipMangler.join());
+  const kode = fs.readFileSync(path.join(ROD, 'games', 'klokken', 'js', 'game.js'), 'utf8');
+  const naevnte = [...kode.matchAll(/'([a-z_0-9]+\.mp3)'/g)].map(m => m[1])
+    .filter(f => !/^(klokken|halv)_/.test(f));
+  const udenKlip = [...new Set(naevnte)].filter(f => !klip.includes(f));
+  tjek('alle klip spillet naevner direkte er lavet', udenKlip.length === 0, udenKlip.join());
   const spil = fs.readFileSync(path.join(ROD, 'js', 'games.js'), 'utf8');
   tjek('spillet staar i spil-registret', spil.includes("id: 'klokken'"));
 }

@@ -95,6 +95,7 @@ def klokken():
     ud = [tuple(x) for x in json.loads(subprocess.check_output(['node', '-e', kode]))]
     return ud + [
         ('stil_uret.mp3', 'Stil uret på'), ('hvad_goer.mp3', 'Hvad gør musen'),
+        ('hvad_klokken.mp3', 'Hvad er klokken?'),
         ('flot_1.mp3', 'Flot!'), ('flot_2.mp3', 'Sådan!'), ('flot_3.mp3', 'Rigtigt!'),
         ('naesten.mp3', 'Næsten!'), ('rejse.mp3', 'Sikke en rumrejse!')]
 

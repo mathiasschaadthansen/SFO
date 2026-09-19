@@ -2,7 +2,12 @@
  * Logik for Klokken: rummusen, der laerer, hvordan uret virker.
  *
  * Tre lege i ét spil:
- *   stil  Planeturet. Musen siger en tid, og barnet stiller uret paa planeten.
+ *   stil  Planeturet. To slags opgaver skiftevis:
+ *           'stil' — musen siger en tid, og barnet stiller uret.
+ *           'laes' — uret staar allerede, og barnet trykker paa det tal, der
+ *                    siges ("klokken tre" er 3, "halv fire" er 4).
+ *         At stille uret og at aflaese det er to forskellige ting; foer blev
+ *         kun den foerste oevet.
  *   dag   Musens dag. Uret viser en tid, og barnet vaelger, hvad musen goer nu.
  *   sol   Jorden drejer. Barnet drejer jorden, og uret nedenunder foelger med.
  *
@@ -18,10 +23,11 @@
   'use strict';
 
   var INDSTIL = {
-    planeterPrRejse: [6, 8],        // hvor mange ure der skal stilles: [1 spiller, 2 spillere i alt]
+    planeterPrRejse: [6, 8],        // hvor mange opgaver der skal loeses: [1 spiller, 2 spillere i alt]
     trin: [60, 30, 30],             // uret laaser paa hele timer (60) eller halve (30) pr. stjerne
     visUr: [true, true, false],     // om musen viser det lille ur, eller kun siger tiden (3 stjerner)
-    kortAntal: [3, 4, 4]            // hvor mange kort der er at vaelge mellem i Musens dag
+    kortAntal: [3, 4, 4],           // hvor mange kort der er at vaelge mellem i Musens dag
+    laes: [false, true, true]       // om hver anden planet spoerger "Hvad er klokken?"
   };
 
   // Timerne, som de siges: "klokken et", "halv to". Plads 0 er tolv, saa TIMEORD[t % 12] passer.
@@ -54,6 +60,13 @@
   function minutVinkel(t) { return minut(t) / 60 * TAU; }
   /** Rund til naermeste trin (60 = hele timer, 30 = halve). */
   function laas(t, trin) { return norm(Math.round(t / trin) * trin); }
+
+  /**
+   * Det tal, der siges i tiden, og som barnet trykker paa i 'laes'-opgaver.
+   * "Klokken tre" er 3. "Halv fire" er 4, fordi uret er paa vej mod fire — det
+   * er netop den regel, der er svaer paa dansk.
+   */
+  function talFor(t) { var h = time(t); return minut(t) === 0 ? h : (h % 12) + 1; }
 
   /** Den af kandidaterne, der ligger taettest paa t (saa viseren gaar den korte vej og aldrig springer). */
   function taettest(t, kandidater) {
@@ -153,28 +166,38 @@
       leg: leg, niveau: niveau, trin: INDSTIL.trin[niveau], visUr: INDSTIL.visUr[niveau],
       maal: INDSTIL.planeterPrRejse[antalSpillere > 1 ? 1 : 0], klaret: 0, faerdig: false, stationer: []
     };
-    for (var i = 0; i < antalSpillere; i++) r.stationer.push({ ur: { t: 0 }, opgave: null, sidste: null, forsoeg: 0, planet: i });
+    for (var i = 0; i < antalSpillere; i++) r.stationer.push({ ur: { t: 0 }, opgave: null, sidste: null, forsoeg: 0, nr: 0, planet: i });
     r.stationer.forEach(function (s, i) { nyOpgave(r, i); });
     return r;
   }
 
-  /** Den naeste opgave paa en station. Aldrig den samme to gange i raekke, og aldrig den tid uret allerede staar paa. */
+  /**
+   * Den naeste opgave paa en station. Aldrig den samme tid to gange i raekke.
+   * I Planeturet skifter det mellem at stille uret og at aflaese det.
+   */
   function nyOpgave(r, station) {
     var s = r.stationer[station];
     s.forsoeg = 0;
     if (r.leg === 'stil') {
+      var slags = INDSTIL.laes[r.niveau] && s.nr % 2 === 1 ? 'laes' : 'stil';
       var mulige = tider(r.niveau).filter(function (t) { return s.sidste === null || t !== s.sidste.t; });
       var t = vaelgEn(mulige);
-      // Uret starter et andet sted, saa der er noget at stille. Paa hele timer staar den blaa paa 12.
-      var start = vaelgEn(tider(r.niveau).filter(function (x) { return x !== t && skiveAfstand(x, t) >= 2; }));
-      s.ur.t = start;
-      s.opgave = { t: t, klip: klip(t), tekst: tekst(t) };
+      if (slags === 'laes') {
+        s.ur.t = t;
+        s.opgave = { slags: 'laes', t: t, svar: talFor(t), klip: klip(t), tekst: tekst(t) };
+      } else {
+        // Uret starter et andet sted, saa der er noget at stille. Paa hele timer staar den blaa paa 12.
+        s.ur.t = vaelgEn(tider(r.niveau).filter(function (x) { return x !== t && skiveAfstand(x, t) >= 2; }));
+        s.opgave = { slags: 'stil', t: t, klip: klip(t), tekst: tekst(t) };
+      }
     } else {
       var maal = vaelgEn(DAGEN.filter(function (d) { return s.sidste === null || d.t !== s.sidste.t; }));
       s.ur.t = doegnTilUr(maal.t);
-      s.opgave = { t: maal.t, kort: maal.kort, tekst: maal.tekst, klip: klip(doegnTilUr(maal.t)), himmel: himmel(maal.t), kortene: kortTil(maal, r.niveau) };
+      s.opgave = { slags: 'kort', t: maal.t, kort: maal.kort, tekst: maal.tekst, klip: klip(doegnTilUr(maal.t)),
+        himmel: himmel(maal.t), kortene: kortTil(maal, r.niveau) };
     }
     s.sidste = s.opgave;
+    s.nr++;
     s.planet++;
   }
 
@@ -208,13 +231,22 @@
     else nyOpgave(r, station);
   }
 
-  /** Planeturet: staar uret rigtigt? Sandt, hvis opgaven blev loest. */
+  /** Planeturet, 'stil': staar uret rigtigt? Sandt, hvis opgaven blev loest. */
   function tjek(r, station) {
     var s = r.stationer[station];
-    if (r.faerdig || !s.opgave) return false;
+    if (r.faerdig || !s.opgave || s.opgave.slags !== 'stil') return false;
     if (s.ur.t !== s.opgave.t) { s.forsoeg++; return false; }
     loest(r, station);
     return true;
+  }
+
+  /** Planeturet, 'laes': barnet trykkede paa et tal paa skiven. */
+  function tjekTal(r, station, n) {
+    var s = r.stationer[station];
+    if (r.faerdig || !s.opgave || s.opgave.slags !== 'laes') return 'forkert';
+    if (n !== s.opgave.svar) { s.forsoeg++; return 'forkert'; }
+    loest(r, station);
+    return 'rigtigt';
   }
 
   /** Musens dag: vaelg et kort. 'rigtigt' eller 'forkert' (ingen straf, kortet ryster bare). */
@@ -228,9 +260,9 @@
 
   rod.Ur = {
     INDSTIL: INDSTIL, TIMEORD: TIMEORD, DAGEN: DAGEN, HIMMELORD: HIMMELORD,
-    norm: norm, normDoegn: normDoegn, time: time, minut: minut, timeVinkel: timeVinkel, minutVinkel: minutVinkel, laas: laas, traek: traek,
+    norm: norm, normDoegn: normDoegn, time: time, minut: minut, talFor: talFor, timeVinkel: timeVinkel, minutVinkel: minutVinkel, laas: laas, traek: traek,
     tekst: tekst, klip: klip, skiveAfstand: skiveAfstand, doegnTilUr: doegnTilUr, himmel: himmel, vinkelTilDoegn: vinkelTilDoegn,
     doegnTilVinkel: doegnTilVinkel, goeremaal: goeremaal, tider: tider, nyRejse: nyRejse, nyOpgave: nyOpgave, kortTil: kortTil,
-    tjek: tjek, vaelg: vaelg
+    tjek: tjek, tjekTal: tjekTal, vaelg: vaelg
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);
