@@ -13,3 +13,6 @@ node_modules/
 /Ord/
 /Tal/
 __pycache__/
+
+# Raa billeder fra Pollinations, foer de er beskaaret og lagt i games/*/billeder/
+vaerktoej/raa/
