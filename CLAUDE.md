@@ -16,7 +16,9 @@ hurtig finger, og at alle ord i Ord-legen kan tegnes og er indtalt. Restaurant-t
 dag og tjekker, at alle bestillinger kan laves med det, der står på hylden, at
 alle ingredienser har en kilde, og at alle regninger kan betales med pungens
 mønter. Tegn-testen tjekker, at
-alle 16 figurer kan tegnes, og at puslespillet kan samles.
+alle 16 figurer kan tegnes, og at puslespillet kan samles. Klokke-testen lader en
+robot stille alle ure og vælge alle kort på alle niveauer og tjekker, at viserne
+låser rigtigt og hænger sammen, og at tiden siges rigtigt på dansk.
 
 **Stemme.** Bogstaver bruger rigtige klip med en dansk stemme fra ElevenLabs
 (Camilla) til bogstavnavne, tal, ord og spørgsmål. Klippene ligger som små

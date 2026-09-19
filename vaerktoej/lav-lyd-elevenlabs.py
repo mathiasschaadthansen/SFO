@@ -20,13 +20,13 @@ Valg:
     --alle           lav ogsaa klip der findes i forvejen
     --registrer      lav ikke noget, men skriv klip.json og sw.js ud fra de mp3-filer der ligger i lyd/
                      (bruges naar klippene er lavet et andet sted, fx i en Claude-chat med ElevenLabs)
-    --spil <navn>    bogstaver (standard) eller restaurant
+    --spil <navn>    bogstaver (standard), restaurant eller klokken
     --proev          vis hvad der ville blive lavet, uden at kalde ElevenLabs
 """
 import json, os, re, sys, time, urllib.parse, urllib.request, urllib.error
 
 ROD = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-SPIL = sys.argv[sys.argv.index('--spil') + 1] if '--spil' in sys.argv else 'bogstaver'   # bogstaver | restaurant
+SPIL = sys.argv[sys.argv.index('--spil') + 1] if '--spil' in sys.argv else 'bogstaver'   # bogstaver | restaurant | klokken
 UD = os.path.join(ROD, 'games', SPIL, 'lyd')
 API = 'https://api.elevenlabs.io/v1'
 
@@ -82,9 +82,28 @@ def restaurant():
         ('regning.mp3', 'Hvad koster det?')]
 
 
+def klokken():
+    """Klippene til Klokken: tiderne, musens spoergsmaal og dagens goeremaal fra ur.js."""
+    import subprocess
+    kode = ("const { Ur: U } = require(%r);"
+            "const ud = [];"
+            "for (let h = 1; h <= 12; h++) { ud.push(['klokken_' + h + '.mp3', 'Klokken ' + U.TIMEORD[h %% 12] + '.']); ud.push(['halv_' + h + '.mp3', 'Halv ' + U.TIMEORD[h %% 12] + '.']); }"
+            "U.DAGEN.forEach(d => ud.push(['goer_' + d.kort + '.mp3', d.tekst]));"
+            "Object.keys(U.HIMMELORD).forEach(h => ud.push(['om_' + h + '.mp3', U.HIMMELORD[h] + '.']));"
+            "console.log(JSON.stringify(ud));"
+            ) % os.path.join(ROD, 'games', 'klokken', 'js', 'ur.js')
+    ud = [tuple(x) for x in json.loads(subprocess.check_output(['node', '-e', kode]))]
+    return ud + [
+        ('stil_uret.mp3', 'Stil uret på'), ('hvad_goer.mp3', 'Hvad gør musen'),
+        ('flot_1.mp3', 'Flot!'), ('flot_2.mp3', 'Sådan!'), ('flot_3.mp3', 'Rigtigt!'),
+        ('naesten.mp3', 'Næsten!'), ('rejse.mp3', 'Sikke en rumrejse!')]
+
+
 def opgaver(kun):
     if SPIL == 'restaurant':
         return restaurant()
+    if SPIL == 'klokken':
+        return klokken()
     ud = []
     if kun in (None, 'bogstaver'):
         ud += [('bogstav_%s.mp3' % n, t) for n, t in NAVNE.items()]

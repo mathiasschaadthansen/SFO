@@ -372,6 +372,51 @@ så hver bestilling kan få sit eget stemmeklip: `lyd/bestil_<id>.mp3`, plus
 `lyd/klip.json` bruges; resten siges af enhedens egen stemme.
 
 
+## Klokken
+
+Rummusen lærer, hvordan uret virker. Spillet ligger i `games/klokken/` og har
+tre lege, som vælges med billedfliser øverst i menuen. Tider, låsning af
+viserne, opgaver og dagens gøremål ligger i `js/ur.js`, som testes i Node
+(`test/klokken.test.js`). `js/game.js` er kun skærm og lyd.
+
+**Uret.** Begge visere er der altid: klokken 3 er den røde timeviser på 3 og
+den blå minutviser på 12. De hænger sammen som på et rigtigt ur, så trækker
+man den blå en omgang, går den røde en time frem, og ved halv fire står den
+røde midt mellem 3 og 4. Viserne trækkes og låser på nærmeste tal med et tik.
+Én stjerne: hele timer, kun den røde kan trækkes. To stjerner: også halve
+timer ("halv fire" er 3:30). Tre stjerner: musen siger kun tiden uden at vise
+det lille ur. Kvarter er med vilje ikke med. Tallene står på skiven, og der er
+ingen digital tid.
+
+**Planeturet (`stil`).** Musen siger "Stil uret på klokken tre", og barnet
+stiller den store planets ur. Står det rigtigt, flyver raketten til næste
+planet. Står det forkert, sker der ingenting; efter to forsøg blinker det
+rigtige tal, og musen siger "Næsten!". Seks planeter til én spiller, otte til
+to, hver med sit eget ur og samme slags opgave.
+
+**Musens dag (`dag`).** Uret viser en tid, en sol eller måne viser, om det er
+dag eller nat, og barnet vælger kortet med det, musen gør nu: 7 tandbørste,
+8 skole, 12 madpakke, 14 bold, 18 aftensmad, 19 bad, 20 seng (`DAGEN` i
+`ur.js`). Én stjerne: tre kort langt fra hinanden på dagen. To stjerner: fire
+tilfældige. Tre stjerner: de kort, der ligger tættest på uret, så 7 om
+morgenen og 7 om aftenen ligger side om side.
+
+**Jorden drejer (`sol`).** Fri leg for én. Barnet drejer jorden med fingeren,
+solen står stille. Musens hus på kanten går fra dag til skygge til nat, uret
+nederst følger med, og når det er tid til noget (klokken 7, 12, 20 ...),
+vises kortet ved huset. Et tryk på uret siger tiden: "Klokken syv om morgenen".
+
+**Stemme.** Klippene ligger i `games/klokken/lyd/` og laves med
+`vaerktoej/lav-lyd-elevenlabs.py --spil klokken`: `klokken_1.mp3` til
+`klokken_12.mp3`, `halv_1.mp3` til `halv_12.mp3` (tallet er det, der siges),
+`stil_uret.mp3`, `hvad_goer.mp3`, `om_morgen/dag/aften/nat.mp3`,
+`goer_<kort>.mp3`, `flot_1-3.mp3`, `naesten.mp3` og `rejse.mp3`. Sætningerne
+sættes sammen af klip: "Stil uret på" + "klokken tre".
+
+**Tegninger.** Musen, jorden, solen, månen og kortene er Noto Emoji
+(`assets/noto/`), raketten er fra Kenney. Planeter, hjelm, ur, hus og rum
+tegnes i kode.
+
 ## Tegn og pusl
 
 Barnet vælger et univers (Havet, Dyrene, Maskiner, Haven) og tegner en figur

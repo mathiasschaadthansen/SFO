@@ -78,6 +78,26 @@ window.SPIL = [
          '</div>'
   },
   {
+    id: 'klokken',
+    navn: 'Klokken',
+    tekst: 'Rummusen lærer klokken: stil uret på planeterne, find ud af hvad musen gør nu, og drej jorden fra dag til nat.',
+    farve: '#c9c4f5',
+    sti: 'games/klokken/',
+    art: '<div class="art">' +
+         '<svg viewBox="0 0 100 100" style="position:absolute;left:0;top:6px;width:88px;height:88px">' +
+         '<circle cx="50" cy="50" r="46" fill="#9b5de5" stroke="#12261f" stroke-width="3"/>' +
+         '<circle cx="50" cy="50" r="36" fill="#fff" stroke="#12261f" stroke-width="3"/>' +
+         '<text x="50" y="24" font-size="11" font-weight="800" text-anchor="middle" fill="#12261f" font-family="ui-rounded,system-ui,sans-serif">12</text>' +
+         '<text x="78" y="54" font-size="11" font-weight="800" text-anchor="middle" fill="#12261f" font-family="ui-rounded,system-ui,sans-serif">3</text>' +
+         '<text x="50" y="84" font-size="11" font-weight="800" text-anchor="middle" fill="#12261f" font-family="ui-rounded,system-ui,sans-serif">6</text>' +
+         '<text x="22" y="54" font-size="11" font-weight="800" text-anchor="middle" fill="#12261f" font-family="ui-rounded,system-ui,sans-serif">9</text>' +
+         '<path d="M50 50V24" stroke="#12261f" stroke-width="7" stroke-linecap="round"/><path d="M50 50V24" stroke="#3aa7e0" stroke-width="4" stroke-linecap="round"/>' +
+         '<path d="M50 50h18" stroke="#12261f" stroke-width="9" stroke-linecap="round"/><path d="M50 50h18" stroke="#e8442e" stroke-width="6" stroke-linecap="round"/>' +
+         '<circle cx="50" cy="50" r="3.5" fill="#12261f"/></svg>' +
+         '<img src="assets/noto/mus.svg" alt="" style="left:62px;top:0;width:48px">' +
+         '</div>'
+  },
+  {
     id: 'tegn',
     navn: 'Tegn og pusl',
     tekst: 'Tegn en fisk, en raket eller et hus med fingeren, og saml den som puslespil.',

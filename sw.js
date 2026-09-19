@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v46';
+const VERSION = 'sfo-spil-v47';
 
 const FILER = [
   './',
@@ -227,6 +227,10 @@ const FILER = [
   'games/tegn/js/figurer.js',
   'games/tegn/js/pusle.js',
   'games/tegn/js/game.js',
+  'games/klokken/index.html',
+  'games/klokken/js/ur.js',
+  'games/klokken/js/game.js',
+  'games/klokken/lyd/klip.json',
   'games/restaurant/index.html',
   'games/restaurant/js/koekken.js',
   'games/restaurant/js/game.js',
@@ -328,6 +332,17 @@ const FILER = [
   'assets/noto/ko.svg',
   'assets/noto/maelk.svg',
   'assets/noto/bi.svg',
+  'assets/noto/mus.svg',
+  'assets/noto/jord.svg',
+  'assets/noto/sol.svg',
+  'assets/noto/maane.svg',
+  'assets/noto/tandboerste.svg',
+  'assets/noto/skoletaske.svg',
+  'assets/noto/madpakke.svg',
+  'assets/noto/bold.svg',
+  'assets/noto/aftensmad.svg',
+  'assets/noto/bad.svg',
+  'assets/noto/seng.svg',
   'assets/noto/klokke.svg',
   'assets/noto/koala.svg',
   'assets/noto/loeve.svg',
