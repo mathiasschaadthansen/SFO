@@ -52,6 +52,11 @@ offline-cachen hurtig. Nye filer skal med i `FILER` i `sw.js`.
 - Ingen tidspres og ingen højscore. Børnene sidder typisk to ved en iPad, og
   konkurrenceelementer skaber skænderier som pædagogerne skal håndtere.
 - Store trykflader. Styrezonerne fylder hele skærmhøjden.
+- Menuknapper er billeder, ikke ord. Ikonerne ligger i `js/menu.js` og bruges
+  af alle spil: én eller to figurer for antal spillere, en trekant for start,
+  en pil rundt for igen, en pil tilbage for menuen, og én, to eller tre
+  stjerner for sværhed. Rækkefølgen er ens overalt: spillets egne valg,
+  stjerner, og nederst de store grønne startknapper. Grøn betyder "gå i gang".
 
 ## Tekniske faldgruber der allerede er løst — lav dem ikke om
 

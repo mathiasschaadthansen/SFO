@@ -502,27 +502,9 @@
   function visOverlay(html) { overlay.innerHTML = html; overlay.hidden = false; }
   function skjulOverlay() { overlay.hidden = true; overlay.innerHTML = ''; slutCanvas = null; }
 
-  function stjerner(fyldt) {
-    var s = '<svg width="84" height="26" viewBox="0 0 84 26" aria-hidden="true">';
-    for (var i = 0; i < 3; i++) {
-      var cx = 13 + i * 29, d = '';
-      for (var k = 0; k < 10; k++) { var r = k % 2 ? 5 : 12, v = -Math.PI / 2 + k * Math.PI / 5; d += (k ? 'L' : 'M') + (cx + Math.cos(v) * r).toFixed(1) + ' ' + (13 + Math.sin(v) * r).toFixed(1); }
-      s += '<path d="' + d + 'Z" fill="' + (i < fyldt ? '#ffd23f' : '#d9d4c7') + '" stroke="#12261f" stroke-width="2" stroke-linejoin="round"/>';
-    }
-    return s + '</svg>';
-  }
-  function lydIkon(til) {
-    return '<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M4 11h6l7-6v20l-7-6H4z" fill="#12261f"/>' +
-      (til ? '<path d="M20 10c2 2.5 2 7.5 0 10M23.5 7c3.5 4.5 3.5 11.5 0 16" fill="none" stroke="#12261f" stroke-width="2.5" stroke-linecap="round"/>'
-           : '<path d="M20 11l7 8M27 11l-7 8" fill="none" stroke="#e8442e" stroke-width="3" stroke-linecap="round"/>') + '</svg>';
-  }
-
   function visMenu() {
     tilstand = 'menu'; figur = null; univers = null;
     try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* ignorer */ }
-    var stjerneKnapper = [0, 1, 2].map(function (n) {
-      return '<button class="knap smal ikon' + (n === svaerhed ? ' valgt' : '') + '" data-handling="svaerhed" data-n="' + n + '" aria-label="' + (n + 1) + ' stjerner">' + stjerner(n + 1) + '</button>';
-    }).join('');
     var universer = Figurer.UNIVERSER.map(function (u, i) {
       return '<button class="bane" data-handling="univers" data-n="' + i + '"><canvas width="200" height="200" data-univers="' + i + '" style="position:static;display:block;width:100%;aspect-ratio:1;border-radius:10px"></canvas><span>' + u.navn + '</span></button>';
     }).join('');
@@ -530,11 +512,9 @@
       '<div class="kort">' +
       '<h2>Tegn og pusl</h2>' +
       '<p class="hjaelp">Tegn figuren med fingeren. Så bliver den til et puslespil.</p>' +
-      '<div class="raekke">' + stjerneKnapper + '</div>' +
       '<div class="baner">' + universer + '</div>' +
-      '<div class="raekke bund">' +
-      '<button class="knap lille ikon" data-handling="lyd" aria-label="Lyd til eller fra">' + lydIkon(lydTil) + '</button>' +
-      '</div>' +
+      Menu.stjerneRaekke(svaerhed) +
+      Menu.lydRaekke(lydTil) +
       '</div>'
     );
     Array.prototype.forEach.call(overlay.querySelectorAll('canvas[data-univers]'), function (l) {
@@ -550,8 +530,7 @@
       '<div class="kort">' +
       '<h2>' + univers.navn + ' er færdig!</h2>' +
       '<canvas class="eksempel" width="720" height="200" style="position:static;display:block;width:100%;max-width:360px;aspect-ratio:3.6;align-self:center;border-radius:12px"></canvas>' +
-      '<div class="raekke start"><button class="knap gul" data-handling="igen">Spil igen</button>' +
-      '<button class="knap" data-handling="menu">Menu</button></div>' +
+      Menu.slutRaekke('igen', null) +
       '</div>'
     );
     slutCanvas = overlay.querySelector('canvas.eksempel');
