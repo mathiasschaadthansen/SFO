@@ -527,6 +527,27 @@
     }
   }
 
+  /** De faste pladser: en stiplet ring med en lille prik, hvor en del kan ligge. Ledige pladser aander. */
+  function tegnPladser(p) {
+    var alle = pladser(p);
+    if (!alle || tilstand !== 'bygger') return;
+    // Hvor fingrene er, saa den naermeste plads kan lyse op
+    var fingerSteder = Object.keys(fingre).map(function (id) { return fingre[id]; }).filter(function (f) { return f.flyttet; });
+    alle.forEach(function (pl) {
+      if (pl.besat >= 0) return;
+      var r = Math.max(26, 44 * p.sk), naer = fingerSteder.some(function (f) { return Math.hypot(f.x - pl.x, f.y - pl.y) < Math.max(80, 120 * p.sk); });
+      ctx.save();
+      ctx.globalAlpha = naer ? 0.95 : 0.45 + Math.sin(tid * 2.5) * 0.15;
+      ctx.strokeStyle = naer ? P.ferskenM : P.traeM; ctx.lineWidth = Math.max(3, 4 * p.sk); ctx.lineCap = 'round';
+      ctx.setLineDash([1, Math.max(7, 10 * p.sk)]); ctx.lineDashOffset = -tid * 20;
+      ctx.beginPath(); ctx.arc(pl.x, pl.y, r * (naer ? 1.15 : 1), 0, TAU); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = naer ? P.ferskenM : P.traeM;
+      ctx.beginPath(); ctx.arc(pl.x, pl.y, Math.max(3, 5 * p.sk), 0, TAU); ctx.fill();
+      ctx.restore();
+    });
+  }
+
   /** Sporet efter kuglen: en stiplet vej, saa man kan se, hvad der skete. */
   function tegnSpor(p) {
     if (spor.length < 2) return;
@@ -738,6 +759,34 @@
   }
   function snap(v) { return Math.round(v / F.GITTER) * F.GITTER; }
 
+  /**
+   * Banens faste pladser: det er dem, delene kan ligge paa. Gaaden er saa,
+   * hvilken del der skal hvor — som i en opfinderbog, hvor hullerne er tegnet
+   * paa forhaand. Fri leg har ingen pladser; dér ligger delene, hvor man vil.
+   */
+  function pladser(p) {
+    if (!bane || !bane.pladser) return null;
+    return bane.pladser.map(function (pl) {
+      var s = tilSkaerm(p, pl.x, pl.y), n = -1;
+      for (var i = 0; i < lagte.length; i++) if (lagte[i].x === pl.x && lagte[i].y === pl.y) n = i;
+      return { x: s.x, y: s.y, vx: pl.x, vy: pl.y, vinkel: pl.vinkel, besat: n };
+    });
+  }
+  /** Delen laegger sig, som pladsen vil have det — kan den ikke staa saadan, staar den, som den plejer. */
+  function vinkelFor(slags, vinkel) { var v = F.DELE[slags].vinkler; return v.indexOf(vinkel) >= 0 ? vinkel : v[0]; }
+  /** Naermeste ledige plads inden for fingerens raekkevidde. */
+  function pladsVed(p, x, y, undtagen) {
+    var alle = pladser(p);
+    if (!alle) return null;
+    var bedst = null, afstand = Math.max(80, 120 * p.sk);
+    alle.forEach(function (pl) {
+      if (pl.besat >= 0 && pl.besat !== undtagen) return;
+      var d = Math.hypot(x - pl.x, y - pl.y);
+      if (d < afstand) { afstand = d; bedst = pl; }
+    });
+    return bedst;
+  }
+
   function ned(e) {
     var p = plan(), pos = sted(e), x = pos.x, y = pos.y;
     if (tilstand === 'venter') return;
@@ -777,8 +826,8 @@
     f.x = pos.x; f.y = pos.y;
     if (f.type === 'flyt' && f.flyttet) {
       var p = plan(), v = tilVerden(p, pos.x, pos.y);
-      lagte[f.n].x = snap(v.x);
-      lagte[f.n].y = snap(v.y);
+      lagte[f.n].x = bane.pladser ? v.x : snap(v.x);
+      lagte[f.n].y = bane.pladser ? v.y : snap(v.y);
       lagFor = '';
     }
   }
@@ -790,22 +839,36 @@
     if (tilstand !== 'bygger') return;
     var p = plan();
     if (f.type === 'ny') {
-      if (f.y < p.hylde.y) {                 // sluppet ude i banen: laeg den
+      if (f.y >= p.hylde.y) return;          // sluppet paa hylden igen
+      if (bane.pladser) {
+        // Banen har faste pladser: delen klikker fast paa den naermeste ledige — ellers tilbage paa hylden
+        var pl = pladsVed(p, f.x, f.y);
+        if (!pl) { tone(300, 0.1, 0.09); return; }
+        lagte.push({ slags: f.slags, x: pl.vx, y: pl.vy, vinkel: vinkelFor(f.slags, pl.vinkel) });
+      } else {
         var v = tilVerden(p, f.x, f.y);
         lagte.push({ slags: f.slags, x: snap(v.x), y: snap(v.y), vinkel: F.DELE[f.slags].vinkler[0] });
-        tilbage[f.slags]--;
-        tone(520, 0.08, 0.1);
-        if (DELKLIP[f.slags] && !sagtDel[f.slags]) { sagtDel[f.slags] = true; afspil(DELKLIP[f.slags][0], DELKLIP[f.slags][1], 2.2); }
-        lagFor = '';
       }
+      tilbage[f.slags]--;
+      tone(520, 0.08, 0.1);
+      if (DELKLIP[f.slags] && !sagtDel[f.slags]) { sagtDel[f.slags] = true; afspil(DELKLIP[f.slags][0], DELKLIP[f.slags][1], 2.2); }
+      lagFor = '';
       return;
     }
     if (f.type === 'flyt') {
       var d = lagte[f.n];
-      if (!f.flyttet) {                      // et tryk drejer delen
-        var vinkler = F.DELE[d.slags].vinkler;
+      if (!f.flyttet) {
+        if (bane.pladser) { tone(660, 0.05, 0.06); return; }   // paa faste pladser drejer man ikke; delen ligger, som pladsen vil
+        var vinkler = F.DELE[d.slags].vinkler;                   // et tryk drejer delen
         d.vinkel = vinkler[(vinkler.indexOf(d.vinkel) + 1) % vinkler.length];
         tone(880, 0.07, 0.09);
+        lagFor = '';
+        return;
+      }
+      if (bane.pladser) {
+        var pl2 = f.y < p.hylde.y ? pladsVed(p, f.x, f.y, f.n) : null;
+        if (pl2) { d.x = pl2.vx; d.y = pl2.vy; d.vinkel = vinkelFor(d.slags, pl2.vinkel); tone(520, 0.08, 0.1); }
+        else { tilbage[d.slags]++; lagte.splice(f.n, 1); tone(300, 0.1, 0.09); }   // ingen plads: tilbage paa hylden
         lagFor = '';
         return;
       }
@@ -828,6 +891,7 @@
     ctx.save();
     ctx.beginPath(); ctx.roundRect(p.ox, p.oy, p.b, p.h, 14); ctx.clip();
     tegnKlokke(p);
+    tegnPladser(p);
     if (tilstand === 'koerer' || tilstand === 'loest') tegnSpor(p);
     // Delene
     lagte.forEach(function (d, i) {
@@ -1060,7 +1124,8 @@
       loest: verden ? verden.loest : false, stoppet: verden ? verden.stoppet : false,
       knap: { x: Math.round(p.knap.x), y: Math.round(p.knap.y), r: Math.round(p.knap.r) },
       hylde: hyldePladser(p).map(function (h) { return { slags: h.slags, x: Math.round(h.x), y: Math.round(h.y), tilbage: tilbage[h.slags] || 0 }; }),
-      steder: (bane ? bane.loesning : []).map(function (d) { var s = tilSkaerm(p, d.x, d.y); return { slags: d.slags, vinkel: d.vinkel, x: Math.round(s.x), y: Math.round(s.y) }; })
+      steder: (bane ? bane.loesning : []).map(function (d) { var s = tilSkaerm(p, d.x, d.y); return { slags: d.slags, vinkel: d.vinkel, x: Math.round(s.x), y: Math.round(s.y) }; }),
+      pladser: (pladser(p) || []).map(function (pl) { return { x: Math.round(pl.x), y: Math.round(pl.y), besat: pl.besat }; })
     };
   };
 

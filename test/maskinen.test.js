@@ -68,6 +68,25 @@ console.log('\nMaskinen\n');
   tjek('hver banes loesning virker ogsaa, naar delene ligger lidt skaevt (mindst 20 %)', skroebelige.length === 0, skroebelige.join(' | '));
 }
 
+/* Faste pladser: loesningen ligger paa pladserne, og der er altid én plads for meget */
+{
+  const fejlPladser = [];
+  F.BANER.forEach((b, i) => {
+    if (!b.pladser) { fejlPladser.push('bane ' + (i + 1) + ' har ingen pladser'); return; }
+    if (b.pladser.length < b.loesning.length + 1) fejlPladser.push('bane ' + (i + 1) + ' har for faa pladser');
+    b.loesning.forEach(d => {
+      const pl = b.pladser.find(q => q.x === d.x && q.y === d.y);
+      if (!pl) fejlPladser.push('bane ' + (i + 1) + ': ' + d.slags + ' ligger ikke paa en plads');
+      else if (pl.vinkel !== d.vinkel) fejlPladser.push('bane ' + (i + 1) + ': pladsen har en anden vinkel end loesningen');
+    });
+    b.pladser.forEach(q => { if (q.x % F.GITTER || q.y % F.GITTER) fejlPladser.push('bane ' + (i + 1) + ': en plads ligger ikke paa gitteret'); });
+    for (let a = 0; a < b.pladser.length; a++) for (let c = a + 1; c < b.pladser.length; c++)
+      if (Math.hypot(b.pladser[a].x - b.pladser[c].x, b.pladser[a].y - b.pladser[c].y) < 100) fejlPladser.push('bane ' + (i + 1) + ': to pladser ligger oven i hinanden');
+  });
+  tjek('alle baner har faste pladser, loesningen passer paa dem, og der er én plads for meget', fejlPladser.length === 0, fejlPladser.slice(0, 3).join(' | '));
+  tjek('fri leg har ingen faste pladser', !F.FRI.pladser);
+}
+
 /* Der skal vaere en opgave: banen maa ikke klare sig selv */
 {
   const gratis = F.BANER.filter(b => F.koer(b, [], 25).loest).map(b => b.navn);

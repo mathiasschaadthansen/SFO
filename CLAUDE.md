@@ -22,7 +22,7 @@ låser rigtigt og hænger sammen, og at tiden siges rigtigt på dansk. Maskin-te
 gennemspiller alle 36 baners gemte løsning i fysikken og fanger, hvis en
 ændring gør en bane uløselig — præcis som racertesten. Den kræver også, at
 løsningen tåler, at delene ligger op til 40 px skævt, så ingen bane er en nål i
-en høstak. Den tjekker også de
+en høstak, og at hver bane har faste pladser, som løsningen passer på. Den tjekker også de
 enkelte dele (kanon, tragt, vippe, bånd, blæser), stoffet i murene (is, sne,
 åkande) og at hvert kapitel har sine baner og sin kugle.
 
