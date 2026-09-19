@@ -100,7 +100,7 @@ window.SPIL = [
   {
     id: 'maskinen',
     navn: 'Maskinen',
-    tekst: 'Byg en kædereaktion med ramper, trampoliner og blæsere, så kuglen ruller ned til klokken.',
+    tekst: 'Byg en kædereaktion med ramper, trampoliner, kanoner og blæsere, så kuglen ruller ned til klokken. Fem steder i Nøddeskoven, 36 baner.',
     farve: '#f2d9a6',
     sti: 'games/maskinen/',
     art: '<div class="art">' +

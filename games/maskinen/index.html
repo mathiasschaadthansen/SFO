@@ -74,6 +74,8 @@
 
   /* Banerne: hver vises som et lille billede af sig selv */
   .baner{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .baner.kapitler{grid-template-columns:repeat(5,1fr);margin-bottom:4px}
+  .flise.kapitel{aspect-ratio:3/2}
   .flise{
     aspect-ratio:3/2;padding:0;
     border:0;border-radius:18px;background:#f8f1e6;
@@ -100,6 +102,7 @@
     .knap.lille{padding:7px 12px}
     .raekke{margin-bottom:0}
     .baner{grid-template-columns:repeat(6,1fr);gap:7px}
+    .baner.kapitler{grid-template-columns:repeat(5,1fr)}
   }
 
   @media (prefers-reduced-motion:reduce){.knap{transition:none}}

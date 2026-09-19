@@ -1,7 +1,8 @@
 # Billederne i denne mappe
 
 Malede figurer i billedbogsstil: pindsvinet Pelle (opfinderen), kaninen,
-musen, bjoernen, raeven, froeen, aeblet, svampen, traeet og klokken.
+musen, bjoernen, raeven, froeen, uglen, snemanden, aeblet, kastanjen,
+snebolden, lygten, svampen, traeet, granen, sivene og klokken.
 
 Lavet den 19. september 2026 med Canvas AI-billedgenerator gennem Canva-
 connectoren, ud fra prompter skrevet i dette projekt (stilen er beskrevet med

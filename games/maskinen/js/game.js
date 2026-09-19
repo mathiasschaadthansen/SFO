@@ -42,6 +42,7 @@
 
   var bane = null, verden = null;
   var baneNr = 0, friLeg = false;
+  var kapitel = 'engen';           // det kapitel, menuen viser baner fra
   var klaret = [];                  // hvilke baner der er klaret i denne omgang (kun i hukommelsen)
   var lagte = [];                   // delene barnet har lagt ud: { slags, x, y, vinkel }
   var tilbage = {};                 // hvor mange af hver slags der er tilbage paa hylden
@@ -186,7 +187,7 @@
   /* ---------- tegning af delene ---------- */
 
   /** Farven en del har, indtil dens tegning er malet faerdig foerste gang. */
-  var GRUNDFARVE = { rampe: P.trae, trampolin: P.blaa, klods: P.trae, baand: P.sten, blaeser: P.blaaM, vippe: P.trae };
+  var GRUNDFARVE = { rampe: P.trae, trampolin: P.blaa, klods: P.trae, baand: P.sten, blaeser: P.blaaM, vippe: P.trae, kanon: P.stenDyb, tragt: P.sten };
   function reserve(c, b, h, farve) {
     c.fillStyle = farve;
     c.beginPath(); c.roundRect(-b / 2, -h / 2, b, h, Math.min(b, h) * 0.3); c.fill();
@@ -202,7 +203,7 @@
     var s = F.DELE[slags], b = s.b * sk, h = s.h * sk;
     c.save();
     c.translate(x, y);
-    if (!s.fart && !s.kraft) c.rotate(F.grader(vinkel));
+    if (!s.fart && !s.kraft && !s.skyder && !s.fanger) c.rotate(F.grader(vinkel));
 
     if (slags === 'baand') {
       // Baandet ligger altid vandret; stillingen siger kun, hvilken vej det koerer
@@ -246,6 +247,18 @@
       // Dugen ligger, hvor fysikken rammer; fjedrene haenger neden under
       if (!Figurer.tegn(c, 'trampolin', 0, h * 0.6, b, h * 2.2)) reserve(c, b, h, GRUNDFARVE.trampolin);
 
+    } else if (slags === 'kanon') {
+      // Hjulet staar fast; loebet peger den vej, kuglen skydes: 0 op, 90 hoejre
+      Figurer.tegn(c, 'kanonhjul', 0, h * 0.35, h * 0.9, h * 0.9);
+      c.save();
+      c.rotate(F.grader(vinkel) - Math.PI / 2);
+      if (valg.skudt) { c.translate(-h * 0.12, 0); }
+      if (!Figurer.tegn(c, 'kanonloeb', b * 0.12, 0, b, h * 0.62)) reserve(c, b, h * 0.6, GRUNDFARVE.kanon);
+      c.restore();
+
+    } else if (slags === 'tragt') {
+      if (!Figurer.tegn(c, 'tragt', 0, 0, b, h)) reserve(c, b, h, GRUNDFARVE.tragt);
+
     } else if (!Figurer.tegn(c, slags, 0, 0, b, h)) {
       reserve(c, b, h, GRUNDFARVE[slags] || P.trae);
     }
@@ -255,7 +268,33 @@
   /* ---------- baggrund ---------- */
 
   var lag = document.createElement('canvas'), lagFor = '', altMalet = true;
-  var TILSKUERE = [{ navn: 'kanin', str: 0.9 }, { navn: 'mus', str: 0.8 }, { navn: 'bjoern', str: 1 }, { navn: 'raev', str: 0.95 }, { navn: 'froe', str: 0.75 }];
+
+  /**
+   * Hvordan hvert kapitel ser ud: himlen, bakkerne, pynten og hvem der ser paa.
+   * Selve banerne og fysikken ligger i fysik.js; her er kun stemningen.
+   */
+  var TEMA = {
+    engen:  { ude: [P.blaaM, P.blaa, P.sand], himmel: ['#c9e2ee', '#eef3ec', P.kridt], bakker: [P.salvieLys, P.salvie, P.salvieM], straa: P.salvieDyb,
+              traeer: ['trae', 'trae'], pynt: ['svamp', 'svamp'], skyer: true,
+              tilskuere: [{ navn: 'kanin', str: 0.9 }, { navn: 'mus', str: 0.8 }, { navn: 'bjoern', str: 1 }, { navn: 'raev', str: 0.95 }, { navn: 'froe', str: 0.75 }] },
+    skoven: { ude: ['#6f9a86', '#93b89e', '#c9bd8f'], himmel: ['#b9d4c4', '#e4ecd8', '#f3eedc'], bakker: ['#a9c48c', '#82a66c', '#5f8752'], straa: '#4d7042',
+              traeer: ['trae', 'trae', 'trae'], pynt: ['svamp', 'svamp', 'svamp'], skyer: false,
+              tilskuere: [{ navn: 'raev', str: 0.95 }, { navn: 'kanin', str: 0.9 }, { navn: 'bjoern', str: 1 }, { navn: 'mus', str: 0.8 }] },
+    soeen:  { ude: ['#8fbad0', '#b7d7e4', '#cfe0d0'], himmel: ['#cfe6f0', '#eaf2ea', '#f2f0e0'], bakker: ['#8fc0d6', '#6fa8c4', '#5a92ae'], straa: null, vand: true,
+              traeer: ['siv', 'siv'], pynt: ['siv'], skyer: true,
+              tilskuere: [{ navn: 'froe', str: 0.75 }, { navn: 'bjoern', str: 1 }, { navn: 'kanin', str: 0.9 }] },
+    vinter: { ude: ['#9bb6c8', '#c9dbe6', '#e6ecf0'], himmel: ['#c7d9e6', '#e8eef2', '#f7f7f4'], bakker: ['#ffffff', '#eef3f6', '#d9e4ec'], straa: null, sne: true,
+              traeer: ['gran', 'gran'], pynt: ['snemand'], skyer: false,
+              tilskuere: [{ navn: 'snemand', str: 0.95 }, { navn: 'bjoern', str: 1 }, { navn: 'kanin', str: 0.9 }, { navn: 'raev', str: 0.95 }] },
+    natten: { ude: ['#2a3a5c', '#3d5075', '#5c6a7e'], himmel: ['#2f3f66', '#4b5b80', '#6d7a8a'], bakker: ['#5e7a6a', '#4b6555', '#3a5044'], straa: '#2c3d33', nat: true,
+              traeer: ['trae', 'gran'], pynt: ['svamp'], skyer: false,
+              tilskuere: [{ navn: 'ugle', str: 0.85 }, { navn: 'mus', str: 0.8 }, { navn: 'raev', str: 0.95 }] }
+  };
+  function tema() { return TEMA[bane && bane.kapitel] || TEMA.engen; }
+  function kuglenavn() {
+    var k = F.KAPITLER.filter(function (k) { return bane && k.id === bane.kapitel; })[0];
+    return k ? k.kugle : 'aeble';
+  }
 
   /** Tegn en figur og husk, om den var faerdigmalet — ellers tegnes laget igen. */
   function fig(c, navn, x, y, b, h) {
@@ -284,7 +323,7 @@
     return function () { n = (n * 1103515 + 12345) % 2147483647; return n / 2147483647; };
   }
 
-  /** Himlen, bakkerne, pynten og banens faste bjaelker tegnes én gang. */
+  /** Himlen, bakkerne, pynten og banens faste planker tegnes én gang. */
   function tegnLag(p) {
     var noegle = p.B + 'x' + p.H + 'x' + dpr + 'x' + (bane ? bane.navn : '') + 'x' + lagte.length;
     if (lagFor === noegle) return;
@@ -293,19 +332,20 @@
     lag.width = Math.floor(p.B * dpr); lag.height = Math.floor(p.H * dpr);
     var c = lag.getContext('2d');
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var T = tema();
 
-    // Himlen: en rolig overgang fra sart lyseblaa til creme
+    // Himlen uden om banen
     var g = c.createLinearGradient(0, 0, 0, p.H);
-    g.addColorStop(0, P.blaaM); g.addColorStop(0.55, P.blaa); g.addColorStop(1, P.sand);
+    g.addColorStop(0, T.ude[0]); g.addColorStop(0.55, T.ude[1]); g.addColorStop(1, T.ude[2]);
     c.fillStyle = g; c.fillRect(0, 0, p.B, p.H);
     tegnKorn(c, p.B, p.H);
 
     if (!bane) return;
 
-    // Selve banen: en bloed ler-bakke med skygge under
+    // Selve banen: en bloed bakke med skygge under
     c.save();
-    c.shadowColor = 'rgba(107,85,68,.22)'; c.shadowBlur = 22; c.shadowOffsetY = 8;
-    c.fillStyle = P.kridt;
+    c.shadowColor = 'rgba(40,30,20,.28)'; c.shadowBlur = 22; c.shadowOffsetY = 8;
+    c.fillStyle = T.himmel[2];
     c.beginPath(); c.roundRect(p.ox, p.oy, p.b, p.h, 26); c.fill();
     c.restore();
 
@@ -314,69 +354,121 @@
 
     // Luften inde i banen
     var bg = c.createLinearGradient(0, p.oy, 0, p.oy + p.h);
-    bg.addColorStop(0, '#c9e2ee'); bg.addColorStop(0.7, '#eef3ec'); bg.addColorStop(1, P.kridt);
+    bg.addColorStop(0, T.himmel[0]); bg.addColorStop(0.7, T.himmel[1]); bg.addColorStop(1, T.himmel[2]);
     c.fillStyle = bg; c.fillRect(p.ox, p.oy, p.b, p.h);
-    // Et par bløde skyer af akvarel
-    c.fillStyle = 'rgba(255,255,255,.55)';
-    [[0.18, 0.14, 0.09], [0.62, 0.08, 0.12], [0.85, 0.2, 0.07]].forEach(function (sky) {
-      var sx = p.ox + p.b * sky[0], sy = p.oy + p.h * sky[1], sr = p.b * sky[2];
-      c.beginPath(); c.ellipse(sx, sy, sr, sr * 0.42, 0, 0, TAU); c.fill();
-      c.beginPath(); c.ellipse(sx + sr * 0.5, sy - sr * 0.18, sr * 0.6, sr * 0.36, 0, 0, TAU); c.fill();
-      c.beginPath(); c.ellipse(sx - sr * 0.45, sy - sr * 0.1, sr * 0.5, sr * 0.3, 0, 0, TAU); c.fill();
-    });
+    var t = taelling(bane.navn), bund = p.oy + p.h;
 
-    // To bloede bakker langs bunden
-    var bund = p.oy + p.h;
-    // Bakkerne males i lag med lidt gennemsigtighed, saa kanterne bliver bløde som akvarel
-    c.globalAlpha = 0.8; c.fillStyle = P.salvieLys;
-    c.beginPath(); c.ellipse(p.ox + p.b * 0.26, bund + p.h * 0.08, p.b * 0.46, p.h * 0.16, 0, 0, TAU); c.fill();
-    c.beginPath(); c.ellipse(p.ox + p.b * 0.84, bund + p.h * 0.09, p.b * 0.4, p.h * 0.14, 0, 0, TAU); c.fill();
-    c.fillStyle = P.salvie;
-    c.beginPath(); c.ellipse(p.ox + p.b * 0.3, bund + p.h * 0.1, p.b * 0.4, p.h * 0.13, 0, 0, TAU); c.fill();
-    c.beginPath(); c.ellipse(p.ox + p.b * 0.8, bund + p.h * 0.11, p.b * 0.34, p.h * 0.11, 0, 0, TAU); c.fill();
-    c.fillStyle = P.salvieM;
-    c.beginPath(); c.ellipse(p.ox + p.b * 0.55, bund + p.h * 0.12, p.b * 0.66, p.h * 0.11, 0, 0, TAU); c.fill();
-    c.globalAlpha = 1;
-    // Græsstraa langs bakkekammen
-    c.strokeStyle = P.salvieDyb; c.lineWidth = Math.max(1, p.sk * 1.5); c.lineCap = 'round'; c.globalAlpha = 0.5;
-    var tg = taelling(bane.navn + 'g');
-    for (var gx = p.ox + 8; gx < p.ox + p.b; gx += 14 + tg() * 10) {
-      var gy = bund - p.h * 0.008 - tg() * p.h * 0.02, gl = p.h * (0.015 + tg() * 0.02);
-      c.beginPath(); c.moveTo(gx, gy + gl); c.quadraticCurveTo(gx + gl * 0.3, gy + gl * 0.4, gx + gl * (tg() - 0.5) * 1.2, gy - gl * 0.4); c.stroke();
+    if (T.nat) {
+      // Stjerner og en maane
+      c.fillStyle = '#fff6d6';
+      for (var st = 0; st < 40; st++) {
+        var sx0 = p.ox + t() * p.b, sy0 = p.oy + t() * p.h * 0.6, sr0 = 0.8 + t() * 1.6;
+        c.globalAlpha = 0.5 + t() * 0.5;
+        c.beginPath(); c.arc(sx0, sy0, sr0, 0, TAU); c.fill();
+      }
+      c.globalAlpha = 1;
+      var mx = p.ox + p.b * 0.82, my = p.oy + p.h * 0.16, mr = p.h * 0.06;
+      var mg = c.createRadialGradient(mx, my, mr, mx, my, mr * 4);
+      mg.addColorStop(0, 'rgba(255,240,200,.35)'); mg.addColorStop(1, 'rgba(255,240,200,0)');
+      c.fillStyle = mg; c.fillRect(mx - mr * 4, my - mr * 4, mr * 8, mr * 8);
+      c.fillStyle = '#fbf0c8'; c.beginPath(); c.arc(mx, my, mr, 0, TAU); c.fill();
+      c.fillStyle = T.himmel[0]; c.beginPath(); c.arc(mx - mr * 0.45, my - mr * 0.2, mr * 0.8, 0, TAU); c.fill();
     }
-    c.globalAlpha = 1;
+    if (T.skyer) {
+      c.fillStyle = 'rgba(255,255,255,.55)';
+      [[0.18, 0.14, 0.09], [0.62, 0.08, 0.12], [0.85, 0.2, 0.07]].forEach(function (sky) {
+        var sx = p.ox + p.b * sky[0], sy = p.oy + p.h * sky[1], sr = p.b * sky[2];
+        c.beginPath(); c.ellipse(sx, sy, sr, sr * 0.42, 0, 0, TAU); c.fill();
+        c.beginPath(); c.ellipse(sx + sr * 0.5, sy - sr * 0.18, sr * 0.6, sr * 0.36, 0, 0, TAU); c.fill();
+        c.beginPath(); c.ellipse(sx - sr * 0.45, sy - sr * 0.1, sr * 0.5, sr * 0.3, 0, 0, TAU); c.fill();
+      });
+    }
+    if (T.sne) {
+      // Snefnug, der staar stille i luften
+      c.fillStyle = 'rgba(255,255,255,.85)';
+      for (var sn = 0; sn < 70; sn++) { c.beginPath(); c.arc(p.ox + t() * p.b, p.oy + t() * p.h, 1.2 + t() * 2.2, 0, TAU); c.fill(); }
+    }
 
-    // Pynt: traeer, buske og svampe, altid de samme steder paa den samme bane
-    var t = taelling(bane.navn), h1 = p.h * 0.24;
+    if (T.vand) {
+      // Soeen: vand i bunden med lyse krusninger
+      var vg = c.createLinearGradient(0, bund - p.h * 0.12, 0, bund);
+      vg.addColorStop(0, T.bakker[0]); vg.addColorStop(1, T.bakker[2]);
+      c.fillStyle = vg; c.fillRect(p.ox, bund - p.h * 0.1, p.b, p.h * 0.1);
+      c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = Math.max(1, p.sk * 1.5); c.lineCap = 'round';
+      for (var kr = 0; kr < 18; kr++) {
+        var kx = p.ox + t() * p.b, ky = bund - p.h * (0.02 + t() * 0.07), kl = p.b * (0.02 + t() * 0.04);
+        c.beginPath(); c.moveTo(kx, ky); c.lineTo(kx + kl, ky); c.stroke();
+      }
+    } else {
+      // Bakkerne males i lag med lidt gennemsigtighed, saa kanterne bliver bløde som akvarel
+      c.globalAlpha = 0.8; c.fillStyle = T.bakker[0];
+      c.beginPath(); c.ellipse(p.ox + p.b * 0.26, bund + p.h * 0.08, p.b * 0.46, p.h * 0.16, 0, 0, TAU); c.fill();
+      c.beginPath(); c.ellipse(p.ox + p.b * 0.84, bund + p.h * 0.09, p.b * 0.4, p.h * 0.14, 0, 0, TAU); c.fill();
+      c.fillStyle = T.bakker[1];
+      c.beginPath(); c.ellipse(p.ox + p.b * 0.3, bund + p.h * 0.1, p.b * 0.4, p.h * 0.13, 0, 0, TAU); c.fill();
+      c.beginPath(); c.ellipse(p.ox + p.b * 0.8, bund + p.h * 0.11, p.b * 0.34, p.h * 0.11, 0, 0, TAU); c.fill();
+      c.fillStyle = T.bakker[2];
+      c.beginPath(); c.ellipse(p.ox + p.b * 0.55, bund + p.h * 0.12, p.b * 0.66, p.h * 0.11, 0, 0, TAU); c.fill();
+      c.globalAlpha = 1;
+      if (T.straa) {
+        // Græsstraa langs bakkekammen
+        c.strokeStyle = T.straa; c.lineWidth = Math.max(1, p.sk * 1.5); c.lineCap = 'round'; c.globalAlpha = 0.5;
+        var tg = taelling(bane.navn + 'g');
+        for (var gx = p.ox + 8; gx < p.ox + p.b; gx += 14 + tg() * 10) {
+          var gy = bund - p.h * 0.008 - tg() * p.h * 0.02, gl = p.h * (0.015 + tg() * 0.02);
+          c.beginPath(); c.moveTo(gx, gy + gl); c.quadraticCurveTo(gx + gl * 0.3, gy + gl * 0.4, gx + gl * (tg() - 0.5) * 1.2, gy - gl * 0.4); c.stroke();
+        }
+        c.globalAlpha = 1;
+      }
+    }
+
+    // Pynt: traeer og smaating, altid de samme steder paa den samme bane — og aldrig oven i klokken
+    var h1 = p.h * 0.24;
     var maal = bane.maal ? tilSkaerm(p, bane.maal.x, bane.maal.y) : null;
-    function fri(x, afstand) { return !maal || Math.abs(x - maal.x) > afstand; }   // pynt maa aldrig staa oven i klokken
+    function fri(x, afstand) { return !maal || Math.abs(x - maal.x) > afstand; }
     var t1 = p.ox + p.b * (0.17 + t() * 0.06), t2 = p.ox + p.b * (0.88 + t() * 0.05);
     c.globalAlpha = 0.92;
-    if (fri(t1, h1 * 0.7)) staar(c, 'trae', t1, bund + p.h * 0.01, h1 * 1.1);
-    if (fri(t2, h1 * 0.6)) staar(c, 'trae', t2, bund + p.h * 0.015, h1 * 0.95);
+    if (fri(t1, h1 * 0.7)) staar(c, T.traeer[0], t1, bund + p.h * 0.01, h1 * 1.1);
+    if (fri(t2, h1 * 0.6)) staar(c, T.traeer[1 % T.traeer.length], t2, bund + p.h * 0.015, h1 * 0.95);
     c.globalAlpha = 1;
     var sv = p.h * 0.085;
     var s1 = p.ox + p.b * (0.2 + t() * 0.2), s2 = p.ox + p.b * (0.62 + t() * 0.2);
-    if (fri(s1, sv)) staar(c, 'svamp', s1, bund + p.h * 0.005, sv);
-    if (fri(s2, sv)) staar(c, 'svamp', s2, bund + p.h * 0.01, sv * 0.75);
+    if (fri(s1, sv)) staar(c, T.pynt[0], s1, bund + p.h * 0.005, sv * (T.pynt[0] === 'svamp' ? 1 : 1.6));
+    if (T.pynt[1] && fri(s2, sv)) staar(c, T.pynt[1], s2, bund + p.h * 0.01, sv * 0.75);
 
     // Opfinderen staar altid til venstre; til hoejre ser et af skovens dyr paa,
     // et nyt for hver bane, saa boernene har noget at glaede sig til
     var dyr = Math.max(48, p.h * 0.17);
     staar(c, 'pindsvin', p.ox + dyr * 0.55, bund + p.h * 0.02, dyr);
-    var tilskuer = TILSKUERE[friLeg ? 0 : baneNr % TILSKUERE.length];
+    var iKapitel = F.banerI(bane.kapitel).indexOf(bane);
+    var tilskuer = T.tilskuere[friLeg ? 0 : Math.max(0, iKapitel) % T.tilskuere.length];
     if (fri(p.ox + p.b - dyr * 0.5, dyr)) staar(c, tilskuer.navn, p.ox + p.b - dyr * 0.5, bund + p.h * 0.02, dyr * tilskuer.str);
 
-    // Murene: planker af blødt ler
+    // Murene: planker af det stof, banen er lavet af. Grene er skraa planker.
     bane.mur.forEach(function (m) {
-      if (m.b === undefined) return;
-      var a = tilSkaerm(p, m.x, m.y);
-      if (!Figurer.tegnVed(c, 'planke', a.x, a.y, m.b * p.sk, m.h * p.sk)) {
-        altMalet = false;
-        c.fillStyle = P.trae;
-        c.beginPath(); c.roundRect(a.x, a.y, m.b * p.sk, m.h * p.sk, 10); c.fill();
+      var navn = 'planke' + (m.stof && m.stof !== 'trae' ? '_' + m.stof : '');
+      if (m.b !== undefined) {
+        var a = tilSkaerm(p, m.x, m.y);
+        if (!Figurer.tegnVed(c, navn, a.x, a.y, m.b * p.sk, m.h * p.sk)) {
+          altMalet = false;
+          c.fillStyle = P.trae;
+          c.beginPath(); c.roundRect(a.x, a.y, m.b * p.sk, m.h * p.sk, 10); c.fill();
+        }
+      } else {
+        var a1 = tilSkaerm(p, m.x1, m.y1), a2 = tilSkaerm(p, m.x2, m.y2);
+        var l = Math.hypot(a2.x - a1.x, a2.y - a1.y), tyk = Math.max(10, 18 * p.sk);
+        c.save();
+        c.translate((a1.x + a2.x) / 2, (a1.y + a2.y) / 2 + tyk * 0.45);
+        c.rotate(Math.atan2(a2.y - a1.y, a2.x - a1.x));
+        if (!Figurer.tegn(c, navn, 0, 0, l + tyk, tyk)) { altMalet = false; c.fillStyle = P.traeM; c.fillRect(-l / 2, -tyk / 2, l, tyk); }
+        c.restore();
       }
     });
+
+    if (T.nat) {
+      // Moerket laegger sig over det hele; lygten lyser det op, naar den koerer
+      c.fillStyle = 'rgba(24,32,58,.32)'; c.fillRect(p.ox, p.oy, p.b, p.h);
+    }
     c.restore();
 
     if (!altMalet) lagFor = '';            // en tegning var ikke faerdig: proev igen naeste gang
@@ -385,9 +477,17 @@
   /* ---------- kuglen, klokken, sporet ---------- */
 
   function tegnKugle(p, k, drej) {
-    var s = tilSkaerm(p, k.x, k.y), r = k.r * p.sk;
-    if (!Figurer.tegn(ctx, 'aeble', s.x, s.y, r * 2.3, r * 2.3, drej)) {
-      ctx.fillStyle = P.tegl;
+    var s = tilSkaerm(p, k.x, k.y), r = k.r * p.sk, navn = kuglenavn();
+    if (navn === 'lygte') {
+      // Lygten lyser op omkring sig — og haenger lige, den ruller ikke
+      var lys = ctx.createRadialGradient(s.x, s.y, r * 0.5, s.x, s.y, r * 7);
+      lys.addColorStop(0, 'rgba(255,226,150,.5)'); lys.addColorStop(0.4, 'rgba(255,220,140,.18)'); lys.addColorStop(1, 'rgba(255,220,140,0)');
+      ctx.fillStyle = lys; ctx.fillRect(s.x - r * 7, s.y - r * 7, r * 14, r * 14);
+      drej = Math.sin(drej * 0.5) * 0.25;
+    }
+    if (navn === 'snebold') drej = 0;              // sne har ingen retning, saa den skal ikke dreje
+    if (!Figurer.tegn(ctx, navn, s.x, s.y, r * 2.3, r * 2.3, drej)) {
+      ctx.fillStyle = navn === 'snebold' ? '#f4f7f8' : (navn === 'kastanje' ? P.traeM : P.tegl);
       ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, TAU); ctx.fill();
     }
   }
@@ -472,8 +572,9 @@
 
   /** Taelleren: én prik pr. bane, de klarede i groent. */
   function tegnFremskridt(p) {
-    if (friLeg) return;
-    var n = F.BANER.length, afstand = Math.min(26, (p.B - 260) / n), r = Math.min(9, afstand * 0.36);
+    if (friLeg || !bane) return;
+    var iKap = F.banerI(bane.kapitel), n = iKap.length, afstand = Math.min(30, (p.B - 260) / n), r = Math.min(9, afstand * 0.36);
+    var forskydning = F.BANER.indexOf(iKap[0]);
     var bred = (n - 1) * afstand + r * 2 + 26;
     ctx.save();
     ctx.shadowColor = 'rgba(107,85,68,.22)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 4;
@@ -481,11 +582,11 @@
     ctx.beginPath(); ctx.roundRect(p.B / 2 - bred / 2, 18 - r - 9, bred, r * 2 + 18, r + 9); ctx.fill();
     ctx.restore();
     for (var i = 0; i < n; i++) {
-      var x = p.B / 2 + (i - (n - 1) / 2) * afstand;
-      var str = (i === baneNr ? r * 2.5 : r * 2);
-      var navn = klaret[i] ? 'prik' : (i === baneNr ? 'prikgul' : 'prikgraa');
+      var x = p.B / 2 + (i - (n - 1) / 2) * afstand, nr = forskydning + i;
+      var str = (nr === baneNr ? r * 2.5 : r * 2);
+      var navn = klaret[nr] ? 'prik' : (nr === baneNr ? 'prikgul' : 'prikgraa');
       if (!Figurer.tegn(ctx, navn, x, 18, str, str)) {
-        ctx.fillStyle = klaret[i] ? P.salvieM : (i === baneNr ? P.fersken : P.sand);
+        ctx.fillStyle = klaret[nr] ? P.salvieM : (nr === baneNr ? P.fersken : P.sand);
         ctx.beginPath(); ctx.arc(x, 18, str / 2, 0, TAU); ctx.fill();
       }
     }
@@ -521,6 +622,7 @@
     friLeg = !!fri;
     baneNr = fri ? -1 : nr;
     bane = fri ? F.FRI : F.BANER[nr];
+    if (!fri) kapitel = bane.kapitel;
     lagte = [];
     tilbage = {};
     Object.keys(bane.hylde).forEach(function (s) { tilbage[s] = bane.hylde[s]; });
@@ -569,7 +671,7 @@
         var st = verden.stoed[i];
         if (tid - sidsteKlik > 0.05) { sidsteKlik = tid; klik(st.styrke); }
         var p = plan(), s = tilSkaerm(p, st.x, st.y);
-        puf(s.x, s.y, P.sandM, 3, 90 * st.styrke + 20, 3, 0.4);
+        if (st.kanon) puf(s.x, s.y, P.kridt, 18, 260, 5, 0.7); else puf(s.x, s.y, P.sandM, 3, 90 * st.styrke + 20, 3, 0.4);
       }
       if (verden.stoed.length > 60) verden.stoed = verden.stoed.slice(-20);
       if (spor.length === 0 || Math.hypot(verden.kugle.x - spor[spor.length - 1].x, verden.kugle.y - spor[spor.length - 1].y) > 10) {
@@ -709,11 +811,12 @@
     // Delene
     lagte.forEach(function (d, i) {
       var a = tilSkaerm(p, d.x, d.y);
-      var vv = 0;
+      var vv = 0, skudt = false;
       if (verden) {
         for (var q = 0; q < verden.vipper.length; q++) if (verden.vipper[q].i === i) vv = verden.vipper[q].vinkel;
+        for (var q2 = 0; q2 < verden.kanoner.length; q2++) if (verden.kanoner[q2].i === i) skudt = verden.kanoner[q2].skudt;
       }
-      tegnDel(ctx, d.slags, a.x, a.y, d.vinkel, p.sk, { skygge: true, ibane: true, koerer: tilstand === 'koerer', vippeVinkel: vv });
+      tegnDel(ctx, d.slags, a.x, a.y, d.vinkel, p.sk, { skygge: true, ibane: true, koerer: tilstand === 'koerer', vippeVinkel: vv, skudt: skudt });
     });
     // Kuglen: enten paa sin plads, eller hvor fysikken har ført den hen
     var k = verden ? verden.kugle : { x: bane.start.x, y: bane.start.y, r: F.KUGLE_R };
@@ -770,13 +873,21 @@
     bane = null; verden = null; lagte = [];
     lagFor = '';
     stopTale();
-    var fliser = F.BANER.map(function (b, i) {
+    // Oeverst: kapitlerne, hvert med et lille billede af stedet
+    var kapitler = F.KAPITLER.map(function (k) {
+      return '<button class="flise kapitel' + (kapitel === k.id ? ' valgt' : '') + '" data-handling="kapitel" data-id="' + k.id +
+             '" aria-label="' + k.id + '"><canvas width="150" height="100" style="' + FLISE_STIL + '" data-kapitel="' + k.id + '"></canvas></button>';
+    }).join('');
+    // Nedenunder: kapitlets baner
+    var fliser = F.banerI(kapitel).map(function (b) {
+      var i = F.BANER.indexOf(b);
       return '<button class="flise' + (baneNr === i && !friLeg ? ' valgt' : '') + '" data-handling="bane" data-n="' + i +
              '" aria-label="Bane ' + (i + 1) + '"><canvas width="150" height="100" style="' + FLISE_STIL + '" data-bane="' + i + '"></canvas></button>';
     }).join('');
     visOverlay(
       '<div class="kort bred">' +
       '<h2>Maskinen</h2>' +
+      '<div class="baner kapitler">' + kapitler + '</div>' +
       '<div class="baner">' + fliser + '</div>' +
       '<div class="raekke valg">' +
       '<button class="knap smal ikon' + (friLeg ? ' valgt' : '') + '" data-handling="fri" aria-label="Fri leg">' + Menu.fri() + '</button>' +
@@ -788,29 +899,62 @@
     tegnMenuBilleder();
   }
 
+  /** Kapitlets billede: himlen og bakkerne fra stedet, og en ting derfra. */
+  var KAPITELBILLEDE = { engen: 'trae', skoven: 'raev', soeen: 'froe', vinter: 'snemand', natten: 'ugle' };
+  function tegnKapitelBilleder() {
+    var alleMalet = true;
+    overlay.querySelectorAll('canvas[data-kapitel]').forEach(function (cv) {
+      var c = cv.getContext('2d'), w = cv.width, h = cv.height, T = TEMA[cv.dataset.kapitel];
+      c.clearRect(0, 0, w, h);
+      var g = c.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, T.himmel[0]); g.addColorStop(1, T.himmel[2]);
+      c.fillStyle = g; c.fillRect(0, 0, w, h);
+      if (T.nat) { c.fillStyle = '#fff6d6'; for (var i = 0; i < 12; i++) { c.beginPath(); c.arc((i * 37) % w, (i * 23) % (h * 0.5), 1.2, 0, TAU); c.fill(); } c.beginPath(); c.arc(w * 0.8, h * 0.22, 8, 0, TAU); c.fill(); }
+      if (T.sne) { c.fillStyle = 'rgba(255,255,255,.9)'; for (var j = 0; j < 14; j++) { c.beginPath(); c.arc((j * 41) % w, (j * 29) % h, 1.4, 0, TAU); c.fill(); } }
+      c.fillStyle = T.bakker[T.vand ? 0 : 0];
+      c.beginPath(); c.ellipse(w * 0.4, h * 1.02, w * 0.5, h * 0.18, 0, 0, TAU); c.fill();
+      c.fillStyle = T.bakker[2];
+      c.beginPath(); c.ellipse(w * 0.85, h * 1.04, w * 0.35, h * 0.14, 0, 0, TAU); c.fill();
+      if (!Figurer.tegnStaaende(c, KAPITELBILLEDE[cv.dataset.kapitel], w * 0.5, h * 0.93, h * 0.62)) alleMalet = false;
+      if (T.nat) { c.fillStyle = 'rgba(24,32,58,.2)'; c.fillRect(0, 0, w, h); }
+    });
+    if (!alleMalet) setTimeout(function () { if (tilstand === 'venter') tegnKapitelBilleder(); }, 150);
+  }
+
   /** Hver bane vises som et lille billede af sig selv, saa man kan vaelge uden at laese. */
   function tegnMenuBilleder() {
+    tegnKapitelBilleder();
     overlay.querySelectorAll('canvas[data-bane]').forEach(function (cv) {
       var c = cv.getContext('2d'), w = cv.width, h = cv.height;
       var b = F.BANER[parseInt(cv.dataset.bane, 10)];
       var sk = Math.min(w / F.BREDDE, h / F.HOEJDE);
       var ox = (w - F.BREDDE * sk) / 2, oy = (h - F.HOEJDE * sk) / 2;
       c.clearRect(0, 0, w, h);
-      // Samme ler-verden i lille: himmel, bakke, planker, aeble og klokke
+      // Samme verden i lille: himmel, bakke, planker, kugle og klokke — i kapitlets farver
+      var T = TEMA[b.kapitel] || TEMA.engen;
       var g = c.createLinearGradient(0, 0, 0, h);
-      g.addColorStop(0, P.blaaLys); g.addColorStop(1, P.kridt);
+      g.addColorStop(0, T.himmel[0]); g.addColorStop(1, T.himmel[2]);
       c.fillStyle = g; c.fillRect(0, 0, w, h);
-      c.fillStyle = P.salvieLys;
+      c.fillStyle = T.bakker[0];
       c.beginPath(); c.ellipse(w * 0.4, h * 1.02, w * 0.5, h * 0.16, 0, 0, TAU); c.fill();
       c.beginPath(); c.ellipse(w * 0.85, h * 1.04, w * 0.35, h * 0.13, 0, 0, TAU); c.fill();
+      var STOFFARVE = { trae: [P.trae, P.traeM], is: ['#dcedf5', '#a9d3e6'], sne: ['#ffffff', '#dbe9f0'], aakande: ['#9fc47a', '#5f8f4c'], sten: ['#c9cfcf', P.stenM] };
       b.mur.forEach(function (m) {
-        if (m.b === undefined) return;
-        c.fillStyle = P.traeM;
+        var f = STOFFARVE[m.stof || 'trae'];
+        if (m.b === undefined) {
+          if (m.x1 < 0 || m.x1 > F.BREDDE) return;
+          c.strokeStyle = f[1]; c.lineWidth = 3; c.lineCap = 'round';
+          c.beginPath(); c.moveTo(ox + m.x1 * sk, oy + m.y1 * sk); c.lineTo(ox + m.x2 * sk, oy + m.y2 * sk); c.stroke();
+          return;
+        }
+        if (m.x >= F.BREDDE || m.x + m.b <= 0) return;   // kanterne uden for banen
+        c.fillStyle = f[1];
         c.beginPath(); c.roundRect(ox + m.x * sk, oy + m.y * sk + 1, m.b * sk, m.h * sk, 3); c.fill();
-        c.fillStyle = P.trae;
+        c.fillStyle = f[0];
         c.beginPath(); c.roundRect(ox + m.x * sk, oy + m.y * sk, m.b * sk, Math.max(1, m.h * sk - 1.5), 3); c.fill();
       });
-      c.fillStyle = P.tegl;
+      if (T.nat) { c.fillStyle = 'rgba(24,32,58,.22)'; c.fillRect(0, 0, w, h); }
+      c.fillStyle = { aeble: P.tegl, kastanje: P.traeM, snebold: '#f7f9fa', lygte: '#f5d98a' }[(F.KAPITLER.filter(function (k) { return k.id === b.kapitel; })[0] || {}).kugle] || P.tegl;
       c.beginPath(); c.arc(ox + b.start.x * sk, oy + b.start.y * sk, Math.max(3, F.KUGLE_R * sk), 0, TAU); c.fill();
       c.fillStyle = P.sand;
       c.beginPath(); c.arc(ox + b.maal.x * sk, oy + b.maal.y * sk, Math.max(4, F.MAAL_R * sk * 0.7), 0, TAU); c.fill();
@@ -844,7 +988,7 @@
   function visSlut() {
     if (tilstand !== 'loest') return;
     startKonfetti();
-    var naeste = !friLeg && baneNr + 1 < F.BANER.length;
+    var naeste = !friLeg && baneNr + 1 < F.BANER.length && F.BANER[baneNr + 1].kapitel === F.BANER[baneNr].kapitel;
     visOverlay(
       '<div class="kort">' +
       '<h2>Maskinen virker!</h2>' +
@@ -867,6 +1011,7 @@
     if (!knap) return;
     var h = knap.dataset.handling;
     if (h === 'bane') { friLeg = false; baneNr = parseInt(knap.dataset.n, 10); tone(660, 0.1); visMenu(); }
+    else if (h === 'kapitel') { friLeg = false; kapitel = knap.dataset.id; baneNr = F.BANER.indexOf(F.banerI(kapitel)[0]); tone(600, 0.1); visMenu(); }
     else if (h === 'fri') { friLeg = !friLeg; tone(friLeg ? 880 : 520, 0.12); visMenu(); }
     else if (h === 'lyd') { lydTil = !lydTil; if (lydTil) tone(660, 0.12); else stopTale(); visMenu(); }
     else if (h === 'start') { skjulOverlay(); startBane(Math.max(0, baneNr), friLeg); }
@@ -887,7 +1032,7 @@
   window.__debug = function () {
     var p = plan();
     return {
-      tilstand: tilstand, bane: bane ? bane.navn : null, baneNr: baneNr, fri: friLeg, lyd: lydTil,
+      tilstand: tilstand, bane: bane ? bane.navn : null, baneNr: baneNr, kapitel: kapitel, fri: friLeg, lyd: lydTil,
       klaret: klaret.slice(), tilbage: JSON.parse(JSON.stringify(tilbage)),
       lagte: lagte.map(function (d) { return { slags: d.slags, x: d.x, y: d.y, vinkel: d.vinkel }; }),
       kugle: verden ? { x: Math.round(verden.kugle.x), y: Math.round(verden.kugle.y) } : (bane ? bane.start : null),

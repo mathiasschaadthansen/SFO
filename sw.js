@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v56';
+const VERSION = 'sfo-spil-v57';
 
 const FILER = [
   './',
@@ -232,13 +232,20 @@ const FILER = [
   'games/maskinen/billeder/aeble.png',
   'games/maskinen/billeder/bjoern.png',
   'games/maskinen/billeder/froe.png',
+  'games/maskinen/billeder/gran.png',
   'games/maskinen/billeder/kanin.png',
+  'games/maskinen/billeder/kastanje.png',
   'games/maskinen/billeder/klokke.png',
+  'games/maskinen/billeder/lygte.png',
   'games/maskinen/billeder/mus.png',
   'games/maskinen/billeder/pindsvin.png',
   'games/maskinen/billeder/raev.png',
+  'games/maskinen/billeder/siv.png',
+  'games/maskinen/billeder/snebold.png',
+  'games/maskinen/billeder/snemand.png',
   'games/maskinen/billeder/svamp.png',
   'games/maskinen/billeder/trae.png',
+  'games/maskinen/billeder/ugle.png',
   'games/maskinen/js/fysik.js',
   'games/maskinen/js/game.js',
   'games/maskinen/lyd/klip.json',

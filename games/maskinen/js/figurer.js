@@ -241,6 +241,78 @@ var Figurer = (function () {
       return doc(b, h, traestykke(1, 1, b - 2, h - 2, r, 'g'), forløb('g', P.trae, P.traeM));
     },
 
+    /* Isplanke: glat, lyseblaa og gennemsigtig, med et par blanke striber. */
+    planke_is: function (b, h) {
+      var r = Math.min(Math.min(b, h) * 0.3, 12);
+      return doc(b, h,
+        '<g filter="url(#p)"><rect x="1" y="1" width="' + tal(b - 2) + '" height="' + tal(h - 2) + '" rx="' + tal(r) + '" fill="url(#g)" filter="url(#s)"/>' +
+        '<rect x="' + tal(b * 0.06) + '" y="' + tal(h * 0.14) + '" width="' + tal(b * 0.5) + '" height="' + tal(Math.max(2, h * 0.16)) + '" rx="' + tal(h * 0.08) + '" fill="#ffffff" opacity="0.6"/>' +
+        '<rect x="' + tal(b * 0.62) + '" y="' + tal(h * 0.2) + '" width="' + tal(b * 0.2) + '" height="' + tal(Math.max(2, h * 0.1)) + '" rx="' + tal(h * 0.05) + '" fill="#ffffff" opacity="0.5"/>' +
+        '<rect x="' + tal(b * 0.04) + '" y="' + tal(h * 0.7) + '" width="' + tal(b * 0.92) + '" height="' + tal(h * 0.2) + '" rx="' + tal(h * 0.1) + '" fill="' + P.blaaDyb + '" opacity="0.25"/></g>',
+        forløb('g', '#e6f4fa', '#a9d3e6'));
+    },
+    /* Sneplanke: en bloed, hvid drive, der bremser kuglen. */
+    planke_sne: function (b, h) {
+      var r = Math.min(Math.min(b, h) * 0.4, 22);
+      return doc(b, h,
+        '<g filter="url(#p)"><rect x="1" y="' + tal(h * 0.1) + '" width="' + tal(b - 2) + '" height="' + tal(h * 0.9 - 1) + '" rx="' + tal(r) + '" fill="url(#g)" filter="url(#s)"/>' +
+        '<ellipse cx="' + tal(b * 0.3) + '" cy="' + tal(h * 0.16) + '" rx="' + tal(b * 0.24) + '" ry="' + tal(h * 0.14) + '" fill="#ffffff"/>' +
+        '<ellipse cx="' + tal(b * 0.68) + '" cy="' + tal(h * 0.14) + '" rx="' + tal(b * 0.2) + '" ry="' + tal(h * 0.12) + '" fill="#ffffff"/>' +
+        '<rect x="' + tal(b * 0.06) + '" y="' + tal(h * 0.72) + '" width="' + tal(b * 0.88) + '" height="' + tal(h * 0.2) + '" rx="' + tal(h * 0.1) + '" fill="' + P.blaaM + '" opacity="0.2"/></g>',
+        forløb('g', '#ffffff', '#dbe9f0'));
+    },
+    /* Aakandeblad: groent, rundt, med et hak — og bloedt nok til at kaste kuglen op. */
+    planke_aakande: function (b, h) {
+      return doc(b, h,
+        '<g filter="url(#p)"><ellipse cx="' + tal(b / 2) + '" cy="' + tal(h / 2) + '" rx="' + tal(b / 2 - 1) + '" ry="' + tal(h / 2 - 1) + '" fill="url(#g)" filter="url(#s)"/>' +
+        '<path d="M' + tal(b * 0.5) + ' ' + tal(h * 0.5) + 'L' + tal(b * 0.88) + ' ' + tal(h * 0.12) + 'L' + tal(b * 0.98) + ' ' + tal(h * 0.5) + 'z" fill="' + P.blaaLys + '" opacity="0.9"/>' +
+        '<ellipse cx="' + tal(b * 0.35) + '" cy="' + tal(h * 0.34) + '" rx="' + tal(b * 0.2) + '" ry="' + tal(h * 0.14) + '" fill="#ffffff" opacity="0.3"/>' +
+        '<circle cx="' + tal(b * 0.24) + '" cy="' + tal(h * 0.4) + '" r="' + tal(h * 0.22) + '" fill="' + P.ferskenLys + '"/>' +
+        '<circle cx="' + tal(b * 0.24) + '" cy="' + tal(h * 0.4) + '" r="' + tal(h * 0.1) + '" fill="' + P.fersken + '"/></g>',
+        forløb('g', '#9fc47a', '#5f8f4c'));
+    },
+    /* Sten: graa, haard og lidt sprael. */
+    planke_sten: function (b, h) {
+      var r = Math.min(Math.min(b, h) * 0.4, 18);
+      return doc(b, h,
+        '<g filter="url(#p)"><rect x="1" y="1" width="' + tal(b - 2) + '" height="' + tal(h - 2) + '" rx="' + tal(r) + '" fill="url(#g)" filter="url(#s)"/>' +
+        '<ellipse cx="' + tal(b * 0.32) + '" cy="' + tal(h * 0.3) + '" rx="' + tal(b * 0.2) + '" ry="' + tal(h * 0.14) + '" fill="#ffffff" opacity="0.25"/>' +
+        '<rect x="' + tal(b * 0.05) + '" y="' + tal(h * 0.7) + '" width="' + tal(b * 0.9) + '" height="' + tal(h * 0.22) + '" rx="' + tal(h * 0.1) + '" fill="' + P.stenDyb + '" opacity="0.3"/>' +
+        '<rect x="0" y="0" width="' + tal(b) + '" height="' + tal(h) + '" filter="url(#k)" opacity="0.7"/></g>',
+        forløb('g', '#c9cfcf', P.stenM));
+    },
+
+    /* Kanonen: et loeb af moerkt trae med messingbaand paa et lille hjul. Loebet drejes i game.js. */
+    kanonloeb: function (b, h) {
+      return doc(b, h,
+        '<g filter="url(#p)"><rect x="1" y="1" width="' + tal(b - 2) + '" height="' + tal(h - 2) + '" rx="' + tal(h * 0.32) + '" fill="url(#g)" filter="url(#s)"/>' +
+        '<rect x="' + tal(b * 0.3) + '" y="' + tal(h * 0.06) + '" width="' + tal(b * 0.09) + '" height="' + tal(h * 0.88) + '" rx="' + tal(b * 0.03) + '" fill="#e6c26e"/>' +
+        '<rect x="' + tal(b * 0.76) + '" y="' + tal(h * 0.02) + '" width="' + tal(b * 0.1) + '" height="' + tal(h * 0.96) + '" rx="' + tal(b * 0.03) + '" fill="#e6c26e"/>' +
+        '<rect x="' + tal(b * 0.06) + '" y="' + tal(h * 0.14) + '" width="' + tal(b * 0.8) + '" height="' + tal(h * 0.16) + '" rx="' + tal(h * 0.08) + '" fill="#ffffff" opacity="0.22"/>' +
+        '<circle cx="' + tal(b * 0.93) + '" cy="' + tal(h * 0.5) + '" r="' + tal(h * 0.3) + '" fill="' + P.moerk + '"/></g>',
+        forløb('g', '#6d6660', '#3f3a37'));
+    },
+    kanonhjul: function (b, h) {
+      var r = Math.min(b, h) / 2 - 1, cx = b / 2, cy = h / 2, eger = '';
+      for (var i = 0; i < 4; i++) eger += '<rect x="' + tal(cx - r * 0.07) + '" y="' + tal(cy - r * 0.9) + '" width="' + tal(r * 0.14) + '" height="' + tal(r * 1.8) + '" fill="' + P.traeDyb + '" transform="rotate(' + (i * 45) + ' ' + tal(cx) + ' ' + tal(cy) + ')"/>';
+      return doc(b, h,
+        '<g filter="url(#p)"><circle cx="' + tal(cx) + '" cy="' + tal(cy) + '" r="' + tal(r) + '" fill="url(#g)" filter="url(#s)"/>' +
+        '<circle cx="' + tal(cx) + '" cy="' + tal(cy) + '" r="' + tal(r * 0.72) + '" fill="' + P.traeLys + '"/>' + eger +
+        '<circle cx="' + tal(cx) + '" cy="' + tal(cy) + '" r="' + tal(r * 0.2) + '" fill="' + P.moerk + '"/></g>',
+        forløb('g', P.traeM, P.traeDyb));
+    },
+
+    /* Tragten: en blank metaltragt med tud forneden. */
+    tragt: function (b, h) {
+      return doc(b, h,
+        '<g filter="url(#p)"><path d="M1 ' + tal(h * 0.08) + 'H' + tal(b - 1) + 'L' + tal(b * 0.6) + ' ' + tal(h * 0.62) + 'V' + tal(h - 1) + 'H' + tal(b * 0.4) + 'V' + tal(h * 0.62) + 'z" fill="url(#g)" filter="url(#s)"/>' +
+        '<ellipse cx="' + tal(b / 2) + '" cy="' + tal(h * 0.08) + '" rx="' + tal(b / 2 - 1) + '" ry="' + tal(h * 0.07) + '" fill="' + P.stenDyb + '"/>' +
+        '<ellipse cx="' + tal(b / 2) + '" cy="' + tal(h * 0.08) + '" rx="' + tal(b * 0.42) + '" ry="' + tal(h * 0.045) + '" fill="#4b5558"/>' +
+        '<path d="M' + tal(b * 0.12) + ' ' + tal(h * 0.16) + 'L' + tal(b * 0.42) + ' ' + tal(h * 0.58) + '" stroke="#ffffff" stroke-width="' + tal(b * 0.05) + '" stroke-linecap="round" opacity="0.45"/>' +
+        '<rect x="' + tal(b * 0.42) + '" y="' + tal(h * 0.64) + '" width="' + tal(b * 0.05) + '" height="' + tal(h * 0.3) + '" rx="' + tal(b * 0.02) + '" fill="#ffffff" opacity="0.35"/></g>',
+        forløb('g', '#d5dadb', '#8a9598'));
+    },
+
     /* Rampen: den glatte plade, kuglen triller ned ad. */
     rampe: function (b, h) {
       return doc(b, h, traestykke(1, 1, b - 2, h - 2, (h - 2) / 2, 'g'), forløb('g', P.traeLys, P.trae));
@@ -353,7 +425,8 @@ var Figurer = (function () {
 
   // Figurer, der findes som malede billeder i billeder/<navn>.png
   var BILLEDER = { kanin: true, pindsvin: true, aeble: true, svamp: true, trae: true, klokke: true,
-                   mus: true, bjoern: true, raev: true, froe: true };
+                   mus: true, bjoern: true, raev: true, froe: true, ugle: true,
+                   gran: true, snemand: true, snebold: true, kastanje: true, siv: true, lygte: true };
   var malede = {};
 
   /** Det malede billede af en figur, hvis det findes og er hentet. */

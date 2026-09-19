@@ -26,7 +26,7 @@ console.log('\nMaskinen\n');
 /* Delene */
 {
   const slags = Object.keys(F.DELE);
-  tjek('der er dele at bygge med', slags.length >= 5, slags.join());
+  tjek('der er dele at bygge med', slags.length >= 8, slags.join());
   const daarlige = slags.filter(s => {
     const d = F.DELE[s];
     return !d.vinkler || !d.vinkler.length || !(d.b > 0) || !(d.h > 0);
@@ -135,6 +135,46 @@ console.log('\nMaskinen\n');
   const vi = F.nyVerden(tom(), [{ slags: 'vippe', x: 560, y: 400, vinkel: 0 }]);
   for (let i = 0; i < 2 / F.DT; i++) F.trin(vi);
   tjek('vippen tipper, naar kuglen lander i den ene side', Math.abs(vi.vipper[0].vinkel) > 4, 'vinkel = ' + vi.vipper[0].vinkel.toFixed(1));
+  // Kanonen fanger kuglen og skyder den den vej, den peger — én gang
+  const ka = F.koer(tom(), [{ slags: 'kanon', x: 500, y: 300, vinkel: 90 }], 3);
+  tjek('kanonen skyder kuglen til hoejre', ka.kanoner[0].skudt && ka.kugle.x > 800, 'x = ' + Math.round(ka.kugle.x));
+  const kv = F.koer(tom(), [{ slags: 'kanon', x: 500, y: 300, vinkel: 270 }], 3);
+  tjek('drejet om skyder den til venstre', kv.kugle.x < 200, 'x = ' + Math.round(kv.kugle.x));
+  // Tragten fanger kuglen og slipper den lige ned
+  const tr = F.nyVerden(tom(), [{ slags: 'tragt', x: 560, y: 300, vinkel: 0 }]);
+  tr.kugle.vx = 90;                                             // kuglen kommer skraat ind i tragten
+  for (let i = 0; i < 3 / F.DT && !tr.stoppet; i++) F.trin(tr);
+  tjek('tragten fanger kuglen og slipper den lige ned under sig', Math.abs(tr.kugle.x - 560) < 2 && tr.kugle.y > 400, 'x = ' + Math.round(tr.kugle.x) + ', y = ' + Math.round(tr.kugle.y));
+}
+
+/* Stoffet i murene: is er glat, sne bremser, aakandebladet kaster op */
+{
+  const bane = (stof) => ({ navn: 'proeve', start: { x: 100, y: 40 }, maal: null, mur: [{ x: 0, y: 200, b: 1000, h: 40, stof }], hylde: {}, loesning: [] });
+  const rul = (stof) => F.koer(bane(stof), [{ slags: 'rampe', x: 120, y: 120, vinkel: 20 }], 6).kugle.x;
+  tjek('paa is glider kuglen laengere end paa trae, og i sne kortere', rul('is') > rul('trae') && rul('sne') < rul('trae'), 'is ' + Math.round(rul('is')) + ', trae ' + Math.round(rul('trae')) + ', sne ' + Math.round(rul('sne')));
+  const aa = F.nyVerden({ navn: 'aa', start: { x: 200, y: 40 }, maal: null, mur: [{ x: 140, y: 400, b: 120, h: 16, stof: 'aakande' }, { x: 0, y: 600, b: 1000, h: 40 }], hylde: {}, loesning: [] }, []);
+  let top = 1e9;
+  for (let i = 0; i < 3 / F.DT; i++) { F.trin(aa); if (aa.tid > 0.8) top = Math.min(top, aa.kugle.y); }
+  tjek('aakandebladet kaster kuglen hoejt op igen', top < 150, 'hoejest y = ' + Math.round(top));
+  tjek('alle stoffer har hop og gnid', Object.keys(F.STOF).every(k => F.STOF[k].hop >= 0 && F.STOF[k].gnid >= 0));
+}
+
+/* Kapitlerne: hver bane hoerer til et kapitel, og hvert kapitel har baner */
+{
+  const ider = F.KAPITLER.map(k => k.id);
+  const udenKapitel = F.BANER.filter(b => ider.indexOf(b.kapitel) < 0).map(b => b.navn);
+  tjek('alle baner hoerer til et kapitel', udenKapitel.length === 0, udenKapitel.join());
+  const tomme = ider.filter(id => F.banerI(id).length < 6);
+  tjek('hvert af de ' + ider.length + ' kapitler har mindst seks baner', tomme.length === 0, tomme.join());
+  tjek('hvert kapitel har sin egen kugle', F.KAPITLER.every(k => typeof k.kugle === 'string' && k.kugle.length > 0));
+  const nyeDele = F.BANER.filter(b => b.hylde.kanon || b.hylde.tragt).length;
+  tjek('kanonen og tragten bruges i baner', nyeDele >= 6, nyeDele + ' baner');
+  const stoffer = new Set(); F.BANER.forEach(b => b.mur.forEach(m => stoffer.add(m.stof || 'trae')));
+  tjek('is, sne og aakande bruges i terraenet', stoffer.has('is') && stoffer.has('sne') && stoffer.has('aakande'), [...stoffer].join());
+  const kuglenavne = F.KAPITLER.map(k => k.kugle);
+  const figurer = fs.readFileSync(path.join(ROD, 'games', 'maskinen', 'js', 'figurer.js'), 'utf8');
+  const udenBillede = kuglenavne.filter(n => !new RegExp(n + ': true').test(figurer));
+  tjek('hvert kapitels kugle har et malet billede', udenBillede.length === 0, udenBillede.join());
 }
 
 /* Fri leg */
@@ -155,7 +195,7 @@ console.log('\nMaskinen\n');
   const side = fs.readFileSync(path.join(ROD, 'games', 'maskinen', 'index.html'), 'utf8');
   const malede = [...figurer.matchAll(/(\w+): true/g)].map(m => m[1]);
   const uden = malede.filter(n => !fs.existsSync(path.join(ROD, 'games', 'maskinen', 'billeder', n + '.png')) || !sw.includes("'games/maskinen/billeder/" + n + ".png'"));
-  tjek('alle malede billeder findes og er i FILER', malede.length >= 6 && uden.length === 0, uden.join());
+  tjek('alle malede billeder findes og er i FILER', malede.length >= 17 && uden.length === 0, uden.join());
   const stoerrelse = malede.reduce((sum, n) => sum + (fs.existsSync(path.join(ROD, 'games', 'maskinen', 'billeder', n + '.png')) ? fs.statSync(path.join(ROD, 'games', 'maskinen', 'billeder', n + '.png')).size : 0), 0);
   tjek('billederne fylder under 800 KB i alt', stoerrelse < 800 * 1024, Math.round(stoerrelse / 1024) + ' KB');
   tjek('billederne har en NOTICE med licens', fs.existsSync(path.join(ROD, 'games', 'maskinen', 'billeder', 'NOTICE.md')));
