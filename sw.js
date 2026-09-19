@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v47';
+const VERSION = 'sfo-spil-v48';
 
 const FILER = [
   './',
@@ -231,6 +231,14 @@ const FILER = [
   'games/klokken/js/ur.js',
   'games/klokken/js/game.js',
   'games/klokken/lyd/klip.json',
+  'games/klokken/lyd/halv_10.mp3',
+  'games/klokken/lyd/halv_11.mp3',
+  'games/klokken/lyd/halv_9.mp3',
+  'games/klokken/lyd/klokken_1.mp3',
+  'games/klokken/lyd/klokken_2.mp3',
+  'games/klokken/lyd/klokken_3.mp3',
+  'games/klokken/lyd/naesten.mp3',
+  'games/klokken/lyd/rejse.mp3',
   'games/restaurant/index.html',
   'games/restaurant/js/koekken.js',
   'games/restaurant/js/game.js',
