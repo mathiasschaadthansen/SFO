@@ -59,11 +59,27 @@ def restaurant():
     """Bestillingerne fra koekken.js, laest via node saa listen kun findes ét sted."""
     import subprocess
     kode = ("const { Koekken: K } = require(%r);"
-            "console.log(JSON.stringify(K.BESTILLINGER.map(b => ['bestil_' + b.id + '.mp3', K.saetning(b)])));"
+            "const ud = K.BESTILLINGER.map(b => ['bestil_' + b.id + '.mp3', K.saetning(b)]);"
+            "Object.keys(K.INGREDIENSER).forEach(t => ud.push(['ting', t, K.INGREDIENSER[t].navn, K.KILDER[K.kildeFor(t)].navn]));"
+            "console.log(JSON.stringify(ud));"
             ) % os.path.join(ROD, 'games', 'restaurant', 'js', 'koekken.js')
-    return [tuple(x) for x in json.loads(subprocess.check_output(['node', '-e', kode]))] + [
+    raa = json.loads(subprocess.check_output(['node', '-e', kode]))
+    # Bestemt form, saa stemmen kan spoerge "Hvor kommer osten fra?" (samme tabel som BESTEMT i game.js)
+    bestemt = {'ost': 'osten', 'tomat': 'tomaten', 'champignon': 'champignonen', 'peberfrugt': 'peberfrugten', 'ananas': 'ananassen',
+               'oliven': 'olivenerne', 'boef': 'bøffen', 'salat': 'salaten', 'agurk': 'agurken', 'bacon': 'baconen', 'jordbaer': 'jordbærrene',
+               'banan': 'bananen', 'blaabaer': 'blåbærrene', 'chokolade': 'chokoladen', 'honning': 'honningen', 'smoer': 'smørret'}
+    ud = [tuple(x) for x in raa if x[0] != 'ting']
+    for x in raa:
+        if x[0] != 'ting':
+            continue
+        t, kilde = x[1], x[3]
+        b = bestemt.get(t, x[2])
+        ud.append(('hvor_%s.mp3' % t, 'Hvor kommer %s fra?' % b))
+        ud.append(('fra_%s.mp3' % t, 'Ja! %s kommer fra %s.' % (b[0].upper() + b[1:], kilde)))
+    return ud + [
         ('tak_1.mp3', 'Mmm, tak!'), ('tak_2.mp3', 'Det smager dejligt!'), ('tak_3.mp3', 'Tusind tak!'),
-        ('ups.mp3', 'Ups, det bestilte jeg ikke.'), ('dag.mp3', 'Sikke en god dag i restauranten!'), ('fri.mp3', 'Overrask mig!')]
+        ('ups.mp3', 'Ups, det bestilte jeg ikke.'), ('dag.mp3', 'Sikke en god dag i restauranten!'), ('fri.mp3', 'Overrask mig!'),
+        ('regning.mp3', 'Hvad koster det?')]
 
 
 def opgaver(kun):

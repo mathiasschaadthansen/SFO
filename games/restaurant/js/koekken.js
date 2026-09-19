@@ -72,13 +72,13 @@
     champignon:{ form: 'stok',    giver: ['champignon'],    navn: 'skovbunden' },
     peberfrugt:{ form: 'plante',  giver: ['peberfrugt'],    navn: 'peberplanten' },
     ananas:    { form: 'ananas',  giver: ['ananas'],        navn: 'ananasplanten' },
-    oliven:    { form: 'trae',    giver: ['oliven'],        navn: 'oliventraeet' },
-    salat:     { form: 'bed',     giver: ['salat'],         navn: 'koekkenhaven' },
+    oliven:    { form: 'trae',    giver: ['oliven'],        navn: 'oliventræet' },
+    salat:     { form: 'bed',     giver: ['salat'],         navn: 'køkkenhaven' },
     agurk:     { form: 'ranke',   giver: ['agurk'],         navn: 'agurkeranken' },
-    jordbaer:  { form: 'bed',     giver: ['jordbaer'],      navn: 'jordbaerbedet' },
+    jordbaer:  { form: 'bed',     giver: ['jordbaer'],      navn: 'jordbærbedet' },
     banan:     { form: 'palme',   giver: ['banan'],         navn: 'bananpalmen' },
-    blaabaer:  { form: 'busk',    giver: ['blaabaer'],      navn: 'blaabaerbusken' },
-    chokolade: { form: 'kakao',   giver: ['chokolade'],     navn: 'kakaotraeet' }
+    blaabaer:  { form: 'busk',    giver: ['blaabaer'],      navn: 'blåbærbusken' },
+    chokolade: { form: 'kakao',   giver: ['chokolade'],     navn: 'kakaotræet' }
   };
   function kildeFor(ting) {
     var ud = null;

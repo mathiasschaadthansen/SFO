@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v43';
+const VERSION = 'sfo-spil-v44';
 
 const FILER = [
   './',
@@ -231,6 +231,31 @@ const FILER = [
   'games/restaurant/js/koekken.js',
   'games/restaurant/js/game.js',
   'games/restaurant/lyd/klip.json',
+  'games/restaurant/lyd/bestil_b1a.mp3',
+  'games/restaurant/lyd/bestil_b1b.mp3',
+  'games/restaurant/lyd/bestil_b1c.mp3',
+  'games/restaurant/lyd/bestil_b1d.mp3',
+  'games/restaurant/lyd/bestil_b2a.mp3',
+  'games/restaurant/lyd/bestil_b2b.mp3',
+  'games/restaurant/lyd/bestil_b2c.mp3',
+  'games/restaurant/lyd/bestil_b2d.mp3',
+  'games/restaurant/lyd/bestil_k1a.mp3',
+  'games/restaurant/lyd/bestil_k1b.mp3',
+  'games/restaurant/lyd/bestil_k1c.mp3',
+  'games/restaurant/lyd/bestil_k1d.mp3',
+  'games/restaurant/lyd/bestil_k2a.mp3',
+  'games/restaurant/lyd/bestil_k2b.mp3',
+  'games/restaurant/lyd/bestil_k2c.mp3',
+  'games/restaurant/lyd/bestil_k2d.mp3',
+  'games/restaurant/lyd/bestil_p1a.mp3',
+  'games/restaurant/lyd/bestil_p1b.mp3',
+  'games/restaurant/lyd/bestil_p1c.mp3',
+  'games/restaurant/lyd/bestil_p1d.mp3',
+  'games/restaurant/lyd/bestil_p2a.mp3',
+  'games/restaurant/lyd/bestil_p2b.mp3',
+  'games/restaurant/lyd/bestil_p2c.mp3',
+  'games/restaurant/lyd/bestil_p2d.mp3',
+  'games/restaurant/lyd/regning.mp3',
   'assets/noto/abe.svg',
   'assets/noto/agurk.svg',
   'assets/noto/ananas.svg',
