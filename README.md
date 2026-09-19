@@ -192,6 +192,11 @@ vender kortet og stiller spørgsmålet igen, ingen straf. Tingene ligger i
 som reserve pr. bogstav. Se `ting/NOTICE.md` for hvordan man tilføjer en ting.
 Q, W og Z har ingen ting og springer minispillet over.
 
+Menuen har to trin, så det første valg er tre store billeder: bogstaver (A a),
+ord (katten med KAT) og tal (1 2 3 med æbler). Trin to har store eller små
+bogstaver, køretøj og stjerner som små valg, og nederst de grønne knapper Tegn
+og Find, eller start for ord. Køretøj og stjerner huskes på tværs.
+
 **Ord** tegner hele ord: billedet af tingen står i en sky, stemmen siger ordet,
 og bogstaverne tegnes ét ad gangen på en række med det samme køretøj som i Tegn.
 Færdige bogstaver bliver stående i farve, og til sidst siges ordet igen. Store
