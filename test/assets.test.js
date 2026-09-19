@@ -45,13 +45,13 @@ const total = iMappen.reduce((a, n) => a + fs.statSync(path.join(ROD, 'assets', 
 tjek('sprites fylder under 300 KB i alt', total < 300 * 1024, Math.round(total / 1024) + ' KB');
 tjek('sprites.js er med i service workerens FILER', sw.includes("'js/sprites.js'"));
 tjek('skal.js er med i service workerens FILER', sw.includes("'js/skal.js'"));
-const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
+const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
 tjek('alle spilsider har skallen med hjem-knappen', spilSider.every(h => h.includes('js/skal.js')));
 tjek('menu.js er med i service workerens FILER', sw.includes("'js/menu.js'"));
 tjek('alle spilsider bruger de faelles menu-ikoner', spilSider.every(h => h.includes('js/menu.js')));
 // Ingen knap i menuerne maa kraeve laesning: start, igen og menu er ikoner
-const spilKode = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'js', 'game.js'), 'utf8'));
-tjek('ingen spil har tekstknapper til start, igen eller menu', spilKode.every(k => !/>(1 spiller|2 spillere|Spil!|Kør!|Spil igen|Kør igen|Igen|Menu|Fri leg|Tegn alle)</.test(k)), 'tekstknapper: ' + ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken'].filter((s, i) => /(>(1 spiller|2 spillere|Spil!|Kør!|Spil igen|Kør igen|Igen|Menu|Fri leg|Tegn alle)<)/.test(spilKode[i])));
+const spilKode = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'js', 'game.js'), 'utf8'));
+tjek('ingen spil har tekstknapper til start, igen eller menu', spilKode.every(k => !/>(1 spiller|2 spillere|Spil!|Kør!|Spil igen|Kør igen|Igen|Menu|Fri leg|Tegn alle)</.test(k)), 'tekstknapper: ' + ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen'].filter((s, i) => /(>(1 spiller|2 spillere|Spil!|Kør!|Spil igen|Kør igen|Igen|Menu|Fri leg|Tegn alle)<)/.test(spilKode[i])));
 // Overlayet skal vaere det der ruller (ikke kortet med en hoejde i vh: paa iOS er 100vh hoejere
 // end det synlige felt, saa knappen i bunden fjedrede tilbage), og lave skaerme skal have et kompakt layout.
 tjek('alle spilsider lader overlayet rulle og centrerer kortet med margin:auto',

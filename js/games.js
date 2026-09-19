@@ -98,6 +98,21 @@ window.SPIL = [
          '</div>'
   },
   {
+    id: 'maskinen',
+    navn: 'Maskinen',
+    tekst: 'Byg en kædereaktion med ramper, trampoliner og blæsere, så kuglen ruller ned til klokken.',
+    farve: '#f2d9a6',
+    sti: 'games/maskinen/',
+    art: '<div class="art">' +
+         '<svg viewBox="0 0 110 110" style="position:absolute;left:0;top:0;width:110px;height:110px">' +
+         '<rect x="4" y="18" width="58" height="11" rx="5" fill="#c98f4e" stroke="#12261f" stroke-width="3" transform="rotate(20 33 23)"/>' +
+         '<rect x="44" y="62" width="54" height="11" rx="5" fill="#c98f4e" stroke="#12261f" stroke-width="3" transform="rotate(-18 71 67)"/>' +
+         '<circle cx="18" cy="14" r="9" fill="#e8442e" stroke="#12261f" stroke-width="3"/>' +
+         '<path d="M74 96a12 12 0 0 1 24 0z" fill="#ffd23f" stroke="#12261f" stroke-width="3" stroke-linejoin="round"/>' +
+         '<path d="M70 98h32" fill="none" stroke="#12261f" stroke-width="3" stroke-linecap="round"/>' +
+         '</svg></div>'
+  },
+  {
     id: 'tegn',
     navn: 'Tegn og pusl',
     tekst: 'Tegn en fisk, en raket eller et hus med fingeren, og saml den som puslespil.',
