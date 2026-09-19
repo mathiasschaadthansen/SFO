@@ -1146,24 +1146,33 @@
     bobleSlut();
   }
 
-  /** Regningen i boblen: hver ting med sin pris i moenter, "=" og det, der er betalt. */
+  /**
+   * Regningen i boblen: hver ting vises lige saa mange gange, som den koster,
+   * med en 1-moent under hver, saa barnet kan taelle sig til prisen. Saa "+",
+   * "=" og det, der skal betales.
+   */
   function tegnRegningBoble(p, s, v) {
     var b = p.boble, r = s.regning;
     bobleStart(b, bobleSkala(v));
     var poster = r.poster, n = poster.length;
     var visSum = dag.niveau === 0;                 // 1 stjerne: summen vises som moenter, saa man kan taelle
-    // Bredden i ikoner: start, tingene, plusserne, lighedstegnet, resultatet og lidt luft til hoejre
-    var bredde = 0.7 + n + (n - 1) * 0.5 + 0.7 + (visSum ? r.sum * 0.46 + 0.3 : 1.0) + 0.3;
+    var GRUPPE = 0.6;                              // billeder i samme gruppe staar taet
+    // Bredden i ikoner: start, grupperne, plusserne, lighedstegnet, resultatet og lidt luft til hoejre
+    var bredde = 0.6, k;
+    poster.forEach(function (post) { bredde += 1 + (post.pris - 1) * GRUPPE; });
+    bredde += (n - 1) * 0.45 + 0.65 + (visSum ? r.sum * 0.46 + 0.3 : 1.0) + 0.2;
     var ikon = Math.min(b.h * 0.5, b.b / bredde);
-    var x = b.x + ikon * 0.7, y = b.y + b.h * 0.42;
+    var x = b.x + ikon * 0.6, y = b.y + b.h * 0.42;
     var mr = Math.max(7, ikon * 0.17);
     poster.forEach(function (post, i) {
-      tegnBillede(post.ting, x, y, ikon * 0.95);
-      if (dag.niveau < 2) {
-        for (var k = 0; k < post.pris; k++) moent(x + (k - (post.pris - 1) / 2) * mr * 2.3, y + ikon * 0.66, mr, 1);
-      } else moent(x, y + ikon * 0.66, mr * 1.15, post.pris);
-      x += ikon;
-      if (i < n - 1) { ctx.fillStyle = MOERK; ctx.font = '800 ' + Math.round(ikon * 0.5) + 'px ui-rounded, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('+', x, y); x += ikon * 0.5; }
+      var gb = 1 + (post.pris - 1) * GRUPPE;       // gruppens bredde i ikoner
+      for (k = 0; k < post.pris; k++) {
+        var gx = x + ikon * 0.5 + k * ikon * GRUPPE;
+        tegnBillede(post.ting, gx, y, ikon * 0.95);
+        moent(gx, y + ikon * 0.66, mr, 1);
+      }
+      x += ikon * gb;
+      if (i < n - 1) { ctx.fillStyle = MOERK; ctx.font = '800 ' + Math.round(ikon * 0.5) + 'px ui-rounded, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('+', x + ikon * 0.22, y); x += ikon * 0.45; }
     });
     ctx.fillStyle = MOERK; ctx.font = '800 ' + Math.round(ikon * 0.5) + 'px ui-rounded, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('=', x + ikon * 0.2, y); x += ikon * 0.7;

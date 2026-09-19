@@ -46,12 +46,14 @@
 
   /**
    * Priser i moenter. Prisen traekkes tilfaeldigt pr. kunde, saa regnestykket
-   * varierer: paa 1 stjerne koster alt 1, saa regningen er at taelle. Paa 2
-   * stjerner koster en ting 1 eller 2, paa 3 stjerner 1, 2 eller 3. Den samme
-   * ting koster det samme inden for én bestilling (dobbelt ost = to gange prisen).
-   * Summen er hoejst 12 og kan altid betales med pungens moenter.
+   * varierer: paa 1 stjerne koster alt 1, saa regningen er at taelle. Paa 2 og
+   * 3 stjerner koster en ting 1 eller 2. Regningen viser tingen lige saa mange
+   * gange, som den koster, med en moent under hver, saa barnet kan taelle sig
+   * til prisen. Derfor hoejst 2: fire ting til 2 er allerede otte billeder.
+   * Den samme ting koster det samme inden for én bestilling (dobbelt ost = to
+   * gange prisen). Summen er hoejst 8 og kan altid betales med pungens moenter.
    */
-  var PRIS_MAKS = [1, 2, 3];
+  var PRIS_MAKS = [1, 2, 2];
   // Moenterne i pungen pr. stjerne. Der er altid nok af hver, saa man kan aldrig koere fast.
   var MOENTER = [[1], [1, 2], [1, 2, 5]];
 
@@ -268,7 +270,7 @@
     return s.bestilling.fri ? s.lagt.length > 0 : mangler(dag, station).length === 0;
   }
 
-  /** En tilfaeldig pris paa dette niveau: 1 paa 1 stjerne, 1-2 paa 2, 1-3 paa 3. */
+  /** En tilfaeldig pris paa dette niveau: 1 paa 1 stjerne, 1 eller 2 paa 2 og 3 stjerner. */
   function pris(niveau) { return 1 + Math.floor(Math.random() * PRIS_MAKS[Math.max(0, Math.min(2, niveau))]); }
 
   /** Regningen for en bestilling: én post pr. ting (dobbelt = to poster med samme pris) og summen. */
