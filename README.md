@@ -450,7 +450,8 @@ trække hver sin del samtidig.
 `klods` (spærrer), `baand` (trækker kuglen med, et tryk vender retningen),
 `blaeser` (puster i fire retninger), `vippe` (drejer, når kuglen lander i den
 ene ende), `kanon` (fanger kuglen og skyder den af sted i otte retninger, én
-gang pr. kørsel) og `tragt` (fanger kuglen oppefra og slipper den lige ned).
+gang pr. kørsel) og `tragt` (fanger kuglen oppefra og sender den ud af tuden: lige
+ned, til højre eller til venstre — et tryk drejer tuden).
 Alt står i `DELE` i `fysik.js` med hop (elasticitet) og gnid (friktion).
 
 **Fysikken.** Verden har faste mål (1000 × 620), så simulationen er den samme
@@ -482,9 +483,16 @@ andre kapitler. Hver bane har `start`, `maal`, `mur`, `hylde` (hvilke dele og
 hvor mange) og `loesning` — én måde at klare den på. Testen bygger løsningen
 og lader fysikken køre den, præcis som racertesten kører banerne igennem:
 ændrer man en del eller en bane, så den bliver uløselig, siger testen fra.
-Løsningerne er fundet ved at lade en søgning prøve tilfældige placeringer,
-indtil kuglen nåede klokken, så de er garanteret mulige. Testen tjekker også,
-at ingen bane klarer sig selv uden dele.
+Løsningerne er lavet i hånden ud fra én oplagt idé pr. bane ("læg rampen
+som bro over hullet", "sæt kanonen under kuglen") og derefter finjusteret af
+et lille program, der leder i nærheden af den tænkte plads efter den mest
+tolerante opstilling. Testen kræver, at hver løsning stadig virker, når
+delene flyttes op til 40 px i alle retninger (mindst hver femte forskydning
+skal lykkes) — ellers er banen en nål i en høstak, som ingen kan finde med
+fingeren. Den tjekker også, at ingen bane klarer sig selv uden dele. En kugle,
+der lander på en flad hylde, bliver liggende: derfor hælder hylderne, hvor
+kuglen skal trille videre af sig selv, og ellers skal det første redskab stå i
+faldlinjen under kuglen.
 
 **Grafikken.** Figurerne — Pelle, dyrene, snemanden, kuglerne, svampen,
 træet, granen, sivene og klokken, 17 i alt — er malede billeder i akvarel-

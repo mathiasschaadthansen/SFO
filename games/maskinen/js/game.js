@@ -262,6 +262,13 @@
       c.restore();
 
     } else if (slags === 'tragt') {
+      // Peger tuden til siden, tegnes et boejet roer foerst, saa tragten ligger ovenpaa
+      if (vinkel === 90 || vinkel === 270) {
+        c.save();
+        if (vinkel === 270) c.scale(-1, 1);
+        Figurer.tegn(c, 'tragttud', b * 0.28, h * 0.42, b * 0.56, h * 0.5);
+        c.restore();
+      }
       if (!Figurer.tegn(c, 'tragt', 0, 0, b, h)) reserve(c, b, h, GRUNDFARVE.tragt);
 
     } else if (!Figurer.tegn(c, slags, 0, 0, b, h)) {
