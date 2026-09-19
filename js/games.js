@@ -68,7 +68,7 @@ window.SPIL = [
   {
     id: 'restaurant',
     navn: 'Restauranten',
-    tekst: 'Lav pizza, burger og pandekager til dyrene. To kan lave mad sammen.',
+    tekst: 'Hent råvarer på gården, lav pizza, burger og pandekager, og tag imod betaling. To kan lave mad sammen.',
     farve: '#ffe0b8',
     sti: 'games/restaurant/',
     art: '<div class="art">' +

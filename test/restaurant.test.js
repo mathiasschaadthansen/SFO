@@ -7,8 +7,21 @@ const fs = require('fs');
 const path = require('path');
 const { Koekken } = require(path.join(__dirname, '..', 'games', 'restaurant', 'js', 'koekken.js'));
 const K = Koekken;
-// Retten skal forberedes (tre tryk), foer ingredienserne kan laegges paa
-const laeg = (dag, st, ting) => { while (K.forbered(dag, st)) { /* rul, vend, bag */ } return K.laeg(dag, st, ting); };
+// Retten skal forberedes (tre tryk), foer ingredienserne kan laegges paa, og den ting,
+// der mangler paa hylden, hentes foerst paa gaarden
+const laeg = (dag, st, ting) => {
+  while (K.forbered(dag, st)) { /* rul, vend, bag */ }
+  const s = dag.stationer[st];
+  if (s.hent === ting && !s.hentet) K.hent(dag, st, K.kildeFor(ting));
+  return K.laeg(dag, st, ting);
+};
+// Ring paa klokken og betal regningen med 1-moenter (dem er der altid nok af)
+const serverOgBetal = (dag, st) => {
+  if (!K.server(dag, st)) return false;
+  let vagt = 0;
+  while (dag.stationer[st].regning && vagt++ < 50) K.betal(dag, st, 1);
+  return true;
+};
 
 let fejl = 0;
 function tjek(navn, betingelse, detalje) {
@@ -68,7 +81,11 @@ console.log('\nRestauranten\n');
   tjek('den samme ingrediens kan ikke laegges paa for mange gange', laeg(dag, 0, s.bestilling.ting[0]) === 'forkert');
   tjek('retten er klar naar alt er lagt paa', K.klar(dag, 0));
   const foer = s.bestilling.id;
-  tjek('klokken serverer og henter en ny kunde', K.server(dag, 0) === true && dag.serveret === 1 && s.lagt.length === 0 && s.bestilling.id !== foer);
+  tjek('klokken serverer, og saa kommer regningen', K.server(dag, 0) === true && dag.serveret === 1 && s.regning && s.regning.sum === 2, JSON.stringify(s.regning));
+  tjek('1 stjerne: alt koster 1, og der er kun 1-moenter i pungen', s.regning.poster.every(p => p.pris === 1) && s.regning.moenter.join() === '1');
+  tjek('en moent for meget hopper tilbage', K.betal(dag, 0, 2) === 'forkert' && s.regning.betalt === 0);
+  tjek('foerste moent passer, den anden goer regningen betalt', K.betal(dag, 0, 1) === 'ok' && K.betal(dag, 0, 1) === 'klar');
+  tjek('efter regningen kommer en ny kunde', s.regning === null && s.lagt.length === 0 && s.bestilling.id !== foer);
   tjek('der findes ingen straf, tid eller point', dag.liv === undefined && dag.tid === undefined && dag.point === undefined);
 }
 
@@ -96,7 +113,7 @@ console.log('\nRestauranten\n');
         const id = s.bestilling.id;
         if (sidste[st] === id) gentagelser++;
         sidste[st] = id;
-        K.server(dag, st);
+        serverOgBetal(dag, st);
       } else {
         const t = K.mangler(dag, st)[0];
         if (!s.hylde.includes(t)) { tryk = 9999; break; }
@@ -115,8 +132,8 @@ console.log('\nRestauranten\n');
   tjek('ingredienser maa vente til retten er forberedt', K.laeg(dag, 0, s.bestilling.ting[0]) === 'vent' && s.lagt.length === 0);
   let tryk = 0; while (K.forbered(dag, 0)) tryk++;
   tjek('forberedelsen tager tre tryk', tryk === K.INDSTIL.forberedTrin && K.forberedtFaerdig(dag, 0));
-  s.bestilling.ting.forEach(t => K.laeg(dag, 0, t));
-  K.server(dag, 0);
+  s.bestilling.ting.forEach(t => laeg(dag, 0, t));
+  serverOgBetal(dag, 0);
   tjek('naeste kunde starter forfra med forberedelsen', dag.stationer[0].forberedt === 0);
 }
 
@@ -132,11 +149,58 @@ console.log('\nRestauranten\n');
       K.server(dag, st);
     });
   }
-  tjek('fri leg kan gennemfoeres', dag.faerdig && dag.serveret === dag.maal);
+  tjek('fri leg kan gennemfoeres, uden regning og uden gaard', dag.faerdig && dag.serveret === dag.maal);
   const d2 = K.nyDag(1, 0, true);
   tjek('fri leg: tom tallerken kan ikke serveres', !K.klar(d2, 0) && !K.server(d2, 0));
   for (let i = 0; i < 10; i++) laeg(d2, 0, d2.stationer[0].hylde[0]);
   tjek('fri leg: hoejst ' + K.INDSTIL.friMaks + ' ting paa en ret', d2.stationer[0].lagt.length === K.INDSTIL.friMaks);
+}
+
+/* Gaarden: hver bestilling har én ting, der skal hentes, og alle ting har en kilde */
+{
+  const alleTing = Object.keys(K.INGREDIENSER);
+  const udenKilde = alleTing.filter(t => !K.kildeFor(t));
+  tjek('alle ingredienser kommer et sted fra', udenKilde.length === 0, 'uden kilde: ' + udenKilde);
+  tjek('koed kommer fra slagteren, ikke fra et dyr', K.kildeFor('boef') === 'slagter' && K.kildeFor('bacon') === 'slagter');
+  tjek('ost og smoer kommer fra koen, honning fra bien', K.kildeFor('ost') === 'ko' && K.kildeFor('smoer') === 'ko' && K.kildeFor('honning') === 'bi');
+  Object.keys(K.RETTER).forEach(r => {
+    const k = K.gaardKilder(r);
+    tjek(r + ': gaarden viser hoejst 6 kilder, og alle hyldens ting kan hentes der', k.length <= 6 && K.RETTER[r].hylde.every(t => k.includes(K.kildeFor(t))), k.join(' '));
+  });
+  const dag = K.nyDag(1, 0), s = dag.stationer[0];
+  tjek('den ting der skal hentes, er en af bestillingens', s.bestilling.ting.includes(s.hent));
+  while (K.forbered(dag, 0)) { /* forbered */ }
+  tjek('tingen kan ikke laegges paa, foer den er hentet', K.laeg(dag, 0, s.hent) === 'hent');
+  const forkert = Object.keys(K.KILDER).find(k => k !== K.kildeFor(s.hent));
+  tjek('en forkert kilde giver ingenting, og man kan proeve igen', K.hent(dag, 0, forkert) === 'forkert' && !s.hentet);
+  tjek('den rigtige kilde giver tingen', K.hent(dag, 0, K.kildeFor(s.hent)) === 'ok' && s.hentet && K.laeg(dag, 0, s.hent) === 'ok');
+  tjek('man kan ikke hente den samme ting to gange', K.hent(dag, 0, K.kildeFor(s.hent)) === 'forkert');
+}
+
+/* Regningen: prisen kan altid betales med moenterne i pungen, paa alle niveauer */
+{
+  let umulige = [];
+  [0, 1, 2].forEach(niveau => K.BESTILLINGER.filter(b => b.stjerner === niveau + 1).forEach(b => {
+    const dag = K.nyDag(1, niveau), s = dag.stationer[0];
+    s.bestilling = b; s.hent = null; s.hentet = true; s.lagt = [];
+    while (K.forbered(dag, 0)) { /* forbered */ }
+    b.ting.forEach(t => K.laeg(dag, 0, t));
+    K.server(dag, 0);
+    const r = s.regning;
+    if (!r || r.sum < 2 || r.sum > 10) { umulige.push(b.id + ' sum ' + (r && r.sum)); return; }
+    // Betal med den stoerste moent, der passer: maa aldrig koere fast
+    let vagt = 0;
+    while (s.regning && vagt++ < 30) {
+      const rest = s.regning.sum - s.regning.betalt;
+      const m = s.regning.moenter.filter(x => x <= rest).sort((a, b2) => b2 - a)[0];
+      if (!m || K.betal(dag, 0, m) === 'forkert') { umulige.push(b.id + ' rest ' + rest); break; }
+    }
+    if (s.regning) umulige.push(b.id + ' ikke betalt');
+  }));
+  tjek('alle regninger er mellem 2 og 10 og kan betales med pungens moenter', umulige.length === 0, umulige.slice(0, 5).join(' | '));
+  const d2 = K.nyDag(1, 2);
+  tjek('3 stjerner har 1-, 2- og 5-moenter', K.MOENTER[2].join() === '1,2,5' && K.MOENTER[1].join() === '1,2');
+  tjek('dobbelt ost koster dobbelt', K.pris('ost', 2) === 2 && K.pris('ost', 0) === 1);
 }
 
 /* To stationer faar ikke samme kunde eller samme bestilling paa samme tid */
