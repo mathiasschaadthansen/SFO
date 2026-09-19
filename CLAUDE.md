@@ -12,7 +12,7 @@ Klatbold-testen tjekker mål, overligger, hop og at AI'en kan nå bolden.
 Bobler-testen lader en robot spille alle tolv baner igennem på alle tre
 sværhedsgrader, så ingen bane kan blive umulig. Bogstav-testen tjekker, at alle
 68 tegn kan tegnes færdige af en finger, der følger stregen, også en skæv og en
-hurtig finger. Restaurant-testen lader en robot servere en hel dag og tjekker,
+hurtig finger, og at alle ord i Ord-legen kan tegnes og er indtalt. Restaurant-testen lader en robot servere en hel dag og tjekker,
 at alle bestillinger kan laves med det, der står på hylden. Tegn-testen tjekker, at
 alle 16 figurer kan tegnes, og at puslespillet kan samles.
 

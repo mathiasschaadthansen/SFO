@@ -1,5 +1,6 @@
 /**
- * Ting der starter med et bogstav, til minispillet efter et tegnet bogstav.
+ * Ting der starter med et bogstav, til minispillet efter et tegnet bogstav og
+ * til ORD-legen, hvor hele ordet tegnes.
  *
  * Hvert bogstav har to til fire ting med SVG-tegning (Noto Emoji, Apache
  * 2.0, se ting/NOTICE.md). Den foerste har ogsaa en tegning i kode som
@@ -312,5 +313,24 @@
     return t;
   }
 
-  rod.Ting = { TING: TING, vaelg: vaelg };
+  /**
+   * Til ORD-legen: alle ting med et ord, der er kort nok til stjernerne, uden
+   * gengangere. Én stjerne giver de korte ord (is, ko, hus), to stjerner op til
+   * fem bogstaver, tre stjerner alle.
+   */
+  var ORD_LAENGDE = [3, 5, 99];
+  function ordKandidater(svaerhed) {
+    var set = {}, ud = [];
+    Object.keys(TING).forEach(function (n) {
+      if (n !== n.toUpperCase()) return;   // de smaa deler ting med de store
+      TING[n].forEach(function (t) {
+        if (set[t.ord] || t.ord.length > ORD_LAENGDE[Math.max(0, Math.min(2, svaerhed))]) return;
+        set[t.ord] = true;
+        ud.push(t);
+      });
+    });
+    return ud;
+  }
+
+  rod.Ting = { TING: TING, vaelg: vaelg, ordKandidater: ordKandidater, ORD_LAENGDE: ORD_LAENGDE };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);

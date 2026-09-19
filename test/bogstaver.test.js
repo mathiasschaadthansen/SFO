@@ -153,6 +153,31 @@ function foelg(glyf, tolerance, afvig) {
   tjek('licensen ligger ved siden af tegningerne', fs.existsSync(path.join(ROD, '..', 'ting', 'LICENSE')) && fs.existsSync(path.join(ROD, '..', 'ting', 'NOTICE.md')));
 }
 
+/* ORD-legen: ord til hver stjerne, og alle ordklip er indtalt */
+{
+  const fs = require('fs');
+  const tilNavn = ch => ({ 'æ': 'ae', 'ø': 'oe', 'å': 'aa' }[ch] || ch);
+  const [en, to, tre] = [0, 1, 2].map(n => Ting.ordKandidater(n));
+  tjek('1 stjerne: mindst 12 ord paa hoejst 3 bogstaver', en.length >= 12 && en.every(t => t.ord.length <= 3), en.length + ' ord: ' + en.map(t => t.ord).join(' '));
+  tjek('2 stjerner: mindst 30 ord paa hoejst 5 bogstaver', to.length >= 30 && to.every(t => t.ord.length <= 5), to.length + ' ord');
+  tjek('3 stjerner: alle ord er med', tre.length >= 70 && tre.length === new Set(tre.map(t => t.ord)).size, tre.length + ' ord');
+  tjek('ingen ord gaar igen i en stjerne', [en, to, tre].every(l => new Set(l.map(t => t.ord)).size === l.length));
+  // Hvert bogstav i hvert ord kan tegnes baade stort og smaat, saa ordet kan skrives i begge kategorier
+  const manglerStor = tre.filter(t => t.ord.split('').some(ch => !Glyffer.GLYFFER[tilNavn(ch).toUpperCase()])).map(t => t.ord);
+  const manglerLille = tre.filter(t => t.ord.split('').some(ch => !Glyffer.GLYFFER[tilNavn(ch)])).map(t => t.ord);
+  tjek('alle ord kan tegnes med store bogstaver', manglerStor.length === 0, 'mangler: ' + manglerStor);
+  tjek('alle ord kan tegnes med smaa bogstaver', manglerLille.length === 0, 'mangler: ' + manglerLille);
+  // Ordet siges med Camillas stemme, naar det skal tegnes, saa alle ord skal vaere indtalt
+  const klip = JSON.parse(fs.readFileSync(path.join(ROD, '..', 'lyd', 'klip.json'), 'utf8'));
+  const ordFil = t => t.fil ? t.fil.replace('ting/', '').replace('.svg', '') : ({ 'xylofon': 'xylofon', 'ål': 'aal' })[t.ord];
+  const udenKlip = tre.filter(t => !klip.includes('ord_' + ordFil(t) + '.mp3')).map(t => t.ord);
+  tjek('alle ord har et indtalt klip', udenKlip.length === 0, 'mangler: ' + udenKlip);
+  // Det laengste ord skal kunne staa paa en iPad i landskab (1024 x 768) med kasser, en finger kan ramme
+  const laengste = Math.max(...tre.map(t => t.ord.length));
+  const kasse = Math.min(1024 * 0.55 * 0.9, (1024 - 70) / (0.8 * (laengste - 1) + 1), 768 * 0.46);
+  tjek('det laengste ord (' + laengste + ' bogstaver) faar kasser paa mindst 110 px paa en iPad', kasse >= 110, Math.round(kasse) + ' px');
+}
+
 /* Lydklip: rigtige optagelser (hvis der er nogen) er listet i klip.json og i cachen */
 {
   const fs = require('fs');
