@@ -1410,8 +1410,7 @@
       '<div class="kort">' +
       '<h2>Flot!</h2>' +
       '<canvas class="eksempel" width="300" height="220" style="' + EKSEMPEL_STIL + '"></canvas>' +
-      '<button class="knap gul" data-handling="' + (hvad === 'find' ? 'find' : (hvad === 'ord' ? 'ord' : 'tegn-alle')) + '">Igen</button>' +
-      '<button class="knap" data-handling="menu">Menu</button>' +
+      Menu.slutRaekke(hvad === 'find' ? 'find' : (hvad === 'ord' ? 'ord' : 'tegn-alle'), null) +
       '</div>'
     );
     vinderCanvas = overlay.querySelector('canvas.eksempel');
@@ -1438,28 +1437,6 @@
 
   function visOverlay(html) { overlay.innerHTML = html; overlay.hidden = false; }
   function skjulOverlay() { overlay.hidden = true; overlay.innerHTML = ''; vinderCanvas = null; }
-
-  function stjerner(fyldt) {
-    var s = '<svg width="84" height="26" viewBox="0 0 84 26" aria-hidden="true">';
-    for (var i = 0; i < 3; i++) {
-      var cx = 13 + i * 29, cy = 13, d = '';
-      for (var k = 0; k < 10; k++) {
-        var r = k % 2 ? 5 : 12, v = -Math.PI / 2 + k * Math.PI / 5;
-        d += (k ? 'L' : 'M') + (cx + Math.cos(v) * r).toFixed(1) + ' ' + (cy + Math.sin(v) * r).toFixed(1);
-      }
-      s += '<path d="' + d + 'Z" fill="' + (i < fyldt ? '#ffd23f' : '#d9d4c7') + '" stroke="#12261f" stroke-width="2" stroke-linejoin="round"/>';
-    }
-    return s + '</svg>';
-  }
-
-  function lydIkon(til) {
-    return '<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">' +
-      '<path d="M4 11h6l7-6v20l-7-6H4z" fill="#12261f"/>' +
-      (til
-        ? '<path d="M20 10c2 2.5 2 7.5 0 10M23.5 7c3.5 4.5 3.5 11.5 0 16" fill="none" stroke="#12261f" stroke-width="2.5" stroke-linecap="round"/>'
-        : '<path d="M20 11l7 8M27 11l-7 8" fill="none" stroke="#e8442e" stroke-width="3" stroke-linecap="round"/>') +
-      '</svg>';
-  }
 
   function blyantIkon() {
     return '<svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">' +
@@ -1488,31 +1465,27 @@
     ordet = null;
     vinderCanvas = null;
     stopKlip();
-    var stjerneKnapper = [0, 1, 2].map(function (n) {
-      return '<button class="knap smal ikon' + (n === svaerhed ? ' valgt' : '') +
-             '" data-handling="svaerhed" data-n="' + n + '" aria-label="' + (n + 1) + ' stjerner">' + stjerner(n + 1) + '</button>';
-    }).join('');
     visOverlay(
       '<div class="kort">' +
       '<h2>Bogstaver</h2>' +
-      '<div class="raekke">' +
+      // Indstillinger foerst, smaa og lette: hvilke tegn, hvilket koeretoej, hvor svaert
+      '<div class="raekke valg tegnvalg">' +
       '<button class="knap smal' + (kategori === 'bogstaver' ? ' valgt' : '') + '" data-handling="kategori" data-k="bogstaver">ABC</button>' +
       '<button class="knap smal' + (kategori === 'smaa' ? ' valgt' : '') + '" data-handling="kategori" data-k="smaa">abc</button>' +
       '<button class="knap smal' + (kategori === 'tal' ? ' valgt' : '') + '" data-handling="kategori" data-k="tal">123</button>' +
       '</div>' +
-      '<div class="raekke">' + stjerneKnapper + '</div>' +
-      '<div class="raekke">' + KOERETOEJER.map(function (k) {
+      '<div class="raekke valg">' + KOERETOEJER.map(function (k) {
         return '<button class="knap smal ikon' + (k === koeretoej ? ' valgt' : '') + '" data-handling="koeretoej" data-k="' + k +
                '" aria-label="' + k + '"><canvas width="72" height="44" style="' + FLISE_STIL + ';width:56px;height:34px" data-koeretoej="' + k + '"></canvas></button>';
       }).join('') + '</div>' +
+      Menu.stjerneRaekke(svaerhed) +
+      // De tre lege som store groenne knapper: det er dem, man trykker paa for at gaa i gang
       '<div class="raekke lege">' +
-      '<button class="knap gul" data-handling="gitter">' + blyantIkon() + 'Tegn</button>' +
-      '<button class="knap gul" data-handling="find">' + luppIkon() + 'Find</button>' +
-      '<button class="knap gul" data-handling="ord">' + ordIkon() + 'Ord</button>' +
+      '<button class="knap groen" data-handling="gitter" aria-label="Tegn">' + blyantIkon() + '</button>' +
+      '<button class="knap groen" data-handling="find" aria-label="Find">' + luppIkon() + '</button>' +
+      '<button class="knap groen" data-handling="ord" aria-label="Ord">' + ordIkon() + '</button>' +
       '</div>' +
-      '<div class="raekke bund">' +
-      '<button class="knap lille ikon" data-handling="lyd" aria-label="Lyd til eller fra">' + lydIkon(lydTil) + '</button>' +
-      '</div>' +
+      Menu.lydRaekke(lydTil) +
       '</div>'
     );
     overlay.querySelectorAll('canvas[data-koeretoej]').forEach(function (cv) {
@@ -1541,8 +1514,10 @@
     visOverlay(
       '<div class="kort bred">' +
       '<div class="gitter' + (kategori === 'tal' ? ' tal' : '') + '">' + fliser + '</div>' +
-      '<button class="knap gul stor" data-handling="tegn-alle">Tegn alle</button>' +
-      '<button class="knap lille" data-handling="menu">Menu</button>' +
+      '<div class="raekke slut">' +
+      '<button class="knap gul" data-handling="tegn-alle" aria-label="Tegn alle">' + Menu.tegnAlle() + '</button>' +
+      '<button class="knap" data-handling="menu" aria-label="Menu">' + Menu.tilbage() + '</button>' +
+      '</div>' +
       '</div>'
     );
     overlay.querySelectorAll('canvas[data-navn]').forEach(function (cv) {

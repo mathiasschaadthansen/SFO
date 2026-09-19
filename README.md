@@ -37,6 +37,7 @@ hardware — det er det eneste sted man kan mærke om styringen føles rigtig.
 index.html              menuen — bygges ud fra js/games.js
 js/games.js             spil-registret. Tilføj et spil = én blok her
 js/sprites.js           fælles indlæsning og omfarvning af sprites
+js/menu.js              fælles menuikoner: stjerner, spillere, start, igen, tilbage
 assets/kenney/          sprites fra Kenney (CC0): biler, klatter, figurer, raket
 sw.js                   offline-cache. Nye filer skal tilføjes til FILER
 manifest.webmanifest    gør siden til en app på hjemmeskærmen
@@ -255,6 +256,14 @@ den står i `lyd/NOTICE.md`.
 
 Lav `games/<navn>/` med sin egen `index.html`, tilføj en blok i `js/games.js`
 og filerne i `sw.js`. Menuen bygger sig selv.
+
+Spillets egen menu bygges med `js/menu.js`, så knapperne ser ens ud i alle
+spil og kan forstås uden at læse: `Menu.stjerneRaekke(svaerhed)` giver de tre
+stjerneknapper, `Menu.startRaekke('start')` de to grønne knapper med én og to
+figurer, `Menu.lydRaekke(lydTil)` lydknappen og `Menu.slutRaekke('igen', skift,
+menu)` slutskærmens igen, palet og tilbage-pil. Enkelte ikoner findes som
+`Menu.start()`, `Menu.igen()`, `Menu.tilbage()`, `Menu.palet()`, `Menu.bane()`,
+`Menu.fri()` og `Menu.tegnAlle()`.
 
 ## Ud på SFO'ens iPads
 
