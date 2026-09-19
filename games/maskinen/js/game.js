@@ -143,6 +143,11 @@
     }).catch(function () { sig(reserveTekst); });
   }
   var FLOT = [['flot_1.mp3', 'Flot!'], ['flot_2.mp3', 'Sådan! Maskinen virker!']];
+  // Naar man kommer til et nyt sted, siges det én gang — og de nye dele forklares foerste gang, de laegges ud
+  var KAPITELKLIP = { skoven: ['kap_skoven.mp3', 'Nu er vi i skoven.'], soeen: ['kap_soeen.mp3', 'Nu er vi ved søen.'],
+                      vinter: ['kap_vinter.mp3', 'Nu er det vinter.'], natten: ['kap_natten.mp3', 'Nu er det nat.'] };
+  var DELKLIP = { kanon: ['del_kanon.mp3', 'Kanonen skyder kuglen af sted!'], tragt: ['del_tragt.mp3', 'Tragten fanger kuglen.'] };
+  var sagtKapitel = {}, sagtDel = {}, kapitelAtSige = null;
   function sigFlot() { var f = FLOT[Math.floor(Math.random() * FLOT.length)]; afspil(f[0], f[1], 1.8); }
 
   /* ---------- skaerm og maal ---------- */
@@ -623,6 +628,7 @@
     baneNr = fri ? -1 : nr;
     bane = fri ? F.FRI : F.BANER[nr];
     if (!fri) kapitel = bane.kapitel;
+    kapitelAtSige = (!fri && KAPITELKLIP[bane.kapitel] && !sagtKapitel[bane.kapitel]) ? bane.kapitel : null;
     lagte = [];
     tilbage = {};
     Object.keys(bane.hylde).forEach(function (s) { tilbage[s] = bane.hylde[s]; });
@@ -656,8 +662,15 @@
     opdaterPartikler(dt);
     if (klokkeRyst > 0) klokkeRyst = Math.max(0, klokkeRyst - dt * 0.8);
     if (tilstand === 'bygger' && !friLeg && hintTid && tid >= hintTid) {
-      hintTid = 0;
-      afspil('opgave.mp3', 'Kan du få kuglen ned til klokken?', 2.6);
+      if (kapitelAtSige) {
+        var kk = KAPITELKLIP[kapitelAtSige];
+        sagtKapitel[kapitelAtSige] = true; kapitelAtSige = null;
+        afspil(kk[0], kk[1], 2);
+        hintTid = tid + 2.4;                 // og saa opgaven bagefter
+      } else {
+        hintTid = 0;
+        afspil('opgave.mp3', 'Kan du få kuglen ned til klokken?', 2.6);
+      }
     }
     if (tilstand !== 'koerer' || !verden) return;
     // Fysikken koerer med sit eget faste skridt, uanset hvor tit skaermen tegnes
@@ -775,6 +788,7 @@
         lagte.push({ slags: f.slags, x: snap(v.x), y: snap(v.y), vinkel: F.DELE[f.slags].vinkler[0] });
         tilbage[f.slags]--;
         tone(520, 0.08, 0.1);
+        if (DELKLIP[f.slags] && !sagtDel[f.slags]) { sagtDel[f.slags] = true; afspil(DELKLIP[f.slags][0], DELKLIP[f.slags][1], 2.2); }
         lagFor = '';
       }
       return;

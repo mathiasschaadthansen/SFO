@@ -103,7 +103,10 @@ def klokken():
 def maskinen():
     """De faa klip, Maskinen bruger. Resten af lyden er toner fra oscillatorer."""
     return [('opgave.mp3', 'Kan du få kuglen ned til klokken?'), ('igen.mp3', 'Prøv igen!'),
-            ('flot_1.mp3', 'Flot!'), ('flot_2.mp3', 'Sådan! Maskinen virker!')]
+            ('flot_1.mp3', 'Flot!'), ('flot_2.mp3', 'Sådan! Maskinen virker!'),
+            ('kap_skoven.mp3', 'Nu er vi i skoven.'), ('kap_soeen.mp3', 'Nu er vi ved søen.'),
+            ('kap_vinter.mp3', 'Nu er det vinter.'), ('kap_natten.mp3', 'Nu er det nat.'),
+            ('del_kanon.mp3', 'Kanonen skyder kuglen af sted!'), ('del_tragt.mp3', 'Tragten fanger kuglen.')]
 
 
 def opgaver(kun):
