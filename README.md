@@ -468,22 +468,28 @@ siger testen fra. Løsningerne er fundet ved at lade en søgning prøve tilfæld
 placeringer, indtil kuglen nåede klokken, så de er garanteret mulige. Testen
 tjekker også, at ingen bane klarer sig selv uden dele.
 
-**Grafikken.** Alt i spillet er SVG skrevet i koden — der er ingen billedfiler
-og ingen emojier. Tegningerne ligger i `js/figurer.js`: dyrene (pindsvinet
-Pelle med kasket og kaninen), æblet der er kuglen, svampe, træer, klokken,
-plankerne og alle delene. Hver figur er en funktion, der får bredde og højde
-ind og giver et lille SVG-dokument tilbage; det males én gang over på et skjult
-lærred i dobbelt størrelse og tegnes derefter med et `drawImage` pr. billede,
-så spilløkken er lige så let som før, og tegningen er skarp på iPad'en.
+**Grafikken.** Figurerne — pindsvinet Pelle (opfinderen), kaninen, æblet der
+er kuglen, svampen, træet og klokken — er malede billeder i akvarel-
+billedbogsstil, lavet med Canvas AI-billedgenerator og skåret fri i kode. De
+ligger i `billeder/` med en `NOTICE.md`, der siger hvordan og med hvilken ret.
+Prompterne beskriver stilen med ord, aldrig med navnet på en kunstner, en bog
+eller et spil.
 
-Stilen er "ler" (claymorphism): tykke, bløde former uden konturstreger, en lys
-kant foroven, en mørkere forneden og en blød skygge under. Paletten er dæmpede
-pasteller — salviegrøn, sart lyseblå, sandfarvet træ, varm fersken og dæmpet
-teglsten — og den står ét sted, i `PALET` i `figurer.js`. Både banen, hylden,
-menukortet og de fælles menuikoner henter deres farver derfra, så hele skærmen
-hører sammen. Skal en ny figur ind, skrives den som en funktion i `TEGNINGER`;
-testen tjekker, at spillet ikke beder om figurer, der ikke findes, og at der
-ikke er sneget sig en billedfil ind.
+Alt det, der skal kunne skaleres og drejes frit — planker, ramper, trampolin,
+bånd, blæser, vippe, knapper og prikker — er SVG skrevet i `js/figurer.js`.
+Hver figur er en funktion, der får bredde og højde ind og giver et lille SVG-
+dokument tilbage; det males én gang over på et skjult lærred i dobbelt
+størrelse og tegnes derefter med et `drawImage`, så spilløkken er lige så let
+som før. Træet i delene har årer, korn og en kant med lidt uro i (SVG-filtre),
+så det hører sammen med de malede billeder. Mangler et billede, tegnes en SVG-
+udgave af figuren i stedet, så spillet virker alligevel.
+
+Paletten står ét sted, i `PALET` i `figurer.js`, og er taget fra billederne:
+træets brune, kronens grønne, æblets røde. Banen, hylden, menukortet,
+forsidens billede og de fælles menuikoner henter alle deres farver derfra.
+Testen tjekker, at alle malede billeder findes og er i `FILER`, at de ikke
+løber løbsk i størrelse, at der ligger en NOTICE, og at spillet ikke henter
+billeder fra andre mapper.
 
 **Stemme.** Fire klip i `games/maskinen/lyd/`: `opgave.mp3`, `igen.mp3` og
 `flot_1-2.mp3`. Resten af lyden er toner fra oscillatorer: et klik når kuglen

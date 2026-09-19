@@ -1,8 +1,14 @@
 /**
- * Figurerne, delene og baggrunden i Maskinen — alt sammen SVG skrevet i kode.
+ * Figurerne, delene og baggrunden i Maskinen.
  *
- * Der er ingen billedfiler og ingen emojier i spillet. Hver ting er et lille
- * SVG-dokument, som laves her og males én gang over paa et skjult laerred i den
+ * Figurerne (pindsvinet Pelle, kaninen, aeblet, svampen, traeet og klokken) er
+ * malede billeder i billeder/*.png — akvarel i billedbogsstil, lavet med Canvas
+ * billedgenerator, se billeder/NOTICE.md. Delene og alt det, der skal kunne
+ * skaleres og drejes frit, er SVG skrevet her i koden, med en let "malet" kant
+ * og korn, saa det hoerer sammen med billederne. Er et billede ikke hentet
+ * endnu, tegnes SVG-udgaven af figuren i stedet, saa der aldrig mangler noget.
+ *
+ * Hvert SVG-dokument laves her og males én gang over paa et skjult laerred i den
  * stoerrelse, der skal bruges. Bagefter er det bare et drawImage pr. billede,
  * saa det koster ikke noget i spilloekken, og tegningen er skarp paa iPad'ens
  * skaerm (der males i dobbelt stoerrelse).
@@ -22,20 +28,20 @@ var Figurer = (function () {
   /* ---------- farver ---------- */
 
   var P = {
-    // sandfarvet trae
-    traeLys: '#f0dcb8', trae: '#d9ba8a', traeM: '#b18a56', traeDyb: '#8a663d',
-    // salviegroen
-    salvieLys: '#bbd6ac', salvie: '#97ba86', salvieM: '#729b62', salvieDyb: '#527a46',
-    // sart lyseblaa
-    blaaLys: '#cfe7f2', blaa: '#a5d0e5', blaaM: '#79a8c3', blaaDyb: '#5a8ba6',
+    // trae, som stammen paa det malede trae
+    traeLys: '#e9cfa0', trae: '#cfa66c', traeM: '#a67440', traeDyb: '#74502a',
+    // groent, som traekronen
+    salvieLys: '#cbd99c', salvie: '#a7c07a', salvieM: '#7f9f5f', salvieDyb: '#5b7c48',
+    // himmel
+    blaaLys: '#d9ebf3', blaa: '#b5d6e6', blaaM: '#8fbad0', blaaDyb: '#6d9bb3',
     // varm fersken
-    ferskenLys: '#fbd7b9', fersken: '#f0b894', ferskenM: '#d8916a',
-    // daempet teglsten
-    teglLys: '#dc9179', tegl: '#c46a52', teglM: '#a04c38',
-    // kridt, sand og skygge
-    kridt: '#f8f1e6', creme: '#efe2cc', sand: '#e2cfab', sandM: '#c6ad82',
-    sten: '#b2bec2', stenM: '#8d9ca1', stenDyb: '#6e8085',
-    moerk: '#6b5545', blød: 'rgba(107,85,68,.22)'
+    ferskenLys: '#fbdcbd', fersken: '#f1bb92', ferskenM: '#d99060',
+    // teglsten, som aeblet
+    teglLys: '#e28a6d', tegl: '#c8624a', teglM: '#a04432',
+    // papir, sand og skygge
+    kridt: '#f8f0e0', creme: '#f0e3ca', sand: '#e5d3ae', sandM: '#cbb382',
+    sten: '#b5bcbb', stenM: '#8e9896', stenDyb: '#6d7877',
+    moerk: '#5e4a3a', blød: 'rgba(94,74,58,.22)'
   };
 
   /* ---------- SVG-vaerktoej ---------- */
@@ -50,6 +56,13 @@ var Figurer = (function () {
       '<feDropShadow dx="0" dy="' + tal(Math.max(1.5, Math.min(h, b) * 0.055)) + '" stdDeviation="' + tal(Math.max(1.2, Math.min(h, b) * 0.05)) + '" flood-color="#6b5545" flood-opacity="0.28"/></filter>' +
       '<filter id="sl" x="-45%" y="-45%" width="190%" height="200%">' +
       '<feDropShadow dx="0" dy="' + tal(Math.max(1, Math.min(h, b) * 0.03)) + '" stdDeviation="' + tal(Math.max(1, Math.min(h, b) * 0.03)) + '" flood-color="#6b5545" flood-opacity="0.2"/></filter>' +
+      // "Malet" kant: en smule uro i konturen, saa formen ikke ser maskinlavet ud
+      '<filter id="p" x="-8%" y="-8%" width="116%" height="116%">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="4" result="t"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="t" scale="' + tal(Math.max(1.5, Math.min(b, h) * 0.06)) + '" xChannelSelector="R" yChannelSelector="G"/></filter>' +
+      // Korn: fint papirstoej, der laegges over traeet
+      '<filter id="k"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" seed="7"/>' +
+      '<feColorMatrix type="matrix" values="0 0 0 0 0.35 0 0 0 0 0.24 0 0 0 0 0.12 0 0 0 0.22 0"/></filter>' +
       (ekstraDefs || '') +
       '</defs>' + indhold + '</svg>';
   }
@@ -75,6 +88,32 @@ var Figurer = (function () {
   function klods(x, y, b, h, r, id, moerk) {
     return '<rect x="' + tal(x) + '" y="' + tal(y) + '" width="' + tal(b) + '" height="' + tal(h) + '" rx="' + tal(r) + '" fill="url(#' + id + ')" filter="url(#s)"/>' +
       glans(x, y, b, h, r) + bund(x, y, b, h, r, moerk);
+  }
+  /**
+   * Et malet stykke trae: grundfarve, et par aarer, korn og en kant med lidt
+   * uro i. Bruges til planker, ramper, klodser og vippens braet.
+   */
+  function traestykke(x, y, b, h, r, id) {
+    var lodret = h > b, aarer = '', n = Math.max(2, Math.round((lodret ? b : h) / 7));
+    for (var i = 1; i <= n; i++) {
+      var t = i / (n + 1);
+      if (lodret) {
+        var ax = x + b * t;
+        aarer += '<path d="M' + tal(ax) + ' ' + tal(y + h * 0.06) + 'q' + tal(b * 0.08 * (i % 2 ? 1 : -1)) + ' ' + tal(h * 0.5) + ' 0 ' + tal(h * 0.88) + '" fill="none" stroke="' + P.traeDyb + '" stroke-width="' + tal(Math.max(0.8, b * 0.035)) + '" opacity="0.28"/>';
+      } else {
+        var ay = y + h * t;
+        aarer += '<path d="M' + tal(x + b * 0.05) + ' ' + tal(ay) + 'q' + tal(b * 0.5) + ' ' + tal(h * 0.1 * (i % 2 ? 1 : -1)) + ' ' + tal(b * 0.9) + ' 0" fill="none" stroke="' + P.traeDyb + '" stroke-width="' + tal(Math.max(0.8, h * 0.035)) + '" opacity="0.28"/>';
+      }
+    }
+    var kant = lodret
+      ? '<rect x="' + tal(x + b * 0.78) + '" y="' + tal(y) + '" width="' + tal(b * 0.22) + '" height="' + tal(h) + '" rx="' + tal(r) + '" fill="' + P.traeDyb + '" opacity="0.2"/>'
+      : '<rect x="' + tal(x) + '" y="' + tal(y + h * 0.76) + '" width="' + tal(b) + '" height="' + tal(h * 0.24) + '" rx="' + tal(r) + '" fill="' + P.traeDyb + '" opacity="0.2"/>';
+    return '<g filter="url(#p)">' +
+      '<rect x="' + tal(x) + '" y="' + tal(y) + '" width="' + tal(b) + '" height="' + tal(h) + '" rx="' + tal(r) + '" fill="url(#' + id + ')" filter="url(#s)"/>' +
+      '<clipPath id="c' + id + '"><rect x="' + tal(x) + '" y="' + tal(y) + '" width="' + tal(b) + '" height="' + tal(h) + '" rx="' + tal(r) + '"/></clipPath>' +
+      '<g clip-path="url(#c' + id + ')">' + aarer + kant +
+      '<rect x="' + tal(x) + '" y="' + tal(y) + '" width="' + tal(b) + '" height="' + tal(h) + '" filter="url(#k)"/></g>' +
+      '</g>';
   }
   function kugleform(cx, cy, r, id, moerk) {
     return '<circle cx="' + tal(cx) + '" cy="' + tal(cy) + '" r="' + tal(r) + '" fill="url(#' + id + ')" filter="url(#s)"/>' +
@@ -195,26 +234,15 @@ var Figurer = (function () {
         forløb('g', '#f0d093', '#c99a4f'));
     },
 
-    /* Planke: murene og platformene i banen. Tykkelse, ikke en flad farve. */
+    /* Planke: murene og platformene i banen. Malet trae med aarer. */
     planke: function (b, h) {
-      var r = Math.min(Math.min(b, h) * 0.34, 14), lodret = h > b;
-      var lys = lodret
-        ? '<rect x="' + tal(b * 0.14) + '" y="' + tal(h * 0.05) + '" width="' + tal(b * 0.26) + '" height="' + tal(h * 0.9) + '" rx="' + tal(b * 0.13) + '" fill="#ffffff" opacity="0.3"/>'
-        : '<rect x="' + tal(b * 0.03) + '" y="' + tal(h * 0.12) + '" width="' + tal(b * 0.94) + '" height="' + tal(h * 0.22) + '" rx="' + tal(h * 0.11) + '" fill="#ffffff" opacity="0.3"/>';
-      var skygge = lodret
-        ? '<rect x="' + tal(b * 0.62) + '" y="' + tal(h * 0.05) + '" width="' + tal(b * 0.26) + '" height="' + tal(h * 0.9) + '" rx="' + tal(b * 0.13) + '" fill="' + P.traeDyb + '" opacity="0.16"/>'
-        : '<rect x="' + tal(b * 0.03) + '" y="' + tal(h * 0.68) + '" width="' + tal(b * 0.94) + '" height="' + tal(h * 0.24) + '" rx="' + tal(h * 0.12) + '" fill="' + P.traeDyb + '" opacity="0.16"/>';
-      return doc(b, h,
-        '<rect x="0.5" y="0.5" width="' + tal(b - 1) + '" height="' + tal(h - 1) + '" rx="' + tal(r) + '" fill="url(#g)" filter="url(#s)"/>' + lys + skygge,
-        forløb('g', P.trae, P.traeM));
+      var r = Math.min(Math.min(b, h) * 0.3, 12);
+      return doc(b, h, traestykke(1, 1, b - 2, h - 2, r, 'g'), forløb('g', P.trae, P.traeM));
     },
 
     /* Rampen: den glatte plade, kuglen triller ned ad. */
     rampe: function (b, h) {
-      return doc(b, h,
-        klods(0.5, 0.5, b - 1, h - 1, (h - 1) / 2, 'g', P.traeDyb) +
-        '<rect x="' + tal(b * 0.08) + '" y="' + tal(h * 0.2) + '" width="' + tal(b * 0.84) + '" height="' + tal(h * 0.22) + '" rx="' + tal(h * 0.11) + '" fill="#ffffff" opacity="0.35"/>',
-        forløb('g', P.trae, P.traeM));
+      return doc(b, h, traestykke(1, 1, b - 2, h - 2, (h - 2) / 2, 'g'), forløb('g', P.traeLys, P.trae));
     },
 
     /* Trampolinen: bloed dug oeverst, fjedre og fod under. Dugen fylder den
@@ -232,12 +260,12 @@ var Figurer = (function () {
         forløb('g', P.blaaLys, P.blaa));
     },
 
-    /* Klodsen: den faste mur, man selv kan flytte. */
+    /* Klodsen: den faste mur, man selv kan flytte. En kasse af trae. */
     klods: function (b, h) {
       return doc(b, h,
-        klods(1, 1, b - 2, h - 2, Math.min(b, h) * 0.22, 'g', P.traeDyb) +
-        '<rect x="' + tal(b * 0.24) + '" y="' + tal(h * 0.24) + '" width="' + tal(b * 0.52) + '" height="' + tal(h * 0.52) + '" rx="' + tal(Math.min(b, h) * 0.14) + '" fill="' + P.traeM + '" opacity="0.2"/>',
-        forløb('g', P.traeLys, P.trae));
+        traestykke(1, 1, b - 2, h - 2, Math.min(b, h) * 0.12, 'g') +
+        '<rect x="' + tal(b * 0.18) + '" y="' + tal(h * 0.18) + '" width="' + tal(b * 0.64) + '" height="' + tal(h * 0.64) + '" rx="' + tal(Math.min(b, h) * 0.06) + '" fill="none" stroke="' + P.traeDyb + '" stroke-width="' + tal(Math.max(1, b * 0.03)) + '" opacity="0.35"/>',
+        forløb('g', P.trae, P.traeM));
     },
 
     /* Baandet: en bloed valse, der traekker kuglen med sig. */
@@ -285,7 +313,7 @@ var Figurer = (function () {
     },
     vippebraet: function (b, h) {
       return doc(b, h,
-        klods(0.5, 0.5, b - 1, h - 1, (h - 1) / 2, 'g', P.traeDyb) +
+        traestykke(1, 1, b - 2, h - 2, (h - 2) / 2, 'g') +
         '<rect x="' + tal(b * 0.03) + '" y="' + tal(h * 0.18) + '" width="' + tal(b * 0.14) + '" height="' + tal(h * 0.64) + '" rx="' + tal(h * 0.32) + '" fill="' + P.tegl + '" opacity="0.8"/>' +
         '<rect x="' + tal(b * 0.83) + '" y="' + tal(h * 0.18) + '" width="' + tal(b * 0.14) + '" height="' + tal(h * 0.64) + '" rx="' + tal(h * 0.32) + '" fill="' + P.tegl + '" opacity="0.8"/>',
         forløb('g', P.traeLys, P.trae));
@@ -320,6 +348,27 @@ var Figurer = (function () {
     }
   };
 
+  /* ---------- de malede billeder ---------- */
+
+  // Figurer, der findes som malede billeder i billeder/<navn>.png
+  var BILLEDER = { kanin: true, pindsvin: true, aeble: true, svamp: true, trae: true, klokke: true };
+  var malede = {};
+
+  /** Det malede billede af en figur, hvis det findes og er hentet. */
+  function malet(navn) {
+    if (!BILLEDER[navn]) return null;
+    var e = malede[navn];
+    if (!e) {
+      e = malede[navn] = { klar: false, img: new Image() };
+      e.img.onload = function () { e.klar = true; };
+      e.img.onerror = function () { BILLEDER[navn] = false; };   // mangler filen, tegnes SVG'en i stedet
+      e.img.src = 'billeder/' + navn + '.png';
+    }
+    return e.klar ? e.img : null;
+  }
+  /** Hent alle billederne med det samme, saa de er klar, naar banen starter. */
+  function forhent() { Object.keys(BILLEDER).forEach(malet); }
+
   /* ---------- fra SVG til billede ---------- */
 
   // Der males i dobbelt stoerrelse, saa tegningen ogsaa er skarp paa iPad'ens
@@ -353,6 +402,17 @@ var Figurer = (function () {
    * ikke er malet faerdigt — saa tegner spillet en enkel form i stedet.
    */
   function tegn(c, navn, x, y, b, h, vinkel) {
+    var m = malet(navn);
+    if (m) {
+      // Det malede billede passes ind i kassen uden at blive trukket skaevt
+      var sk = Math.min(b / m.naturalWidth, h / m.naturalHeight), mb = m.naturalWidth * sk, mh = m.naturalHeight * sk;
+      c.save();
+      c.translate(x, y);
+      if (vinkel) c.rotate(vinkel);
+      c.drawImage(m, -mb / 2, -mh / 2, mb, mh);
+      c.restore();
+      return true;
+    }
     var img = billede(navn, b, h);
     if (!img) return false;
     c.save();
@@ -363,6 +423,13 @@ var Figurer = (function () {
     return true;
   }
 
+  /** Tegn en figur, der staar paa jorden: foedderne i (x, bund), hoejden h. */
+  function tegnStaaende(c, navn, x, bund, h) {
+    var m = malet(navn);
+    var b = m ? h * m.naturalWidth / m.naturalHeight : h;
+    return tegn(c, navn, x, bund - h / 2, b, h);
+  }
+
   /** Samme, men med et hjoerne i (x, y) — til murene, der har faste maal. */
   function tegnVed(c, navn, x, y, b, h) {
     var img = billede(navn, b, h);
@@ -371,7 +438,7 @@ var Figurer = (function () {
     return true;
   }
 
-  return { PALET: P, tegn: tegn, tegnVed: tegnVed, navne: Object.keys(TEGNINGER) };
+  return { PALET: P, tegn: tegn, tegnVed: tegnVed, tegnStaaende: tegnStaaende, forhent: forhent, malede: BILLEDER, navne: Object.keys(TEGNINGER) };
 })();
 
 if (typeof module !== 'undefined' && module.exports) module.exports = { Figurer: Figurer };

@@ -150,17 +150,20 @@ console.log('\nMaskinen\n');
   const filer = ['games/maskinen/index.html', 'games/maskinen/js/figurer.js', 'games/maskinen/js/fysik.js', 'games/maskinen/js/game.js', 'games/maskinen/lyd/klip.json'];
   const ikkeICache = filer.filter(f => !sw.includes("'" + f + "'"));
   tjek('spillets filer er med i service workerens FILER', ikkeICache.length === 0, ikkeICache.join());
-  // Al grafik er SVG skrevet i koden: ingen billedfiler, ingen emojier
+  // Figurerne er malede billeder i billeder/, resten er SVG skrevet i koden
   const figurer = fs.readFileSync(path.join(ROD, 'games', 'maskinen', 'js', 'figurer.js'), 'utf8');
   const side = fs.readFileSync(path.join(ROD, 'games', 'maskinen', 'index.html'), 'utf8');
-  const klip = JSON.parse(fs.readFileSync(path.join(ROD, 'games', 'maskinen', 'lyd', 'klip.json'), 'utf8'));
-  const klipMangler = klip.filter(f => !fs.existsSync(path.join(ROD, 'games', 'maskinen', 'lyd', f)) || !sw.includes("'games/maskinen/lyd/" + f + "'"));
-  tjek('alle klip i klip.json findes og er i FILER', klipMangler.length === 0, klipMangler.join());
+  const malede = [...figurer.matchAll(/(\w+): true/g)].map(m => m[1]);
+  const uden = malede.filter(n => !fs.existsSync(path.join(ROD, 'games', 'maskinen', 'billeder', n + '.png')) || !sw.includes("'games/maskinen/billeder/" + n + ".png'"));
+  tjek('alle malede billeder findes og er i FILER', malede.length >= 6 && uden.length === 0, uden.join());
+  const stoerrelse = malede.reduce((sum, n) => sum + (fs.existsSync(path.join(ROD, 'games', 'maskinen', 'billeder', n + '.png')) ? fs.statSync(path.join(ROD, 'games', 'maskinen', 'billeder', n + '.png')).size : 0), 0);
+  tjek('billederne fylder under 800 KB i alt', stoerrelse < 800 * 1024, Math.round(stoerrelse / 1024) + ' KB');
+  tjek('billederne har en NOTICE med licens', fs.existsSync(path.join(ROD, 'games', 'maskinen', 'billeder', 'NOTICE.md')));
   const kode = fs.readFileSync(path.join(ROD, 'games', 'maskinen', 'js', 'game.js'), 'utf8');
-  // Hjemmeskaerm-ikonet er ikke spilgrafik, saa det taeller ikke med
-  const billedfiler = ((kode + side).match(/[\w./-]+\.(png|jpe?g|svg|webp|gif)/g) || []).filter(f => f.indexOf('icons/') < 0);
-  tjek('spillet henter ingen billedfiler — alt er SVG i koden', billedfiler.length === 0, billedfiler.join());
-  tjek('figurerne er SVG skrevet i koden', /<svg xmlns/.test(figurer) && figurer.indexOf('assets/') < 0);
+  // Ingen emojier eller billeder fra andre mapper: kun spillets egne malede billeder
+  const fremmede = ((kode + side + figurer).match(/[\w./-]+\.(png|jpe?g|svg|webp|gif)/g) || []).filter(f => f.indexOf('icons/') < 0 && f.indexOf('billeder/') < 0);
+  tjek('spillet henter ingen billeder uden for sin egen billedmappe', fremmede.length === 0, fremmede.join());
+  tjek('delene er SVG skrevet i koden', /<svg xmlns/.test(figurer) && figurer.indexOf('assets/') < 0);
   const fig = ['kanin', 'pindsvin', 'aeble', 'svamp', 'trae', 'klokke', 'planke'].filter(n => !new RegExp('\\n    ' + n + ':').test(figurer));
   tjek('kanin, pindsvin, aeble, svamp, trae, klokke og planke findes', fig.length === 0, fig.join());
   const brugte = [...new Set([...kode.matchAll(/Figurer\.tegn(?:Ved)?\(\s*\w+,\s*'([a-z]+)'/g)].map(m => m[1]))];
