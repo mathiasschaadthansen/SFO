@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v39';
+const VERSION = 'sfo-spil-v40';
 
 const FILER = [
   './',
@@ -250,6 +250,9 @@ const FILER = [
   'assets/noto/jordbaer.svg',
   'assets/noto/kanin.svg',
   'assets/noto/kat.svg',
+  'assets/noto/ko.svg',
+  'assets/noto/maelk.svg',
+  'assets/noto/bi.svg',
   'assets/noto/klokke.svg',
   'assets/noto/koala.svg',
   'assets/noto/loeve.svg',

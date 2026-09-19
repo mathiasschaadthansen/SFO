@@ -85,7 +85,7 @@ games/tegn/
   js/pusle.js           puslespillets brikker, tappe og klik-på-plads — ingen DOM
   js/game.js            tegning med fingeren, puslespil, menu, lyd (bruger bogstavernes spor.js)
 test/tegn.test.js       alle figurer kan tegnes, og puslespillet kan samles på alle tre stjerner
-test/restaurant.test.js en robot serverer en hel dag for en og to spillere på alle tre stjerner
+test/restaurant.test.js en robot henter på gården, serverer og betaler en hel dag på alle tre stjerner
 ```
 
 `physics.js` rører hverken DOM eller canvas. Det er derfor testen kan køre i
@@ -314,6 +314,31 @@ ingredienserne op på tallerkenen og ringer på klokken. En forkert ingrediens
 hopper bare tilbage, der er ingen tid og ingen sure kunder. To børn har hver
 sin station og serverer mod det samme mål, så de arbejder sammen.
 
+**Gården.** Én ingrediens pr. bestilling mangler på hylden. Kassen er tom og
+har en grøn spire, og både i boblen og på hylden kan man se, hvad der mangler.
+Et tryk på kassen sender barnet ud på gården, hvor kunden spørger "Hvor kommer
+osten fra?". Gården viser kilderne til alt på rettens hylde: koen giver mælk,
+som bliver til ost og smør (tryk to gange: først malkes der), bien giver
+honning, og resten vokser på planter, buske og træer. Kød kommer fra
+slagteren, en bod med et gris-skilt, ikke fra et dyr på gården. En forkert
+kilde vipper og viser i en tankeboble, hvad den giver. Kilderne står i
+`KILDER` i `koekken.js`, og tegningerne er i kode i `tegnKilde` i `game.js`.
+
+**Regningen.** Når kunden har spist, kommer regningen i boblen: hver
+ingrediens med sin pris i mønter, "=" og et felt til svaret. Barnet lægger
+mønter i kassen på disken, til det passer. En mønt for meget hopper tilbage.
+Én stjerne: alt koster 1, summen vises som mønter, og pungen har kun
+1-mønter, så det er at tælle. To stjerner: nogle ting koster 2 (`PRIS`), og
+pungen har 1- og 2-mønter. Tre stjerner: priserne står som tal på mønterne, og
+pungen har 1, 2 og 5. Der er altid nok mønter af hver, så man kan aldrig køre
+fast. Fri leg har hverken gård eller regning.
+
+**Grafikken.** Væg, fliser, vindue, hylde, disk og skab tegnes én gang til et
+baggrundslag (`tegnLag`) og kopieres ind pr. frame. Kun det, der bevæger sig,
+tegnes hver gang. Kasser, mønter og klokke får deres skygge fra små
+fortegnede bunde (`kasseBund`). Vinduet vises kun med én spiller og god plads,
+hylden kun når stationen er bred nok.
+
 Hver ret laves først, og hver ret bruger fingeren på sin egen måde: pizzadejen
 rulles ud ved at gnide frem og tilbage, bøffen svirpes op i luften for at blive
 vendt, og pandekagedejen hældes på panden ved at holde fingeren nede. Tre trin
@@ -332,7 +357,9 @@ kunden viser og siger den igen.
 
 Bestillingerne er en fast liste i `koekken.js` med et id hver (`p1a`, `b2c` ...),
 så hver bestilling kan få sit eget stemmeklip: `lyd/bestil_<id>.mp3`, plus
-`tak_1.mp3` til `tak_3.mp3`, `ups.mp3`, `dag.mp3` og `fri.mp3`. Filer der står i
+`tak_1.mp3` til `tak_3.mp3`, `ups.mp3`, `dag.mp3`, `fri.mp3`, `regning.mp3`
+("Hvad koster det?"), `hvor_<ting>.mp3` ("Hvor kommer osten fra?") og
+`fra_<ting>.mp3` ("Ja! Osten kommer fra koen."). Filer der står i
 `lyd/klip.json` bruges; resten siges af enhedens egen stemme.
 
 

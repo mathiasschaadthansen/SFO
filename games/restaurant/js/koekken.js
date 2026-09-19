@@ -6,6 +6,12 @@
  * ingrediens bliver bare ikke lagt paa — ingen straf, ingen sure kunder,
  * intet ur. Kunden venter, til maden er klar.
  *
+ * Én ingrediens pr. bestilling mangler paa hylden og skal hentes paa gaarden:
+ * barnet finder, hvor den kommer fra (koen, bien, tomatplanten, slagteren).
+ * Naar kunden har spist, kommer regningen: hver ingrediens har en pris i
+ * moenter, og barnet betaler med moenter, til det passer. En moent for meget
+ * hopper bare tilbage.
+ *
  * To boern har hver sin station og serverer sammen mod det samme maal.
  *
  * Ingen DOM, saa filen kan testes i Node. Se test/restaurant.test.js.
@@ -37,6 +43,53 @@
   };
 
   var KUNDER = ['hund', 'kat', 'bjoern', 'kanin', 'raev', 'panda', 'froe', 'gris', 'abe', 'loeve', 'tiger', 'koala'];
+
+  /**
+   * Pris i moenter. Paa 1 stjerne koster alt 1, saa regningen er at taelle.
+   * Paa 2 og 3 stjerner koster nogle ting 2, saa der skal laegges sammen.
+   */
+  var PRIS = {
+    ost: 2, tomat: 1, champignon: 1, peberfrugt: 1, ananas: 2, oliven: 1,
+    boef: 2, salat: 1, agurk: 1, bacon: 2,
+    jordbaer: 2, banan: 1, blaabaer: 2, chokolade: 2, honning: 2, smoer: 1
+  };
+  // Moenterne i pungen pr. stjerne. Der er altid nok af hver, saa man kan aldrig koere fast.
+  var MOENTER = [[1], [1, 2], [1, 2, 5]];
+
+  /**
+   * Gaarden: hvor hver ingrediens kommer fra. kilde er det, man trykker paa.
+   * Koen giver maelk, som bliver til ost og smoer. Bien giver honning. Koed
+   * kommer fra slagteren (en butik med et gris-skilt), ikke fra et dyr paa
+   * gaarden. Resten vokser paa planter, buske og traeer.
+   * form bestemmer tegningen: ko, bi, slagter, plante, busk, trae, palme, ranke, bed, stok, kakao.
+   */
+  var KILDER = {
+    ko:        { form: 'ko',      giver: ['ost', 'smoer'],  navn: 'koen' },
+    bi:        { form: 'bi',      giver: ['honning'],       navn: 'bien' },
+    slagter:   { form: 'slagter', giver: ['boef', 'bacon'], navn: 'slagteren' },
+    tomat:     { form: 'plante',  giver: ['tomat'],         navn: 'tomatplanten' },
+    champignon:{ form: 'stok',    giver: ['champignon'],    navn: 'skovbunden' },
+    peberfrugt:{ form: 'plante',  giver: ['peberfrugt'],    navn: 'peberplanten' },
+    ananas:    { form: 'ananas',  giver: ['ananas'],        navn: 'ananasplanten' },
+    oliven:    { form: 'trae',    giver: ['oliven'],        navn: 'oliventraeet' },
+    salat:     { form: 'bed',     giver: ['salat'],         navn: 'koekkenhaven' },
+    agurk:     { form: 'ranke',   giver: ['agurk'],         navn: 'agurkeranken' },
+    jordbaer:  { form: 'bed',     giver: ['jordbaer'],      navn: 'jordbaerbedet' },
+    banan:     { form: 'palme',   giver: ['banan'],         navn: 'bananpalmen' },
+    blaabaer:  { form: 'busk',    giver: ['blaabaer'],      navn: 'blaabaerbusken' },
+    chokolade: { form: 'kakao',   giver: ['chokolade'],     navn: 'kakaotraeet' }
+  };
+  function kildeFor(ting) {
+    var ud = null;
+    Object.keys(KILDER).forEach(function (k) { if (KILDER[k].giver.indexOf(ting) >= 0) ud = k; });
+    return ud;
+  }
+  /** Kilderne for en ret, i hyldens raekkefoelge, uden gengangere. */
+  function gaardKilder(ret) {
+    var ud = [];
+    RETTER[ret].hylde.forEach(function (t) { var k = kildeFor(t); if (k && ud.indexOf(k) < 0) ud.push(k); });
+    return ud;
+  }
 
   /**
    * Faste bestillinger, saa hver har ét id og kan faa sit eget lydklip.
@@ -130,10 +183,27 @@
     s.kunde = bland(kunder)[0];
     s.sidsteKunde = s.kunde;
     s.lagt = [];
+    s.regning = null;
     // Hylden: altid alt hvad bestillingen kraever, fyldt op med andre fra rettens hylde
     var brug = b.ting.filter(function (t, i) { return b.ting.indexOf(t) === i; });
     var resten = bland(RETTER[b.ret].hylde.filter(function (t) { return brug.indexOf(t) < 0; }));
     s.hylde = bland(brug.concat(resten).slice(0, Math.max(brug.length, INDSTIL.hyldeStr[dag.niveau])));
+    // Én ting mangler paa hylden og skal hentes paa gaarden foerst
+    s.hent = bland(brug.filter(function (t) { return kildeFor(t) && t !== s.sidsteHent; }))[0] || bland(brug)[0];
+    s.sidsteHent = s.hent;
+    s.hentet = false;
+  }
+
+  /**
+   * Gaarden: barnet trykker paa en kilde. 'ok' hvis den giver det, der mangler,
+   * 'forkert' ellers. Ingen straf: man maa proeve igen.
+   */
+  function hent(dag, station, kilde) {
+    var s = dag.stationer[station];
+    if (dag.faerdig || !s.bestilling || !s.hent || s.hentet) return 'forkert';
+    if (kildeFor(s.hent) !== kilde) return 'forkert';
+    s.hentet = true;
+    return 'ok';
   }
 
   function nyDag(antalSpillere, niveau, fri) {
@@ -146,7 +216,7 @@
       faerdig: false,
       stationer: []
     };
-    for (var i = 0; i < antalSpillere; i++) dag.stationer.push({ kunde: null, bestilling: null, lagt: [], hylde: [], sidsteId: null, sidsteKunde: null });
+    for (var i = 0; i < antalSpillere; i++) dag.stationer.push({ kunde: null, bestilling: null, lagt: [], hylde: [], sidsteId: null, sidsteKunde: null, hent: null, hentet: false, sidsteHent: null, regning: null });
     for (var k = 0; k < antalSpillere; k++) nyKunde(dag, k);
     return dag;
   }
@@ -187,6 +257,7 @@
       s.lagt.push(ting);
       return 'ok';
     }
+    if (ting === s.hent && !s.hentet) return 'hent';       // den mangler paa hylden: ud paa gaarden
     if (antalAf(s.lagt, ting) >= antalAf(s.bestilling.ting, ting)) return 'forkert';
     s.lagt.push(ting);
     return 'ok';
@@ -198,21 +269,57 @@
     return s.bestilling.fri ? s.lagt.length > 0 : mangler(dag, station).length === 0;
   }
 
-  /** Ring paa klokken. Returnerer true hvis retten blev serveret. */
-  function server(dag, station) {
-    if (dag.faerdig || !klar(dag, station)) return false;
-    dag.serveret++;
+  /** Prisen paa en ting paa dette niveau: 1 stjerne er alt 1. */
+  function pris(ting, niveau) { return niveau === 0 ? 1 : (PRIS[ting] || 1); }
+
+  /** Regningen for en bestilling: én post pr. ting (dobbelt = to poster) og summen. */
+  function regningFor(b, niveau) {
+    var poster = b.ting.map(function (t) { return { ting: t, pris: pris(t, niveau) }; });
+    return { poster: poster, sum: poster.reduce(function (a, p) { return a + p.pris; }, 0), betalt: 0, moenter: MOENTER[niveau].slice() };
+  }
+
+  /** Naar kunden er faerdig med at spise eller betale, kommer den naeste, eller dagen er slut. */
+  function videre(dag, station) {
     if (dag.serveret >= dag.maal) {
       dag.faerdig = true;
-      dag.stationer.forEach(function (s) { s.bestilling = null; });
+      dag.stationer.forEach(function (s) { s.bestilling = null; s.regning = null; });
     } else {
       nyKunde(dag, station);
     }
+  }
+
+  /**
+   * Ring paa klokken. Returnerer true hvis retten blev serveret. Bagefter skal
+   * regningen betales (i fri leg er der ingen regning).
+   */
+  function server(dag, station) {
+    if (dag.faerdig || !klar(dag, station)) return false;
+    var s = dag.stationer[station];
+    dag.serveret++;
+    if (s.bestilling.fri) videre(dag, station);
+    else s.regning = regningFor(s.bestilling, dag.niveau);
     return true;
+  }
+
+  /**
+   * Laeg en moent i kassen. 'ok' hvis den passer, 'klar' hvis regningen nu er betalt,
+   * 'forkert' hvis den er for stor (den hopper tilbage, ingen straf).
+   */
+  function betal(dag, station, moent) {
+    var s = dag.stationer[station], r = s.regning;
+    if (!r || r.moenter.indexOf(moent) < 0) return 'forkert';
+    if (r.betalt + moent > r.sum) return 'forkert';
+    r.betalt += moent;
+    if (r.betalt < r.sum) return 'ok';
+    s.regning = null;
+    videre(dag, station);
+    return 'klar';
   }
 
   rod.Koekken = {
     INDSTIL: INDSTIL, INGREDIENSER: INGREDIENSER, RETTER: RETTER, KUNDER: KUNDER, BESTILLINGER: BESTILLINGER,
-    saetning: saetning, nyDag: nyDag, forbered: forbered, forberedtFaerdig: forberedtFaerdig, laeg: laeg, klar: klar, server: server, mangler: mangler
+    PRIS: PRIS, MOENTER: MOENTER, KILDER: KILDER, kildeFor: kildeFor, gaardKilder: gaardKilder, pris: pris,
+    saetning: saetning, nyDag: nyDag, forbered: forbered, forberedtFaerdig: forberedtFaerdig, laeg: laeg, klar: klar,
+    server: server, mangler: mangler, hent: hent, betal: betal
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);
