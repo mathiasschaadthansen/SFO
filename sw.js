@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v53';
+const VERSION = 'sfo-spil-v54';
 
 const FILER = [
   './',
@@ -228,6 +228,7 @@ const FILER = [
   'games/tegn/js/pusle.js',
   'games/tegn/js/game.js',
   'games/maskinen/index.html',
+  'games/maskinen/js/figurer.js',
   'games/maskinen/js/fysik.js',
   'games/maskinen/js/game.js',
   'games/maskinen/lyd/klip.json',

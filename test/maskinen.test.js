@@ -147,14 +147,25 @@ console.log('\nMaskinen\n');
 /* Filer og offline-cache */
 {
   const sw = fs.readFileSync(path.join(ROD, 'sw.js'), 'utf8');
-  const filer = ['games/maskinen/index.html', 'games/maskinen/js/fysik.js', 'games/maskinen/js/game.js', 'games/maskinen/lyd/klip.json'];
+  const filer = ['games/maskinen/index.html', 'games/maskinen/js/figurer.js', 'games/maskinen/js/fysik.js', 'games/maskinen/js/game.js', 'games/maskinen/lyd/klip.json'];
   const ikkeICache = filer.filter(f => !sw.includes("'" + f + "'"));
   tjek('spillets filer er med i service workerens FILER', ikkeICache.length === 0, ikkeICache.join());
-  tjek('klokken er med i FILER', sw.includes("'assets/noto/klokke.svg'"));
+  // Al grafik er SVG skrevet i koden: ingen billedfiler, ingen emojier
+  const figurer = fs.readFileSync(path.join(ROD, 'games', 'maskinen', 'js', 'figurer.js'), 'utf8');
+  const side = fs.readFileSync(path.join(ROD, 'games', 'maskinen', 'index.html'), 'utf8');
   const klip = JSON.parse(fs.readFileSync(path.join(ROD, 'games', 'maskinen', 'lyd', 'klip.json'), 'utf8'));
   const klipMangler = klip.filter(f => !fs.existsSync(path.join(ROD, 'games', 'maskinen', 'lyd', f)) || !sw.includes("'games/maskinen/lyd/" + f + "'"));
   tjek('alle klip i klip.json findes og er i FILER', klipMangler.length === 0, klipMangler.join());
   const kode = fs.readFileSync(path.join(ROD, 'games', 'maskinen', 'js', 'game.js'), 'utf8');
+  // Hjemmeskaerm-ikonet er ikke spilgrafik, saa det taeller ikke med
+  const billedfiler = ((kode + side).match(/[\w./-]+\.(png|jpe?g|svg|webp|gif)/g) || []).filter(f => f.indexOf('icons/') < 0);
+  tjek('spillet henter ingen billedfiler — alt er SVG i koden', billedfiler.length === 0, billedfiler.join());
+  tjek('figurerne er SVG skrevet i koden', /<svg xmlns/.test(figurer) && figurer.indexOf('assets/') < 0);
+  const fig = ['kanin', 'pindsvin', 'aeble', 'svamp', 'trae', 'klokke', 'planke'].filter(n => !new RegExp('\\n    ' + n + ':').test(figurer));
+  tjek('kanin, pindsvin, aeble, svamp, trae, klokke og planke findes', fig.length === 0, fig.join());
+  const brugte = [...new Set([...kode.matchAll(/Figurer\.tegn(?:Ved)?\(\s*\w+,\s*'([a-z]+)'/g)].map(m => m[1]))];
+  const ukendte = brugte.filter(n => !new RegExp('\\n    ' + n + ':').test(figurer));
+  tjek('alle figurer spillet beder om er tegnet', ukendte.length === 0, ukendte.join());
   const naevnte = [...new Set([...kode.matchAll(/'([a-z_0-9]+\.mp3)'/g)].map(m => m[1]))];
   const udenKlip = naevnte.filter(f => !klip.includes(f));
   tjek('alle klip spillet naevner direkte er lavet', udenKlip.length === 0, udenKlip.join());

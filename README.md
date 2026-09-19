@@ -468,6 +468,23 @@ siger testen fra. Løsningerne er fundet ved at lade en søgning prøve tilfæld
 placeringer, indtil kuglen nåede klokken, så de er garanteret mulige. Testen
 tjekker også, at ingen bane klarer sig selv uden dele.
 
+**Grafikken.** Alt i spillet er SVG skrevet i koden — der er ingen billedfiler
+og ingen emojier. Tegningerne ligger i `js/figurer.js`: dyrene (pindsvinet
+Pelle med kasket og kaninen), æblet der er kuglen, svampe, træer, klokken,
+plankerne og alle delene. Hver figur er en funktion, der får bredde og højde
+ind og giver et lille SVG-dokument tilbage; det males én gang over på et skjult
+lærred i dobbelt størrelse og tegnes derefter med et `drawImage` pr. billede,
+så spilløkken er lige så let som før, og tegningen er skarp på iPad'en.
+
+Stilen er "ler" (claymorphism): tykke, bløde former uden konturstreger, en lys
+kant foroven, en mørkere forneden og en blød skygge under. Paletten er dæmpede
+pasteller — salviegrøn, sart lyseblå, sandfarvet træ, varm fersken og dæmpet
+teglsten — og den står ét sted, i `PALET` i `figurer.js`. Både banen, hylden,
+menukortet og de fælles menuikoner henter deres farver derfra, så hele skærmen
+hører sammen. Skal en ny figur ind, skrives den som en funktion i `TEGNINGER`;
+testen tjekker, at spillet ikke beder om figurer, der ikke findes, og at der
+ikke er sneget sig en billedfil ind.
+
 **Stemme.** Fire klip i `games/maskinen/lyd/`: `opgave.mp3`, `igen.mp3` og
 `flot_1-2.mp3`. Resten af lyden er toner fra oscillatorer: et klik når kuglen
 rammer noget, og to toner der klinger ud, når klokken bliver ramt.
