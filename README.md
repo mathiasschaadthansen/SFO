@@ -328,11 +328,12 @@ kilde vipper og viser i en tankeboble, hvad den giver. Kilderne står i
 ingrediens med sin pris i mønter, "=" og et felt til svaret. Barnet lægger
 mønter i kassen på disken, til det passer. En mønt for meget hopper tilbage.
 Priserne trækkes tilfældigt pr. kunde (`PRIS_MAKS`), så regnestykket
-varierer. Én stjerne: alt koster 1, summen vises som mønter, og pungen har kun
-1-mønter, så det er at tælle. To stjerner: en ting koster 1 eller 2, og pungen
-har 1- og 2-mønter. Tre stjerner: 1, 2 eller 3, priserne står som tal på
-mønterne, og pungen har 1, 2 og 5. Der er altid nok mønter af hver, så man kan
-aldrig køre fast. Stemmen siger regnestykket med Camillas talklip fra
+varierer. Hver ting vises lige så mange gange, som den koster, med en 1-mønt
+under hver, så barnet kan tælle sig til prisen. Én stjerne: alt koster 1,
+summen vises som mønter, og pungen har kun 1-mønter, så det er at tælle. To
+stjerner: en ting koster 1 eller 2, og pungen har 1- og 2-mønter. Tre stjerner:
+fire ting til 1 eller 2, og pungen har 1, 2 og 5. Der er altid nok mønter af
+hver, så man kan aldrig køre fast. Stemmen siger regnestykket med Camillas talklip fra
 bogstavspillet ("to plus to plus en er lig med"), tæller den løbende sum for
 hver mønt og siger facit til sidst. Et tryk på kunden gentager stykket. Fri
 leg har hverken gård eller regning.
