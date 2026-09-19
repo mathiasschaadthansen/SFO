@@ -448,9 +448,10 @@ trække hver sin del samtidig.
 
 **Delene.** `rampe` (fem skrå stillinger), `trampolin` (kaster kuglen op),
 `klods` (spærrer), `baand` (trækker kuglen med, et tryk vender retningen),
-`blaeser` (puster i fire retninger) og `vippe` (drejer, når kuglen lander i den
-ene ende). Alt står i `DELE` i `fysik.js` med hop (elasticitet) og gnid
-(friktion).
+`blaeser` (puster i fire retninger), `vippe` (drejer, når kuglen lander i den
+ene ende), `kanon` (fanger kuglen og skyder den af sted i otte retninger, én
+gang pr. kørsel) og `tragt` (fanger kuglen oppefra og slipper den lige ned).
+Alt står i `DELE` i `fysik.js` med hop (elasticitet) og gnid (friktion).
 
 **Fysikken.** Verden har faste mål (1000 × 620), så simulationen er den samme
 på en iPad, en iPhone og i Node — skærmen skalerer kun billedet. Der køres med
@@ -460,13 +461,53 @@ hop, og mister fart langs den efter dens gnid. Gnidningen lægges kun på én ga
 pr. skridt — gør man det i hver kollisionsomgang, stopper kuglen med det samme
 og kan slet ikke trille.
 
-**Banerne.** Tolv baner plus fri leg. Hver bane har `start`, `maal`, `mur`,
-`hylde` (hvilke dele og hvor mange) og `loesning` — én måde at klare den på.
-Testen bygger løsningen og lader fysikken køre den, præcis som racertesten
-kører banerne igennem: ændrer man en del eller en bane, så den bliver uløselig,
-siger testen fra. Løsningerne er fundet ved at lade en søgning prøve tilfældige
-placeringer, indtil kuglen nåede klokken, så de er garanteret mulige. Testen
-tjekker også, at ingen bane klarer sig selv uden dele.
+**Universet.** Spillet foregår i Nøddeskoven, hvor pindsvinet Pelle er
+opfinder. Han står altid til venstre i banen; til højre ser et af skovens dyr
+på — kaninen, musen, bjørnen, ræven, frøen, uglen eller snemanden — et nyt for
+hver bane. Der er fem kapitler, som vælges øverst i menuen med et billede af
+stedet: **Engen** (Pelles have, de første tolv baner), **Skoven** (skrå grene
+at trille på), **Søen** (åkandeblade der kaster kuglen op, og tragten der
+fanger den), **Vinter** (is der er glat, sne der bremser, og kanonen) og
+**Natten** (alt på én gang, i mørket, med en lygte som kugle). Kuglen skifter
+med stedet: æble, kastanje, snebold, lygte. Intet er låst; alle kapitler kan
+vælges fra start. `KAPITLER` og `banerI()` i `fysik.js`, `TEMA` i `game.js`.
+
+**Stoffet i murene.** Hver mur har et `stof`: `trae` (det almindelige), `is`
+(glat, kuglen glider langt), `sne` (bremser), `aakande` (blødt, kaster kuglen
+op) og `sten`. Tallene står i `STOF` i `fysik.js`. Skrå grene er streger
+`{x1, y1, x2, y2}` og tegnes som drejede planker.
+
+**Banerne.** 36 baner plus fri leg: tolv på engen og seks i hvert af de fire
+andre kapitler. Hver bane har `start`, `maal`, `mur`, `hylde` (hvilke dele og
+hvor mange) og `loesning` — én måde at klare den på. Testen bygger løsningen
+og lader fysikken køre den, præcis som racertesten kører banerne igennem:
+ændrer man en del eller en bane, så den bliver uløselig, siger testen fra.
+Løsningerne er fundet ved at lade en søgning prøve tilfældige placeringer,
+indtil kuglen nåede klokken, så de er garanteret mulige. Testen tjekker også,
+at ingen bane klarer sig selv uden dele.
+
+**Grafikken.** Figurerne — Pelle, dyrene, snemanden, kuglerne, svampen,
+træet, granen, sivene og klokken, 17 i alt — er malede billeder i akvarel-
+billedbogsstil, lavet med Canvas AI-billedgenerator og skåret fri i kode. De
+ligger i `billeder/` med en `NOTICE.md`, der siger hvordan og med hvilken ret.
+Prompterne beskriver stilen med ord, aldrig med navnet på en kunstner, en bog
+eller et spil.
+
+Alt det, der skal kunne skaleres og drejes frit — planker, ramper, trampolin,
+bånd, blæser, vippe, knapper og prikker — er SVG skrevet i `js/figurer.js`.
+Hver figur er en funktion, der får bredde og højde ind og giver et lille SVG-
+dokument tilbage; det males én gang over på et skjult lærred i dobbelt
+størrelse og tegnes derefter med et `drawImage`, så spilløkken er lige så let
+som før. Træet i delene har årer, korn og en kant med lidt uro i (SVG-filtre),
+så det hører sammen med de malede billeder. Mangler et billede, tegnes en SVG-
+udgave af figuren i stedet, så spillet virker alligevel.
+
+Paletten står ét sted, i `PALET` i `figurer.js`, og er taget fra billederne:
+træets brune, kronens grønne, æblets røde. Banen, hylden, menukortet,
+forsidens billede og de fælles menuikoner henter alle deres farver derfra.
+Testen tjekker, at alle malede billeder findes og er i `FILER`, at de ikke
+løber løbsk i størrelse, at der ligger en NOTICE, og at spillet ikke henter
+billeder fra andre mapper.
 
 **Stemme.** Fire klip i `games/maskinen/lyd/`: `opgave.mp3`, `igen.mp3` og
 `flot_1-2.mp3`. Resten af lyden er toner fra oscillatorer: et klik når kuglen

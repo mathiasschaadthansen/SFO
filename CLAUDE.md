@@ -19,8 +19,10 @@ mønter. Tegn-testen tjekker, at
 alle 16 figurer kan tegnes, og at puslespillet kan samles. Klokke-testen lader en
 robot stille alle ure og vælge alle kort på alle niveauer og tjekker, at viserne
 låser rigtigt og hænger sammen, og at tiden siges rigtigt på dansk. Maskin-testen
-gennemspiller hver banes gemte løsning i fysikken og fanger, hvis en ændring gør
-en bane uløselig — præcis som racertesten.
+gennemspiller alle 36 baners gemte løsning i fysikken og fanger, hvis en
+ændring gør en bane uløselig — præcis som racertesten. Den tjekker også de
+enkelte dele (kanon, tragt, vippe, bånd, blæser), stoffet i murene (is, sne,
+åkande) og at hvert kapitel har sine baner og sin kugle.
 
 **Stemme.** Bogstaver bruger rigtige klip med en dansk stemme fra ElevenLabs
 (Camilla) til bogstavnavne, tal, ord og spørgsmål. Klippene ligger som små

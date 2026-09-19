@@ -100,16 +100,19 @@ window.SPIL = [
   {
     id: 'maskinen',
     navn: 'Maskinen',
-    tekst: 'Byg en kædereaktion med ramper, trampoliner og blæsere, så kuglen ruller ned til klokken.',
+    tekst: 'Byg en kædereaktion med ramper, trampoliner, kanoner og blæsere, så kuglen ruller ned til klokken. Fem steder i Nøddeskoven, 36 baner.',
     farve: '#f2d9a6',
     sti: 'games/maskinen/',
     art: '<div class="art">' +
          '<svg viewBox="0 0 110 110" style="position:absolute;left:0;top:0;width:110px;height:110px">' +
-         '<rect x="4" y="18" width="58" height="11" rx="5" fill="#c98f4e" stroke="#12261f" stroke-width="3" transform="rotate(20 33 23)"/>' +
-         '<rect x="44" y="62" width="54" height="11" rx="5" fill="#c98f4e" stroke="#12261f" stroke-width="3" transform="rotate(-18 71 67)"/>' +
-         '<circle cx="18" cy="14" r="9" fill="#e8442e" stroke="#12261f" stroke-width="3"/>' +
-         '<path d="M74 96a12 12 0 0 1 24 0z" fill="#ffd23f" stroke="#12261f" stroke-width="3" stroke-linejoin="round"/>' +
-         '<path d="M70 98h32" fill="none" stroke="#12261f" stroke-width="3" stroke-linecap="round"/>' +
+         '<defs><linearGradient id="mtr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efd9b4"/><stop offset="1" stop-color="#bb9a6e"/></linearGradient>' +
+         '<radialGradient id="mku" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#e0a18c"/><stop offset="1" stop-color="#a85c48"/></radialGradient></defs>' +
+         '<rect x="4" y="17" width="58" height="13" rx="6.5" fill="url(#mtr)" transform="rotate(20 33 23)"/>' +
+         '<rect x="44" y="61" width="54" height="13" rx="6.5" fill="url(#mtr)" transform="rotate(-18 71 67)"/>' +
+         '<circle cx="18" cy="14" r="10" fill="url(#mku)"/>' +
+         '<ellipse cx="15" cy="11" rx="4" ry="3" fill="#fff" opacity=".45"/>' +
+         '<path d="M75 96a11 11 0 0 1 22 0z" fill="#e0c49c"/>' +
+         '<rect x="72" y="94" width="28" height="6" rx="3" fill="#d2bd9c"/>' +
          '</svg></div>'
   },
   {
