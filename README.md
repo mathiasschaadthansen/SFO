@@ -330,10 +330,13 @@ mønter i kassen på disken, til det passer. En mønt for meget hopper tilbage.
 Priserne trækkes tilfældigt pr. kunde (`PRIS_MAKS`), så regnestykket
 varierer. Regningen viser kun mønter, ingen billeder af maden: én 1-mønt pr.
 krone, samlet i en gruppe pr. ting med plus imellem. Billederne af maden viser
-ofte flere stykker (blåbær, oliven) og ville snyde, når man tæller. Én stjerne: alt koster 1,
-summen vises som mønter, og pungen har kun 1-mønter, så det er at tælle. To
-stjerner: en ting koster 1 eller 2, og pungen har 1- og 2-mønter. Tre stjerner:
-fire ting til 1 eller 2, og pungen har 1, 2 og 5. Der er altid nok mønter af
+ofte flere stykker (blåbær, oliven) og ville snyde, når man tæller. Én stjerne:
+to ting til 1 eller 2, summen (2-4) vises som tomme mønter, og pungen har kun
+1-mønter, så det er at tælle. To stjerner: tre ting til 1, 2 eller 3, og pungen
+har 1- og 2-mønter. Tre stjerner: fire ting til 1, 2 eller 3, og pungen har 1, 2
+og 5. Summen er højst 9 (`SUM_MAKS`), så alle tal kan siges med Camillas
+talklip, og to kunder i række ved samme station får aldrig det samme
+regnestykke. Der er altid nok mønter af
 hver, så man kan aldrig køre fast. Stemmen siger regnestykket med Camillas talklip fra
 bogstavspillet ("to plus to plus en er lig med"), tæller den løbende sum for
 hver mønt og siger facit til sidst. Et tryk på kunden gentager stykket. Fri

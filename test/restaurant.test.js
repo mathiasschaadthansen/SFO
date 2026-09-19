@@ -81,10 +81,12 @@ console.log('\nRestauranten\n');
   tjek('den samme ingrediens kan ikke laegges paa for mange gange', laeg(dag, 0, s.bestilling.ting[0]) === 'forkert');
   tjek('retten er klar naar alt er lagt paa', K.klar(dag, 0));
   const foer = s.bestilling.id;
-  tjek('klokken serverer, og saa kommer regningen', K.server(dag, 0) === true && dag.serveret === 1 && s.regning && s.regning.sum === 2, JSON.stringify(s.regning));
-  tjek('1 stjerne: alt koster 1, og der er kun 1-moenter i pungen', s.regning.poster.every(p => p.pris === 1) && s.regning.moenter.join() === '1');
+  tjek('klokken serverer, og saa kommer regningen', K.server(dag, 0) === true && dag.serveret === 1 && s.regning && s.regning.sum >= 2 && s.regning.sum <= 4, JSON.stringify(s.regning));
+  tjek('1 stjerne: en ting koster 1 eller 2, og der er kun 1-moenter i pungen', s.regning.poster.every(p => p.pris === 1 || p.pris === 2) && s.regning.moenter.join() === '1');
   tjek('en moent for meget hopper tilbage', K.betal(dag, 0, 2) === 'forkert' && s.regning.betalt === 0);
-  tjek('foerste moent passer, den anden goer regningen betalt', K.betal(dag, 0, 1) === 'ok' && K.betal(dag, 0, 1) === 'klar');
+  const sum = s.regning.sum; let svar = [];
+  for (let i = 0; i < sum; i++) svar.push(K.betal(dag, 0, 1));
+  tjek('1-moenterne passer én ad gangen, og den sidste goer regningen betalt', svar.slice(0, -1).every(x => x === 'ok') && svar[svar.length - 1] === 'klar', svar.join());
   tjek('efter regningen kommer en ny kunde', s.regning === null && s.lagt.length === 0 && s.bestilling.id !== foer);
   tjek('der findes ingen straf, tid eller point', dag.liv === undefined && dag.tid === undefined && dag.point === undefined);
 }
@@ -187,7 +189,7 @@ console.log('\nRestauranten\n');
     b.ting.forEach(t => K.laeg(dag, 0, t));
     K.server(dag, 0);
     const r = s.regning;
-    if (!r || r.sum < 2 || r.sum > 8) { umulige.push(b.id + ' sum ' + (r && r.sum)); return; }
+    if (!r || r.sum < 2 || r.sum > K.SUM_MAKS[niveau]) { umulige.push(b.id + ' sum ' + (r && r.sum)); return; }
     set[niveau].add(r.sum);
     if (r.poster.some(p => p.pris < 1 || p.pris > K.PRIS_MAKS[niveau])) umulige.push(b.id + ' pris uden for niveauet');
     const prisFor = {}; r.poster.forEach(p => { if (prisFor[p.ting] !== undefined && prisFor[p.ting] !== p.pris) dobbeltUens++; prisFor[p.ting] = p.pris; });
@@ -200,13 +202,22 @@ console.log('\nRestauranten\n');
     }
     if (s.regning) umulige.push(b.id + ' ikke betalt');
   }));
-  tjek('alle regninger er mellem 2 og 8 og kan betales med pungens moenter', umulige.length === 0, umulige.slice(0, 5).join(' | '));
+  tjek('alle regninger er mellem 2 og SUM_MAKS og kan betales med pungens moenter', umulige.length === 0, umulige.slice(0, 5).join(' | '));
   tjek('3 stjerner har 1-, 2- og 5-moenter', K.MOENTER[2].join() === '1,2,5' && K.MOENTER[1].join() === '1,2');
-  tjek('1 stjerne: summen er altid antallet af ting (alt koster 1)', [...set[0]].every(x => x === 2), [...set[0]].join());
-  tjek('2 og 3 stjerner: regnestykket varierer fra kunde til kunde', set[1].size >= 3 && set[2].size >= 4, set[1].size + ' / ' + set[2].size + ' forskellige summer');
+  tjek('1 stjerne: summen er 2, 3 eller 4, og den varierer', [...set[0]].every(x => x >= 2 && x <= 4) && set[0].size === 3, [...set[0]].join());
+  tjek('2 og 3 stjerner: regnestykket varierer fra kunde til kunde', set[1].size >= 4 && set[2].size >= 4, set[1].size + ' / ' + set[2].size + ' forskellige summer');
   tjek('den samme ting koster det samme inden for én bestilling', dobbeltUens === 0, dobbeltUens + ' uens');
-  const priserPaa3 = new Set(); for (let i = 0; i < 200; i++) priserPaa3.add(K.pris(2));
-  tjek('priserne paa 2 og 3 stjerner er 1 eller 2, saa der hoejst er otte billeder at taelle', [...priserPaa3].sort().join() === '1,2' && K.pris(0) === 1);
+  const priserPaa3 = new Set(), priserPaa1 = new Set(); for (let i = 0; i < 300; i++) { priserPaa3.add(K.pris(2)); priserPaa1.add(K.pris(0)); }
+  tjek('priserne er 1-3 paa 2 og 3 stjerner og 1-2 paa 1 stjerne', [...priserPaa3].sort().join() === '1,2,3' && [...priserPaa1].sort().join() === '1,2');
+  // To kunder i raekke ved samme station faar aldrig det samme regnestykke
+  let gentaget = 0;
+  [0, 1, 2].forEach(niveau => K.BESTILLINGER.filter(b => b.stjerner === niveau + 1).forEach(b => {
+    let sidste = null;
+    for (let i = 0; i < 30; i++) { const dag = K.nyDag(1, niveau), s = dag.stationer[0]; s.sidsteRegning = sidste;
+      s.bestilling = b; s.hent = null; s.hentet = true; s.lagt = []; while (K.forbered(dag, 0)) { /* forbered */ } b.ting.forEach(t => K.laeg(dag, 0, t)); K.server(dag, 0);
+      if (s.regning.noegle === sidste) gentaget++; sidste = s.regning.noegle; }
+  }));
+  tjek('det samme regnestykke kommer ikke to gange i raekke ved en station', gentaget === 0, gentaget + ' gentagelser');
 }
 
 /* To stationer faar ikke samme kunde eller samme bestilling paa samme tid */
