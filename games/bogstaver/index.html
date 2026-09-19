@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Bogstaver</title>
+<title>ABC og 123</title>
 <meta name="theme-color" content="#1b4d3e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -95,10 +95,9 @@
   .knap.stor.ikon{gap:12px}
   .raekke.lege .knap{flex:1 1 0;display:flex;align-items:center;justify-content:center;padding:8px}
   .raekke.lege .knap canvas{width:100%;max-width:190px;height:auto;aspect-ratio:220/170;border-radius:16px}
-  .raekke.lege.trin .knap canvas{max-width:220px}
-  /* Smal skaerm: de tre store valg staar under hinanden, saa de bliver ved med at vaere store */
-  @media (max-width:520px) and (min-height:521px){.raekke.lege.trin{flex-direction:column}.raekke.lege.trin .knap{flex:0 0 auto}}
-  .raekke.bund{gap:14px}
+  /* Oeverste raekke: hvilke tegn. Tegnet direkte paa knappen, saa den valgte kan vaere blaa */
+  .raekke.valg.hvad .knap{padding:4px 6px}
+  .raekke.valg.hvad .knap canvas{width:100%;max-width:96px;height:auto;aspect-ratio:160/110;margin:0 auto}
   
   /* Overlayet ruller selv, og kortet centreres med margin:auto. Saa kan kortet aldrig
      ende uden for skaermen: 100vh paa iOS er hoejere end det synlige felt, og et kort
