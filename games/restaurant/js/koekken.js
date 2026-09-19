@@ -46,14 +46,18 @@
 
   /**
    * Priser i moenter. Prisen traekkes tilfaeldigt pr. kunde, saa regnestykket
-   * varierer: paa 1 stjerne koster alt 1, saa regningen er at taelle. Paa 2 og
-   * 3 stjerner koster en ting 1 eller 2. Regningen viser tingen lige saa mange
-   * gange, som den koster, med en moent under hver, saa barnet kan taelle sig
-   * til prisen. Derfor hoejst 2: fire ting til 2 er allerede otte billeder.
-   * Den samme ting koster det samme inden for én bestilling (dobbelt ost = to
-   * gange prisen). Summen er hoejst 8 og kan altid betales med pungens moenter.
+   * varierer paa alle niveauer: paa 1 stjerne koster en ting 1 eller 2 (to ting,
+   * summen er 2-4). Paa 2 og 3 stjerner koster en ting 1, 2 eller 3, og summen
+   * holdes paa hoejst 9, saa alle tal kan siges med Camillas talklip og
+   * moenterne kan tegnes i boblen. Regningen viser én moent pr. krone, samlet
+   * i en gruppe pr. ting, saa barnet kan taelle sig til prisen. Den samme ting
+   * koster det samme inden for én bestilling (dobbelt ost = to gange prisen).
+   * To kunder i raekke ved samme station faar aldrig det samme regnestykke.
+   * Summen kan altid betales med pungens moenter.
    */
-  var PRIS_MAKS = [1, 2, 2];
+  var PRIS_MAKS = [2, 3, 3];
+  // Hoejeste sum pr. stjerne: 0-9 findes som talklip, og flere moenter bliver for smaa i boblen.
+  var SUM_MAKS = [4, 9, 9];
   // Moenterne i pungen pr. stjerne. Der er altid nok af hver, saa man kan aldrig koere fast.
   var MOENTER = [[1], [1, 2], [1, 2, 5]];
 
@@ -217,7 +221,7 @@
       faerdig: false,
       stationer: []
     };
-    for (var i = 0; i < antalSpillere; i++) dag.stationer.push({ kunde: null, bestilling: null, lagt: [], hylde: [], sidsteId: null, sidsteKunde: null, hent: null, hentet: false, sidsteHent: null, regning: null });
+    for (var i = 0; i < antalSpillere; i++) dag.stationer.push({ kunde: null, bestilling: null, lagt: [], hylde: [], sidsteId: null, sidsteKunde: null, hent: null, hentet: false, sidsteHent: null, regning: null, sidsteRegning: null });
     for (var k = 0; k < antalSpillere; k++) nyKunde(dag, k);
     return dag;
   }
@@ -270,17 +274,36 @@
     return s.bestilling.fri ? s.lagt.length > 0 : mangler(dag, station).length === 0;
   }
 
-  /** En tilfaeldig pris paa dette niveau: 1 paa 1 stjerne, 1 eller 2 paa 2 og 3 stjerner. */
+  /** En tilfaeldig pris paa dette niveau: 1 eller 2 paa 1 stjerne, 1 til 3 paa 2 og 3 stjerner. */
   function pris(niveau) { return 1 + Math.floor(Math.random() * PRIS_MAKS[Math.max(0, Math.min(2, niveau))]); }
 
-  /** Regningen for en bestilling: én post pr. ting (dobbelt = to poster med samme pris) og summen. */
-  function regningFor(b, niveau) {
-    var priser = {};
-    var poster = b.ting.map(function (t) {
-      if (!priser[t]) priser[t] = pris(niveau);
-      return { ting: t, pris: priser[t] };
-    });
-    return { poster: poster, sum: poster.reduce(function (a, p) { return a + p.pris; }, 0), betalt: 0, moenter: MOENTER[niveau].slice() };
+  /** Ét udkast til priserne: samme pris for samme ting, og summen holdt under SUM_MAKS. */
+  function traekPriser(b, niveau) {
+    var priser = {}, ting = [];
+    b.ting.forEach(function (t) { if (!priser[t]) { priser[t] = pris(niveau); ting.push(t); } });
+    var sum = function () { return b.ting.reduce(function (a, t) { return a + priser[t]; }, 0); };
+    // For dyrt (fx dobbelt ost til 3): saet den dyreste ting ned, til summen passer
+    var vagt = 0;
+    while (sum() > SUM_MAKS[niveau] && vagt++ < 20) {
+      var dyrest = ting.reduce(function (a, t) { return priser[t] > priser[a] ? t : a; }, ting[0]);
+      priser[dyrest]--;
+    }
+    return priser;
+  }
+
+  /**
+   * Regningen for en bestilling: én post pr. ting (dobbelt = to poster med samme
+   * pris) og summen. sidste er det forrige regnestykke ved stationen (en streng
+   * af priser); det samme traekkes ikke to gange i raekke.
+   */
+  function regningFor(b, niveau, sidste) {
+    var priser, noegle, forsoeg = 0;
+    do {
+      priser = traekPriser(b, niveau);
+      noegle = b.ting.map(function (t) { return priser[t]; }).join(',');
+    } while (noegle === sidste && ++forsoeg < 12);
+    var poster = b.ting.map(function (t) { return { ting: t, pris: priser[t] }; });
+    return { poster: poster, sum: poster.reduce(function (a, p) { return a + p.pris; }, 0), betalt: 0, moenter: MOENTER[niveau].slice(), noegle: noegle };
   }
 
   /** Naar kunden er faerdig med at spise eller betale, kommer den naeste, eller dagen er slut. */
@@ -302,7 +325,7 @@
     var s = dag.stationer[station];
     dag.serveret++;
     if (s.bestilling.fri) videre(dag, station);
-    else s.regning = regningFor(s.bestilling, dag.niveau);
+    else { s.regning = regningFor(s.bestilling, dag.niveau, s.sidsteRegning); s.sidsteRegning = s.regning.noegle; }
     return true;
   }
 
@@ -323,7 +346,7 @@
 
   rod.Koekken = {
     INDSTIL: INDSTIL, INGREDIENSER: INGREDIENSER, RETTER: RETTER, KUNDER: KUNDER, BESTILLINGER: BESTILLINGER,
-    PRIS_MAKS: PRIS_MAKS, MOENTER: MOENTER, KILDER: KILDER, kildeFor: kildeFor, gaardKilder: gaardKilder, pris: pris,
+    PRIS_MAKS: PRIS_MAKS, SUM_MAKS: SUM_MAKS, MOENTER: MOENTER, KILDER: KILDER, kildeFor: kildeFor, gaardKilder: gaardKilder, pris: pris,
     saetning: saetning, nyDag: nyDag, forbered: forbered, forberedtFaerdig: forberedtFaerdig, laeg: laeg, klar: klar,
     server: server, mangler: mangler, hent: hent, betal: betal
   };
