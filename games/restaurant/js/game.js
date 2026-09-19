@@ -1147,45 +1147,43 @@
   }
 
   /**
-   * Regningen i boblen: hver ting vises lige saa mange gange, som den koster,
-   * med en 1-moent under hver, saa barnet kan taelle sig til prisen. Saa "+",
-   * "=" og det, der skal betales.
+   * Regningen i boblen: kun moenter, ingen billeder af maden. Én 1-moent pr.
+   * krone, samlet i en gruppe pr. ting, med "+" imellem, "=" og det, der skal
+   * betales. Billederne af maden viser ofte flere stykker (blaabaer, oliven),
+   * saa de ville snyde, naar man taeller. Stemmen siger stykket med tal.
    */
   function tegnRegningBoble(p, s, v) {
     var b = p.boble, r = s.regning;
     bobleStart(b, bobleSkala(v));
     var poster = r.poster, n = poster.length;
-    var visSum = dag.niveau === 0;                 // 1 stjerne: summen vises som moenter, saa man kan taelle
-    var GRUPPE = 0.6;                              // billeder i samme gruppe staar taet
-    // Bredden i ikoner: start, grupperne, plusserne, lighedstegnet, resultatet og lidt luft til hoejre
-    var bredde = 0.6, k;
-    poster.forEach(function (post) { bredde += 1 + (post.pris - 1) * GRUPPE; });
-    bredde += (n - 1) * 0.45 + 0.65 + (visSum ? r.sum * 0.46 + 0.3 : 1.0) + 0.2;
-    var ikon = Math.min(b.h * 0.5, b.b / bredde);
-    var x = b.x + ikon * 0.6, y = b.y + b.h * 0.42;
-    var mr = Math.max(7, ikon * 0.17);
+    var visSum = dag.niveau === 0;                 // 1 stjerne: summen vises som tomme pladser, saa man kan taelle
+    // Bredden i moentbredder (én moent = 2.3 radier): grupperne, plusserne, lighedstegnet og resultatet
+    var enheder = 0.5;
+    poster.forEach(function (post) { enheder += post.pris + 0.15; });
+    enheder += (n - 1) * 0.8 + 0.9 + (visSum ? r.sum + 0.3 : 1.4) + 0.4;
+    var mr = Math.min(b.h * 0.2, b.b / enheder / 2.3);
+    var trin = mr * 2.3, x = b.x + mr * 1.2, y = b.y + b.h / 2;
+    ctx.font = '800 ' + Math.round(mr * 1.6) + 'px ui-rounded, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     poster.forEach(function (post, i) {
-      var gb = 1 + (post.pris - 1) * GRUPPE;       // gruppens bredde i ikoner
-      for (k = 0; k < post.pris; k++) {
-        var gx = x + ikon * 0.5 + k * ikon * GRUPPE;
-        tegnBillede(post.ting, gx, y, ikon * 0.95);
-        moent(gx, y + ikon * 0.66, mr, 1);
-      }
-      x += ikon * gb;
-      if (i < n - 1) { ctx.fillStyle = MOERK; ctx.font = '800 ' + Math.round(ikon * 0.5) + 'px ui-rounded, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('+', x + ikon * 0.22, y); x += ikon * 0.45; }
+      // gruppen staar paa en blid plade, saa man kan se, hvad der hoerer sammen
+      var gb = post.pris * trin + mr * 0.3;
+      ctx.fillStyle = 'rgba(18,38,31,.06)'; ctx.beginPath(); ctx.roundRect(x - mr * 0.15, y - mr * 1.35, gb, mr * 2.7, mr); ctx.fill();
+      for (var k = 0; k < post.pris; k++) moent(x + mr + k * trin, y, mr, 1);
+      x += gb;
+      if (i < n - 1) { ctx.fillStyle = MOERK; ctx.fillText('+', x + trin * 0.4, y); x += trin * 0.8; }
     });
-    ctx.fillStyle = MOERK; ctx.font = '800 ' + Math.round(ikon * 0.5) + 'px ui-rounded, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('=', x + ikon * 0.2, y); x += ikon * 0.7;
+    ctx.fillStyle = MOERK; ctx.fillText('=', x + trin * 0.45, y); x += trin * 0.9;
     if (visSum) {
       for (var q = 0; q < r.sum; q++) {
-        var mx = x + q * mr * 2.3 + mr;
+        var mx = x + q * trin + mr;
         if (q < r.betalt) moent(mx, y, mr, 1);
         else { ctx.setLineDash([4, 3]); ctx.strokeStyle = '#8a8f97'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(mx, y, mr, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
       }
     } else {
-      ctx.setLineDash([5, 4]); ctx.strokeStyle = '#8a8f97'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.roundRect(x, y - ikon * 0.42, ikon * 0.9, ikon * 0.84, 12); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = '#8a8f97'; ctx.font = '800 ' + Math.round(ikon * 0.55) + 'px ui-rounded, system-ui, sans-serif'; ctx.fillText('?', x + ikon * 0.45, y);
+      ctx.setLineDash([5, 4]); ctx.strokeStyle = '#8a8f97'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.roundRect(x, y - mr * 1.3, trin * 1.3, mr * 2.6, 12); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = '#8a8f97'; ctx.font = '800 ' + Math.round(mr * 1.8) + 'px ui-rounded, system-ui, sans-serif'; ctx.fillText('?', x + trin * 0.65, y);
     }
+    ctx.textAlign = 'left';
     bobleSlut();
   }
 
