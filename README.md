@@ -438,13 +438,17 @@ Inventioneers og The Incredible Machine. Fysikken, delene og banerne ligger i
 `js/fysik.js`, som testes i Node (`test/maskinen.test.js`). `js/game.js` er kun
 skærm og lyd.
 
-**Sådan spilles det.** Nederst er en hylde med de dele, banen har med. Barnet
-trækker en del ud i banen, trykker på den for at dreje den, og trykker så på
-den store grønne knap. Maskinen kører, og man ser, hvad der sker. Virkede det
-ikke, trykker man på den gule pil, og delene bliver liggende, så man kan rette
-én ting ad gangen. En del trækkes tilbage på hylden for at fjerne den. Der er
-ingen tid, ingen forsøg der tælles, og ingen måde at tabe på. To børn kan
-trække hver sin del samtidig.
+**Sådan spilles det.** Nederst er en hylde med de dele, banen har med. I banen
+er der tegnet **faste pladser** — stiplede ringe — som i en opfinderbog, hvor
+hullerne er tegnet på forhånd. Barnet trækker en del hen til en plads, hvor den
+klikker fast og lægger sig, som pladsen vil have det; slipper man den uden for
+en plads, ryger den tilbage på hylden. Gåden er, hvilken del der skal hvor: der
+er altid én plads mere end der er dele. Så trykker man på den store grønne
+knap, maskinen kører, og man ser, hvad der sker. Virkede det ikke, trykker man
+på pilen, og delene bliver liggende, så man kan bytte om på én ting ad gangen.
+Der er ingen tid, ingen forsøg der tælles, og ingen måde at tabe på. To børn
+kan trække hver sin del samtidig. I **fri leg** er der ingen pladser: dér
+lægger man delene, hvor man vil, og et tryk drejer dem.
 
 **Delene.** `rampe` (fem skrå stillinger), `trampolin` (kaster kuglen op),
 `klods` (spærrer), `baand` (trækker kuglen med, et tryk vender retningen),
@@ -479,8 +483,11 @@ op) og `sten`. Tallene står i `STOF` i `fysik.js`. Skrå grene er streger
 `{x1, y1, x2, y2}` og tegnes som drejede planker.
 
 **Banerne.** 36 baner plus fri leg: tolv på engen og seks i hvert af de fire
-andre kapitler. Hver bane har `start`, `maal`, `mur`, `hylde` (hvilke dele og
-hvor mange) og `loesning` — én måde at klare den på. Testen bygger løsningen
+andre kapitler. Hver bane har `start`, `maal`, `mur`, `pladser` (de faste
+steder, delene kan ligge, med den vinkel delen får dér), `hylde` (hvilke dele
+og hvor mange) og `loesning` — én måde at klare den på. Pladserne er
+løsningens steder plus én, der ikke er med i løsningen; de ligger i
+`fysik.js`, og testen tjekker, at løsningen passer på dem. Testen bygger løsningen
 og lader fysikken køre den, præcis som racertesten kører banerne igennem:
 ændrer man en del eller en bane, så den bliver uløselig, siger testen fra.
 Løsningerne er lavet i hånden ud fra én oplagt idé pr. bane ("læg rampen
