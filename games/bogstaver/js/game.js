@@ -36,8 +36,8 @@
   var svaerhed = 0;
   var lydTil = true;
   var kategori = 'bogstaver';        // bogstaver | smaa | tal: hvilke tegn der tegnes og findes
-  var leg = 'bogstaver';             // bogstaver | ord | tal: det foerste valg i menuen
-  var stoerrelse = 'bogstaver';      // bogstaver | smaa: store eller smaa bogstaver, huskes paa tvaers af bogstaver og ord
+  var hvad = 'store';                // store | smaa | ord | tal: den oeverste raekke i menuen
+  var stoerrelse = 'bogstaver';      // bogstaver | smaa: ord skrives med den stoerrelse, der sidst blev valgt
   var KOERETOEJER = ['bil', 'raket', 'pensel'];
   var KOERETOEJ_SPRITES = ['../../assets/kenney/bil_lille.png', '../../assets/kenney/raket.png'];
   Sprites.forhent(KOERETOEJ_SPRITES);
@@ -1442,10 +1442,9 @@
 
 
   /**
-   * Menuen i to trin. Trin 1: hvad vil du lege med, tre store billeder
-   * (bogstaver, ord, tal). Trin 2: hvordan, med store eller smaa bogstaver,
-   * koeretoej og stjerner som smaa valg, og de groenne startknapper nederst.
-   * Koeretoej og stjerner huskes paa tvaers, saa man ikke vaelger bil igen.
+   * Menuen paa én skaerm i tre zoner. Oeverst hvilke tegn: A, a, KAT eller 123,
+   * den valgte er blaa. I midten de groenne knapper Tegn og Find, eller én
+   * startknap for ord. Nederst koeretoej og stjerner som smaa valg.
    */
   function visMenu() {
     tilstand = 'venter';
@@ -1453,34 +1452,12 @@
     ordet = null;
     vinderCanvas = null;
     stopKlip();
-    visOverlay(
-      '<div class="kort bred">' +
-      '<h2>Bogstaver</h2>' +
-      '<div class="raekke lege trin">' +
-      '<button class="knap groen" data-handling="leg" data-leg="bogstaver" aria-label="Bogstaver"><canvas width="220" height="170" style="' + FLISE_STIL + '" data-leg="bogstaver"></canvas></button>' +
-      '<button class="knap groen" data-handling="leg" data-leg="ord" aria-label="Ord"><canvas width="220" height="170" style="' + FLISE_STIL + '" data-leg="ord"></canvas></button>' +
-      '<button class="knap groen" data-handling="leg" data-leg="tal" aria-label="Tal"><canvas width="220" height="170" style="' + FLISE_STIL + '" data-leg="tal"></canvas></button>' +
-      '</div>' +
-      Menu.lydRaekke(lydTil) +
-      '</div>'
-    );
-    tegnMenuBilleder();
-  }
-
-  function visLegMenu() {
-    tilstand = 'venter';
-    regn = null;
-    ordet = null;
-    vinderCanvas = null;
-    stopKlip();
-    kategori = leg === 'tal' ? 'tal' : stoerrelse;
-    var overskrift = { bogstaver: 'Bogstaver', ord: 'Ord', tal: 'Tal' }[leg];
-    var stoerrelseValg = leg === 'tal' ? '' :
-      '<div class="raekke valg">' +
-      '<button class="knap smal ikon' + (stoerrelse === 'bogstaver' ? ' valgt' : '') + '" data-handling="stoerrelse" data-k="bogstaver" aria-label="Store bogstaver"><canvas width="120" height="60" style="' + FLISE_STIL + ';width:70px;height:35px" data-leg="store"></canvas></button>' +
-      '<button class="knap smal ikon' + (stoerrelse === 'smaa' ? ' valgt' : '') + '" data-handling="stoerrelse" data-k="smaa" aria-label="Smaa bogstaver"><canvas width="120" height="60" style="' + FLISE_STIL + ';width:70px;height:35px" data-leg="smaa"></canvas></button>' +
-      '</div>';
-    var startKnapper = leg === 'ord'
+    kategori = hvad === 'tal' ? 'tal' : (hvad === 'ord' ? stoerrelse : (hvad === 'smaa' ? 'smaa' : 'bogstaver'));
+    var hvadKnapper = [['store', 'Store bogstaver'], ['smaa', 'Smaa bogstaver'], ['ord', 'Ord'], ['tal', 'Tal']].map(function (v) {
+      return '<button class="knap smal ikon' + (hvad === v[0] ? ' valgt' : '') + '" data-handling="hvad" data-k="' + v[0] + '" aria-label="' + v[1] + '">' +
+             '<canvas width="160" height="110" style="' + FLISE_STIL + '" data-leg="' + v[0] + '"></canvas></button>';
+    }).join('');
+    var startKnapper = hvad === 'ord'
       ? '<div class="raekke start"><button class="knap groen start" data-handling="ord" aria-label="Tegn ord">' + Menu.start() + '</button></div>'
       : '<div class="raekke lege">' +
         '<button class="knap groen" data-handling="gitter" aria-label="Tegn"><canvas width="220" height="170" style="' + FLISE_STIL + '" data-leg="tegn"></canvas></button>' +
@@ -1488,23 +1465,20 @@
         '</div>';
     visOverlay(
       '<div class="kort">' +
-      '<h2>' + overskrift + '</h2>' +
-      stoerrelseValg +
+      '<h2>ABC og 123</h2>' +
+      '<div class="raekke valg hvad">' + hvadKnapper + '</div>' +
+      startKnapper +
       '<div class="raekke valg">' + KOERETOEJER.map(function (k) {
         return '<button class="knap smal ikon' + (k === koeretoej ? ' valgt' : '') + '" data-handling="koeretoej" data-k="' + k +
                '" aria-label="' + k + '"><canvas width="72" height="44" style="' + FLISE_STIL + ';width:56px;height:34px" data-koeretoej="' + k + '"></canvas></button>';
       }).join('') + '</div>' +
       Menu.stjerneRaekke(svaerhed) +
-      startKnapper +
-      '<div class="raekke bund">' +
-      '<button class="knap lille ikon" data-handling="tilbage" aria-label="Tilbage">' + Menu.tilbage() + '</button>' +
-      '<button class="knap lille ikon" data-handling="lyd" aria-label="Lyd til eller fra">' + Menu.lyd(lydTil) + '</button>' +
-      '</div>' +
+      Menu.lydRaekke(lydTil) +
       '</div>'
     );
     tegnMenuBilleder();
-    if (!visLegMenu.venter) {
-      visLegMenu.venter = Sprites.naarKlar(KOERETOEJ_SPRITES, function () { visLegMenu.venter = false; if (tilstand === 'venter' && overlay.querySelector('canvas[data-koeretoej]')) visLegMenu(); });
+    if (!visMenu.venter) {
+      visMenu.venter = Sprites.naarKlar(KOERETOEJ_SPRITES, function () { visMenu.venter = false; if (tilstand === 'venter' && overlay.querySelector('canvas[data-koeretoej]')) visMenu(); });
     }
   }
 
@@ -1527,34 +1501,41 @@
 
   /**
    * Billederne i menuen, tegnet med spillets egne streger, saa man kan se, hvad
-   * man vaelger, uden at laese. Trin 1: BOGSTAVER er et stort A og et lille a,
-   * ORD er katten med KAT skrevet under, TAL er 1 2 3 med aebler. Trin 2: TEGN
-   * er et A, som bilen er ved at koere, FIND er bobler med bogstaver, hvor det
-   * rigtige er fremhaevet, og STORE og SMAA er et A og et a.
+   * man vaelger, uden at laese. Oeverst: STORE er et A, SMAA et a, ORD katten
+   * over KAT, TAL er 1 2 3 med aebler. I midten: TEGN er et A (eller 3-tal),
+   * som bilen er ved at koere, FIND er bobler med bogstaver (eller tal), hvor
+   * det rigtige er fremhaevet.
    */
   function tegnLegIkon(cv) {
-    var c = cv.getContext('2d'), hvad = cv.dataset.leg, B = cv.width, H = cv.height;
+    var c = cv.getContext('2d'), billede = cv.dataset.leg, B = cv.width, H = cv.height;
     c.clearRect(0, 0, B, H);
-    if (hvad === 'store' || hvad === 'smaa') {
-      // Kun bogstavet, paa knappens egen baggrund
-      var g = hvad === 'store' ? G.A : G.a;
-      tegnGlyf(c, g, B / 2 - 26, 4, 52, '#12261f', 10);
+    // Den oeverste raekke: tegnet direkte paa knappen, der er blaa naar den er valgt
+    var valgtFarve = cv.closest('.valgt') ? '#f7f3e8' : '#12261f';
+    if (billede === 'store' || billede === 'smaa') {
+      tegnGlyf(c, billede === 'store' ? G.A : G.a, B / 2 - 42, 12, 84, valgtFarve, 12);
+      return;
+    }
+    if (billede === 'tal') {
+      ['1', '2', '3'].forEach(function (n, i) {
+        tegnGlyf(c, G[n], 22 + i * 42, 14, 54, i === 1 ? STREGFARVE : valgtFarve, 9);
+        tegnMaengde(c, i + 1, 49 + i * 42, 96, 6, i + 1, 3);
+      });
+      return;
+    }
+    if (billede === 'ord') {
+      // Katten lille over KAT
+      var kat = billeder['ting/kat.svg'];
+      if (kat && kat.complete && kat.naturalWidth > 0) c.drawImage(kat, B / 2 - 24, 2, 48, 48);
+      ['K', 'A', 'T'].forEach(function (n, i) {
+        tegnGlyf(c, G[n], 34 + i * 34, 52, 46, i < 2 ? STREGFARVE : valgtFarve, 8);
+      });
       return;
     }
     c.fillStyle = '#f7f3e8'; c.strokeStyle = '#12261f'; c.lineWidth = 5;
     c.beginPath(); c.roundRect(3, 3, B - 6, H - 6, 22); c.fill(); c.stroke();
-    // I trin 2 for tal viser Tegn og Find tal i stedet for bogstaver
-    var tal = leg === 'tal';
-    if (hvad === 'bogstaver') {
-      tegnGlyf(c, G.A, 30, 24, 110, '#12261f', 12);
-      tegnGlyf(c, G.a, 118, 34, 90, STREGFARVE, 12);
-    } else if (hvad === 'tal') {
-      // 1 2 3 og aebler under dem, som naar der taelles
-      ['1', '2', '3'].forEach(function (n, i) {
-        tegnGlyf(c, G[n], 30 + i * 58, 14, 62, i === 1 ? STREGFARVE : '#12261f', 9);
-        tegnMaengde(c, i + 1, 61 + i * 58, 118, 8, i + 1, 3);
-      });
-    } else if (hvad === 'tegn') {
+    // Er tal valgt, viser Tegn og Find tal i stedet for bogstaver
+    var tal = hvad === 'tal';
+    if (billede === 'tegn') {
       // Et A (eller et 3-tal): vej i graat, foerste streg koert i orange, og bilen for enden af den
       var gt = tal ? G['3'] : G.A, s = 130, x = B / 2 - s / 2, y = 20;
       tegnGlyf(c, gt, x, y, s, '#8a8f97', 14);
@@ -1566,21 +1547,12 @@
       c.scale(1.8, 1.8);
       tegnKoeretoej(c, 'bil', true, 0.3);
       c.restore();
-    } else if (hvad === 'find') {
+    } else if (billede === 'find') {
       // Tre bobler med bogstaver (eller tal); den midterste er fundet og lyser gult
       [[tal ? '5' : 'K', 44, 98, '#7fd0f5'], [tal ? '2' : 'A', 110, 72, '#ffd23f'], [tal ? '7' : 'S', 176, 100, '#c9ecfb']].forEach(function (b) {
         c.fillStyle = b[3]; c.strokeStyle = '#12261f'; c.lineWidth = 4;
         c.beginPath(); c.arc(b[1], b[2], 36, 0, Math.PI * 2); c.fill(); c.stroke();
         tegnGlyf(c, G[b[0]], b[1] - 23, b[2] - 24, 46, '#12261f', 7);
-      });
-    } else {
-      // Katten og ordet KAT under den, de to foerste bogstaver tegnet i orange
-      var img = billeder['ting/kat.svg'];
-      if (img && img.complete && img.naturalWidth > 0) c.drawImage(img, B / 2 - 40, 8, 80, 80);
-      else { c.save(); c.translate(B / 2, 48); c.scale(0.7, 0.7); c.strokeStyle = '#12261f'; c.lineWidth = 3; Ting.TING.K[0].tegn(c); c.restore(); }
-      var ord = ['K', 'A', 'T'], bs = 62, x0 = B / 2 - ord.length * bs * 0.72 / 2 - 4;
-      ord.forEach(function (n, i) {
-        tegnGlyf(c, G[n], x0 + i * bs * 0.72, 92, bs, i < 2 ? STREGFARVE : '#8a8f97', 9);
       });
     }
   }
@@ -1625,30 +1597,24 @@
     var knap = e.target.closest('[data-handling]');
     if (!knap) return;
     var h = knap.dataset.handling;
-    var iLegMenu = !!overlay.querySelector('[data-handling="tilbage"]');
-    if (h === 'leg') {
-      leg = knap.dataset.leg;
+    if (h === 'hvad') {
+      hvad = knap.dataset.k;
+      if (hvad === 'store') stoerrelse = 'bogstaver';
+      if (hvad === 'smaa') stoerrelse = 'smaa';
       tone(520, 0.08);
-      visLegMenu();
-    } else if (h === 'tilbage') {
-      tone(440, 0.08);
       visMenu();
-    } else if (h === 'stoerrelse') {
-      stoerrelse = knap.dataset.k;
-      tone(520, 0.08);
-      visLegMenu();
     } else if (h === 'svaerhed') {
       svaerhed = parseInt(knap.dataset.n, 10);
       melodi([520, 660, 780].slice(0, svaerhed + 1), 70);
-      visLegMenu();
+      visMenu();
     } else if (h === 'koeretoej') {
       koeretoej = knap.dataset.k;
       melodi(koeretoej === 'raket' ? [440, 660, 880] : (koeretoej === 'bil' ? [330, 330, 440] : [523, 659, 784]), 70);
-      visLegMenu();
+      visMenu();
     } else if (h === 'lyd') {
       lydTil = !lydTil;
       if (lydTil) tone(660, 0.12);
-      if (iLegMenu) visLegMenu(); else visMenu();
+      visMenu();
     } else if (h === 'gitter') {
       tone(520, 0.08);
       visGitter();
@@ -1667,7 +1633,7 @@
       skjulOverlay();
       startOrd();
     } else if (h === 'menu') {
-      visLegMenu();
+      visMenu();
     }
   });
 
@@ -1689,7 +1655,7 @@
 
   window.__debug = function () {
     return {
-      tilstand: tilstand, kategori: kategori, leg: leg, svaerhed: svaerhed, lyd: lydTil, stemme: stemme ? stemme.name : null, koeretoej: koeretoej, afspillet: afspillet,
+      tilstand: tilstand, kategori: kategori, hvad: hvad, svaerhed: svaerhed, lyd: lydTil, stemme: stemme ? stemme.name : null, koeretoej: koeretoej, afspillet: afspillet,
       tegn: tilstand === 'tegn' ? { navn: liste[plads], plads: plads, andel: +spor.andel().toFixed(2), aktiv: spor.aktiv, holder: spor.holder, jubel: +jubel.toFixed(2) } : null,
       find: tilstand === 'find' ? { maal: maal, fundet: fundet, bobler: bobler.map(function (b) { return { navn: b.navn, x: Math.round(b.x), y: Math.round(b.y), r: Math.round(b.r) }; }) } : null,
       aebler: aebler, flow: flow, raekke: raekke, tolerance: +tolerance().toFixed(1),

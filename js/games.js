@@ -52,8 +52,8 @@ window.SPIL = [
   },
   {
     id: 'bogstaver',
-    navn: 'Bogstaver',
-    tekst: 'Tegn bogstaver og tal med fingeren, eller find det rigtige i boblerne.',
+    navn: 'ABC og 123',
+    tekst: 'Tegn bogstaver, ord og tal med fingeren, eller find det rigtige i boblerne.',
     farve: '#c9ecfb',
     sti: 'games/bogstaver/',
     art: '<div class="art">' +

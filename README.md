@@ -14,7 +14,7 @@ Spillene indtil nu:
   baner i tre verdener med platforme og bobler der drypper ned, fire specials
   (dobbeltsnor, klæbesnor, frys, skjold), ingen liv. To spillere hjælper
   hinanden og vinder sammen.
-- **Bogstaver**: kør en bil, en raket eller en pensel langs A-Å, a-å og 0-9,
+- **ABC og 123** (mappen `bogstaver`): kør en bil, en raket eller en pensel langs A-Å, a-å og 0-9,
   find det rigtige bogstav blandt bobler, eller tegn hele ord bogstav for
   bogstav med billedet af tingen ved siden af. Tal vises også som æbler, der
   tælles. På 3 stjerner siger skyen bogstavet i stedet for at vise det. Navnene
@@ -192,10 +192,10 @@ vender kortet og stiller spørgsmålet igen, ingen straf. Tingene ligger i
 som reserve pr. bogstav. Se `ting/NOTICE.md` for hvordan man tilføjer en ting.
 Q, W og Z har ingen ting og springer minispillet over.
 
-Menuen har to trin, så det første valg er tre store billeder: bogstaver (A a),
-ord (katten med KAT) og tal (1 2 3 med æbler). Trin to har store eller små
-bogstaver, køretøj og stjerner som små valg, og nederst de grønne knapper Tegn
-og Find, eller start for ord. Køretøj og stjerner huskes på tværs.
+Menuen er én skærm i tre zoner: øverst hvilke tegn (A, a, katten med KAT,
+eller 1 2 3 med æbler, den valgte er blå), i midten de grønne knapper Tegn og
+Find (eller én startknap for ord), og nederst køretøj og stjerner som små valg.
+Ord skrives med den størrelse, der sidst blev valgt.
 
 **Ord** tegner hele ord: billedet af tingen står i en sky, stemmen siger ordet,
 og bogstaverne tegnes ét ad gangen på en række med det samme køretøj som i Tegn.
