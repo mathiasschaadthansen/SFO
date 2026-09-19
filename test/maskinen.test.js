@@ -48,6 +48,26 @@ console.log('\nMaskinen\n');
   tjek('ingen bane tager mere end 20 sekunder', tider.every(t => t < 20), Math.max(...tider).toFixed(1) + 's');
 }
 
+/* Loesningen skal taale, at delene ligger lidt ved siden af: ellers er banen en naal i en hoestak,
+   som ingen kan finde med fingeren. Hver del flyttes op til 40 px i alle retninger. */
+{
+  const SKRIDT = [-40, -20, 0, 20, 40];
+  const skroebelige = [];
+  F.BANER.forEach((b, i) => {
+    // Alle 25 forskydninger af foerste del, og et fast udvalg for resten (samme hver gang)
+    let hits = 0, n = 0, frø = 11 + i;
+    const rnd = () => { frø = (frø * 1103515 + 12345) % 2147483647; return frø / 2147483647; };
+    for (let a = 0; a < 25; a++) {
+      const lagte = b.loesning.map((d, j) => ({ slags: d.slags, vinkel: d.vinkel,
+        x: d.x + (j === 0 ? SKRIDT[a % 5] : SKRIDT[Math.floor(rnd() * 5)]),
+        y: d.y + (j === 0 ? SKRIDT[Math.floor(a / 5)] : SKRIDT[Math.floor(rnd() * 5)]) }));
+      n++; if (F.koer(b, lagte, 14).loest) hits++;
+    }
+    if (hits / n < 0.2) skroebelige.push('bane ' + (i + 1) + ' (' + b.navn + ') ' + Math.round(100 * hits / n) + '%');
+  });
+  tjek('hver banes loesning virker ogsaa, naar delene ligger lidt skaevt (mindst 20 %)', skroebelige.length === 0, skroebelige.join(' | '));
+}
+
 /* Der skal vaere en opgave: banen maa ikke klare sig selv */
 {
   const gratis = F.BANER.filter(b => F.koer(b, [], 25).loest).map(b => b.navn);

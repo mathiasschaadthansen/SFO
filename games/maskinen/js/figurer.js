@@ -313,6 +313,14 @@ var Figurer = (function () {
         forløb('g', '#d5dadb', '#8a9598'));
     },
 
+    /* Tragtens tud, naar den peger til siden: et lille boejet roer. Tegnes til hoejre; spejles i game.js. */
+    tragttud: function (b, h) {
+      return doc(b, h,
+        '<g filter="url(#p)"><path d="M' + tal(b * 0.08) + ' 1H' + tal(b * 0.3) + 'q' + tal(b * 0.25) + ' 0 ' + tal(b * 0.3) + ' ' + tal(h * 0.45) + 'H' + tal(b - 1) + 'V' + tal(h - 1) + 'H' + tal(b * 0.5) + 'q' + tal(-b * 0.2) + ' 0 ' + tal(-b * 0.22) + ' ' + tal(-h * 0.35) + 'H' + tal(b * 0.08) + 'z" fill="url(#g)" filter="url(#s)"/>' +
+        '<path d="M' + tal(b * 0.12) + ' ' + tal(h * 0.2) + 'H' + tal(b * 0.28) + '" stroke="#ffffff" stroke-width="' + tal(h * 0.12) + '" stroke-linecap="round" opacity="0.4"/></g>',
+        forløb('g', '#d5dadb', '#8a9598'));
+    },
+
     /* Rampen: den glatte plade, kuglen triller ned ad. */
     rampe: function (b, h) {
       return doc(b, h, traestykke(1, 1, b - 2, h - 2, (h - 2) / 2, 'g'), forløb('g', P.traeLys, P.trae));
