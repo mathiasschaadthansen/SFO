@@ -161,6 +161,56 @@
     }).catch(function () { sig(reserveTekst); });
   }
 
+  /**
+   * Talklip fra bogstavspillet (Camilla): "to", "plus", "er lig med". De ligger i
+   * games/bogstaver/lyd/ og er med i offline-cachen. Findes de, siges regnestykket
+   * med dem; ellers siger enhedens stemme det.
+   */
+  var TAL_STI = '../bogstaver/lyd/', talKlip = {}, talBuffere = {};
+  fetch(TAL_STI + 'klip.json').then(function (r) { return r.ok ? r.json() : []; })
+    .then(function (liste) { liste.forEach(function (f) { talKlip[f] = true; }); }).catch(function () { /* ingen talklip */ });
+  function hentTalKlip(fil) {
+    if (!talBuffere[fil]) {
+      talBuffere[fil] = fetch(TAL_STI + fil).then(function (r) { if (!r.ok) throw new Error(fil); return r.arrayBuffer(); })
+        .then(function (ab) { return new Promise(function (ok, nej) { lydKontekst().decodeAudioData(ab, ok, nej); }); });
+    }
+    return talBuffere[fil];
+  }
+  /** Flere talklip lige efter hinanden. Mangler et af dem, siger enhedens stemme reserveteksten. */
+  function afspilTal(filer, reserveTekst, varighed) {
+    if (!lydTil) return;
+    talerTil = tid + (varighed || 2.5);
+    if (!filer.every(function (f) { return talKlip[f]; })) { sig(reserveTekst); return; }
+    Promise.all(filer.map(hentTalKlip)).then(function (buffere) {
+      var k = lydKontekst(), start = k.currentTime + 0.02;
+      if (aktivtKlip) { try { aktivtKlip.stop(); } catch (e) { /* stoppet */ } }
+      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* ignorer */ }
+      buffere.forEach(function (buf) {
+        var kilde = k.createBufferSource();
+        kilde.buffer = buf; kilde.connect(k.destination); kilde.start(start);
+        start += buf.duration - 0.04;
+        aktivtKlip = kilde;
+      });
+      talerTil = tid + (start - k.currentTime) + 0.2;
+    }).catch(function () { sig(reserveTekst); });
+  }
+  var TALORD = ['nul', 'en', 'to', 'tre', 'fire', 'fem', 'seks', 'syv', 'otte', 'ni', 'ti', 'elleve', 'tolv'];
+  /** Et tal som klip: 0-9 findes som klip, 10-12 siges af enhedens stemme. */
+  function sigTal(n, efter) {
+    if (n <= 9) afspilTal(['tal_' + n + '.mp3'], TALORD[n] + (efter || ''), 1);
+    else sig(TALORD[n] + (efter || ''));
+  }
+  /** Regnestykket: "to plus to plus en er lig med". */
+  function sigRegning(r) {
+    var filer = [], ord = [];
+    r.poster.forEach(function (post, i) {
+      if (i) { filer.push('plus.mp3'); ord.push('plus'); }
+      filer.push('tal_' + post.pris + '.mp3'); ord.push(TALORD[post.pris]);
+    });
+    filer.push('er_lig_med.mp3'); ord.push('er lig med');
+    afspilTal(filer, ord.join(' ') + '?', 1.2 + r.poster.length * 0.9);
+  }
+
   function stopTale() {
     if (aktivtKlip) { try { aktivtKlip.stop(); } catch (e) { /* ignorer */ } aktivtKlip = null; }
     try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* ignorer */ }
@@ -547,7 +597,9 @@
     var v = visning[i];
     v.betaler = true; v.betalt = 0; v.bobleInd = 0; v.bobleTil = tid + 1e9;
     melodi([523, 659], 100);
-    setTimeout(function () { if (v.betaler && tid >= talerTil) afspil('regning.mp3', 'Hvad koster det?', 1.8); }, 400);
+    // Foerst "Hvad koster det?", saa regnestykket med tal: "to plus to plus en er lig med"
+    setTimeout(function () { if (v.betaler) afspil('regning.mp3', 'Hvad koster det?', 1.6); }, 400);
+    setTimeout(function () { if (v.betaler && dag.stationer[i].regning) sigRegning(dag.stationer[i].regning); }, 2100);
   }
 
   function betalMed(i, moent, fx, fy) {
@@ -563,16 +615,21 @@
     v.flyvere.push({ ting: 'moent', moent: moent, fx: fx, fy: fy, t: 0, plads: v.betalt });
     v.betalt += moent;
     tone(1046 + moent * 60, 0.12, 0.12, 'sine');
+    // Stemmen taeller med: den loebende sum for hver moent, og facit til sidst
+    var sum = v.betalt;
     if (svar === 'klar') {
       v.betaler = false;
       v.kvit = 1.2;
+      setTimeout(function () { sigTal(sum, '!'); }, 250);
       setTimeout(function () {
         melodi([660, 880, 1100], 90);
         hjerter(p.kunde.x, p.kunde.y - p.kunde.str * 0.3);
-        if (tid >= talerTil) { var n = Math.floor(Math.random() * TAK.length); afspil('tak_' + (n + 1) + '.mp3', TAK[n], 2); }
-      }, 500);
+        var n = Math.floor(Math.random() * TAK.length); afspil('tak_' + (n + 1) + '.mp3', TAK[n], 2);
+      }, 1300);
       // Kunden gaar, saa toerres der af, og den naeste kommer
-      v.gaar = { kunde: gammelKunde, t: 1.6 };
+      v.gaar = { kunde: gammelKunde, t: 2.2 };
+    } else {
+      setTimeout(function () { if (v.betaler) sigTal(sum); }, 250);
     }
   }
 
@@ -632,8 +689,9 @@
           var mo = p.moenter[m];
           if (Math.hypot(x - mo.x, y - mo.y) < mo.r * 1.2) { betalMed(i, mo.moent, mo.x, mo.y); return; }
         }
-        // Kunden eller boblen: hoer regningen igen
-        if (Math.hypot(x - p.kunde.x, y - p.kunde.y) < p.kunde.str * 0.6) afspil('regning.mp3', 'Hvad koster det?', 1.8);
+        // Kunden eller boblen: hoer regnestykket igen
+        var iB = x > p.boble.x && x < p.boble.x + p.boble.b && y > p.boble.y && y < p.boble.y + p.boble.h;
+        if (iB || Math.hypot(x - p.kunde.x, y - p.kunde.y) < p.kunde.str * 0.6) sigRegning(s.regning);
         return;
       }
       if (v.serverer > 0 || v.gaar || v.ind < 1 || !s.bestilling) return;      // kunden er paa vej ind eller ud

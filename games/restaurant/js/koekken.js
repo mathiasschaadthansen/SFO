@@ -45,14 +45,13 @@
   var KUNDER = ['hund', 'kat', 'bjoern', 'kanin', 'raev', 'panda', 'froe', 'gris', 'abe', 'loeve', 'tiger', 'koala'];
 
   /**
-   * Pris i moenter. Paa 1 stjerne koster alt 1, saa regningen er at taelle.
-   * Paa 2 og 3 stjerner koster nogle ting 2, saa der skal laegges sammen.
+   * Priser i moenter. Prisen traekkes tilfaeldigt pr. kunde, saa regnestykket
+   * varierer: paa 1 stjerne koster alt 1, saa regningen er at taelle. Paa 2
+   * stjerner koster en ting 1 eller 2, paa 3 stjerner 1, 2 eller 3. Den samme
+   * ting koster det samme inden for én bestilling (dobbelt ost = to gange prisen).
+   * Summen er hoejst 12 og kan altid betales med pungens moenter.
    */
-  var PRIS = {
-    ost: 2, tomat: 1, champignon: 1, peberfrugt: 1, ananas: 2, oliven: 1,
-    boef: 2, salat: 1, agurk: 1, bacon: 2,
-    jordbaer: 2, banan: 1, blaabaer: 2, chokolade: 2, honning: 2, smoer: 1
-  };
+  var PRIS_MAKS = [1, 2, 3];
   // Moenterne i pungen pr. stjerne. Der er altid nok af hver, saa man kan aldrig koere fast.
   var MOENTER = [[1], [1, 2], [1, 2, 5]];
 
@@ -269,12 +268,16 @@
     return s.bestilling.fri ? s.lagt.length > 0 : mangler(dag, station).length === 0;
   }
 
-  /** Prisen paa en ting paa dette niveau: 1 stjerne er alt 1. */
-  function pris(ting, niveau) { return niveau === 0 ? 1 : (PRIS[ting] || 1); }
+  /** En tilfaeldig pris paa dette niveau: 1 paa 1 stjerne, 1-2 paa 2, 1-3 paa 3. */
+  function pris(niveau) { return 1 + Math.floor(Math.random() * PRIS_MAKS[Math.max(0, Math.min(2, niveau))]); }
 
-  /** Regningen for en bestilling: én post pr. ting (dobbelt = to poster) og summen. */
+  /** Regningen for en bestilling: én post pr. ting (dobbelt = to poster med samme pris) og summen. */
   function regningFor(b, niveau) {
-    var poster = b.ting.map(function (t) { return { ting: t, pris: pris(t, niveau) }; });
+    var priser = {};
+    var poster = b.ting.map(function (t) {
+      if (!priser[t]) priser[t] = pris(niveau);
+      return { ting: t, pris: priser[t] };
+    });
     return { poster: poster, sum: poster.reduce(function (a, p) { return a + p.pris; }, 0), betalt: 0, moenter: MOENTER[niveau].slice() };
   }
 
@@ -318,7 +321,7 @@
 
   rod.Koekken = {
     INDSTIL: INDSTIL, INGREDIENSER: INGREDIENSER, RETTER: RETTER, KUNDER: KUNDER, BESTILLINGER: BESTILLINGER,
-    PRIS: PRIS, MOENTER: MOENTER, KILDER: KILDER, kildeFor: kildeFor, gaardKilder: gaardKilder, pris: pris,
+    PRIS_MAKS: PRIS_MAKS, MOENTER: MOENTER, KILDER: KILDER, kildeFor: kildeFor, gaardKilder: gaardKilder, pris: pris,
     saetning: saetning, nyDag: nyDag, forbered: forbered, forberedtFaerdig: forberedtFaerdig, laeg: laeg, klar: klar,
     server: server, mangler: mangler, hent: hent, betal: betal
   };
