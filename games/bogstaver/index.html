@@ -93,8 +93,8 @@
   }
   .flise canvas{width:100%;height:100%;display:block}
   .knap.stor.ikon{gap:12px}
-  .raekke.lege .knap{flex:1 1 0;display:flex;align-items:center;justify-content:center;padding:14px;min-height:84px}
-  .raekke.lege .knap svg{width:56px;height:56px}
+  .raekke.lege .knap{flex:1 1 0;display:flex;align-items:center;justify-content:center;padding:8px}
+  .raekke.lege .knap canvas{width:100%;max-width:190px;height:auto;aspect-ratio:220/170;border-radius:16px}
   .raekke.tegnvalg .knap{font-size:22px;letter-spacing:.04em}
 
   /* Overlayet ruller selv, og kortet centreres med margin:auto. Saa kan kortet aldrig
@@ -121,7 +121,7 @@
     .gitter,.gitter.tal{grid-template-columns:repeat(10,1fr);gap:5px}
     .baner{grid-template-columns:repeat(6,1fr)}
     .bane span{display:none}
-    .raekke.lege .knap{min-height:0;padding:8px}.raekke.lege .knap svg{width:40px;height:40px}
+    .raekke.lege .knap{padding:5px}.raekke.lege .knap canvas{max-width:110px}
   }
 
   @media (prefers-reduced-motion:reduce){.knap{transition:none}}
