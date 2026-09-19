@@ -430,6 +430,48 @@ og glashjelm; hun peger på uret, når hun hjælper. Musen, jorden, solen, måne
 og kortene er Noto Emoji (`assets/noto/`), raketten er fra Kenney. Alt andet
 tegnes i kode.
 
+## Maskinen
+
+Byg en kædereaktion, så kuglen når ned til klokken. Spillet ligger i
+`games/maskinen/` og er inspireret af Pettson og Findus' opfindelser,
+Inventioneers og The Incredible Machine. Fysikken, delene og banerne ligger i
+`js/fysik.js`, som testes i Node (`test/maskinen.test.js`). `js/game.js` er kun
+skærm og lyd.
+
+**Sådan spilles det.** Nederst er en hylde med de dele, banen har med. Barnet
+trækker en del ud i banen, trykker på den for at dreje den, og trykker så på
+den store grønne knap. Maskinen kører, og man ser, hvad der sker. Virkede det
+ikke, trykker man på den gule pil, og delene bliver liggende, så man kan rette
+én ting ad gangen. En del trækkes tilbage på hylden for at fjerne den. Der er
+ingen tid, ingen forsøg der tælles, og ingen måde at tabe på. To børn kan
+trække hver sin del samtidig.
+
+**Delene.** `rampe` (fem skrå stillinger), `trampolin` (kaster kuglen op),
+`klods` (spærrer), `baand` (trækker kuglen med, et tryk vender retningen),
+`blaeser` (puster i fire retninger) og `vippe` (drejer, når kuglen lander i den
+ene ende). Alt står i `DELE` i `fysik.js` med hop (elasticitet) og gnid
+(friktion).
+
+**Fysikken.** Verden har faste mål (1000 × 620), så simulationen er den samme
+på en iPad, en iPhone og i Node — skærmen skalerer kun billedet. Der køres med
+et fast tidsskridt, så samme opstilling altid giver samme forløb. Alt er
+linjestykker: kuglen skubbes ud af fladen og kaster sig tilbage efter fladens
+hop, og mister fart langs den efter dens gnid. Gnidningen lægges kun på én gang
+pr. skridt — gør man det i hver kollisionsomgang, stopper kuglen med det samme
+og kan slet ikke trille.
+
+**Banerne.** Tolv baner plus fri leg. Hver bane har `start`, `maal`, `mur`,
+`hylde` (hvilke dele og hvor mange) og `loesning` — én måde at klare den på.
+Testen bygger løsningen og lader fysikken køre den, præcis som racertesten
+kører banerne igennem: ændrer man en del eller en bane, så den bliver uløselig,
+siger testen fra. Løsningerne er fundet ved at lade en søgning prøve tilfældige
+placeringer, indtil kuglen nåede klokken, så de er garanteret mulige. Testen
+tjekker også, at ingen bane klarer sig selv uden dele.
+
+**Stemme.** Fire klip i `games/maskinen/lyd/`: `opgave.mp3`, `igen.mp3` og
+`flot_1-2.mp3`. Resten af lyden er toner fra oscillatorer: et klik når kuglen
+rammer noget, og to toner der klinger ud, når klokken bliver ramt.
+
 ## Tegn og pusl
 
 Barnet vælger et univers (Havet, Dyrene, Maskiner, Haven) og tegner en figur

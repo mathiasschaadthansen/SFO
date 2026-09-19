@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Maskinen</title>
+<meta name="theme-color" content="#3b2a17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="../../icons/icon-192.png">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{
+    margin:0;height:100%;overflow:hidden;
+    background:#3b2a17;color:#f7f3e8;
+    font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,sans-serif;
+    -webkit-user-select:none;user-select:none;
+    overscroll-behavior:none;touch-action:none;
+  }
+  #spil{display:block;position:absolute;inset:0;touch-action:none}
+
+  #overlay{
+    position:absolute;inset:0;z-index:10;
+    display:flex;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;
+    background:rgba(40,28,16,.86);
+    padding:20px;
+  }
+  #overlay[hidden]{display:none}
+
+  .kort{
+    width:min(460px,100%);
+    display:flex;flex-direction:column;gap:12px;
+    background:#f7f3e8;color:#12261f;
+    border:4px solid #12261f;border-radius:28px;
+    box-shadow:8px 8px 0 #0b1712;
+    padding:26px;
+    text-align:center;
+  }
+  .kort.bred{width:min(780px,100%)}
+  .kort h2{margin:0;font-size:34px;font-weight:800}
+  .kort{margin:auto;flex:0 0 auto}
+  .hjaelp{margin:0 0 4px;font-size:16px;font-weight:600;opacity:.72}
+  .raekke{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
+  .raekke.bund{justify-content:center;margin:6px 0 0}
+
+  .knap{
+    font:inherit;font-weight:800;font-size:22px;
+    padding:15px 20px;
+    background:#f7f3e8;color:#12261f;
+    border:4px solid #12261f;border-radius:18px;
+    box-shadow:4px 4px 0 #12261f;
+    cursor:pointer;text-decoration:none;display:block;
+    transition:transform .08s,box-shadow .08s;
+  }
+  .knap:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #12261f}
+  .knap:focus-visible{outline:4px solid #3aa7e0;outline-offset:3px}
+  .knap.gul{background:#ffd23f}
+  .knap.smal{flex:1 1 auto;font-size:17px;padding:11px 14px}
+  .knap.smal.valgt{background:#3aa7e0;color:#f7f3e8}
+  .knap.lille{font-size:17px;padding:10px 14px;box-shadow:none;border-width:3px;opacity:.75}
+  .knap.stor{font-size:28px;padding:18px 24px}
+  .knap.ikon{display:flex;align-items:center;justify-content:center;padding:10px 14px}
+  .knap.ikon svg{display:block}
+
+  /* Banerne: hver vises som et lille billede af sig selv */
+  .baner{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .flise{
+    aspect-ratio:3/2;padding:0;
+    border:3px solid #12261f;border-radius:12px;background:#fff;
+    box-shadow:3px 3px 0 #12261f;cursor:pointer;overflow:hidden;
+  }
+  .flise.valgt{border-color:#3aa7e0;box-shadow:3px 3px 0 #3aa7e0;transform:translate(1px,1px)}
+  .flise canvas{width:100%;height:100%;display:block}
+
+  /* Overlayet ruller selv, og kortet centreres med margin:auto, saa knappen i
+     bunden aldrig kan ende uden for skaermen paa iOS. */
+  .raekke.start{margin-bottom:0}
+  .raekke.start .knap{flex:1 1 0}
+
+  /* Lave skaerme (telefon paa siden): alt skal kunne ses uden at rulle */
+  @media (max-height:520px){
+    #overlay{padding:8px 66px}   /* luft til hjem-knappen i hjoernet */
+    .kort{padding:12px 16px;gap:7px;width:min(780px,100%);border-radius:22px}
+    .kort h2{font-size:22px}
+    .hjaelp{display:none}
+    .knap{font-size:17px;padding:9px 14px;border-width:3px;box-shadow:3px 3px 0 #12261f;border-radius:14px}
+    .knap.stor{font-size:20px;padding:11px 16px}
+    .knap.smal{padding:7px 10px}
+    .knap.lille{padding:6px 12px}
+    .raekke{margin-bottom:0}
+    .baner{grid-template-columns:repeat(6,1fr);gap:6px}
+  }
+
+  @media (prefers-reduced-motion:reduce){.knap{transition:none}}
+</style>
+</head>
+<body>
+
+<canvas id="spil"></canvas>
+<div id="overlay" hidden></div>
+
+<script src="../../js/skal.js"></script>
+<script src="../../js/menu.js"></script>
+<script src="../../js/sprites.js"></script>
+<script src="js/fysik.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

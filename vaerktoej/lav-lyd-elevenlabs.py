@@ -20,13 +20,13 @@ Valg:
     --alle           lav ogsaa klip der findes i forvejen
     --registrer      lav ikke noget, men skriv klip.json og sw.js ud fra de mp3-filer der ligger i lyd/
                      (bruges naar klippene er lavet et andet sted, fx i en Claude-chat med ElevenLabs)
-    --spil <navn>    bogstaver (standard), restaurant eller klokken
+    --spil <navn>    bogstaver (standard), restaurant, klokken eller maskinen
     --proev          vis hvad der ville blive lavet, uden at kalde ElevenLabs
 """
 import json, os, re, sys, time, urllib.parse, urllib.request, urllib.error
 
 ROD = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-SPIL = sys.argv[sys.argv.index('--spil') + 1] if '--spil' in sys.argv else 'bogstaver'   # bogstaver | restaurant | klokken
+SPIL = sys.argv[sys.argv.index('--spil') + 1] if '--spil' in sys.argv else 'bogstaver'   # bogstaver | restaurant | klokken | maskinen
 UD = os.path.join(ROD, 'games', SPIL, 'lyd')
 API = 'https://api.elevenlabs.io/v1'
 
@@ -100,7 +100,15 @@ def klokken():
         ('naesten.mp3', 'Næsten!'), ('rejse.mp3', 'Sikke en rumrejse!')]
 
 
+def maskinen():
+    """De faa klip, Maskinen bruger. Resten af lyden er toner fra oscillatorer."""
+    return [('opgave.mp3', 'Kan du få kuglen ned til klokken?'), ('igen.mp3', 'Prøv igen!'),
+            ('flot_1.mp3', 'Flot!'), ('flot_2.mp3', 'Sådan! Maskinen virker!')]
+
+
 def opgaver(kun):
+    if SPIL == 'maskinen':
+        return maskinen()
     if SPIL == 'restaurant':
         return restaurant()
     if SPIL == 'klokken':
