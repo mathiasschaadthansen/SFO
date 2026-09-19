@@ -30,8 +30,16 @@ bogserie eller et spil. Stilen beskrives med ord, ikke med navne.
 
     https://image.pollinations.ai/prompt/<prompt urlencoded>?width=1024&height=1024&seed=<tal>&model=flux&nologo=true
 
-Gratis, ingen noegle. Den samme `seed` + den samme stil-hale giver figurer, der
-ligner hinanden. Hent med curl, og gem i `vaerktoej/raa/` foerst — intet gaar i
+Den samme `seed` + den samme stil-hale giver figurer, der ligner hinanden.
+
+**Status 19. september 2026:** Pollinations er ikke laengere gratis. Alle nye
+genereringer svarer 402 "Insufficient balance" (kun cachede billeder kommer
+igennem), og uden noegle er kun modellen `sana` tilbage. Der skal en noegle fra
+enter.pollinations.ai til; `hent-billede.sh` sender den med, hvis
+`POLLINATIONS_TOKEN` er sat i miljoeet. ElevenLabs' billedgenerering
+(forbindelsen i Claude) blev proevet som reserve, men gratisplanen har en
+daglig graense, der var brugt op. Prisen dér er ca. 3 cent pr. billede med
+`flux-2-pro`, hvis planen opgraderes. Hent med curl, og gem i `vaerktoej/raa/` foerst — intet gaar i
 spillet, foer det er set efter.
 
 **Stil-halen** (samme tekst paa alle figurer, saa de hoerer sammen):
@@ -67,12 +75,12 @@ plads i midten): vaerksted, skov, soe, vinter, nat.
 ## Fra billede til spil
 
 1. Hent med curl til `vaerktoej/raa/`. Se dem efter, foer noget bruges.
-2. Skaer den hvide baggrund fra. Den enkleste vej, der allerede er brugt i
-   dette projekt: et lille Playwright-skript, der tegner billedet paa et
-   canvas, saetter alle pixels over ca. 240 i alle kanaler til gennemsigtige,
-   bloeder kanten og gemmer som PNG.
-3. Skaler ned til det, spillet bruger (figurer ca. 256 px, dele ca. 512 px
-   bred), og gem i `games/maskinen/billeder/`. Hold den samlede stoerrelse
+2. Skaer den hvide baggrund fra med `vaerktoej/fritlaeg.py <raa> <ud.png>
+   --bredde 256` (kraever `pip install pillow numpy`). Den goer alt over
+   taersklen gennemsigtigt, holder hvide oeer inde i figuren (oejne) daekkende,
+   bloeder kanten, beskaerer til figuren og skalerer ned.
+3. Figurer ca. 256 px, dele ca. 512 px bred (`--bredde 512`), gemt i
+   `games/maskinen/billeder/`. Hold den samlede stoerrelse
    under ca. 1,5 MB — `test/assets.test.js` holder oeje med, at sprites ikke
    loeber loebsk.
 4. I `figurer.js`: laeg et opslag `BILLEDER = { kanin: 'billeder/kanin.png', ... }`
