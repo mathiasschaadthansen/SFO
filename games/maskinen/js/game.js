@@ -255,6 +255,7 @@
   /* ---------- baggrund ---------- */
 
   var lag = document.createElement('canvas'), lagFor = '', altMalet = true;
+  var TILSKUERE = [{ navn: 'kanin', str: 0.9 }, { navn: 'mus', str: 0.8 }, { navn: 'bjoern', str: 1 }, { navn: 'raev', str: 0.95 }, { navn: 'froe', str: 0.75 }];
 
   /** Tegn en figur og husk, om den var faerdigmalet — ellers tegnes laget igen. */
   function fig(c, navn, x, y, b, h) {
@@ -359,10 +360,12 @@
     if (fri(s1, sv)) staar(c, 'svamp', s1, bund + p.h * 0.005, sv);
     if (fri(s2, sv)) staar(c, 'svamp', s2, bund + p.h * 0.01, sv * 0.75);
 
-    // Opfinderen og kaninen staar i hver sin side og ser paa
+    // Opfinderen staar altid til venstre; til hoejre ser et af skovens dyr paa,
+    // et nyt for hver bane, saa boernene har noget at glaede sig til
     var dyr = Math.max(48, p.h * 0.17);
     staar(c, 'pindsvin', p.ox + dyr * 0.55, bund + p.h * 0.02, dyr);
-    if (fri(p.ox + p.b - dyr * 0.5, dyr)) staar(c, 'kanin', p.ox + p.b - dyr * 0.5, bund + p.h * 0.02, dyr * 0.9);
+    var tilskuer = TILSKUERE[friLeg ? 0 : baneNr % TILSKUERE.length];
+    if (fri(p.ox + p.b - dyr * 0.5, dyr)) staar(c, tilskuer.navn, p.ox + p.b - dyr * 0.5, bund + p.h * 0.02, dyr * tilskuer.str);
 
     // Murene: planker af blødt ler
     bane.mur.forEach(function (m) {

@@ -468,8 +468,9 @@ siger testen fra. Løsningerne er fundet ved at lade en søgning prøve tilfæld
 placeringer, indtil kuglen nåede klokken, så de er garanteret mulige. Testen
 tjekker også, at ingen bane klarer sig selv uden dele.
 
-**Grafikken.** Figurerne — pindsvinet Pelle (opfinderen), kaninen, æblet der
-er kuglen, svampen, træet og klokken — er malede billeder i akvarel-
+**Grafikken.** Figurerne — pindsvinet Pelle (opfinderen), kaninen, musen,
+bjørnen, ræven, frøen, æblet der er kuglen, svampen, træet og klokken — er
+malede billeder i akvarel-
 billedbogsstil, lavet med Canvas AI-billedgenerator og skåret fri i kode. De
 ligger i `billeder/` med en `NOTICE.md`, der siger hvordan og med hvilken ret.
 Prompterne beskriver stilen med ord, aldrig med navnet på en kunstner, en bog

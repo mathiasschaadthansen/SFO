@@ -1,7 +1,8 @@
 /**
  * Figurerne, delene og baggrunden i Maskinen.
  *
- * Figurerne (pindsvinet Pelle, kaninen, aeblet, svampen, traeet og klokken) er
+ * Figurerne (pindsvinet Pelle, kaninen, musen, bjoernen, raeven, froeen, aeblet,
+ * svampen, traeet og klokken) er
  * malede billeder i billeder/*.png — akvarel i billedbogsstil, lavet med Canvas
  * billedgenerator, se billeder/NOTICE.md. Delene og alt det, der skal kunne
  * skaleres og drejes frit, er SVG skrevet her i koden, med en let "malet" kant
@@ -351,7 +352,8 @@ var Figurer = (function () {
   /* ---------- de malede billeder ---------- */
 
   // Figurer, der findes som malede billeder i billeder/<navn>.png
-  var BILLEDER = { kanin: true, pindsvin: true, aeble: true, svamp: true, trae: true, klokke: true };
+  var BILLEDER = { kanin: true, pindsvin: true, aeble: true, svamp: true, trae: true, klokke: true,
+                   mus: true, bjoern: true, raev: true, froe: true };
   var malede = {};
 
   /** Det malede billede af en figur, hvis det findes og er hentet. */

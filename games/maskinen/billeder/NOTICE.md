@@ -1,7 +1,7 @@
 # Billederne i denne mappe
 
 Malede figurer i billedbogsstil: pindsvinet Pelle (opfinderen), kaninen,
-aeblet, svampen, traeet og klokken.
+musen, bjoernen, raeven, froeen, aeblet, svampen, traeet og klokken.
 
 Lavet den 19. september 2026 med Canvas AI-billedgenerator gennem Canva-
 connectoren, ud fra prompter skrevet i dette projekt (stilen er beskrevet med
@@ -12,8 +12,9 @@ Canvas Content License Agreement. Der er ingen tredjepartsfigurer i dem.
 
 Efterbehandling: den hvide baggrund er skaaret fra i kode (fyld fra kanterne
 ind over de naesten-hvide pixels, bloed kant), billedet er beskaaret til
-indholdet og skaleret til 256 px paa den lange led. Skriptet ligger ikke i
-repoet; det er ti linjer canvas.
+indholdet, skaleret til 320 px paa den lange led og gemt som 8-bit PNG med
+palet (Pillow), saa hver fil fylder 15-30 KB. Skriptet ligger ikke i repoet;
+det er ti linjer canvas.
 
 Nye billeder skal med i `FILER` i `sw.js` og i `BILLEDER` i `js/figurer.js`.
 Mangler et billede, tegner `figurer.js` en SVG-udgave i stedet, saa spillet
