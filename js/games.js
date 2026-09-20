@@ -12,7 +12,7 @@
 window.SPIL = [
   {
     id: 'racer',
-    navn: 'Racerbanen',
+    navn: 'Susebanen',
     tekst: 'Hold fingeren i siden for at styre. 1 eller 2 spillere.',
     sti: 'games/racer/',
     farve: '#f5e0b0',
@@ -22,8 +22,8 @@ window.SPIL = [
   },
   {
     id: 'klatbold',
-    navn: 'Klatbold',
-    tekst: 'To klatter og én bold. Løb, hop og skyd. 1 eller 2 spillere.',
+    navn: 'Boldbanen',
+    tekst: 'To figurer og én bold. Løb, hop og skyd. 1 eller 2 spillere.',
     sti: 'games/klatbold/',
     farve: '#cde2ef',
     art: '<div class="art">' +
@@ -32,7 +32,7 @@ window.SPIL = [
   },
   {
     id: 'bobler',
-    navn: 'Bobler',
+    navn: 'Boblehavet',
     tekst: 'Skyd boblerne, så de deler sig. Hjælp hinanden. 1 eller 2 spillere.',
     farve: '#f7d7c2',
     sti: 'games/bobler/',
@@ -54,7 +54,7 @@ window.SPIL = [
   },
   {
     id: 'bogstaver',
-    navn: 'ABC og 123',
+    navn: 'Bogstavvejen',
     tekst: 'Tegn bogstaver, ord og tal med fingeren, eller find det rigtige i boblerne.',
     farve: '#dbe8c4',
     sti: 'games/bogstaver/',
@@ -68,7 +68,7 @@ window.SPIL = [
   },
   {
     id: 'restaurant',
-    navn: 'Restauranten',
+    navn: 'Skovkøkkenet',
     tekst: 'Hent råvarer på gården, lav pizza, burger og pandekager, og tag imod betaling. To kan lave mad sammen.',
     farve: '#f2cfc0',
     sti: 'games/restaurant/',
@@ -78,7 +78,7 @@ window.SPIL = [
   },
   {
     id: 'klokken',
-    navn: 'Klokken',
+    navn: 'Stjerneuret',
     tekst: 'Rummusen lærer klokken: stil uret på planeterne, find ud af hvad musen gør nu, og drej jorden fra dag til nat.',
     farve: '#dcd8f0',
     sti: 'games/klokken/',
@@ -96,7 +96,7 @@ window.SPIL = [
   },
   {
     id: 'maskinen',
-    navn: 'Maskinen',
+    navn: 'Nøddeskoven',
     tekst: 'Byg en kædereaktion med ramper, trampoliner, kanoner og blæsere, så kuglen ruller ned til klokken. Fem steder i Nøddeskoven, 36 baner.',
     farve: '#e6cfa8',
     sti: 'games/maskinen/',
@@ -113,7 +113,7 @@ window.SPIL = [
   },
   {
     id: 'tegn',
-    navn: 'Tegn og pusl',
+    navn: 'Tegnestuen',
     tekst: 'Tegn en fisk, en raket eller et hus med fingeren, og saml den som puslespil.',
     farve: '#d3e8d8',
     sti: 'games/tegn/',

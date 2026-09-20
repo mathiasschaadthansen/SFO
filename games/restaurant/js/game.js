@@ -1,5 +1,5 @@
 /**
- * Restauranten.
+ * Skovkoekkenet.
  *
  * En kunde kommer ind og bestiller: boblen viser retten og ingredienserne som
  * billeder, og stemmen siger bestillingen. Én ting mangler paa hylden: den
@@ -1614,7 +1614,7 @@
     stopTale();
     visOverlay(
       '<div class="kort">' +
-      '<h2>Restauranten</h2>' +
+      '<h2>Skovkøkkenet</h2>' +
       '<p class="hjaelp">Hent det, der mangler, på gården. Lav maden, ring på klokken, og tag imod betalingen.</p>' +
       // Stjernerne og fri leg staar paa samme raekke: fri leg er et fjerde valg, en tallerken med et hjerte
       Menu.stjerneRaekke(friLeg ? -1 : svaerhed,

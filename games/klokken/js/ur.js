@@ -1,5 +1,5 @@
 /**
- * Logik for Klokken: rummusen, der laerer, hvordan uret virker.
+ * Logik for Stjerneuret: rummusen, der laerer, hvordan uret virker.
  *
  * Tre lege i ét spil:
  *   stil  Planeturet. To slags opgaver skiftevis:

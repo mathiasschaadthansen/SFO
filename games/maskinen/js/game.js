@@ -1,5 +1,5 @@
 /**
- * Maskinen: byg en kaedereaktion.
+ * Noeddeskoven: byg en kaedereaktion.
  *
  * En kugle skal ned til klokken. Paa hylden nederst ligger de dele, banen har
  * med: ramper, trampoliner, klodser, baand, blaesere og vipper. Barnet traekker
@@ -971,7 +971,7 @@
     }).join('');
     visOverlay(
       '<div class="kort bred">' +
-      '<h2>Maskinen</h2>' +
+      '<h2>Nøddeskoven</h2>' +
       '<div class="baner kapitler">' + kapitler + '</div>' +
       '<div class="baner">' + fliser + '</div>' +
       '<div class="raekke valg">' +

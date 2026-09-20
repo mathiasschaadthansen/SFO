@@ -1,5 +1,5 @@
 /**
- * Figurerne, delene og baggrunden i Maskinen.
+ * Figurerne, delene og baggrunden i Noeddeskoven.
  *
  * Figurerne (pindsvinet Pelle, kaninen, musen, bjoernen, raeven, froeen, aeblet,
  * svampen, traeet og klokken) er

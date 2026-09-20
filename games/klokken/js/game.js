@@ -1,5 +1,5 @@
 /**
- * Klokken: rummusen, der laerer, hvordan uret virker.
+ * Stjerneuret: rummusen, der laerer, hvordan uret virker.
  *
  * Tre lege. Planeturet: musen flyver fra planet til planet, og hver planet er
  * et ur. Skiftevis skal uret stilles ("Stil uret paa klokken tre") og aflaeses
@@ -1431,7 +1431,7 @@
       : Menu.startRaekke('start');
     visOverlay(
       '<div class="kort">' +
-      '<h2>Klokken</h2>' +
+      '<h2>Stjerneuret</h2>' +
       '<div class="raekke valg lege">' + legeKnapper + '</div>' +
       (leg === 'sol' ? '' : Menu.stjerneRaekke(svaerhed)) +
       start +

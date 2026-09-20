@@ -1,5 +1,5 @@
 /**
- * Tegn og pusl.
+ * Tegnestuen.
  *
  * Foerst tegnes en figur ved at foelge de stiplede streger med fingeren. Hver
  * del faar farve, saa snart den er tegnet. Naar figuren er faerdig, bliver
@@ -514,7 +514,7 @@
     }).join('');
     visOverlay(
       '<div class="kort">' +
-      '<h2>Tegn og pusl</h2>' +
+      '<h2>Tegnestuen</h2>' +
       '<p class="hjaelp">Tegn figuren med fingeren. Så bliver den til et puslespil.</p>' +
       '<div class="baner">' + universer + '</div>' +
       Menu.stjerneRaekke(svaerhed) +

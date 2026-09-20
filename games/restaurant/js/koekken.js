@@ -1,5 +1,5 @@
 /**
- * Logik for Restauranten.
+ * Logik for Skovkoekkenet.
  *
  * En kunde kommer ind med en bestilling: en ret og nogle ingredienser. Barnet
  * laegger ingredienserne paa tallerkenen og ringer paa klokken. En forkert

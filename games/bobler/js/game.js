@@ -1,5 +1,5 @@
 /**
- * Bobler.
+ * Boblehavet.
  *
  * Skyd boblerne med snoren, saa deler de sig, til de er vaek. Loeb med
  * siderne, skyd med midten. To spillere hjaelper hinanden — banen er
@@ -772,7 +772,7 @@
     vinderCanvas = null;
     visOverlay(
       '<div class="kort">' +
-      '<h2>Bobler</h2>' +
+      '<h2>Boblehavet</h2>' +
       '<p class="hjaelp">Løb med siderne, skyd med midten. Saml det, der falder ned.</p>' +
       Menu.stjerneRaekke(svaerhed) +
       Menu.startRaekke('start') +
