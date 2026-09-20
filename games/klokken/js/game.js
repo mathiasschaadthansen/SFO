@@ -83,7 +83,7 @@
   var rul = 0;                  // hvor langt stjernerne er gledet; raketten skubber til den
   var stjerneskud = null, naesteSkud = 6;
   // Jorden drejer: husets vinkel paa skaermen (0 = mod solen). Starter klokken 7 om morgenen.
-  var sol = { vinkel: U.doegnTilVinkel(7 * 60), roert: false, sidsteGoeremaal: null, omgang: 0 };
+  var sol = { vinkel: U.doegnTilVinkel(7 * 60), roert: false, sidsteGoeremaal: null, omgang: 0, maal: null, glow: 0 };
 
   var ALLE = ['mus', 'jord', 'sol', 'maane'].concat(U.DAGEN.map(function (d) { return d.kort; })).map(function (n) { return STI + n + '.svg'; });
   Sprites.forhent(ALLE);
@@ -217,6 +217,7 @@
     if (!o) return;
     if (o.slags === 'stil') afspilRaekke(['stil_uret.mp3', o.klip], 'Stil uret på ' + o.tekst + '.', 2.6);
     else if (o.slags === 'laes') afspil('hvad_klokken.mp3', 'Hvad er klokken?', 1.7);
+    else if (o.slags === 'drej') afspilRaekke(['drej_' + o.kort + '.mp3'], 'Drej jorden, til ' + o.tekst.replace(/^Musen /, 'musen ').replace(/\.$/, '') + '.', 3.2);
     else afspilRaekke(['hvad_goer.mp3', o.klip, 'om_' + o.himmel + '.mp3'], 'Hvad gør musen ' + o.tekst + ' ' + U.HIMMELORD[o.himmel] + '?', 3.4);
   }
   /** Tiden paa uret, som paa jorden: "klokken syv om morgenen". */
@@ -353,7 +354,8 @@
       sol: { x: B * 0.88, y: H * 0.16, r: Math.min(B * 0.05, H * 0.08) },
       maane: { x: B * 0.09, y: H * 0.15, r: Math.min(B * 0.03, H * 0.045) },
       ur: { cx: Math.max(B * 0.14, 100), cy: H * 0.79, r: Math.min(B * 0.095, H * 0.145) },
-      mus: { x: B * 0.88, y: H * 0.75, str: Math.min(B * 0.12, H * 0.18) }
+      mus: { x: B * 0.88, y: H * 0.75, str: Math.min(B * 0.12, H * 0.18) },
+      boble: { x: B * 0.53, y: H * 0.845, b: Math.min(B * 0.29, 300), h: Math.min(H * 0.125, 92) }
     };
   }
 
@@ -842,6 +844,7 @@
 
   function opdater(dt) {
     opdaterPartikler(dt);
+    if (leg === 'sol') { opdaterSol(dt); sol.glow = Math.max(0, sol.glow - dt * 0.9); return; }
     if (!rejse) return;
     var fart = 0;
     rejse.stationer.forEach(function (s, i) {
@@ -998,14 +1001,29 @@
 
   function startSol() {
     tilstand = 'spiller';
-    rejse = null;
+    antalSpillere = 1;
+    rejse = U.nyRejse(1, svaerhed, 'sol');
+    visning = [nyVisning()];
+    besoegt = [];
     partikler = [];
     lagFor = '';
     sol.roert = false;
     sol.sidsteGoeremaal = null;
     sol.omgang = 0;
+    sol.maal = null;
+    sol.glow = 0;
     stopTale();
-    setTimeout(function () { if (tilstand === 'spiller' && leg === 'sol') sigDoegn(U.vinkelTilDoegn(sol.vinkel)); }, 700);
+    setTimeout(function () { if (tilstand === 'spiller' && leg === 'sol') sigOpgave(0); }, 700);
+  }
+
+  /** Jorden glider paa plads, naar fingeren har sluppet den. */
+  function opdaterSol(dt) {
+    if (sol.maal === null || sol.maal === undefined) return;
+    var d = sol.maal - sol.vinkel;
+    while (d > Math.PI) d -= TAU;
+    while (d < -Math.PI) d += TAU;
+    if (Math.abs(d) < 0.004) { sol.vinkel = ((sol.maal % TAU) + TAU) % TAU; sol.maal = null; return; }
+    sol.vinkel = ((sol.vinkel + d * Math.min(1, dt * 12)) % TAU + TAU) % TAU;
   }
 
   function tegnSolLeg() {
@@ -1049,13 +1067,52 @@
     tegnUr(ctx, u.cx, u.cy, u.r, U.doegnTilUr(doegn), {});
     tegnHimmelMaerke(ctx, u.cx + u.r * 1.62, u.cy - u.r * 0.62, u.r * 0.3, himmel);
     tegnHoejttaler(ctx, u.cx + u.r * 1.62, u.cy + u.r * 0.62, u.r * 0.22, tid < talerTil);
-    tegnMus(ctx, p.mus.x, p.mus.y, p.mus.str, {});
+    var opg = rejse && rejse.stationer[0] ? rejse.stationer[0].opgave : null;
+    var pegMod;
+    if (opg && visning[0] && visning[0].hint) {
+      var hv = U.doegnTilVinkel(opg.t);
+      pegMod = Math.atan2(j.cy + Math.sin(hv) * j.r * 1.78 - p.mus.y, j.cx + Math.cos(hv) * j.r * 1.78 - p.mus.x);
+    }
+    tegnMus(ctx, p.mus.x, p.mus.y, p.mus.str, { peg: pegMod });
+    if (opg) tegnSolBoble(p, opg);
     // Hele doegn, der er drejet: en lille stjerne pr. dag
     for (var d2 = 0; d2 < Math.min(sol.omgang, 6); d2++) {
       var sx = j.cx + (d2 - (Math.min(sol.omgang, 6) - 1) / 2) * j.r * 0.36, sy = j.cy + j.r * 2.35;
       ctx.fillStyle = GUL; ctx.beginPath(); ctx.arc(sx, sy, j.r * 0.12, 0, TAU); ctx.fill();
       ctx.strokeStyle = MOERK; ctx.lineWidth = 2.5; ctx.stroke();
     }
+  }
+
+  /** Musens opgave i Jorden drejer: "drej hen til det her". */
+  function tegnSolBoble(p, o) {
+    var b = p.boble, rad = Math.min(22, b.h * 0.3);
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.roundRect(b.x + 4, b.y + 7, b.b, b.h, rad); ctx.fill();
+    var g = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#ebe8dc');
+    rr(ctx, b.x, b.y, b.b, b.h, rad, g, MOERK, 4);
+    // Spidsen peger mod musen til hoejre
+    ctx.fillStyle = '#ebe8dc'; ctx.beginPath();
+    ctx.moveTo(b.x + b.b - 2, b.y + b.h * 0.35); ctx.lineTo(b.x + b.b + b.h * 0.22, b.y + b.h * 0.5); ctx.lineTo(b.x + b.b - 2, b.y + b.h * 0.65); ctx.fill();
+    ctx.strokeStyle = MOERK; ctx.lineWidth = 4; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(b.x + b.b - 2, b.y + b.h * 0.35); ctx.lineTo(b.x + b.b + b.h * 0.22, b.y + b.h * 0.5); ctx.lineTo(b.x + b.b - 2, b.y + b.h * 0.65); ctx.stroke();
+    var cy = b.y + b.h / 2, x = b.x + b.h * 0.62;
+    // En pil rundt: drej jorden
+    ctx.strokeStyle = BLAA; ctx.lineWidth = Math.max(4, b.h * 0.08); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(x, cy, b.h * 0.26, -2.4, 1.6); ctx.stroke();
+    var px = x + Math.cos(1.6) * b.h * 0.26, py = cy + Math.sin(1.6) * b.h * 0.26;
+    ctx.beginPath();
+    ctx.moveTo(px + Math.cos(1.6 + Math.PI / 2 + 2.6) * b.h * 0.1, py + Math.sin(1.6 + Math.PI / 2 + 2.6) * b.h * 0.1);
+    ctx.lineTo(px, py);
+    ctx.lineTo(px + Math.cos(1.6 + Math.PI / 2 - 2.6) * b.h * 0.1, py + Math.sin(1.6 + Math.PI / 2 - 2.6) * b.h * 0.1);
+    ctx.stroke();
+    x += b.h * 0.62;
+    // Kortet med det, musen skal naa at goere
+    tegnKort(ctx, x + b.h * 0.3, cy, b.h * 0.78, o.kort, {});
+    x += b.h * 0.9;
+    tegnHoejttaler(ctx, x + b.h * 0.2, cy, b.h * 0.22, tid < talerTil);
+    ctx.restore();
   }
 
   /**
@@ -1077,10 +1134,16 @@
       ctx.lineTo(j.cx + Math.cos(v) * (ring + l), j.cy + Math.sin(v) * (ring + l));
       ctx.stroke();
     }
+    var soegt = rejse && rejse.stationer[0] && rejse.stationer[0].opgave && visning[0] && visning[0].hint
+      ? rejse.stationer[0].opgave.t : null;
     U.DAGEN.forEach(function (d) {
       var v = U.doegnTilVinkel(d.t), x = j.cx + Math.cos(v) * ring, y = j.cy + Math.sin(v) * ring;
       var naer = Math.abs(U.normDoegn(doegn) - d.t) <= 30;
       var str = j.r * (naer ? 0.4 : 0.26);
+      if (soegt === d.t) {
+        ctx.fillStyle = 'rgba(240,196,106,' + (0.25 + Math.sin(tid * 5) * 0.2) + ')';
+        ctx.beginPath(); ctx.arc(x, y, str * 1.15, 0, TAU); ctx.fill();
+      }
       ctx.fillStyle = naer ? GUL : 'rgba(247,243,232,.92)';
       ctx.beginPath(); ctx.arc(x, y, str * 0.6, 0, TAU); ctx.fill();
       ctx.strokeStyle = MOERK; ctx.lineWidth = naer ? 3 : 2; ctx.stroke();
@@ -1181,6 +1244,7 @@
       var ps = planSol(), a = Math.atan2(pos.y - ps.jord.cy, pos.x - ps.jord.cx), d = a - f.vinkel;
       if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU;
       f.vinkel = a;
+      sol.maal = null;
       var foerHimmel = U.himmel(U.vinkelTilDoegn(sol.vinkel)), foerDoegn = U.vinkelTilDoegn(sol.vinkel);
       sol.vinkel = ((sol.vinkel + d) % TAU + TAU) % TAU;
       var nu = U.vinkelTilDoegn(sol.vinkel), gm = U.goeremaal(nu);
@@ -1207,9 +1271,27 @@
     delete fingre[e.pointerId];
     if (tilstand !== 'spiller') return;
     if (f.type === 'jord') {
-      var doegn = U.vinkelTilDoegn(sol.vinkel), gm = U.goeremaal(doegn);
+      // Jorden lander et sted, uret kan sige — ellers ville musen sige "halv otte",
+      // mens uret stod paa 7:17.
+      var raa = U.vinkelTilDoegn(sol.vinkel), doegn = U.landDoegn(raa);
+      sol.maal = U.doegnTilVinkel(doegn);
+      var s0 = rejse && rejse.stationer[0], v0 = visning[0];
+      if (s0 && s0.opgave && U.tjekDrej(rejse, 0, raa)) {
+        var ps = planSol();
+        sol.glow = 1;
+        besoegt.push(besoegt.length % 8);
+        puf(ps.jord.cx, ps.jord.cy, GUL, 26, 260, 7, 1.1);
+        melodi([660, 880, 1100], 110);
+        setTimeout(function () { if (tilstand === 'spiller' && leg === 'sol') sigFlot(); }, 260);
+        if (rejse.faerdig) setTimeout(function () { if (tilstand === 'spiller') afslut(); }, 1100);
+        else { v0.hint = false; setTimeout(function () { if (tilstand === 'spiller' && leg === 'sol') sigOpgave(0); }, 1500); }
+        return;
+      }
+      var gm = U.goeremaal(doegn);
       if (gm) afspilRaekke([U.klip(U.doegnTilUr(doegn)), 'om_' + U.himmel(doegn) + '.mp3', 'goer_' + gm.kort + '.mp3'], stort(U.tekst(U.doegnTilUr(doegn))) + ' ' + U.HIMMELORD[U.himmel(doegn)] + '. ' + gm.tekst, 3.6);
       else sigDoegn(doegn);
+      // Efter to forsoeg lyser det rigtige goeremaal paa dagens ring
+      if (s0 && s0.forsoeg >= 2 && v0) v0.hint = true;
       return;
     }
     if (f.type !== 'viser' || !rejse) return;
@@ -1267,7 +1349,7 @@
     ctx.drawImage(lag, 0, 0, B, H);
     tegnStjerner();
     if (tilstand === 'venter') return;
-    if (leg === 'sol') { if (tilstand === 'spiller') tegnSolLeg(); }
+    if (leg === 'sol') { if (tilstand === 'spiller') { tegnSolLeg(); if (rejse) tegnFremskridt(); } }
     else if (rejse) {
       if (tilstand === 'spiller') for (var i = 0; i < rejse.stationer.length; i++) tegnStation(i);
       tegnFremskridt();
@@ -1421,7 +1503,7 @@
     return {
       tilstand: tilstand, leg: leg, svaerhed: svaerhed, spillere: antalSpillere, lyd: lydTil,
       klaret: rejse ? rejse.klaret : null, maal: rejse ? rejse.maal : null, faerdig: rejse ? rejse.faerdig : null,
-      stationer: rejse ? rejse.stationer.map(function (s, i) {
+      stationer: rejse && leg !== 'sol' ? rejse.stationer.map(function (s, i) {
         var p = plan(i), v = visning[i];
         var ts = spids(p.ur.cx, p.ur.cy, U.timeVinkel(s.ur.t), p.ur.r * 0.4), ms = spids(p.ur.cx, p.ur.cy, U.minutVinkel(s.ur.t), p.ur.r * 0.6);
         var tal = [];
@@ -1436,12 +1518,19 @@
           optaget: !!v.raket || !!v.frossen || v.ind < 0.8, hint: v.hint, holdt: v.holdt };
       }) : null,
       sol: { vinkel: sol.vinkel, doegn: U.vinkelTilDoegn(sol.vinkel), himmel: U.himmel(U.vinkelTilDoegn(sol.vinkel)), omgang: sol.omgang,
+        opgave: leg === 'sol' && rejse && rejse.stationer[0].opgave ? rejse.stationer[0].opgave.kort : null,
+        maalTid: leg === 'sol' && rejse && rejse.stationer[0].opgave ? rejse.stationer[0].opgave.t : null,
+        forsoeg: leg === 'sol' && rejse ? rejse.stationer[0].forsoeg : 0,
+        lander: sol.maal !== null && sol.maal !== undefined,
         jord: { cx: Math.round(ps.jord.cx), cy: Math.round(ps.jord.cy), r: Math.round(ps.jord.r) },
         ur: { cx: Math.round(ps.ur.cx), cy: Math.round(ps.ur.cy), r: Math.round(ps.ur.r) } }
     };
   };
 
   tilpasStørrelse();
+  // Pilen oeverst til venstre foerer tilbage hertil, ogsaa midt i et spil.
+  Skal.menuKnap(visMenu);
+
   visMenu();
   requestAnimationFrame(function (t) { sidsteTid = t; løkke(t); });
 })();
