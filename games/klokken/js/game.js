@@ -39,27 +39,27 @@
     };
   }
 
-  var MOERK = '#12261f', KRIDT = '#f7f3e8', ROED = '#e8442e', BLAA = '#3aa7e0', GUL = '#ffd23f', GROEN = '#4cb944';
-  var FARVER = [ROED, BLAA, GROEN, GUL, '#9b5de5', '#ff8c42'];
+  var MOERK = '#5e4a3a', KRIDT = '#f8f1e6', ROED = '#d95f45', BLAA = '#5f9fc9', GUL = '#f0c46a', GROEN = '#7ab648';
+  var FARVER = [ROED, BLAA, GROEN, GUL, '#9b7bd4', '#e08a52'];
   /** De otte planeter. Hver har sin farve og sit saerpraeg, saa rejsen foeles som et sted. */
   var PLANETER = [
-    { farve: '#e8442e', slags: 'kratere' },
-    { farve: '#ff8c42', slags: 'ring' },
-    { farve: '#4cb944', slags: 'plet' },
-    { farve: '#9b5de5', slags: 'maane' },
-    { farve: '#3aa7e0', slags: 'is' },
-    { farve: '#f28cb1', slags: 'striber' },
-    { farve: '#ffd23f', slags: 'ring' },
-    { farve: '#5bd1c9', slags: 'kratere' }
+    { farve: '#d95f45', slags: 'kratere' },
+    { farve: '#e08a52', slags: 'ring' },
+    { farve: '#7ab648', slags: 'plet' },
+    { farve: '#9b7bd4', slags: 'maane' },
+    { farve: '#5f9fc9', slags: 'is' },
+    { farve: '#e894b4', slags: 'striber' },
+    { farve: '#f0c46a', slags: 'ring' },
+    { farve: '#86c7c1', slags: 'kratere' }
   ];
-  var VAESENFARVER = ['#ffd23f', '#5bd1c9', '#f28cb1', '#a8e063', '#ffa8d2', '#9ad5f5', '#c9a0ff', '#ffb37a'];
+  var VAESENFARVER = ['#f0c46a', '#86c7c1', '#e894b4', '#b3d383', '#f0b6d2', '#b5dcef', '#c3b0e6', '#eeb389'];
   var HIMMEL = {
-    nat:    { top: '#070b22', bund: '#131c48', skaer: 'rgba(60,80,190,.22)' },
-    morgen: { top: '#2b3a7a', bund: '#f0a07a', skaer: 'rgba(255,190,140,.30)' },
-    dag:    { top: '#1f4fa8', bund: '#79c8f5', skaer: 'rgba(180,230,255,.28)' },
-    aften:  { top: '#241a52', bund: '#e8785a', skaer: 'rgba(255,150,110,.28)' }
+    nat:    { top: '#151b33', bund: '#2a3358', skaer: 'rgba(90,105,180,.22)' },
+    morgen: { top: '#4a4f80', bund: '#efb08e', skaer: 'rgba(240,200,165,.30)' },
+    dag:    { top: '#5f8fc4', bund: '#bfdcef', skaer: 'rgba(200,225,238,.28)' },
+    aften:  { top: '#3a3060', bund: '#dd9678', skaer: 'rgba(235,175,145,.28)' }
   };
-  var RUMMET = { top: '#080d28', bund: '#1e2a5e', skaer: 'rgba(120,90,200,.25)' };
+  var RUMMET = { top: '#161c36', bund: '#2f3963', skaer: 'rgba(130,120,190,.25)' };
   var STI = '../../assets/noto/';
   var TAU = Math.PI * 2;
 
@@ -236,7 +236,7 @@
       for (var i = 0; i < l[0]; i++) {
         stjerner.push({ x: Math.random(), y: Math.random(), fart: l[1], r: l[2] * (0.6 + Math.random() * 0.7),
           blink: Math.random() * TAU, lag: n,
-          farve: Math.random() < 0.12 ? '#ffd8a8' : (Math.random() < 0.12 ? '#c9d8ff' : '#ffffff') });
+          farve: Math.random() < 0.12 ? '#f2d9b6' : (Math.random() < 0.12 ? '#d4dcea' : '#ffffff') });
       }
     });
   })();
@@ -395,18 +395,18 @@
     var cx = str / 2, cy = str / 2;
     // Kant med lys ovenfra, saa skiven staar frem fra planeten
     var kg = c.createLinearGradient(cx, cy - r, cx, cy + r);
-    kg.addColorStop(0, '#ffffff'); kg.addColorStop(1, '#c4ccd6');
+    kg.addColorStop(0, '#ffffff'); kg.addColorStop(1, '#ccccc4');
     c.fillStyle = kg; c.beginPath(); c.arc(cx, cy, r * 1.06, 0, TAU); c.fill();
     c.lineWidth = Math.max(3, r * 0.045); c.strokeStyle = MOERK; c.stroke();
     var fg = c.createRadialGradient(cx - r * 0.3, cy - r * 0.35, r * 0.1, cx, cy, r);
-    fg.addColorStop(0, '#ffffff'); fg.addColorStop(1, '#eceff4');
+    fg.addColorStop(0, '#ffffff'); fg.addColorStop(1, '#eeeae0');
     c.fillStyle = fg; c.beginPath(); c.arc(cx, cy, r, 0, TAU); c.fill();
     c.lineWidth = Math.max(2, r * 0.028); c.strokeStyle = MOERK; c.stroke();
     // Smaa maerker for minutterne, stoerre paa hver time
     c.lineCap = 'round';
     for (var m = 0; m < 60; m++) {
       var v = m / 60 * TAU, ydre = spids(cx, cy, v, r * 0.94), indre = spids(cx, cy, v, r * (m % 5 ? 0.9 : 0.85));
-      c.strokeStyle = m % 5 ? 'rgba(18,38,31,.3)' : MOERK;
+      c.strokeStyle = m % 5 ? 'rgba(94,74,58,.3)' : MOERK;
       c.lineWidth = m % 5 ? Math.max(1, r * 0.012) : Math.max(2, r * 0.032);
       c.beginPath(); c.moveTo(ydre.x, ydre.y); c.lineTo(indre.x, indre.y); c.stroke();
     }
@@ -477,9 +477,9 @@
     var sp = spids(cx, cy, vinkel, laengde), hale = spids(cx, cy, vinkel + Math.PI, laengde * 0.16);
     c.lineCap = 'round'; c.lineJoin = 'round';
     // Skygge under viseren, saa den ligger oven paa skiven
-    c.strokeStyle = 'rgba(18,38,31,.16)'; c.lineWidth = bredde + Math.max(2, r * 0.022);
+    c.strokeStyle = 'rgba(94,74,58,.16)'; c.lineWidth = bredde + Math.max(2, r * 0.022);
     c.beginPath(); c.moveTo(hale.x + r * 0.015, hale.y + r * 0.025); c.lineTo(sp.x + r * 0.015, sp.y + r * 0.025); c.stroke();
-    if (holdt) { c.strokeStyle = 'rgba(255,210,63,.6)'; c.lineWidth = bredde * 2.8; c.beginPath(); c.moveTo(hale.x, hale.y); c.lineTo(sp.x, sp.y); c.stroke(); }
+    if (holdt) { c.strokeStyle = 'rgba(240,196,106,.6)'; c.lineWidth = bredde * 2.8; c.beginPath(); c.moveTo(hale.x, hale.y); c.lineTo(sp.x, sp.y); c.stroke(); }
     c.strokeStyle = MOERK; c.lineWidth = bredde + Math.max(2, r * 0.022); c.beginPath(); c.moveTo(hale.x, hale.y); c.lineTo(sp.x, sp.y); c.stroke();
     c.strokeStyle = farve; c.lineWidth = bredde; c.beginPath(); c.moveTo(hale.x, hale.y); c.lineTo(sp.x, sp.y); c.stroke();
     // En rund knop paa spidsen, saa der er noget at tage fat i
@@ -530,11 +530,11 @@
     } else if (slags === 'plet') {
       c.fillStyle = 'rgba(255,255,255,.28)';
       c.beginPath(); c.ellipse(cx + pr * 0.28, cy + pr * 0.18, pr * 0.34, pr * 0.24, 0.5, 0, TAU); c.fill();
-      c.fillStyle = 'rgba(18,38,31,.12)';
+      c.fillStyle = 'rgba(94,74,58,.12)';
       c.beginPath(); c.ellipse(cx - pr * 0.4, cy - pr * 0.3, pr * 0.22, pr * 0.16, -0.4, 0, TAU); c.fill();
     } else {
       [[0.42, -0.5, 0.16], [-0.5, 0.15, 0.12], [0.1, 0.6, 0.1], [-0.2, -0.62, 0.08], [0.62, 0.32, 0.07]].forEach(function (k) {
-        c.fillStyle = 'rgba(18,38,31,.15)';
+        c.fillStyle = 'rgba(94,74,58,.15)';
         c.beginPath(); c.arc(cx + pr * k[0], cy + pr * k[1], pr * k[2], 0, TAU); c.fill();
         c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = pr * 0.02; c.stroke();
       });
@@ -550,7 +550,7 @@
     if (slags === 'ring') {   // forreste halvdel af ringen
       c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = pr * 0.1;
       c.beginPath(); c.ellipse(cx, cy, pr * 1.5, pr * 0.4, -0.3, -0.05, Math.PI * 0.95); c.stroke();
-      c.strokeStyle = 'rgba(18,38,31,.35)'; c.lineWidth = pr * 0.02;
+      c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = pr * 0.02;
       c.beginPath(); c.ellipse(cx, cy, pr * 1.5, pr * 0.4, -0.3, -0.05, Math.PI * 0.95); c.stroke();
     }
     planetCache[noegle] = { cv: cv, str: str };
@@ -576,7 +576,7 @@
     c.translate(x, y - (vaagen ? Math.abs(Math.sin(hop * 7)) * str * 0.45 : 0));
     c.lineJoin = 'round'; c.lineCap = 'round';
     var lw = Math.max(2, str * 0.09);
-    c.fillStyle = 'rgba(18,38,31,.18)';
+    c.fillStyle = 'rgba(94,74,58,.18)';
     c.beginPath(); c.ellipse(0, str * 0.52, str * 0.42, str * 0.12, 0, 0, TAU); c.fill();
     // Antenner
     for (var a = 0; a < horn; a++) {
@@ -647,20 +647,20 @@
     c.lineJoin = 'round'; c.lineCap = 'round';
     var lw = Math.max(2.5, str * 0.045), hjelm = str * 0.34;
     // Rygsaek
-    rr(c, -str * 0.3, -str * 0.02, str * 0.6, str * 0.42, str * 0.14, '#b9c2cf', MOERK, lw);
-    rr(c, -str * 0.12, str * 0.04, str * 0.24, str * 0.12, str * 0.05, '#8d97a6', MOERK, lw * 0.7);
+    rr(c, -str * 0.3, -str * 0.02, str * 0.6, str * 0.42, str * 0.14, '#c3c6c0', MOERK, lw);
+    rr(c, -str * 0.12, str * 0.04, str * 0.24, str * 0.12, str * 0.05, '#9a9c96', MOERK, lw * 0.7);
     // Ben og stoevler
     [-1, 1].forEach(function (d) {
       var fx = d * str * (0.16 + Math.sin(tid * 1.4 + d) * 0.04);
       c.strokeStyle = MOERK; c.lineWidth = str * 0.15;
       c.beginPath(); c.moveTo(d * str * 0.12, str * 0.36); c.lineTo(fx, str * 0.58); c.stroke();
-      c.strokeStyle = '#e6eaf0'; c.lineWidth = str * 0.11;
+      c.strokeStyle = '#e9e6dd'; c.lineWidth = str * 0.11;
       c.beginPath(); c.moveTo(d * str * 0.12, str * 0.36); c.lineTo(fx, str * 0.58); c.stroke();
       rr(c, fx - str * 0.1, str * 0.56, str * 0.2, str * 0.12, str * 0.05, ROED, MOERK, lw * 0.8);
     });
     // Dragt
     var dg = c.createLinearGradient(0, -str * 0.1, 0, str * 0.42);
-    dg.addColorStop(0, '#ffffff'); dg.addColorStop(1, '#cfd7e2');
+    dg.addColorStop(0, '#ffffff'); dg.addColorStop(1, '#d9d9d0');
     c.fillStyle = dg;
     c.beginPath(); c.roundRect(-str * 0.27, -str * 0.04, str * 0.54, str * 0.46, str * 0.18); c.fill();
     c.strokeStyle = MOERK; c.lineWidth = lw; c.stroke();
@@ -677,13 +677,13 @@
       }
       c.strokeStyle = MOERK; c.lineWidth = str * 0.14;
       c.beginPath(); c.moveTo(ax, ay); c.lineTo(hx, hy); c.stroke();
-      c.strokeStyle = '#eef2f7'; c.lineWidth = str * 0.1;
+      c.strokeStyle = '#f0ece2'; c.lineWidth = str * 0.1;
       c.beginPath(); c.moveTo(ax, ay); c.lineTo(hx, hy); c.stroke();
       c.fillStyle = ROED; c.beginPath(); c.arc(hx, hy, str * 0.085, 0, TAU); c.fill();
       c.strokeStyle = MOERK; c.lineWidth = lw * 0.8; c.stroke();
     });
     // Krave og hjelm
-    rr(c, -str * 0.3, -str * 0.1, str * 0.6, str * 0.14, str * 0.06, '#c9d1dc', MOERK, lw);
+    rr(c, -str * 0.3, -str * 0.1, str * 0.6, str * 0.14, str * 0.06, '#d2d2c9', MOERK, lw);
     tegnBillede('mus', 0, -hjelm * 0.62, hjelm * 1.5, 0, c);
     c.beginPath(); c.arc(0, -hjelm * 0.62, hjelm, 0, TAU);
     c.fillStyle = 'rgba(190,230,255,.2)'; c.fill();
@@ -700,7 +700,7 @@
     c.translate(x, y); c.rotate(vinkel);
     var f = 0.7 + Math.random() * 0.5;
     var fg = c.createLinearGradient(-str * 0.4, 0, -str * (0.45 + f * 0.85), 0);
-    fg.addColorStop(0, '#fff3b0'); fg.addColorStop(0.45, '#ff8c42'); fg.addColorStop(1, 'rgba(232,68,46,0)');
+    fg.addColorStop(0, '#fdefc4'); fg.addColorStop(0.45, '#e08a52'); fg.addColorStop(1, 'rgba(217,95,69,0)');
     c.fillStyle = fg;
     c.beginPath(); c.moveTo(-str * 0.38, -str * 0.17); c.quadraticCurveTo(-str * (0.5 + f * 0.9), 0, -str * 0.38, str * 0.17); c.closePath(); c.fill();
     if (!tegnBillede('raket', 0, 0, str, Math.PI / 2, c)) {
@@ -715,7 +715,7 @@
     c.save();
     c.translate(x, y);
     var glo = c.createRadialGradient(0, 0, r, 0, 0, r * 2.6);
-    glo.addColorStop(0, 'rgba(255,210,63,.3)'); glo.addColorStop(1, 'rgba(255,210,63,0)');
+    glo.addColorStop(0, 'rgba(240,196,106,.3)'); glo.addColorStop(1, 'rgba(240,196,106,0)');
     c.fillStyle = glo; c.beginPath(); c.arc(0, 0, r * 2.6, 0, TAU); c.fill();
     c.rotate(t * 0.15);
     c.strokeStyle = GUL; c.lineWidth = Math.max(3, r * 0.14); c.lineCap = 'round';
@@ -725,7 +725,7 @@
     }
     c.rotate(-t * 0.15);
     var g = c.createRadialGradient(-r * 0.3, -r * 0.3, r * 0.1, 0, 0, r);
-    g.addColorStop(0, '#fff3b0'); g.addColorStop(1, '#ffb13d');
+    g.addColorStop(0, '#fdefc4'); g.addColorStop(1, '#edaf63');
     c.fillStyle = g; c.beginPath(); c.arc(0, 0, r, 0, TAU); c.fill();
     c.lineWidth = Math.max(3, r * 0.08); c.strokeStyle = MOERK; c.stroke();
     c.fillStyle = MOERK; c.beginPath(); c.arc(-r * 0.3, -r * 0.15, r * 0.08, 0, TAU); c.arc(r * 0.3, -r * 0.15, r * 0.08, 0, TAU); c.fill();
@@ -736,10 +736,10 @@
   function tegnMaane(c, x, y, r) {
     c.save();
     var g = c.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r);
-    g.addColorStop(0, '#fffdf0'); g.addColorStop(1, '#ddd8c0');
+    g.addColorStop(0, '#fffaf0'); g.addColorStop(1, '#d8cfb4');
     c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
     c.lineWidth = Math.max(2, r * 0.08); c.strokeStyle = MOERK; c.stroke();
-    c.fillStyle = 'rgba(18,38,31,.16)';
+    c.fillStyle = 'rgba(94,74,58,.16)';
     [[-0.3, 0.1, 0.22], [0.25, -0.35, 0.14], [0.3, 0.35, 0.16]].forEach(function (k) { c.beginPath(); c.arc(x + r * k[0], y + r * k[1], r * k[2], 0, TAU); c.fill(); });
     c.restore();
   }
@@ -759,13 +759,13 @@
     c.lineJoin = 'round'; c.lineWidth = Math.max(2, str * 0.09); c.strokeStyle = MOERK;
     if (nat) {
       var lys = c.createRadialGradient(0, -str * 0.48, str * 0.1, 0, -str * 0.48, str * 1.8);
-      lys.addColorStop(0, 'rgba(255,210,63,.4)'); lys.addColorStop(1, 'rgba(255,210,63,0)');
+      lys.addColorStop(0, 'rgba(240,196,106,.4)'); lys.addColorStop(1, 'rgba(240,196,106,0)');
       c.fillStyle = lys; c.beginPath(); c.arc(0, -str * 0.48, str * 1.8, 0, TAU); c.fill();
     }
-    c.fillStyle = '#f2d9a6'; c.beginPath(); c.rect(-str * 0.45, -str * 0.85, str * 0.9, str * 0.85); c.fill(); c.stroke();
+    c.fillStyle = '#eed9b2'; c.beginPath(); c.rect(-str * 0.45, -str * 0.85, str * 0.9, str * 0.85); c.fill(); c.stroke();
     c.fillStyle = ROED; c.beginPath(); c.moveTo(-str * 0.6, -str * 0.85); c.lineTo(0, -str * 1.45); c.lineTo(str * 0.6, -str * 0.85); c.closePath(); c.fill(); c.stroke();
-    c.fillStyle = nat ? GUL : '#9ad5f5'; c.beginPath(); c.rect(-str * 0.2, -str * 0.65, str * 0.4, str * 0.35); c.fill(); c.stroke();
-    c.fillStyle = '#8b5e34'; c.beginPath(); c.rect(-str * 0.12, -str * 0.3, str * 0.24, str * 0.3); c.fill(); c.stroke();
+    c.fillStyle = nat ? GUL : '#b5dcef'; c.beginPath(); c.rect(-str * 0.2, -str * 0.65, str * 0.4, str * 0.35); c.fill(); c.stroke();
+    c.fillStyle = '#97714a'; c.beginPath(); c.rect(-str * 0.12, -str * 0.3, str * 0.24, str * 0.3); c.fill(); c.stroke();
     if (nat) {
       c.fillStyle = KRIDT; c.font = '800 ' + Math.round(str * 0.45) + 'px ui-rounded, system-ui, sans-serif';
       c.textAlign = 'center'; c.fillText('z z', str * 0.8, -str * 1.2);
@@ -782,8 +782,8 @@
     c.fillStyle = 'rgba(0,0,0,.3)';
     c.beginPath(); c.roundRect(x - str / 2 + 4 + dx, y - str / 2 + 8 + lft, str, str, str * 0.17); c.fill();
     var g = c.createLinearGradient(0, y - str / 2, 0, y + str / 2);
-    if (valg.rigtigt) { g.addColorStop(0, '#8fe08a'); g.addColorStop(1, GROEN); }
-    else if (valg.hint) { g.addColorStop(0, '#ffe98f'); g.addColorStop(1, GUL); }
+    if (valg.rigtigt) { g.addColorStop(0, '#a4cf9d'); g.addColorStop(1, GROEN); }
+    else if (valg.hint) { g.addColorStop(0, '#f6e0a4'); g.addColorStop(1, GUL); }
     else { g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#e7e2d2'); }
     c.fillStyle = g;
     c.beginPath(); c.roundRect(x - str / 2 + dx, y - str / 2 - lft, str, str, str * 0.17); c.fill();
@@ -858,7 +858,7 @@
           fart = Math.max(fart, Math.min(1, v.raket.t));
           if (v.raket.t < 0.95) {
             var rp = raketSted(p, v.raket.t);
-            puf(rp.x - p.ur.r * 0.32, rp.y + p.ur.r * 0.04, Math.random() < 0.5 ? '#ff8c42' : GUL, 1, 70, 5, 0.45);
+            puf(rp.x - p.ur.r * 0.32, rp.y + p.ur.r * 0.04, Math.random() < 0.5 ? '#e08a52' : GUL, 1, 70, 5, 0.45);
           }
         }
         if (v.raket.t > 1.3) {
@@ -988,8 +988,8 @@
         tegnPlanet(ctx, x, 22, r * 0.69, besoegt[i] || 0, 1);
       } else {
         ctx.beginPath(); ctx.arc(x, 22, r, 0, TAU);
-        ctx.fillStyle = '#e8eaee'; ctx.fill();
-        ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(18,38,31,.45)'; ctx.stroke();
+        ctx.fillStyle = '#eae7dd'; ctx.fill();
+        ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(94,74,58,.45)'; ctx.stroke();
       }
     }
   }
