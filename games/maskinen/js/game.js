@@ -1130,6 +1130,9 @@
   };
 
   tilpasStørrelse();
+  // Pilen oeverst til venstre foerer tilbage hertil, ogsaa midt i et spil.
+  Skal.menuKnap(function () { skjulOverlay(); visMenu(); });
+
   visMenu();
   requestAnimationFrame(function (t) { sidsteTid = t; løkke(t); });
 })();

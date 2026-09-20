@@ -1,9 +1,15 @@
 /**
- * Faelles skal for alle spilsider: en hjem-knap og en "vend enheden"-skaerm.
+ * Faelles skal for alle spilsider: en hjem-knap, en menu-knap og en
+ * "vend enheden"-skaerm.
  *
  * Hjem-knappen ligger fast oeverst til venstre, ogsaa midt i et loeb, og
- * foerer til menuen. Paa en iPad eller iPhone med siden paa hjemmeskaermen
+ * foerer til forsiden. Paa en iPad eller iPhone med siden paa hjemmeskaermen
  * er der ingen browser-tilbageknap, saa uden den her sidder man fast.
+ *
+ * Menu-knappen sidder lige under og foerer tilbage til spillets egen menu,
+ * saa man kan skifte bane, figur eller svaerhed uden at spille faerdig.
+ * Spillet melder sig til med Skal.menuKnap(visMenu); knappen viser sig kun,
+ * mens man spiller, og gemmer sig af sig selv, naar menuen staar aaben.
  *
  * Vend-skaermen vises i portraet paa spil der kraever landskab. Et spil
  * der virker i portraet saetter data-portraet="ok" paa <body>.
@@ -21,6 +27,14 @@
     'opacity:.92;text-decoration:none;-webkit-tap-highlight-color:transparent}' +
     '#hjem:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(107,85,68,.18)}' +
     '#hjem svg{display:block}' +
+    '#spilmenu{position:fixed;z-index:30;display:flex;align-items:center;justify-content:center;' +
+    'top:calc(max(8px,env(safe-area-inset-top)) + 56px);left:max(8px,env(safe-area-inset-left));' +
+    'width:48px;height:48px;padding:0;border-radius:18px;background:#f8f1e6;border:0;cursor:pointer;' +
+    'box-shadow:0 5px 0 rgba(107,85,68,.18),0 8px 16px rgba(107,85,68,.18),inset 0 2px 0 rgba(255,255,255,.85);' +
+    'opacity:.92;-webkit-tap-highlight-color:transparent}' +
+    '#spilmenu[hidden]{display:none}' +
+    '#spilmenu:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(107,85,68,.18)}' +
+    '#spilmenu svg{display:block}' +
     '#vend{position:fixed;inset:0;z-index:25;display:none;align-items:center;justify-content:center;' +
     'background:#e5d3ae;padding:24px}' +
     '#vend svg{width:min(50vw,220px);height:auto;animation:vend 2.2s ease-in-out infinite}' +
@@ -42,6 +56,44 @@
     try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* ignorer */ }
   });
 
+  /* Tilbage til spillets egen menu. Pilen er den samme som i menuerne. */
+  var spilmenu = document.createElement('button');
+  spilmenu.id = 'spilmenu';
+  spilmenu.type = 'button';
+  spilmenu.hidden = true;
+  spilmenu.setAttribute('aria-label', 'Til spillets menu');
+  spilmenu.innerHTML =
+    '<svg width="30" height="30" viewBox="0 0 56 56" aria-hidden="true">' +
+    '<path d="M46 28H16" fill="none" stroke="#6b5545" stroke-width="7" stroke-linecap="round"/>' +
+    '<path d="M26 14L11 28l15 14" fill="none" stroke="#6b5545" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '</svg>';
+  spilmenu.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+  var tilMenu = null, overlay = null;
+  function opdaterSpilmenu() {
+    spilmenu.hidden = !tilMenu || !overlay || !overlay.hidden;
+  }
+  spilmenu.addEventListener('click', function (e) {
+    e.stopPropagation();
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (fejl) { /* ignorer */ }
+    if (tilMenu) tilMenu();
+    opdaterSpilmenu();
+  });
+
+  /**
+   * Spillet melder sin egen menu til. Knappen foelger selv med paa, om
+   * overlayet staar aabent, saa den kun er fremme, mens man spiller.
+   */
+  window.Skal = {
+    menuKnap: function (aabnMenu) {
+      tilMenu = aabnMenu;
+      overlay = document.getElementById('overlay');
+      opdaterSpilmenu();
+      if (overlay && window.MutationObserver) {
+        new MutationObserver(opdaterSpilmenu).observe(overlay, { attributes: true, attributeFilter: ['hidden'] });
+      }
+    }
+  };
+
   var vend = document.createElement('div');
   vend.id = 'vend';
   vend.setAttribute('aria-label', 'Vend enheden om paa siden');
@@ -56,6 +108,7 @@
 
   function saet() {
     document.body.appendChild(hjem);
+    document.body.appendChild(spilmenu);
     document.body.appendChild(vend);
   }
   if (document.body) saet(); else document.addEventListener('DOMContentLoaded', saet);

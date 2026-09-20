@@ -105,6 +105,10 @@ Restauranten, kortene i Klokken og tingene i ABC og 123.
 - Ingen tidspres og ingen højscore. Børnene sidder typisk to ved en iPad, og
   konkurrenceelementer skaber skænderier som pædagogerne skal håndtere.
 - Store trykflader. Styrezonerne fylder hele skærmhøjden.
+- To knapper i hjørnet hele tiden: huset øverst fører til forsiden, pilen
+  under fører tilbage til spillets egen menu. Pilen ligger i `js/skal.js`, og
+  hvert spil melder sig til med `Skal.menuKnap(visMenu)`. Den viser sig kun,
+  mens man spiller, så man aldrig skal spille færdig for at skifte bane.
 - Menuknapper er billeder, ikke ord. Ikonerne ligger i `js/menu.js` og bruges
   af alle spil: én eller to figurer for antal spillere, en trekant for start,
   en pil rundt for igen, en pil tilbage for menuen, og én, to eller tre
