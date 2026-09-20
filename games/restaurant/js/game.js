@@ -36,6 +36,9 @@
 
   var FARVER = ['#d95f45', '#5f9fc9', '#7ab648', '#f0c46a', '#9b7bd4', '#e08a52'];
   var MOERK = '#5e4a3a', KRIDT = '#f8f1e6';
+  // Konturen er malet, ikke tegnet med tusch: en tynd, varm kant i stedet for
+  // en sort streg. MOERK bruges stadig, hvor der skal FYLDES med blaek.
+  var KANT = 'rgba(94,74,58,0.42)';
   var STI = '../../assets/noto/';
   var RETFARVE = { pizza: '#d95f45', burger: '#7ab648', pandekager: '#e08a52' };
   // Bestemt form, til stemmen: "Hvor kommer osten fra?"
@@ -296,36 +299,36 @@
   }
   function krukke(c, x, y, b, h, glas, laag, indhold) {
     skygge(c, function () { rr(c, x, y, b, h, b * 0.22, glas); }, 8, 4, 0.2);
-    rr(c, x, y, b, h, b * 0.22, null, MOERK, 3);
-    rr(c, x - 3, y - h * 0.16, b + 6, h * 0.26, 5, laag, MOERK, 3);
+    rr(c, x, y, b, h, b * 0.22, null, KANT, 3);
+    rr(c, x - 3, y - h * 0.16, b + 6, h * 0.26, 5, laag, KANT, 3);
     rr(c, x + b * 0.13, y + h * 0.2, b * 0.13, h - h * 0.4, 4, 'rgba(255,255,255,.55)');
     if (indhold) tegnBillede(indhold, x + b / 2, y + h * 0.56, b * 0.62, 0, c);
   }
   function potte(c, x, y, s) {
-    c.fillStyle = '#bd7048'; c.beginPath(); c.moveTo(x - s * 0.42, y); c.lineTo(x + s * 0.42, y); c.lineTo(x + s * 0.3, y + s * 0.55); c.lineTo(x - s * 0.3, y + s * 0.55); c.closePath(); c.fill(); c.strokeStyle = MOERK; c.lineWidth = 3; c.stroke();
-    rr(c, x - s * 0.5, y - s * 0.15, s, s * 0.22, 4, '#c8794f', MOERK, 3);
+    c.fillStyle = '#bd7048'; c.beginPath(); c.moveTo(x - s * 0.42, y); c.lineTo(x + s * 0.42, y); c.lineTo(x + s * 0.3, y + s * 0.55); c.lineTo(x - s * 0.3, y + s * 0.55); c.closePath(); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke();
+    rr(c, x - s * 0.5, y - s * 0.15, s, s * 0.22, 4, '#c8794f', KANT, 3);
     // en urt i kode: tre blade
-    c.fillStyle = '#7ab648'; c.strokeStyle = MOERK; c.lineWidth = 2.5;
+    c.fillStyle = '#7ab648'; c.strokeStyle = KANT; c.lineWidth = 2.5;
     [[-0.3, -0.5, -0.6], [0.3, -0.5, 0.6], [0, -0.75, 0]].forEach(function (b) {
       c.save(); c.translate(x + b[0] * s, y + b[1] * s); c.rotate(b[2]);
       c.beginPath(); c.ellipse(0, 0, s * 0.14, s * 0.3, 0, 0, Math.PI * 2); c.fill(); c.stroke(); c.restore();
     });
   }
   function redskab(c, x, y, art, s) {
-    c.strokeStyle = MOERK; c.lineWidth = 3;
+    c.strokeStyle = KANT; c.lineWidth = 3;
     c.fillStyle = '#a9a396'; c.beginPath(); c.arc(x, y - s * 0.08, s * 0.06, 0, Math.PI * 2); c.fill(); c.stroke();
-    rr(c, x - s * 0.06, y, s * 0.12, s * 0.6, s * 0.06, '#b9874f', MOERK, 3);
+    rr(c, x - s * 0.06, y, s * 0.12, s * 0.6, s * 0.06, '#b9874f', KANT, 3);
     if (art === 'spatel') {
-      rr(c, x - s * 0.2, y + s * 0.58, s * 0.4, s * 0.38, s * 0.07, '#5a564e', MOERK, 3);
+      rr(c, x - s * 0.2, y + s * 0.58, s * 0.4, s * 0.38, s * 0.07, '#5a564e', KANT, 3);
       c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 2;
       for (var i = 0; i < 3; i++) { c.beginPath(); c.moveTo(x - s * 0.1 + i * s * 0.1, y + s * 0.66); c.lineTo(x - s * 0.1 + i * s * 0.1, y + s * 0.9); c.stroke(); }
     } else if (art === 'ske') {
-      c.fillStyle = '#5a564e'; c.beginPath(); c.ellipse(x, y + s * 0.78, s * 0.2, s * 0.24, 0, 0, Math.PI * 2); c.fill(); c.strokeStyle = MOERK; c.lineWidth = 3; c.stroke();
+      c.fillStyle = '#5a564e'; c.beginPath(); c.ellipse(x, y + s * 0.78, s * 0.2, s * 0.24, 0, 0, Math.PI * 2); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke();
       c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.ellipse(x - s * 0.06, y + s * 0.72, s * 0.07, s * 0.1, 0, 0, Math.PI * 2); c.fill();
     } else {
       for (var k = -2; k <= 2; k++) {
         c.strokeStyle = '#a9a396'; c.lineWidth = 3; c.beginPath(); c.moveTo(x, y + s * 0.58); c.quadraticCurveTo(x + k * s * 0.12, y + s * 0.82, x, y + s * 1.04); c.stroke();
-        c.strokeStyle = MOERK; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x, y + s * 0.58); c.quadraticCurveTo(x + k * s * 0.12, y + s * 0.82, x, y + s * 1.04); c.stroke();
+        c.strokeStyle = KANT; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x, y + s * 0.58); c.quadraticCurveTo(x + k * s * 0.12, y + s * 0.82, x, y + s * 1.04); c.stroke();
       }
     }
   }
@@ -363,7 +366,7 @@
         // Vindue med karm, gardinkappe i roede tern, himmel og en urtepotte paa karmen
         var vb = Math.min(190, B * 0.19), vh = vb * 0.94, vx = B - vb - 12, vy = Math.max(30, H * 0.04);
         skygge(c, function () { rr(c, vx, vy, vb, vh, 20, KRIDT); }, 12, 6, 0.2);
-        rr(c, vx, vy, vb, vh, 20, null, MOERK, 4.5);
+        rr(c, vx, vy, vb, vh, 20, null, KANT, 4.5);
         var gx = vx + 14, gy = vy + 14, gb = vb - 28, gh = vh - 28;
         c.save(); c.beginPath(); c.roundRect(gx, gy, gb, gh, 12); c.clip();
         var hg = c.createLinearGradient(0, gy, 0, gy + gh); hg.addColorStop(0, '#8fc7e8'); hg.addColorStop(1, '#dfeef0'); c.fillStyle = hg; c.fillRect(gx, gy, gb, gh);
@@ -371,7 +374,7 @@
         c.fillStyle = '#a3c98e'; c.fillRect(gx, gy + gh * 0.78, gb, gh * 0.3);
         c.fillStyle = '#7aa254'; c.beginPath(); c.ellipse(gx + gb * 0.6, gy + gh * 0.84, gb * 0.4, gh * 0.09, 0, 0, Math.PI * 2); c.fill();
         c.restore();
-        c.strokeStyle = MOERK; c.lineWidth = 4; c.beginPath(); c.roundRect(gx, gy, gb, gh, 12); c.stroke();
+        c.strokeStyle = KANT; c.lineWidth = 4; c.beginPath(); c.roundRect(gx, gy, gb, gh, 12); c.stroke();
         c.beginPath(); c.moveTo(gx + gb / 2, gy); c.lineTo(gx + gb / 2, gy + gh); c.moveTo(gx, gy + gh / 2); c.lineTo(gx + gb, gy + gh / 2); c.stroke();
         c.save(); c.beginPath(); c.moveTo(vx, vy); c.lineTo(vx + vb, vy); c.lineTo(vx + vb, vy + 30);
         for (var kx = vx + vb; kx > vx; kx -= 30) c.arc(kx - 15, vy + 30, 15, 0, Math.PI, false);
@@ -381,15 +384,15 @@
         for (var tx = vx; tx < vx + vb; tx += 20) c.fillRect(tx, vy, 10, 80);
         for (var ty = vy; ty < vy + 80; ty += 20) c.fillRect(vx, ty, vb, 10);
         c.restore();
-        c.strokeStyle = MOERK; c.lineWidth = 3.5; c.beginPath();
+        c.strokeStyle = KANT; c.lineWidth = 3.5; c.beginPath();
         for (var kx2 = vx + vb; kx2 > vx; kx2 -= 30) c.arc(kx2 - 15, vy + 30, 15, 0, Math.PI, false);
         c.stroke();
-        rr(c, vx - 10, vy + vh - 4, vb + 20, 16, 5, KRIDT, MOERK, 4);
+        rr(c, vx - 10, vy + vh - 4, vb + 20, 16, 5, KRIDT, KANT, 4);
         potte(c, vx + vb - 22, vy + vh - 26, 44);
         // Redskaber under karmen: spatel, ske og piskeris
         var rs = Math.min(56, (diskY - (vy + vh + 22)) / 1.1);
         if (rs > 30) {
-          rr(c, vx + 6, vy + vh + 14, vb * 0.62, 8, 4, '#a9a396', MOERK, 3);
+          rr(c, vx + 6, vy + vh + 14, vb * 0.62, 8, 4, '#a9a396', KANT, 3);
           redskab(c, vx + 26, vy + vh + 26, 'spatel', rs); redskab(c, vx + 26 + vb * 0.2, vy + vh + 26, 'ske', rs); redskab(c, vx + 26 + vb * 0.4, vy + vh + 26, 'pisker', rs);
         }
       }
@@ -397,8 +400,8 @@
         // Hylde med krukker over kundens hoved
         var hx = p.x0 + (i === 0 ? 70 : 24), hb = Math.min(240, p.sw * 0.34), hy = Math.max(60, H * 0.085);
         var kb = hb * 0.22, kh = kb * 1.0;
-        skygge(c, function () { rr(c, hx, hy, hb, 14, 5, '#d9a05b'); }, 10, 5, 0.25); rr(c, hx, hy, hb, 14, 5, null, MOERK, 4);
-        c.fillStyle = '#b27b3c'; c.strokeStyle = MOERK; c.lineWidth = 3;
+        skygge(c, function () { rr(c, hx, hy, hb, 14, 5, '#d9a05b'); }, 10, 5, 0.25); rr(c, hx, hy, hb, 14, 5, null, KANT, 4);
+        c.fillStyle = '#b27b3c'; c.strokeStyle = KANT; c.lineWidth = 3;
         [hx + 20, hx + hb - 38].forEach(function (bx) { c.beginPath(); c.moveTo(bx, hy + 14); c.lineTo(bx + 18, hy + 14); c.lineTo(bx, hy + 30); c.closePath(); c.fill(); c.stroke(); });
         krukke(c, hx + hb * 0.08, hy - kh - 2, kb, kh, '#fff2c8', '#bd7048', 'honning');
         krukke(c, hx + hb * 0.38, hy - kh * 1.08 - 2, kb, kh * 1.08, '#eef2f4', '#5a6069', 'maelk');
@@ -449,7 +452,7 @@
     var m = ctx.createLinearGradient(0, H * 0.45, 0, H); m.addColorStop(0, '#a3c98e'); m.addColorStop(1, '#7aa254');
     ctx.fillStyle = m; ctx.fillRect(x0, H * 0.45, sw, H * 0.55);
     // Hegn nederst
-    ctx.fillStyle = '#d9a05b'; ctx.strokeStyle = MOERK; ctx.lineWidth = 2;
+    ctx.fillStyle = '#d9a05b'; ctx.strokeStyle = KANT; ctx.lineWidth = 2;
     for (var x = x0 + 20; x < x0 + sw; x += 54) { ctx.beginPath(); ctx.roundRect(x, H * 0.9, 10, H * 0.08, 3); ctx.fill(); ctx.stroke(); }
     ctx.beginPath(); ctx.roundRect(x0, H * 0.915, sw, 7, 3); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.roundRect(x0, H * 0.95, sw, 7, 3); ctx.fill(); ctx.stroke();
@@ -854,7 +857,7 @@
   function tallerken(x, y, r) {
     ctx.fillStyle = 'rgba(94,74,58,0.16)';
     ctx.beginPath(); ctx.ellipse(x + 3, y + r * 0.2, r * 1.2, r * 0.52, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = KANT; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.ellipse(x, y + r * 0.1, r * 1.15, r * 0.5, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.strokeStyle = '#5f9fc9'; ctx.lineWidth = 2.5;
     ctx.beginPath(); ctx.ellipse(x, y + r * 0.1, r * 1.02, r * 0.43, 0, 0, Math.PI * 2); ctx.stroke();
@@ -867,18 +870,22 @@
   /** Daekkeservietten under tallerkenen: roed med syet kant. Det er ogsaa zonen, man laegger ting i. */
   function serviet(x, y, r, lys) {
     ctx.fillStyle = 'rgba(94,74,58,0.14)'; ctx.beginPath(); ctx.ellipse(x, y + r * 0.45, r * 1.55, r * 0.68, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = lys ? '#dd7a63' : '#d95f45'; ctx.strokeStyle = MOERK; ctx.lineWidth = 3.5;
+    var dug = ctx.createRadialGradient(x - r * 0.4, y + r * 0.1, r * 0.2, x, y + r * 0.4, r * 1.6);
+    dug.addColorStop(0, lys ? '#eb9880' : '#e07a63');
+    dug.addColorStop(0.7, lys ? '#dd7a63' : '#d16450');
+    dug.addColorStop(1, '#a8483a');
+    ctx.fillStyle = dug; ctx.strokeStyle = 'rgba(94,74,58,0.3)'; ctx.lineWidth = 2.5;
     ctx.beginPath(); ctx.ellipse(x, y + r * 0.4, r * 1.5, r * 0.64, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.save(); ctx.setLineDash([8, 6]); ctx.strokeStyle = 'rgba(255,255,255,' + (lys ? 0.95 : 0.65) + ')'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.ellipse(x, y + r * 0.4, r * 1.36, r * 0.53, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
   }
 
   function tegnPizza(x, y, r, lagt) {
-    ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+    ctx.strokeStyle = KANT; ctx.lineWidth = 3;
     ctx.fillStyle = '#e8b96a'; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#c8624a'; ctx.beginPath(); ctx.arc(x, y, r * 0.86, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, r * 0.93, Math.PI * 1.1, Math.PI * 1.5); ctx.stroke();
-    ctx.strokeStyle = MOERK;
+    ctx.strokeStyle = KANT;
     var ostSet = false, plads = 0;
     lagt.forEach(function (t) {
       if (t === 'ost' && !ostSet) {
@@ -903,7 +910,7 @@
   function tegnBurger(x, y, r, lagt, medTop) {
     var b = r * 1.5, lh = r * 0.26;
     var bund = y + r * 0.62;
-    ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+    ctx.strokeStyle = KANT; ctx.lineWidth = 3;
     ctx.fillStyle = '#e0a458';
     ctx.beginPath(); ctx.roundRect(x - b / 2, bund - lh, b, lh * 1.1, lh * 0.5); ctx.fill(); ctx.stroke();
     var top = bund - lh;
@@ -922,7 +929,7 @@
       } else if (t === 'tomat') {
         ctx.fillStyle = '#d95f45'; ctx.beginPath(); ctx.roundRect(x - b * 0.5, yy + lh * 0.15, b, lh * 0.65, lh * 0.3); ctx.fill(); ctx.stroke();
         ctx.strokeStyle = '#eda394'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - b * 0.4, yy + lh * 0.48); ctx.lineTo(x + b * 0.4, yy + lh * 0.48); ctx.stroke();
-        ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+        ctx.strokeStyle = KANT; ctx.lineWidth = 3;
       } else if (t === 'agurk') {
         ctx.fillStyle = '#93bc63';
         for (var a = 0; a < 4; a++) { ctx.beginPath(); ctx.ellipse(x - b * 0.36 + a * b * 0.24, yy + lh * 0.5, b * 0.13, lh * 0.38, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
@@ -948,7 +955,7 @@
 
   function tegnPandekager(x, y, r, lagt, antal) {
     if (antal === undefined) antal = 3;
-    ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+    ctx.strokeStyle = KANT; ctx.lineWidth = 3;
     for (var k = 0; k < antal; k++) {
       var yy = y + r * 0.2 - k * r * 0.22, b = r * (0.98 - k * 0.04);
       ctx.fillStyle = '#b9874f'; ctx.beginPath(); ctx.ellipse(x, yy + r * 0.12, b, r * 0.34, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -975,7 +982,7 @@
 
   function pande(x, y, r) {
     ctx.fillStyle = 'rgba(94,74,58,.25)'; ctx.beginPath(); ctx.ellipse(x + 3, y + r * 0.1, r, r * 0.55, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+    ctx.strokeStyle = KANT; ctx.lineWidth = 3;
     ctx.fillStyle = '#4a463f'; ctx.beginPath(); ctx.roundRect(x + r * 0.9, y - r * 0.09, r * 0.9, r * 0.18, r * 0.09); ctx.fill(); ctx.stroke();
     ctx.fillStyle = 'rgba(255,255,255,.2)'; ctx.fillRect(x + r * 0.98, y - r * 0.05, r * 0.7, r * 0.05);
     ctx.fillStyle = '#3b3833'; ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.55, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -997,7 +1004,7 @@
   /** Retten mens den laves: trin 0-2. vend er 1 lige efter et tryk og falder til 0. */
   function tegnForberedelse(ret, x, y, r, trin, vend, delvis) {
     delvis = Math.min(1, delvis || 0);
-    ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+    ctx.strokeStyle = KANT; ctx.lineWidth = 3;
     if (ret === 'pizza') {
       ctx.fillStyle = 'rgba(94,74,58,.16)'; ctx.beginPath(); ctx.roundRect(x - r * 1.15 + 4, y - r * 1.05 + 6, r * 2.3, r * 2.1, 18); ctx.fill();
       ctx.fillStyle = '#d9b07a'; ctx.beginPath(); ctx.roundRect(x - r * 1.15, y - r * 1.05, r * 2.3, r * 2.1, 18); ctx.fill(); ctx.stroke();
@@ -1046,14 +1053,14 @@
     var c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (art === 'kasse') {
       skygge(c, function () { rr(c, m, m, b, h, r * 0.34, KRIDT); }, 12, 6, 0.32);
-      rr(c, m, m, b, h, r * 0.34, null, MOERK, 3.5);
+      rr(c, m, m, b, h, r * 0.34, null, KANT, 3.5);
       rr(c, m + 5, m + 5, b - 10, h * 0.34, r * 0.24, 'rgba(255,255,255,.9)');
-      rr(c, m + 5, m + h - h * 0.24 - 5, b - 10, h * 0.2, r * 0.16, farve, MOERK, 2.5);
+      rr(c, m + 5, m + h - h * 0.24 - 5, b - 10, h * 0.2, r * 0.16, farve, KANT, 2.5);
       rr(c, m + 12, m + h - h * 0.24 - 1, b * 0.3, h * 0.05, 3, 'rgba(255,255,255,.55)');
     } else {
       // rund bund til klokke og moenter
       skygge(c, function () { c.fillStyle = farve; c.beginPath(); c.arc(m + r, m + r, r, 0, Math.PI * 2); c.fill(); }, 12, 6, 0.32);
-      c.strokeStyle = MOERK; c.lineWidth = 3.5; c.beginPath(); c.arc(m + r, m + r, r, 0, Math.PI * 2); c.stroke();
+      c.strokeStyle = KANT; c.lineWidth = 3.5; c.beginPath(); c.arc(m + r, m + r, r, 0, Math.PI * 2); c.stroke();
       c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 4; c.lineCap = 'round'; c.beginPath(); c.arc(m + r, m + r, r * 0.82, Math.PI * 1.1, Math.PI * 1.5); c.stroke();
     }
     kasseCache[noegle] = { cv: cv, m: m, b: b, h: h };
@@ -1067,7 +1074,7 @@
   /** En moent: gul med tal. */
   function moent(x, y, r, v, c) {
     c = c || ctx;
-    c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fillStyle = '#eec06a'; c.fill(); c.strokeStyle = MOERK; c.lineWidth = Math.max(2, r * 0.12); c.stroke();
+    c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fillStyle = '#eec06a'; c.fill(); c.strokeStyle = KANT; c.lineWidth = Math.max(2, r * 0.12); c.stroke();
     c.beginPath(); c.arc(x, y, r * 0.72, 0, Math.PI * 2); c.strokeStyle = 'rgba(94,74,58,.3)'; c.lineWidth = Math.max(1.5, r * 0.08); c.stroke();
     c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = Math.max(1.5, r * 0.1); c.lineCap = 'round'; c.beginPath(); c.arc(x, y, r * 0.84, Math.PI * 1.15, Math.PI * 1.45); c.stroke();
     c.fillStyle = MOERK; c.font = '800 ' + Math.round(r * 1.15) + 'px ui-rounded, "SF Pro Rounded", system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
@@ -1076,7 +1083,7 @@
 
   /** En lille spire: maerket paa den kasse, der er tom og skal hentes paa gaarden. */
   function spire(x, y, s) {
-    ctx.fillStyle = '#7ab648'; ctx.strokeStyle = MOERK; ctx.lineWidth = 2.5;
+    ctx.fillStyle = '#7ab648'; ctx.strokeStyle = KANT; ctx.lineWidth = 2.5;
     ctx.beginPath(); ctx.arc(x, y, s, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.strokeStyle = KRIDT; ctx.lineWidth = s * 0.16; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(x, y + s * 0.55); ctx.lineTo(x, y - s * 0.1); ctx.stroke();
@@ -1093,7 +1100,7 @@
     if (skala !== 1) { ctx.translate(b.x, b.y + b.h * 0.6); ctx.scale(skala, skala); ctx.translate(-b.x, -(b.y + b.h * 0.6)); }
     var rad = Math.min(26, b.h * 0.3);
     ctx.fillStyle = 'rgba(94,74,58,.16)'; ctx.beginPath(); ctx.roundRect(b.x + 4, b.y + 8, b.b, b.h, rad); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.strokeStyle = MOERK; ctx.lineWidth = 4;
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = KANT; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.roundRect(b.x, b.y, b.b, b.h, rad); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(b.x + 2, b.y + b.h * 0.42); ctx.lineTo(b.x - b.h * 0.2, b.y + b.h * 0.58); ctx.lineTo(b.x + 2, b.y + b.h * 0.72); ctx.closePath(); ctx.fill();
     ctx.beginPath(); ctx.moveTo(b.x + 2, b.y + b.h * 0.42); ctx.lineTo(b.x - b.h * 0.2, b.y + b.h * 0.58); ctx.lineTo(b.x + 2, b.y + b.h * 0.72); ctx.stroke();
@@ -1193,9 +1200,9 @@
     var b = r * 2.1, h = r * 1.5;
     ctx.fillStyle = 'rgba(94,74,58,.18)'; ctx.beginPath(); ctx.roundRect(x - b / 2 + 5, y - h / 2 + 8, b, h, 20); ctx.fill();
     var faerdig = !s.regning;
-    rr(ctx, x - b / 2 + ryst, y - h / 2, b, h, 20, faerdig ? '#7ab648' : '#b1ab9d', MOERK, 4);
+    rr(ctx, x - b / 2 + ryst, y - h / 2, b, h, 20, faerdig ? '#7ab648' : '#b1ab9d', KANT, 4);
     rr(ctx, x - b / 2 + r * 0.2 + ryst, y - h / 2 + r * 0.18, b - r * 0.4, h * 0.42, 10, '#5e4a3a');
-    rr(ctx, x - b / 2 + r * 0.2 + ryst, y + h * 0.12, b - r * 0.4, h * 0.3, 10, KRIDT, MOERK, 3);
+    rr(ctx, x - b / 2 + r * 0.2 + ryst, y + h * 0.12, b - r * 0.4, h * 0.3, 10, KRIDT, KANT, 3);
     // Moenterne i kassen
     var lagt = [], sum = 0;
     v.flyvere.forEach(function (f) { if (f.ting === 'moent' && f.t >= 1) { lagt.push(f.moent); sum += f.moent; } });
@@ -1213,7 +1220,7 @@
     var f = null;
     Object.keys(fingre).forEach(function (id) { if (fingre[id].i === i && fingre[id].type !== 'traek') f = fingre[id]; });
     ctx.save();
-    ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+    ctx.strokeStyle = KANT; ctx.lineWidth = 3;
     if (ret === 'pizza') {
       var kx = f ? f.x : x + Math.sin(tid * 2.5) * r * 0.7, ky = f ? f.y : y;
       ctx.translate(kx, ky); ctx.rotate(-0.5);
@@ -1258,7 +1265,7 @@
     var sx = f ? f.x : (foerste ? foerste.x + Math.sin(tid * 4) * p.ret.r * 0.3 : p.ret.x), sy = f ? f.y : (foerste ? foerste.y - p.ret.r * 0.1 : p.ret.y);
     var b = p.ret.r * 0.7;
     ctx.fillStyle = 'rgba(94,74,58,.2)'; ctx.beginPath(); ctx.roundRect(sx - b / 2 + 4, sy - b * 0.3, b, b * 0.7, 8); ctx.fill();
-    ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+    ctx.strokeStyle = KANT; ctx.lineWidth = 3;
     ctx.fillStyle = '#7ab648'; ctx.beginPath(); ctx.roundRect(sx - b / 2, sy - b * 0.36, b, b * 0.3, 6); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#f0c46a'; ctx.beginPath(); ctx.roundRect(sx - b / 2, sy - b * 0.14, b, b * 0.44, 8); ctx.fill(); ctx.stroke();
     ctx.fillStyle = 'rgba(255,255,255,.5)'; [[0.2, 0.1], [0.5, 0.25], [0.75, 0.05]].forEach(function (h) { ctx.beginPath(); ctx.arc(sx - b / 2 + h[0] * b, sy + h[1] * b, b * 0.04, 0, Math.PI * 2); ctx.fill(); });
@@ -1364,14 +1371,14 @@
 
   function busk(x, y, r, farve) {
     var dele = [[x - r * 0.45, y + r * 0.1, r * 0.5], [x + r * 0.45, y + r * 0.1, r * 0.5], [x, y - r * 0.25, r * 0.6]];
-    ctx.strokeStyle = MOERK; ctx.lineWidth = 6;
+    ctx.strokeStyle = KANT; ctx.lineWidth = 6;
     dele.forEach(function (d) { ctx.beginPath(); ctx.arc(d[0], d[1], d[2], 0, Math.PI * 2); ctx.stroke(); });
     ctx.fillStyle = farve || '#7ab648';
     dele.forEach(function (d) { ctx.beginPath(); ctx.arc(d[0], d[1], d[2], 0, Math.PI * 2); ctx.fill(); });
     ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.arc(x - r * 0.15, y - r * 0.45, r * 0.25, 0, Math.PI * 2); ctx.fill();
   }
   function stamme(x, y, r, h) {
-    ctx.fillStyle = '#97714a'; ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+    ctx.fillStyle = '#97714a'; ctx.strokeStyle = KANT; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.roundRect(x - r * 0.12, y, r * 0.24, h, r * 0.08); ctx.fill(); ctx.stroke();
   }
 
@@ -1387,14 +1394,14 @@
       tegnBillede('ko', 0, 0, r * 1.7);
       // Spanden: fyldes, naar der malkes
       var sp = g && g.spand ? Math.min(1, g.spandT || 0) : 0;
-      ctx.fillStyle = '#ddd4c0'; ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+      ctx.fillStyle = '#ddd4c0'; ctx.strokeStyle = KANT; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.moveTo(r * 0.55, r * 0.35); ctx.lineTo(r * 1.05, r * 0.35); ctx.lineTo(r * 0.98, r * 0.85); ctx.lineTo(r * 0.62, r * 0.85); ctx.closePath(); ctx.fill(); ctx.stroke();
       if (sp > 0) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(r * 0.8, r * 0.38 + (1 - sp) * r * 0.3, r * 0.22 * sp + r * 0.02, r * 0.07, 0, 0, Math.PI * 2); ctx.fill(); }
-      ctx.beginPath(); ctx.arc(r * 0.8, r * 0.36, r * 0.24, Math.PI, 0); ctx.strokeStyle = MOERK; ctx.stroke();
+      ctx.beginPath(); ctx.arc(r * 0.8, r * 0.36, r * 0.24, Math.PI, 0); ctx.strokeStyle = KANT; ctx.stroke();
       if (sp >= 1) tegnBillede('maelk', r * 0.8, r * 0.05 - Math.abs(Math.sin(tid * 3)) * r * 0.05, r * 0.45);
     } else if (form === 'bi') {
       // Bistade
-      ctx.fillStyle = '#eec06a'; ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+      ctx.fillStyle = '#eec06a'; ctx.strokeStyle = KANT; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.roundRect(-r * 0.55, -r * 0.5, r * 1.1, r * 1.3, r * 0.3); ctx.fill(); ctx.stroke();
       ctx.strokeStyle = 'rgba(94,74,58,.35)'; ctx.lineWidth = 2; [-0.2, 0.1, 0.4].forEach(function (d) { ctx.beginPath(); ctx.moveTo(-r * 0.5, r * d); ctx.lineTo(r * 0.5, r * d); ctx.stroke(); });
       ctx.fillStyle = MOERK; ctx.beginPath(); ctx.roundRect(-r * 0.22, r * 0.3, r * 0.44, r * 0.12, 5); ctx.fill();
@@ -1402,17 +1409,17 @@
       frugt(-r * 0.6, r * 0.55, r * 0.55);
     } else if (form === 'slagter') {
       // Slagterens bod: markise og disk, med et gris-skilt
-      ctx.fillStyle = '#d95f45'; ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+      ctx.fillStyle = '#d95f45'; ctx.strokeStyle = KANT; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.roundRect(-r * 0.95, -r * 0.85, r * 1.9, r * 0.35, 8); ctx.fill(); ctx.stroke();
       ctx.fillStyle = KRIDT; for (var q = 0; q < 5; q++) { if (q % 2) continue; ctx.fillRect(-r * 0.95 + q * r * 0.38, -r * 0.85, r * 0.38, r * 0.35); }
-      ctx.strokeStyle = MOERK; ctx.beginPath(); ctx.roundRect(-r * 0.95, -r * 0.85, r * 1.9, r * 0.35, 8); ctx.stroke();
+      ctx.strokeStyle = KANT; ctx.beginPath(); ctx.roundRect(-r * 0.95, -r * 0.85, r * 1.9, r * 0.35, 8); ctx.stroke();
       ctx.fillStyle = '#d9a05b'; ctx.beginPath(); ctx.roundRect(-r * 0.85, r * 0.15, r * 1.7, r * 0.6, 8); ctx.fill(); ctx.stroke();
       ctx.fillStyle = KRIDT; ctx.beginPath(); ctx.roundRect(-r * 0.32, -r * 0.45, r * 0.64, r * 0.55, 8); ctx.fill(); ctx.stroke();
       tegnBillede('gris', 0, -r * 0.17, r * 0.45);
       frugt(-r * 0.5, r * 0.1, r * 0.5); tegnBillede(kilde.giver[1] || ting, r * 0.5, r * 0.1, r * 0.5);
     } else if (form === 'plante') {
       stamme(0, -r * 0.1, r, r * 0.9);
-      ctx.fillStyle = '#7ab648'; ctx.strokeStyle = MOERK; ctx.lineWidth = 2.5;
+      ctx.fillStyle = '#7ab648'; ctx.strokeStyle = KANT; ctx.lineWidth = 2.5;
       [[-0.45, -0.1, -0.6], [0.45, -0.3, 0.6], [-0.35, 0.35, -0.8], [0.4, 0.25, 0.8], [0, -0.55, 0]].forEach(function (b) {
         ctx.save(); ctx.translate(b[0] * r, b[1] * r); ctx.rotate(b[2]); ctx.beginPath(); ctx.ellipse(0, 0, r * 0.16, r * 0.34, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore();
       });
@@ -1424,12 +1431,12 @@
     } else if (form === 'kakao') {
       stamme(0, -r * 0.2, r, r * 1.05); busk(0, -r * 0.55, r * 0.9, '#5f8a4a');
       // Kakaofrugter paa stammen, og chokoladen under
-      ctx.fillStyle = '#bd7048'; ctx.strokeStyle = MOERK; ctx.lineWidth = 2.5;
+      ctx.fillStyle = '#bd7048'; ctx.strokeStyle = KANT; ctx.lineWidth = 2.5;
       [[-0.25, 0.1], [0.28, 0.3]].forEach(function (b) { ctx.beginPath(); ctx.ellipse(b[0] * r, b[1] * r, r * 0.13, r * 0.22, 0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); });
       frugt(r * 0.55, r * 0.6, r * 0.5);
     } else if (form === 'palme') {
       stamme(0, -r * 0.5, r, r * 1.35);
-      ctx.fillStyle = '#7ab648'; ctx.strokeStyle = MOERK; ctx.lineWidth = 2.5;
+      ctx.fillStyle = '#7ab648'; ctx.strokeStyle = KANT; ctx.lineWidth = 2.5;
       [-2.4, -1.6, -0.9, -0.3, 0.3, 0.9, 1.6, 2.4].forEach(function (a) {
         ctx.save(); ctx.translate(0, -r * 0.5); ctx.rotate(a); ctx.beginPath(); ctx.ellipse(0, -r * 0.4, r * 0.14, r * 0.45, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore();
       });
@@ -1441,28 +1448,28 @@
       [-0.35, 0.05, 0.45].forEach(function (d) { ctx.beginPath(); ctx.moveTo(-r * 0.6, r * d); ctx.lineTo(r * 0.6, r * d); ctx.stroke(); });
       ctx.strokeStyle = '#7ab648'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(-r * 0.5, r * 0.85);
       ctx.quadraticCurveTo(-r * 0.2, r * 0.1, r * 0.1, -r * 0.2); ctx.quadraticCurveTo(r * 0.4, -r * 0.5, r * 0.5, -r * 0.7); ctx.stroke();
-      ctx.fillStyle = '#7ab648'; ctx.strokeStyle = MOERK; ctx.lineWidth = 2.5;
+      ctx.fillStyle = '#7ab648'; ctx.strokeStyle = KANT; ctx.lineWidth = 2.5;
       [[-0.3, 0.3], [0.15, -0.1], [0.42, -0.5]].forEach(function (b) { ctx.beginPath(); ctx.ellipse(b[0] * r, b[1] * r, r * 0.18, r * 0.12, -0.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); });
       frugt(-r * 0.05, r * 0.35, r * 0.5); frugt(r * 0.4, -r * 0.2, r * 0.42);
     } else if (form === 'bed') {
       // Et bed med raekker
-      ctx.fillStyle = '#97714a'; ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+      ctx.fillStyle = '#97714a'; ctx.strokeStyle = KANT; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.ellipse(0, r * 0.35, r * 0.95, r * 0.42, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 3; [-0.15, 0.1, 0.35].forEach(function (d) { ctx.beginPath(); ctx.moveTo(-r * 0.7, r * (0.35 + d * 0.9)); ctx.lineTo(r * 0.7, r * (0.35 + d * 0.9)); ctx.stroke(); });
-      ctx.fillStyle = '#7ab648'; ctx.strokeStyle = MOERK; ctx.lineWidth = 2.5;
+      ctx.fillStyle = '#7ab648'; ctx.strokeStyle = KANT; ctx.lineWidth = 2.5;
       [[-0.55, 0.05], [-0.2, -0.05], [0.2, -0.05], [0.55, 0.05], [-0.4, 0.4], [0.4, 0.4]].forEach(function (b) {
         ctx.beginPath(); ctx.ellipse(b[0] * r, b[1] * r, r * 0.12, r * 0.2, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       });
       frugt(-r * 0.35, r * 0.15, r * 0.45); frugt(r * 0.35, r * 0.2, r * 0.45);
     } else if (form === 'ananas') {
-      ctx.fillStyle = '#5f8a4a'; ctx.strokeStyle = MOERK; ctx.lineWidth = 2.5;
+      ctx.fillStyle = '#5f8a4a'; ctx.strokeStyle = KANT; ctx.lineWidth = 2.5;
       [-1.1, -0.7, -0.3, 0.3, 0.7, 1.1].forEach(function (a) {
         ctx.save(); ctx.translate(0, r * 0.5); ctx.rotate(a); ctx.beginPath(); ctx.ellipse(0, -r * 0.55, r * 0.14, r * 0.6, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore();
       });
       frugt(0, -r * 0.05, r * 0.85);
     } else if (form === 'stok') {
       // En traestamme i skovbunden, hvor champignoner vokser
-      ctx.fillStyle = '#97714a'; ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+      ctx.fillStyle = '#97714a'; ctx.strokeStyle = KANT; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.roundRect(-r * 0.95, r * 0.15, r * 1.9, r * 0.55, r * 0.25); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#d9a066'; ctx.beginPath(); ctx.ellipse(r * 0.95, r * 0.42, r * 0.14, r * 0.27, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(r * 0.95, r * 0.42, r * 0.07, 0, Math.PI * 2); ctx.stroke();
@@ -1510,7 +1517,7 @@
       var tx = Math.max(p.x0 + tb / 2 + 8, Math.min(p.x0 + p.sw - tb / 2 - 8, t.x));
       var ty = Math.max(p.boble.y + p.boble.h + th * 0.8, t.y - th * 1.9);      // aldrig oven i kunden
       ctx.globalAlpha = Math.min(1, t.t * 3);
-      ctx.fillStyle = '#fff'; ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = KANT; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.roundRect(tx - tb / 2, ty - th / 2, tb, th, 16); ctx.fill(); ctx.stroke();
       ctx.beginPath(); ctx.arc(tx - tb * 0.1, ty + th * 0.75, th * 0.12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.beginPath(); ctx.arc(tx - tb * 0.18, ty + th * 1.05, th * 0.07, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -1526,13 +1533,13 @@
     var B = window.innerWidth, n = dag.maal;
     var afstand = Math.min(28, (B - 240) / n), r = Math.min(9, afstand * 0.36);
     var bred = (n - 1) * afstand + r * 2 + 28;
-    ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.strokeStyle = MOERK; ctx.lineWidth = 3;
+    ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.strokeStyle = KANT; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.roundRect(B / 2 - bred / 2, 22 - r - 8, bred, r * 2 + 16, r + 8); ctx.fill(); ctx.stroke();
     for (var i = 0; i < n; i++) {
       var x = B / 2 + (i - (n - 1) / 2) * afstand;
       ctx.beginPath(); ctx.arc(x, 22, r, 0, Math.PI * 2);
       ctx.fillStyle = i < dag.serveret ? '#f0c46a' : '#fff'; ctx.fill();
-      ctx.lineWidth = 3; ctx.strokeStyle = MOERK; ctx.stroke();
+      ctx.lineWidth = 3; ctx.strokeStyle = KANT; ctx.stroke();
       ctx.beginPath(); ctx.arc(x, 22, r * 0.55, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(94,74,58,.3)'; ctx.lineWidth = 1.5; ctx.stroke();
     }
   }

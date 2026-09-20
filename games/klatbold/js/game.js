@@ -322,12 +322,33 @@
       ctx.restore();
     });
 
+    // Bloede bakker bag banen, saa himlen ikke moeder graesset i en lige streg.
+    // De ligger lavt og daempet, saa bolden og figurerne staar klart foran dem.
+    ctx.save();
+    [[0.16, 62, 'rgba(120,160,105,0.5)'], [0.62, 78, 'rgba(120,160,105,0.42)'], [0.92, 50, 'rgba(120,160,105,0.5)']].forEach(function (bk) {
+      ctx.fillStyle = bk[2];
+      ctx.beginPath();
+      ctx.ellipse(B * bk[0], jord + 6 * s, B * 0.3, bk[1] * s, 0, Math.PI, 0);
+      ctx.fill();
+    });
+    ctx.restore();
+
     // Graes under jorden og helt ned
     var graes = ctx.createLinearGradient(0, jord, 0, H);
     graes.addColorStop(0, P.graesLys);
     graes.addColorStop(1, P.graesDyb);
     ctx.fillStyle = graes;
     ctx.fillRect(0, jord, B, H - jord);
+    // Malede pletter i graesset, saa det ikke staar helt fladt. Faste steder.
+    ctx.save();
+    for (var pl = 0; pl < 14; pl++) {
+      var px = ((pl * 173) % 100) / 100 * B, py = jord + ((pl * 61) % 100) / 100 * (H - jord);
+      ctx.fillStyle = pl % 2 ? 'rgba(199,222,150,0.16)' : 'rgba(93,130,64,0.12)';
+      ctx.beginPath();
+      ctx.ellipse(px, py, (90 + (pl * 37) % 120) * s, (34 + (pl * 19) % 40) * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
 
     // Bloed kant af lys graes og spredte totter. Faste vaerdier, saa de staar stille.
     ctx.save();
@@ -338,8 +359,8 @@
     ctx.fillStyle = kant;
     ctx.fillRect(0, jord - 9 * s, B, 23 * s);
     ctx.lineCap = 'round';
-    for (var n = 0; n < Math.ceil(B / (26 * s)); n++) {
-      var x = (n * 26 + (n * 13) % 11) * s;
+    for (var n = 0; n < Math.ceil(B / (17 * s)); n++) {
+      var x = (n * 17 + (n * 13) % 11) * s;
       var h = (7 + (n * 7) % 9) * s;
       var lud = (((n % 3) - 1)) * 4 * s;
       ctx.globalAlpha = n % 2 ? 0.28 : 0.4;
@@ -667,7 +688,7 @@
         ctx.fillStyle = i < kamp.maal[side] ? u.farve.lak : 'rgba(255,255,255,0.5)';
         ctx.fill();
         ctx.lineWidth = 3 * s;
-        ctx.strokeStyle = '#12261f';
+        ctx.strokeStyle = 'rgba(94,74,58,0.6)';
         ctx.stroke();
       }
     });
@@ -695,8 +716,8 @@
       ctx.save();
       // Knapperne har spillerens egen farve, saa man ved hvilken klat der er ens
       ctx.globalAlpha = aktiv ? 1 : 0.55;
-      ctx.fillStyle = aktiv ? '#ffd23f' : udseende[z.spiller].farve.lak;
-      ctx.strokeStyle = '#12261f';
+      ctx.fillStyle = aktiv ? '#f0c46a' : udseende[z.spiller].farve.lak;
+      ctx.strokeStyle = 'rgba(94,74,58,0.7)';
       ctx.lineWidth = aktiv ? 4 : 0;
       ctx.lineJoin = 'round';
       ctx.beginPath();
@@ -716,7 +737,7 @@
       ctx.restore();
     });
     if (antalSpillere === 2) {
-      ctx.fillStyle = 'rgba(18,38,31,0.5)';
+      ctx.fillStyle = 'rgba(94,74,58,0.5)';
       ctx.fillRect(B / 2 - 2, H - 100, 4, 90);
     }
   }
@@ -743,7 +764,7 @@
       ctx.textBaseline = 'middle';
       ctx.font = '800 130px ui-rounded, system-ui, sans-serif';
       ctx.lineWidth = 12;
-      ctx.strokeStyle = '#12261f';
+      ctx.strokeStyle = '#5e4a3a';
       ctx.fillStyle = maalFarve;
       ctx.strokeText('MÅL!', 0, 0);
       ctx.fillText('MÅL!', 0, 0);
