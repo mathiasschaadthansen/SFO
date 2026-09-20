@@ -1,5 +1,5 @@
 /**
- * Klatbold.
+ * Boldbanen.
  *
  * To klatter, én bold, to maal. Hold fingeren i venstre eller hoejre side
  * af din del af skaermen for at loebe, midten for at hoppe.
@@ -828,7 +828,7 @@
     vinderCanvas = null;
     visOverlay(
       '<div class="kort">' +
-      '<h2>Klatbold</h2>' +
+      '<h2>Boldbanen</h2>' +
       '<p class="hjaelp">Løb med siderne, hop med midten. Først til fem mål.</p>' +
       Menu.stjerneRaekke(svaerhed) +
       Menu.startRaekke('start') +
@@ -864,7 +864,7 @@
     }
     visOverlay(
       '<div class="kort' + (antalSpillere === 2 ? ' bred' : '') + '">' +
-      '<h2>Vælg din klat</h2>' +
+      '<h2>Vælg din figur</h2>' +
       '<div class="valg">' + soejler + '</div>' +
       '<div class="raekke start"><button class="knap groen start" data-handling="spil" aria-label="Spil">' + Menu.start() + '</button></div>' +
       '</div>'

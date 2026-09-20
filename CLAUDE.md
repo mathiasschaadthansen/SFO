@@ -6,27 +6,27 @@ struktur og opsætning.
 ## Kør altid testen
 
 `npm test` efter enhver ændring i et spils `physics.js` eller i en bane.
-Racertesten kører 3 fulde omgange på hver bane uden browser og fanger, hvis en
+Susebane-testen kører 3 fulde omgange på hver bane uden browser og fanger, hvis en
 ændring gør en bane uigennemførlig. Den har allerede fanget den fejl én gang.
-Klatbold-testen tjekker mål, overligger, hop og at AI'en kan nå bolden.
-Bobler-testen lader en robot spille alle tolv baner igennem på alle tre
-sværhedsgrader, så ingen bane kan blive umulig. Bogstav-testen tjekker, at alle
+Boldbane-testen tjekker mål, overligger, hop og at AI'en kan nå bolden.
+Boblehav-testen lader en robot spille alle tolv baner igennem på alle tre
+sværhedsgrader, så ingen bane kan blive umulig. Bogstavvejs-testen tjekker, at alle
 68 tegn kan tegnes færdige af en finger, der følger stregen, også en skæv og en
-hurtig finger, og at alle ord i Ord-legen kan tegnes og er indtalt. Restaurant-testen lader en robot hente på gården, servere og betale en hel
+hurtig finger, og at alle ord i Ord-legen kan tegnes og er indtalt. Skovkøkken-testen lader en robot hente på gården, servere og betale en hel
 dag og tjekker, at alle bestillinger kan laves med det, der står på hylden, at
 alle ingredienser har en kilde, og at alle regninger kan betales med pungens
-mønter. Tegn-testen tjekker, at
-alle 16 figurer kan tegnes, og at puslespillet kan samles. Klokke-testen lader en
+mønter. Tegnestue-testen tjekker, at
+alle 16 figurer kan tegnes, og at puslespillet kan samles. Stjerneur-testen lader en
 robot stille alle ure og vælge alle kort på alle niveauer og tjekker, at viserne
-låser rigtigt og hænger sammen, og at tiden siges rigtigt på dansk. Maskin-testen
+låser rigtigt og hænger sammen, og at tiden siges rigtigt på dansk. Nøddeskovs-testen
 gennemspiller alle 36 baners gemte løsning i fysikken og fanger, hvis en
-ændring gør en bane uløselig — præcis som racertesten. Den kræver også, at
+ændring gør en bane uløselig — præcis som susebane-testen. Den kræver også, at
 løsningen tåler, at delene ligger op til 40 px skævt, så ingen bane er en nål i
 en høstak, og at hver bane har faste pladser, som løsningen passer på. Den tjekker også de
 enkelte dele (kanon, tragt, vippe, bånd, blæser), stoffet i murene (is, sne,
 åkande) og at hvert kapitel har sine baner og sin kugle.
 
-**Stemme.** Bogstaver bruger rigtige klip med en dansk stemme fra ElevenLabs
+**Stemme.** Bogstavvejen bruger rigtige klip med en dansk stemme fra ElevenLabs
 (Camilla) til bogstavnavne, tal, ord og spørgsmål. Klippene ligger som små
 MP3-filer i `games/bogstaver/lyd/` og står i `lyd/klip.json`. Mangler et klip,
 siger enhedens egen talesyntese det i stedet, og kun stemmer med `localService`
@@ -63,14 +63,35 @@ aftales for sig.
 
 To fælder, der allerede er trådt i:
 
-- **Se den rigtige spilleplade først.** Bobler blev tegnet om som et helt
+- **Se den rigtige spilleplade først.** Boblehavet blev tegnet om som et helt
   andet spil, fordi kun menuen var åbnet. Start spillet, før du tegner.
-- **Tydeligere er ikke det samme som pænere.** At gøre Racerbanens styrezoner
+- **Tydeligere er ikke det samme som pænere.** At gøre Susebanens styrezoner
   synlige er en ændring af spillet, ikke af grafikken — uanset hvor godt det
   lyder.
 
-Bobler blev set efter og beholdt, som det er. Maskinens faste pladser er den
+Boblehavet blev set efter og beholdt, som det er. Nøddeskovens faste pladser er den
 ene undtagelse: dér blev spillet ændret, fordi det var det, der blev bedt om.
+
+## Spillenes navne
+
+Navnene er steder i den samme lille verden, og mappen hedder noget andet end
+spillet. Koden er ikke doebt om: modulerne hedder stadig `Klatbold`, `Bobler`,
+`Ur` og så videre.
+
+| Spillet hedder | Mappen | Testen |
+|---|---|---|
+| Susebanen | `games/racer/` | `test/racer.test.js` |
+| Boldbanen | `games/klatbold/` | `test/klatbold.test.js` |
+| Boblehavet | `games/bobler/` | `test/bobler.test.js` |
+| Bogstavvejen | `games/bogstaver/` | `test/bogstaver.test.js` |
+| Skovkøkkenet | `games/restaurant/` | `test/restaurant.test.js` |
+| Stjerneuret | `games/klokken/` | `test/klokken.test.js` |
+| Nøddeskoven | `games/maskinen/` | `test/maskinen.test.js` |
+| Tegnestuen | `games/tegn/` | `test/tegn.test.js` |
+
+Navnet står tre steder pr. spil: `<title>` i `index.html`, `<h2>` i `visMenu`
+og `navn` i `js/games.js`. App-ikonet er pindsvinet Pelle, den samme figur som
+i Nøddeskoven; det ligger i `icons/` og bruges også som mærke på forsiden.
 
 ## Den malede palet
 
@@ -94,7 +115,7 @@ hjem-knappen i `js/skal.js`, så en ændring dér slår igennem i alle spil.
 Malede billeder ligger i `assets/malet/` (forsiden) og
 `games/maskinen/billeder/` (Nøddeskoven). Noto Emoji bruges stadig, hvor et
 barn skal kunne genkende en ting med det samme: maden og gæsterne i
-Restauranten, kortene i Klokken og tingene i ABC og 123.
+Skovkøkkenet, kortene i Stjerneuret og tingene i Bogstavvejen.
 
 ## Designregler for 6-årige
 

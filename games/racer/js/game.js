@@ -1,5 +1,5 @@
 /**
- * Racerbanen.
+ * Susebanen.
  *
  * Styring: hold fingeren i venstre eller hoejre side af din halvdel.
  * Bilen koerer af sig selv. Ingen speeder, ingen bremse, ingen game over.
@@ -763,7 +763,7 @@
 
     visOverlay(
       '<div class="kort">' +
-      '<h2>Racerbanen</h2>' +
+      '<h2>Susebanen</h2>' +
       '<p class="hjaelp">Hold fingeren i venstre eller højre side. Bilen kører selv.</p>' +
       '<div class="baner">' + baneKnapper + '</div>' +
       Menu.stjerneRaekke(svaerhed) +

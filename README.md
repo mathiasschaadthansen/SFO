@@ -6,15 +6,15 @@ databehandleraftale om.
 
 Spillene indtil nu:
 
-- **Racerbanen**: top-down racer med ét fingertryk, 1 eller 2 spillere på den
+- **Susebanen** (mappen `racer`): top-down racer med ét fingertryk, 1 eller 2 spillere på den
   samme iPad. Tre baner, tre sværhedsgrader, turbofelter.
-- **Klatbold**: to klatter, én bold, to mål. Løb med siderne, hop med midten,
+- **Boldbanen** (mappen `klatbold`): to figurer, én bold, to mål. Løb med siderne, hop med midten,
   først til fem mål. 1 spiller mod AI eller 2 spillere.
-- **Bobler**: skyd boblerne med snoren, så de deler sig, til de er væk. Tolv
+- **Boblehavet** (mappen `bobler`): skyd boblerne med snoren, så de deler sig, til de er væk. Tolv
   baner i tre verdener med platforme og bobler der drypper ned, fire specials
   (dobbeltsnor, klæbesnor, frys, skjold), ingen liv. To spillere hjælper
   hinanden og vinder sammen.
-- **ABC og 123** (mappen `bogstaver`): kør en bil, en raket eller en pensel langs A-Å, a-å og 0-9,
+- **Bogstavvejen** (mappen `bogstaver`): kør en bil, en raket eller en pensel langs A-Å, a-å og 0-9,
   find det rigtige bogstav blandt bobler, eller tegn hele ord bogstav for
   bogstav med billedet af tingen ved siden af. Tal vises også som æbler, der
   tælles. På 3 stjerner siger skyen bogstavet i stedet for at vise det. Navnene
@@ -161,7 +161,7 @@ et længere sigte på netop den bane.
 Hold `vejbredde` på mindst 150 hvis banen har skarpe sving. Smalle baner er ikke
 sjove for 6-årige, og de er det første testen brokker sig over.
 
-## Skrue på Klatbold
+## Skrue på Boldbanen
 
 `INDSTIL` øverst i `games/klatbold/js/physics.js`: tyngde, hoppehøjde, boldens
 hop, målhøjde og hvor mange mål der skal til. `SVAERHED` sætter AI'ens fart,
@@ -174,7 +174,7 @@ sur kommer af sig selv, når der bliver scoret. Kroppen er stadig en halvcirkel
 med radius `klatRadius`, præcis som i fysikken — ændrer man tegningen, må den
 ikke blive større eller mindre end det, bolden rammer.
 
-## Skrue på Bobler
+## Skrue på Boblehavet
 
 `INDSTIL` øverst i `games/bobler/js/physics.js`: boblernes størrelser, hvor højt
 de hopper, snorens fart, hvor længe man er svimmel, og hvor tit og hvor længe
@@ -187,7 +187,7 @@ umulig at nå. Tilføj en bane ved at skrive en linje til. `npm test` lader en
 robot spille alle baner igennem uden specials og brokker sig, hvis det tager
 over ti minutter.
 
-## Skrue på Bogstaver
+## Skrue på Bogstavvejen
 
 Tegnene ligger i `games/bogstaver/js/glyffer.js` som streger i en kasse på
 100 x 100, i den rækkefølge og retning man skriver dem. Buer laves med `bue()`.
@@ -318,7 +318,7 @@ og om de er på asfalt.
 Al grafik tegnes i kode. Der er ingen figurer, navne eller lyde fra
 kommercielle spil i projektet, og der skal ikke lægges nogen ind.
 
-## Restauranten
+## Skovkøkkenet (mappen `restaurant`)
 
 En dyrekunde bestiller pizza, burger eller pandekager. Boblen viser retten og
 ingredienserne som billeder, og stemmen siger bestillingen. Barnet trykker
@@ -384,7 +384,7 @@ så hver bestilling kan få sit eget stemmeklip: `lyd/bestil_<id>.mp3`, plus
 `lyd/klip.json` bruges; resten siges af enhedens egen stemme.
 
 
-## Klokken
+## Stjerneuret (mappen `klokken`)
 
 Rummusen lærer, hvordan uret virker. Spillet ligger i `games/klokken/` og har
 tre lege, som vælges med billedfliser øverst i menuen. Tider, låsning af
@@ -452,7 +452,7 @@ og glashjelm; hun peger på uret, når hun hjælper. Musen, jorden, solen, måne
 og kortene er Noto Emoji (`assets/noto/`), raketten er fra Kenney. Alt andet
 tegnes i kode.
 
-## Maskinen
+## Nøddeskoven (mappen `maskinen`)
 
 Byg en kædereaktion, så kuglen når ned til klokken. Spillet ligger i
 `games/maskinen/` og er inspireret af Pettson og Findus' opfindelser,
@@ -550,7 +550,7 @@ billeder fra andre mapper.
 `flot_1-2.mp3`. Resten af lyden er toner fra oscillatorer: et klik når kuglen
 rammer noget, og to toner der klinger ud, når klokken bliver ramt.
 
-## Tegn og pusl
+## Tegnestuen (mappen `tegn`)
 
 Barnet vælger et univers (Havet, Dyrene, Maskiner, Haven) og tegner en figur
 ved at følge de stiplede streger med fingeren. Hver del får farve, så snart

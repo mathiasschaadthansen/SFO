@@ -1,5 +1,5 @@
 /**
- * Figurer til Tegn og pusl.
+ * Figurer til Tegnestuen.
  *
  * Hver figur ligger i en kasse paa 100 x 100 (y nedad) og bestaar af dele, der
  * tegnes bagfra og frem. En del er en streg (sti), som barnet foelger med

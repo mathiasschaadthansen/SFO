@@ -1465,7 +1465,7 @@
         '</div>';
     visOverlay(
       '<div class="kort">' +
-      '<h2>ABC og 123</h2>' +
+      '<h2>Bogstavvejen</h2>' +
       '<div class="raekke valg hvad">' + hvadKnapper + '</div>' +
       startKnapper +
       '<div class="raekke valg">' + KOERETOEJER.map(function (k) {
