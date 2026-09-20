@@ -162,6 +162,13 @@ sjove for 6-årige, og de er det første testen brokker sig over.
 hop, målhøjde og hvor mange mål der skal til. `SVAERHED` sætter AI'ens fart,
 reaktionstid og hoppelyst for 1, 2 og 3 stjerner. Kør `npm test` bagefter.
 
+Klatterne er tegnet i kode i `games/klatbold/js/game.js`. `FARVER` er de seks
+farver med en lys top, en grundfarve og en dyb bund, og `tegnKlatForm` tegner
+kroppen og de fem ansigter: glad, sej og sød vælger barnet selv, og jubel og
+sur kommer af sig selv, når der bliver scoret. Kroppen er stadig en halvcirkel
+med radius `klatRadius`, præcis som i fysikken — ændrer man tegningen, må den
+ikke blive større eller mindre end det, bolden rammer.
+
 ## Skrue på Bobler
 
 `INDSTIL` øverst i `games/bobler/js/physics.js`: boblernes størrelser, hvor højt

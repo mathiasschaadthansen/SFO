@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v60';
+const VERSION = 'sfo-spil-v61';
 
 const FILER = [
   './',
@@ -486,10 +486,6 @@ const FILER = [
   'games/bogstaver/ting/oern.svg',
   'assets/kenney/LICENSE.txt',
   'assets/kenney/NOTICE.md',
-  'assets/kenney/ansigt_a.png',
-  'assets/kenney/ansigt_c.png',
-  'assets/kenney/ansigt_e.png',
-  'assets/kenney/ansigt_k.png',
   'assets/kenney/bil_blue_1.png',
   'assets/kenney/bil_blue_2.png',
   'assets/kenney/bil_blue_4.png',
@@ -509,12 +505,6 @@ const FILER = [
   'assets/kenney/dreng_idle.png',
   'assets/kenney/dreng_walk1.png',
   'assets/kenney/dreng_walk2.png',
-  'assets/kenney/klat_blue.png',
-  'assets/kenney/klat_green.png',
-  'assets/kenney/klat_pink.png',
-  'assets/kenney/klat_purple.png',
-  'assets/kenney/klat_red.png',
-  'assets/kenney/klat_yellow.png',
   'assets/kenney/pige_cheer1.png',
   'assets/kenney/pige_cheer2.png',
   'assets/kenney/pige_hurt.png',

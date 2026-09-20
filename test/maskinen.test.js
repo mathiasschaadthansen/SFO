@@ -249,6 +249,7 @@ console.log('\nMaskinen\n');
   const ukendte = brugte.filter(n => !new RegExp('\\n    ' + n + ':').test(figurer));
   tjek('alle figurer spillet beder om er tegnet', ukendte.length === 0, ukendte.join());
   const naevnte = [...new Set([...kode.matchAll(/'([a-z_0-9]+\.mp3)'/g)].map(m => m[1]))];
+  const klip = JSON.parse(fs.readFileSync(path.join(ROD, 'games', 'maskinen', 'lyd', 'klip.json'), 'utf8'));
   const udenKlip = naevnte.filter(f => !klip.includes(f));
   tjek('alle klip spillet naevner direkte er lavet', udenKlip.length === 0, udenKlip.join());
   const spil = fs.readFileSync(path.join(ROD, 'js', 'games.js'), 'utf8');

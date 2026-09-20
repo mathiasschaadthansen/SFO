@@ -7,7 +7,6 @@ fortjener den: tak til Kenney Vleugels.
 Pakker der er brugt:
 
 - Racing Pack: `bil_*.png` (biler set fra oven)
-- Shape Characters: `klat_*.png` (kroppe) og `ansigt_*.png` (ansigter)
 - Platformer Characters: `dreng_*.png` og `pige_*.png` (poser)
 - Simple Space: `raket.png`
 
