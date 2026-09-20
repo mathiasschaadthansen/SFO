@@ -154,6 +154,12 @@ Skovkøkkenet, kortene i Stjerneuret og tingene i Bogstavvejen.
   også bruger `interrupted`.
 - **Service worker.** Nye filer skal tilføjes til `FILER` i `sw.js`, og
   `VERSION` skal tælles op. Ellers henter iPad'en den gamle version.
+- **Service workeren må ikke hente fra browserens egen cache.** Filerne i
+  `install` hentes med `cache: 'reload'`. Uden det fyldte den nye version sin
+  cache med de gamle filer: cachen skiftede navn til den nye `VERSION`, men
+  indholdet var uændret, og iPad'en viste det gamle spil. Kun helt nye filer
+  kom igennem, så det lignede, at "kun ikonerne" var skiftet. Det skete én
+  gang i september 2026 og kostede en hel udgivelse.
 
 ## Sprog
 

@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v71';
+const VERSION = 'sfo-spil-v72';
 
 const FILER = [
   './',
@@ -517,10 +517,17 @@ const FILER = [
   'assets/kenney/raket.png'
 ];
 
+/*
+ * Hver fil hentes med cache: 'reload', saa browserens EGEN cache springes over.
+ * Uden det kan en ny version blive fyldt med de gamle filer: cachen skifter navn
+ * til den nye VERSION, men indholdet er det samme, og iPad'en viser det gamle
+ * spil, selv om der er udgivet et nyt. Det skete i september 2026, hvor kun de
+ * filer, der var helt nye, kom med — resten kom fra browserens cache.
+ */
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(VERSION)
-      .then((c) => c.addAll(FILER))
+      .then((c) => c.addAll(FILER.map((f) => new Request(f, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
   );
 });
