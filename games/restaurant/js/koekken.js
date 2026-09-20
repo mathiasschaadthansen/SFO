@@ -27,7 +27,7 @@
     huskeTid:    [0, 0, 5]   // sekunder boblen vises paa 3 stjerner, foer man skal huske den. 0 = altid
   };
 
-  // navn = som det siges, fil = tegning i assets/noto/
+  // navn = som det siges. Tegningen ligger i games/restaurant/billeder/<navn>.png
   var INGREDIENSER = {
     ost: { navn: 'ost' }, tomat: { navn: 'tomat' }, champignon: { navn: 'champignon' },
     peberfrugt: { navn: 'peberfrugt' }, ananas: { navn: 'ananas' }, oliven: { navn: 'oliven' },

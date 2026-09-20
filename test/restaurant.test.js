@@ -60,12 +60,29 @@ console.log('\nRestauranten\n');
 /* Tegninger og cache */
 {
   const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
-  const brugt = Object.keys(K.INGREDIENSER).concat(Object.keys(K.RETTER), K.KUNDER, ['klokke', 'hjerte']);
-  const manglerFil = brugt.filter(n => !fs.existsSync(path.join(__dirname, '..', 'assets', 'noto', n + '.svg')));
-  const ikkeICache = brugt.filter(n => !sw.includes("'assets/noto/" + n + ".svg'"));
+  const BILLEDER = path.join(__dirname, '..', 'games', 'restaurant', 'billeder');
+  // Maden og gaesterne er malede PNG'er i spillets egen mappe; klokken og
+  // hjertet er stadig Noto Emoji.
+  const malet = Object.keys(K.INGREDIENSER).concat(Object.keys(K.RETTER), K.KUNDER);
+  const noto = ['klokke', 'hjerte'];
+  const manglerFil = malet.filter(n => !fs.existsSync(path.join(BILLEDER, n + '.png')))
+    .concat(noto.filter(n => !fs.existsSync(path.join(__dirname, '..', 'assets', 'noto', n + '.svg'))));
+  const ikkeICache = malet.filter(n => !sw.includes("'games/restaurant/billeder/" + n + ".png'"))
+    .concat(noto.filter(n => !sw.includes("'assets/noto/" + n + ".svg'")));
   tjek('der er en tegning til hver ret, ingrediens og kunde', manglerFil.length === 0, 'mangler: ' + manglerFil);
   tjek('alle tegninger er med i service workerens FILER', ikkeICache.length === 0, 'mangler: ' + ikkeICache);
-  tjek('licensen ligger ved siden af tegningerne', fs.existsSync(path.join(__dirname, '..', 'assets', 'noto', 'LICENSE')));
+  tjek('licensen ligger ved siden af tegningerne',
+    fs.existsSync(path.join(BILLEDER, 'NOTICE.md')) && fs.existsSync(path.join(__dirname, '..', 'assets', 'noto', 'LICENSE')));
+  // Spillet tegner hvert billede i et kvadrat: drawImage(img, -str/2, -str/2, str, str).
+  // Er en fil ikke kvadratisk, bliver tegningen trukket skaev.
+  const png = fs.readdirSync(BILLEDER).filter(n => n.endsWith('.png'));
+  const skaeve = png.filter(n => {
+    const b = fs.readFileSync(path.join(BILLEDER, n));
+    return b.readUInt32BE(16) !== b.readUInt32BE(20);   // bredde og hoejde i PNG-headeren
+  });
+  tjek('alle malede tegninger er kvadratiske', skaeve.length === 0, skaeve.join());
+  const forStore = png.filter(n => fs.statSync(path.join(BILLEDER, n)).size > 40 * 1024);
+  tjek('ingen malet tegning fylder over 40 KB', forStore.length === 0, forStore.join());
 }
 
 /* En forkert ingrediens bliver ikke lagt paa, og der er ingen straf */
