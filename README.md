@@ -96,6 +96,11 @@ anderledes.
 
 Alt ligger i `INDSTIL` øverst i `games/racer/js/physics.js`.
 
+Banens udseende tegnes én gang i `games/racer/js/track.js` — malet eng, grussti,
+midterstribe og turbopile. Vejen tegnes i præcis `vejbredde`, den samme bredde
+som kollisionsmasken bruger, så det man ser er det man kan køre på. Bilerne er
+tegnet i kode i `tegnKaross` i `game.js`, tre former i seks farver.
+
 | Værdi | Betyder |
 |---|---|
 | `topfart` | Hvor hurtigt bilen kører på asfalt |

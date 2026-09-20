@@ -14,6 +14,29 @@
 
   var MASKE_SKALA = 0.5;
 
+  // Malet palet. Samme toner som i Maskinen og de andre spil.
+  var FARVE = {
+    graesLys: '#a3c976', graes: '#8fb85f', graesDyb: '#6b9147',
+    kantLys: '#f2e6cb', vej: '#ddc69c', vejLys: '#e7d4b0',
+    turbo: '#f0c46a', turboKant: '#b1873f'
+  };
+
+  // Grus: en lille flise med lyse og moerke prikker, tegnet én gang og
+  // genbrugt paa alle baner.
+  var grus = null;
+  function grusMoenster() {
+    if (!grus) {
+      grus = document.createElement('canvas');
+      grus.width = 96; grus.height = 96;
+      var g = grus.getContext('2d');
+      for (var i = 0; i < 900; i++) {
+        g.fillStyle = i % 2 ? 'rgba(138,102,61,0.13)' : 'rgba(255,248,226,0.16)';
+        g.fillRect(Math.random() * 96, Math.random() * 96, 2, 2);
+      }
+    }
+    return grus;
+  }
+
   // Catmull-Rom gennem en lukket raekke punkter. Giver bloede kurver
   // uden at man skal angive kontrolpunkter i JSON-filen.
   function udjaevn(punkter, trinPrSegment) {
@@ -106,27 +129,53 @@
     lag.height = h;
     var c = lag.getContext('2d');
 
-    c.fillStyle = '#3f8f52';
+    // Malet eng: et bloedt forloeb, store lyse pletter og smaa graesstrejf.
+    // Laget tegnes én gang, saa det maa gerne tage lidt tid.
+    var eng = c.createLinearGradient(0, 0, b * 0.3, h);
+    eng.addColorStop(0, FARVE.graesLys);
+    eng.addColorStop(0.5, FARVE.graes);
+    eng.addColorStop(1, FARVE.graesDyb);
+    c.fillStyle = eng;
     c.fillRect(0, 0, b, h);
-
-    // Let struktur i graesset så farten kan mærkes
-    c.fillStyle = 'rgba(255,255,255,0.05)';
-    for (var i = 0; i < 700; i++) {
-      var gx = Math.random() * b, gy = Math.random() * h;
-      c.fillRect(gx, gy, 3 + Math.random() * 9, 3);
+    for (var pl = 0; pl < 90; pl++) {
+      var r = 120 + Math.random() * 320;
+      c.fillStyle = pl % 2 ? 'rgba(199,222,150,0.09)' : 'rgba(93,130,64,0.08)';
+      c.beginPath();
+      c.ellipse(Math.random() * b, Math.random() * h, r, r * 0.5, Math.random() * 3, 0, Math.PI * 2);
+      c.fill();
+    }
+    c.lineCap = 'round';
+    c.lineWidth = 1.8;
+    var antalStraa = Math.round(b * h / 1400);
+    for (var i = 0; i < antalStraa; i++) {
+      var gx = Math.random() * b, gy = Math.random() * h, gh = 4 + Math.random() * 6;
+      c.strokeStyle = i % 3 ? 'rgba(77,122,60,0.24)' : 'rgba(214,232,170,0.3)';
+      c.beginPath();
+      c.moveTo(gx, gy);
+      c.quadraticCurveTo(gx + 1.5, gy - gh * 0.6, gx + (Math.random() * 5 - 2.5), gy - gh);
+      c.stroke();
     }
 
-    tegnLinje(c, this.linje, v + 26, '#f2e9d8');   // kantsten
-    tegnLinje(c, this.linje, v, '#5a5f68');        // asfalt
-    tegnLinje(c, this.linje, 5, 'rgba(255,255,255,0.55)', [26, 34]); // midterstribe
+    // Vejen: en malet grussti. Skyggen ligger UNDER vejen og er lige saa bred,
+    // saa den ikke kan forveksles med kanten. Asfaltbredden er praecis v —
+    // den samme som masken bruger, saa det, man ser, er det, man kan koere paa.
+    tegnLinje(c, this.linje, v + 30, 'rgba(74,58,44,0.14)');   // bloed skygge
+    tegnLinje(c, this.linje, v + 22, FARVE.kantLys);           // lys kant
+    tegnLinje(c, this.linje, v, FARVE.vej);                    // selve vejen
+    tegnLinje(c, this.linje, v - 10, FARVE.vejLys);            // lysere midte
+    tegnLinje(c, this.linje, 5, 'rgba(255,255,255,0.6)', [26, 34]); // midterstribe
 
-    // Turbofelter: to gule vinkler i koereretningen
+    // Korn i vejen, saa den ligner grus og ikke maling. Kornet males som et
+    // moenster paa selve vejstregen, saa det aldrig kan smitte af paa graesset.
+    tegnLinje(c, this.linje, v, c.createPattern(grusMoenster(), 'repeat'));
+
+    // Turbofelter: to malede vinkler i koereretningen
     this.turbo.forEach(function (f) {
       c.save();
       c.translate(f.x, f.y);
       c.rotate(f.vinkel);
-      c.fillStyle = '#ffd23f';
-      c.strokeStyle = '#12261f';
+      c.fillStyle = FARVE.turbo;
+      c.strokeStyle = FARVE.turboKant;
       c.lineWidth = 2;
       for (var k = -1; k <= 0; k++) {
         c.beginPath();
@@ -198,16 +247,19 @@
     var s = Math.min((canvas.width - marg * 2) / data.bredde, (canvas.height - marg * 2) / data.hoejde);
     var ox = (canvas.width - data.bredde * s) / 2, oy = (canvas.height - data.hoejde * s) / 2;
     c.clearRect(0, 0, canvas.width, canvas.height);
-    c.fillStyle = '#3f8f52';
+    var eng = c.createLinearGradient(0, 0, 0, canvas.height);
+    eng.addColorStop(0, FARVE.graesLys);
+    eng.addColorStop(1, FARVE.graesDyb);
+    c.fillStyle = eng;
     c.beginPath();
     if (c.roundRect) c.roundRect(0, 0, canvas.width, canvas.height, 14); else c.rect(0, 0, canvas.width, canvas.height);
     c.fill();
     c.save();
     c.translate(ox, oy);
     c.scale(s, s);
-    tegnLinje(c, linje, data.vejbredde + 60, '#f2e9d8');
-    tegnLinje(c, linje, data.vejbredde + 10, '#5a5f68');
-    c.fillStyle = '#ffd23f';
+    tegnLinje(c, linje, data.vejbredde + 60, FARVE.kantLys);
+    tegnLinje(c, linje, data.vejbredde + 10, FARVE.vej);
+    c.fillStyle = FARVE.turbo;
     c.beginPath();
     c.arc(linje[0].x, linje[0].y, data.vejbredde * 0.42, 0, Math.PI * 2);
     c.fill();
