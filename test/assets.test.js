@@ -45,6 +45,9 @@ const total = iMappen.reduce((a, n) => a + fs.statSync(path.join(ROD, 'assets', 
 tjek('sprites fylder under 300 KB i alt', total < 300 * 1024, Math.round(total / 1024) + ' KB');
 tjek('sprites.js er med i service workerens FILER', sw.includes("'js/sprites.js'"));
 tjek('skal.js er med i service workerens FILER', sw.includes("'js/skal.js'"));
+// En ny version skal hentes uden om browserens egen cache. Uden det fik cachen det
+// nye navn, men det gamle indhold, og iPad'en blev ved med at vise det gamle spil.
+tjek('service workeren henter nye filer uden om browserens cache', /cache:\s*'reload'/.test(sw));
 const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
 tjek('alle spilsider har skallen med hjem-knappen', spilSider.every(h => h.includes('js/skal.js')));
 tjek('menu.js er med i service workerens FILER', sw.includes("'js/menu.js'"));
