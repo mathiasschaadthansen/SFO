@@ -53,6 +53,25 @@ Eksempel: `games/bogstaver/ting/` bruger Noto Emoji under Apache 2.0.
 (tekst, små filer), lyd laves med oscillatorer. Det holder repoet lille og
 offline-cachen hurtig. Nye filer skal med i `FILER` i `sw.js`.
 
+## Grafik og spil er to ting
+
+**En grafikændring må ikke ændre spillet.** Skal et spil se anderledes ud, er
+det kun malingen, der skiftes: farver, billeder, skygger, baggrund. Banerne,
+reglerne, styringen, knappernes placering og det, der kan trykkes på, bliver
+som de er. Vil man ændre selve spillet, er det en anden opgave, som skal
+aftales for sig.
+
+To fælder, der allerede er trådt i:
+
+- **Se den rigtige spilleplade først.** Bobler blev tegnet om som et helt
+  andet spil, fordi kun menuen var åbnet. Start spillet, før du tegner.
+- **Tydeligere er ikke det samme som pænere.** At gøre Racerbanens styrezoner
+  synlige er en ændring af spillet, ikke af grafikken — uanset hvor godt det
+  lyder.
+
+Bobler blev set efter og beholdt, som det er. Maskinens faste pladser er den
+ene undtagelse: dér blev spillet ændret, fordi det var det, der blev bedt om.
+
 ## Designregler for 6-årige
 
 - Ingen tekst der skal læses for at kunne spille. Omgangstælleren er cirkler,
