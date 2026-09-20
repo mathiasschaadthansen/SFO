@@ -302,6 +302,13 @@ Uden MDM: åbn siden i Safari, tryk Del og vælg Føj til hjemmeskærm.
 Sitet skal serveres over HTTPS. Service workeren — og dermed offline-tilstand —
 virker ikke over almindelig HTTP undtagen på localhost.
 
+Forsidens kort linker til mapper (`games/racer/`), men `FILER` i `sw.js`
+indeholder filerne (`games/racer/index.html`). Derfor prøver `fetch`-handleren
+`index.html` i mappen, før den giver op. Uden det kan forsiden åbnes uden net,
+men ingen af spillene. Skal offline testes, skal serveren lukkes helt —
+`setOffline` i en browser-automat blokerer ikke localhost og giver et falsk
+grønt svar.
+
 ## Test på iPad
 
 Simulatoren og desktop-Safari lyver om to ting, så de skal prøves på hardware:

@@ -48,6 +48,16 @@ tjek('skal.js er med i service workerens FILER', sw.includes("'js/skal.js'"));
 // En ny version skal hentes uden om browserens egen cache. Uden det fik cachen det
 // nye navn, men det gamle indhold, og iPad'en blev ved med at vise det gamle spil.
 tjek('service workeren henter nye filer uden om browserens cache', /cache:\s*'reload'/.test(sw));
+// Forsiden linker til mapper (games/racer/), men FILER indeholder filen
+// (games/racer/index.html). De to adresser er ikke den samme, saa uden et fald
+// tilbage til index.html kan spillene ikke aabnes uden net — kun forsiden.
+tjek('service workeren falder tilbage til index.html paa en mappe-adresse',
+  /mode === 'navigate'/.test(sw) && /index\.html'/.test(sw));
+const stier = [...fs.readFileSync(path.join(ROD, 'js', 'games.js'), 'utf8')
+  .matchAll(/sti:\s*'([^']+)'/g)].map(m => m[1]);
+tjek('forsiden linker til alle otte spil', stier.length === 8, stier.length + ' stier');
+const udenIndex = stier.filter(s2 => !sw.includes("'" + s2 + "index.html'"));
+tjek('hvert spil forsiden linker til har sin index.html i FILER', udenIndex.length === 0, udenIndex.join());
 const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
 tjek('alle spilsider har skallen med hjem-knappen', spilSider.every(h => h.includes('js/skal.js')));
 tjek('menu.js er med i service workerens FILER', sw.includes("'js/menu.js'"));

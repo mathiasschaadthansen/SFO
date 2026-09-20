@@ -167,6 +167,16 @@ skal den samme prompt bruges igen — prompten står i
   `tegnBillede`. Testen fanger det.
 - **Service worker.** Nye filer skal tilføjes til `FILER` i `sw.js`, og
   `VERSION` skal tælles op. Ellers henter iPad'en den gamle version.
+- **Offline skal testes med serveren slukket.** Playwrights `setOffline(true)`
+  blokerer ikke 127.0.0.1: `navigator.onLine` bliver falsk, men filerne kommer
+  stadig fra serveren, så alt ser ud til at virke. Luk serverprocessen i
+  stedet, og kontrollér med et kald til en fil, der ikke findes, før du måler
+  noget. Den fælde gav én gang et forkert svar begge veje.
+- **Forsiden linker til mapper, `FILER` indeholder filer.** Kortene peger på
+  `games/racer/`, men i cachen ligger `games/racer/index.html`. De to adresser
+  er ikke den samme, så `caches.match` rammer forbi. Uden et fald tilbage til
+  `index.html` i `fetch`-handleren kunne forsiden åbnes uden net, men ingen af
+  spillene. Det stod der fra begyndelsen og blev først fanget i september 2026.
 - **Service workeren må ikke hente fra browserens egen cache.** Filerne i
   `install` hentes med `cache: 'reload'`. Uden det fyldte den nye version sin
   cache med de gamle filer: cachen skiftede navn til den nye `VERSION`, men

@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v74';
+const VERSION = 'sfo-spil-v75';
 
 const FILER = [
   './',
@@ -542,9 +542,26 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+/*
+ * Forsiden linker til mapper: games/racer/, games/restaurant/ og saa videre.
+ * I FILER staar filen, games/racer/index.html, og de to adresser er ikke den
+ * samme — caches.match rammer forbi, og uden net fejler faldet tilbage til
+ * fetch. Resultatet var, at appen kunne aabnes offline, men ingen af spillene
+ * kunne. Derfor proeves index.html i mappen, foer der gives op.
+ */
+function fraCachen(req) {
+  return caches.match(req).then((traef) => {
+    if (traef) return traef;
+    if (req.mode === 'navigate' && new URL(req.url).pathname.endsWith('/')) {
+      return caches.match(new URL('index.html', req.url).href);
+    }
+    return null;
+  });
+}
+
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then((traef) => traef || fetch(e.request))
+    fraCachen(e.request).then((traef) => traef || fetch(e.request))
   );
 });
