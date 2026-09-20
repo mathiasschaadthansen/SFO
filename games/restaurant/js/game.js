@@ -39,7 +39,16 @@
   // Konturen er malet, ikke tegnet med tusch: en tynd, varm kant i stedet for
   // en sort streg. MOERK bruges stadig, hvor der skal FYLDES med blaek.
   var KANT = 'rgba(94,74,58,0.42)';
-  var STI = '../../assets/noto/';
+  // Maden og gaesterne er malede PNG'er i spillets egen mappe. Klokken, hjertet,
+  // koen, maelken og bien er stadig Noto Emoji. sti() vaelger den rigtige mappe,
+  // saa resten af koden bare siger navnet.
+  var MALET = 'billeder/', NOTO = '../../assets/noto/';
+  var MALET_NAVNE = {};
+  Object.keys(K.INGREDIENSER).concat(Object.keys(K.RETTER), K.KUNDER)
+    .forEach(function (n) { MALET_NAVNE[n] = true; });
+  function sti(navn) {
+    return MALET_NAVNE[navn] ? MALET + navn + '.png' : NOTO + navn + '.svg';
+  }
   var RETFARVE = { pizza: '#d95f45', burger: '#7ab648', pandekager: '#e08a52' };
   // Bestemt form, til stemmen: "Hvor kommer osten fra?"
   var BESTEMT = {
@@ -67,9 +76,9 @@
   var vinderCanvas = null, konfetti = [];
 
   // Alle tegninger hentes med det samme, saa de er klar foer foerste kunde
-  var ALLE = Object.keys(K.INGREDIENSER).concat(Object.keys(K.RETTER), K.KUNDER, ['klokke', 'hjerte', 'ko', 'maelk', 'bi']).map(function (n) { return STI + n + '.svg'; });
+  var ALLE = Object.keys(K.INGREDIENSER).concat(Object.keys(K.RETTER), K.KUNDER, ['klokke', 'hjerte', 'ko', 'maelk', 'bi']).map(sti);
   Sprites.forhent(ALLE);
-  function billede(navn) { return Sprites.hent(STI + navn + '.svg'); }
+  function billede(navn) { return Sprites.hent(sti(navn)); }
   function tegnBillede(navn, x, y, str, vinkel, c) {
     c = c || ctx;
     var img = billede(navn);

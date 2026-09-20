@@ -15,7 +15,8 @@ sværhedsgrader, så ingen bane kan blive umulig. Bogstavvejs-testen tjekker, at
 hurtig finger, og at alle ord i Ord-legen kan tegnes og er indtalt. Skovkøkken-testen lader en robot hente på gården, servere og betale en hel
 dag og tjekker, at alle bestillinger kan laves med det, der står på hylden, at
 alle ingredienser har en kilde, og at alle regninger kan betales med pungens
-mønter. Tegnestue-testen tjekker, at
+mønter. Den tjekker også, at hver ret, ingrediens og gæst har en malet tegning,
+at tegningerne er kvadratiske, og at ingen af dem fylder over 40 KB. Tegnestue-testen tjekker, at
 alle 16 figurer kan tegnes, og at puslespillet kan samles. Stjerneur-testen lader en
 robot stille alle ure og vælge alle kort på alle niveauer og tjekker, at viserne
 låser rigtigt og hænger sammen, og at tiden siges rigtigt på dansk. Nøddeskovs-testen
@@ -112,10 +113,17 @@ Kort og knapper har bløde skygger, ikke sorte kanter: `0 6px 0 rgba(107,85,68,.
 og `inset 0 3px 0 rgba(255,255,255,.85)`. Menuikonerne ligger i `js/menu.js` og
 hjem-knappen i `js/skal.js`, så en ændring dér slår igennem i alle spil.
 
-Malede billeder ligger i `assets/malet/` (forsiden) og
-`games/maskinen/billeder/` (Nøddeskoven). Noto Emoji bruges stadig, hvor et
-barn skal kunne genkende en ting med det samme: maden og gæsterne i
-Skovkøkkenet, kortene i Stjerneuret og tingene i Bogstavvejen.
+Malede billeder ligger i `assets/malet/` (forsiden),
+`games/maskinen/billeder/` (Nøddeskoven) og `games/restaurant/billeder/`
+(Skovkøkkenets 16 ingredienser, 3 retter og 12 gæster). Noto Emoji bruges
+stadig, hvor et barn skal kunne genkende en ting med det samme: kortene i
+Stjerneuret, tingene i Bogstavvejen og de få rekvisitter i Skovkøkkenet, der
+ikke er mad — klokken, hjertet, koen, mælken og bien.
+
+Skovkøkkenets tolv gæster er lavet med den samme prompt, hvor kun dyret er
+skiftet ud. Det er grunden til, at de ligner hinanden. Skal en gæst laves om,
+skal den samme prompt bruges igen — prompten står i
+`games/restaurant/billeder/NOTICE.md`.
 
 ## Designregler for 6-årige
 
@@ -152,8 +160,23 @@ Skovkøkkenet, kortene i Stjerneuret og tingene i Bogstavvejen.
   løkke af stilhed på ældre iOS), så lyden følger lydstyrken som i andre spil.
   AudioContext genoptages ved enhver tilstand, der ikke er `running`, fordi iOS
   også bruger `interrupted`.
+- **Skovkøkkenets billeder skal være kvadratiske.** `tegnBillede` tegner hvert
+  billede som `drawImage(img, -str/2, -str/2, str, str)`. Et billede, der ikke
+  er kvadratisk, bliver trukket skævt — det ses tydeligst på en gæst med høje
+  ører. Læg tegningen midt i et kvadratisk lærred, i stedet for at ændre
+  `tegnBillede`. Testen fanger det.
 - **Service worker.** Nye filer skal tilføjes til `FILER` i `sw.js`, og
   `VERSION` skal tælles op. Ellers henter iPad'en den gamle version.
+- **Offline skal testes med serveren slukket.** Playwrights `setOffline(true)`
+  blokerer ikke 127.0.0.1: `navigator.onLine` bliver falsk, men filerne kommer
+  stadig fra serveren, så alt ser ud til at virke. Luk serverprocessen i
+  stedet, og kontrollér med et kald til en fil, der ikke findes, før du måler
+  noget. Den fælde gav én gang et forkert svar begge veje.
+- **Forsiden linker til mapper, `FILER` indeholder filer.** Kortene peger på
+  `games/racer/`, men i cachen ligger `games/racer/index.html`. De to adresser
+  er ikke den samme, så `caches.match` rammer forbi. Uden et fald tilbage til
+  `index.html` i `fetch`-handleren kunne forsiden åbnes uden net, men ingen af
+  spillene. Det stod der fra begyndelsen og blev først fanget i september 2026.
 - **Service workeren må ikke hente fra browserens egen cache.** Filerne i
   `install` hentes med `cache: 'reload'`. Uden det fyldte den nye version sin
   cache med de gamle filer: cachen skiftede navn til den nye `VERSION`, men

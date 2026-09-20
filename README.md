@@ -76,7 +76,9 @@ games/restaurant/
   js/koekken.js         retter, ingredienser, de 36 bestillinger og reglerne — ingen DOM
   js/game.js            kunder, tallerken, hylde, klokke, lyd og stemme
   lyd/klip.json         stemmeklip til bestillingerne, hvis der er nogen
-assets/noto/*.svg       mad og dyr, Noto Emoji (Apache 2.0, se assets/noto/NOTICE.md)
+  billeder/*.png        mad og gæster, malet (se billeder/NOTICE.md) — altid kvadratiske
+assets/noto/*.svg       klokke, hjerte, ko, mælk, bi og Stjerneurets kort, Noto Emoji
+                        (Apache 2.0, se assets/noto/NOTICE.md)
 
 test/bobler.test.js     en robot spiller alle tolv baner igennem
 test/bogstaver.test.js  alle 68 tegn kan tegnes af en finger langs stregen, ting, ord og regnestykker
@@ -300,6 +302,13 @@ Uden MDM: åbn siden i Safari, tryk Del og vælg Føj til hjemmeskærm.
 Sitet skal serveres over HTTPS. Service workeren — og dermed offline-tilstand —
 virker ikke over almindelig HTTP undtagen på localhost.
 
+Forsidens kort linker til mapper (`games/racer/`), men `FILER` i `sw.js`
+indeholder filerne (`games/racer/index.html`). Derfor prøver `fetch`-handleren
+`index.html` i mappen, før den giver op. Uden det kan forsiden åbnes uden net,
+men ingen af spillene. Skal offline testes, skal serveren lukkes helt —
+`setOffline` i en browser-automat blokerer ikke localhost og giver et falsk
+grønt svar.
+
 ## Test på iPad
 
 Simulatoren og desktop-Safari lyver om to ting, så de skal prøves på hardware:
@@ -359,6 +368,13 @@ baggrundslag (`tegnLag`) og kopieres ind pr. frame. Kun det, der bevæger sig,
 tegnes hver gang. Kasser, mønter og klokke får deres skygge fra små
 fortegnede bunde (`kasseBund`). Vinduet vises kun med én spiller og god plads,
 hylden kun når stationen er bred nok.
+
+Maden og gæsterne er malede PNG'er i `billeder/`, én pr. ingrediens, ret og
+gæst. `sti()` i `game.js` vælger mappen ud fra navnet, så resten af koden bare
+siger `billede('ost')`. Filerne skal være kvadratiske: `tegnBillede` tegner
+dem som `drawImage(img, -str/2, -str/2, str, str)`, så et aflangt billede
+bliver trukket skævt. Klokken, hjertet, koen, mælken og bien er stadig Noto
+Emoji i `assets/noto/`.
 
 Hver ret laves først, og hver ret bruger fingeren på sin egen måde: pizzadejen
 rulles ud ved at gnide frem og tilbage, bøffen svirpes op i luften for at blive
