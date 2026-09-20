@@ -72,6 +72,30 @@ To fælder, der allerede er trådt i:
 Bobler blev set efter og beholdt, som det er. Maskinens faste pladser er den
 ene undtagelse: dér blev spillet ændret, fordi det var det, der blev bedt om.
 
+## Den malede palet
+
+Alle spil bruger den samme dæmpede, malede palet. Skal noget have en farve,
+tages den herfra i stedet for en ny neonfarve:
+
+| Rolle | Farve |
+|---|---|
+| Blæk (streger, tekst) | `#5e4a3a`, lysere `#6b5545` |
+| Papir og kort | `#f8f1e6`, knapper `#efe3d0` |
+| Sand og træ | `#e5d3ae`, `#d9ba8a`, `#b18a56`, `#8a663d` |
+| Grøn | `#93bc63`, dyb `#5f8240`, salvie til startknapper `#8fae86` |
+| Blå | `#8fc7e8`, `#5f9fc9`, valgt-blå `#aed3e4` |
+| Rød og fersken | `#d95f45`, `#e08a52`, `#f0c46a` |
+| Lilla | `#9b7bd4` |
+
+Kort og knapper har bløde skygger, ikke sorte kanter: `0 6px 0 rgba(107,85,68,.18)`
+og `inset 0 3px 0 rgba(255,255,255,.85)`. Menuikonerne ligger i `js/menu.js` og
+hjem-knappen i `js/skal.js`, så en ændring dér slår igennem i alle spil.
+
+Malede billeder ligger i `assets/malet/` (forsiden) og
+`games/maskinen/billeder/` (Nøddeskoven). Noto Emoji bruges stadig, hvor et
+barn skal kunne genkende en ting med det samme: maden og gæsterne i
+Restauranten, kortene i Klokken og tingene i ABC og 123.
+
 ## Designregler for 6-årige
 
 - Ingen tekst der skal læses for at kunne spille. Omgangstælleren er cirkler,
