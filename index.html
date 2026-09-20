@@ -18,10 +18,14 @@
 <header class="top">
   <div class="badge" aria-hidden="true">
     <svg viewBox="0 0 48 48" width="44" height="44">
-      <circle cx="24" cy="24" r="21" fill="#ffd23f" stroke="#12261f" stroke-width="4"/>
-      <circle cx="17" cy="20" r="3.5" fill="#12261f"/>
-      <circle cx="31" cy="20" r="3.5" fill="#12261f"/>
-      <path d="M15 29c3 5 15 5 18 0" fill="none" stroke="#12261f" stroke-width="4" stroke-linecap="round"/>
+      <defs><radialGradient id="sol" cx=".35" cy=".3" r=".85">
+        <stop offset="0" stop-color="#fff4d2"/><stop offset=".55" stop-color="#ffdf9e"/><stop offset="1" stop-color="#e8b95f"/>
+      </radialGradient></defs>
+      <circle cx="24" cy="24" r="21" fill="url(#sol)"/>
+      <circle cx="17" cy="21" r="3.2" fill="#6b5545"/>
+      <circle cx="31" cy="21" r="3.2" fill="#6b5545"/>
+      <path d="M16 29c3 5 13 5 16 0" fill="none" stroke="#6b5545" stroke-width="3.4" stroke-linecap="round"/>
+      <ellipse cx="17" cy="15" rx="6" ry="3.4" fill="#fff" opacity=".5" transform="rotate(-24 17 15)"/>
     </svg>
   </div>
   <h1>SFO Spil</h1>

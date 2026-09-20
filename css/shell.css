@@ -1,11 +1,11 @@
 :root{
-  --skov:#1b4d3e;
-  --skov-dyb:#12261f;
-  --sol:#ffd23f;
-  --tomat:#e8442e;
-  --himmel:#3aa7e0;
-  --kridt:#f7f3e8;
-  --kant:4px;
+  /* Malet palet. Samme toner som i spillene, saa forsiden og spillene hoerer sammen. */
+  --sand:#ead8b2;
+  --sand-dyb:#dcc59a;
+  --kridt:#f8f0e0;
+  --blaek:#5e4a3a;
+  --blaek-lys:#6b5545;
+  --kant:0px;
 }
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -13,19 +13,25 @@
 html,body{
   margin:0;
   min-height:100%;
-  background:var(--skov);
-  color:var(--kridt);
+  background:var(--sand);
+  color:var(--blaek);
   font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",sans-serif;
   -webkit-user-select:none;
   user-select:none;
   overscroll-behavior:none;
 }
 
+/* Papir: et bloedt forloeb og et fint korn tegnet i en data-URI, saa der
+   aldrig hentes noget over nettet. */
 body{
   display:flex;
   flex-direction:column;
   padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));
   gap:28px;
+  background:
+    url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23k)' opacity='0.055'/%3E%3C/svg%3E"),
+    radial-gradient(120% 90% at 20% 0%, #f2e3c4 0%, var(--sand) 46%, var(--sand-dyb) 100%);
+  background-attachment:fixed;
 }
 
 .top{display:flex;align-items:center;gap:14px}
@@ -35,9 +41,8 @@ body{
   width:56px;height:56px;
   display:grid;place-items:center;
   background:var(--kridt);
-  border:var(--kant) solid var(--skov-dyb);
-  border-radius:18px;
-  box-shadow:5px 5px 0 var(--skov-dyb);
+  border-radius:20px;
+  box-shadow:0 6px 14px rgba(94,74,58,.24), inset 0 2px 0 rgba(255,255,255,.7);
 }
 
 h1{
@@ -45,6 +50,7 @@ h1{
   font-size:clamp(30px,6vw,46px);
   font-weight:800;
   letter-spacing:-0.02em;
+  color:var(--blaek-lys);
 }
 
 .grid{
@@ -62,34 +68,45 @@ h1{
   gap:6px;
   min-height:230px;
   padding:18px;
-  border:var(--kant) solid var(--skov-dyb);
+  border:var(--kant) solid transparent;
   border-radius:26px;
-  box-shadow:7px 7px 0 var(--skov-dyb);
-  color:var(--skov-dyb);
+  box-shadow:0 12px 24px rgba(94,74,58,.22), inset 0 2px 0 rgba(255,255,255,.55);
+  color:var(--blaek-lys);
   text-decoration:none;
   position:relative;
   overflow:hidden;
   transition:transform .09s,box-shadow .09s;
 }
 
-.card:active{transform:translate(5px,5px);box-shadow:2px 2px 0 var(--skov-dyb)}
+/* Et lyst felt oppe i kortet, som paa et malet kort */
+.card::before{
+  content:"";
+  position:absolute;
+  inset:10px 10px auto 10px;
+  height:46%;
+  border-radius:20px;
+  background:rgba(255,255,255,.42);
+  pointer-events:none;
+}
+
+.card:active{transform:translate(0,4px);box-shadow:0 5px 12px rgba(94,74,58,.24), inset 0 2px 0 rgba(255,255,255,.55)}
 
 .card:focus-visible{outline:5px solid var(--kridt);outline-offset:4px}
 
 .card .art{
   /* Oppe i hoejre hjoerne, saa den ikke ligger oven i titlen og teksten nederst.
-     Et felt med lag af sprites (img og svg), hver placeret med left/top. */
+     Et felt med lag af malede billeder (img og svg), hver placeret med left/top. */
   position:absolute;
   inset:12px 12px auto auto;
   width:112px;height:108px;
   pointer-events:none;
 }
-.card .art img,.card .art svg{position:absolute;display:block;filter:drop-shadow(2px 3px 0 rgba(18,38,31,.25))}
+.card .art img,.card .art svg{position:absolute;display:block;filter:drop-shadow(2px 5px 6px rgba(94,74,58,.28))}
 
-.card h2{margin:0;font-size:27px;font-weight:800}
-.card p{margin:0;font-size:16px;font-weight:600;opacity:.78}
+.card h2{margin:0;font-size:27px;font-weight:800;position:relative}
+.card p{margin:0;font-size:16px;font-weight:600;opacity:.72;position:relative}
 
-.foot{text-align:center;font-size:15px;font-weight:600;opacity:.6}
+.foot{text-align:center;font-size:15px;font-weight:600;opacity:.55;color:var(--blaek-lys)}
 .foot p{margin:0}
 
 @media (prefers-reduced-motion:reduce){

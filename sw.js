@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v61';
+const VERSION = 'sfo-spil-v62';
 
 const FILER = [
   './',
@@ -484,6 +484,14 @@ const FILER = [
   'games/bogstaver/ting/aesel.svg',
   'games/bogstaver/ting/oe.svg',
   'games/bogstaver/ting/oern.svg',
+  'assets/malet/NOTICE.md',
+  'assets/malet/aeble.png',
+  'assets/malet/bil.png',
+  'assets/malet/bold.png',
+  'assets/malet/hus.png',
+  'assets/malet/pindsvin.png',
+  'assets/malet/pizza.png',
+  'assets/malet/rummus.png',
   'assets/kenney/LICENSE.txt',
   'assets/kenney/NOTICE.md',
   'assets/kenney/bil_blue_1.png',
