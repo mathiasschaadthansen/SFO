@@ -23,21 +23,27 @@
     };
   }
 
-  // Farverne er dem der findes i Kenneys Shape Characters (sprite-navn).
+  // Malede farver. Hver klat har en lys top, sin grundfarve og en dyb bund.
+  // Grundfarven (lak) bruges ogsaa paa knappen og maalcirklerne, saa barnet
+  // kan se hvilken klat der er dets.
   var FARVER = [
-    { lak: '#e8442e', navn: 'Rød', sprite: 'red' },
-    { lak: '#3aa7e0', navn: 'Blå', sprite: 'blue' },
-    { lak: '#4cb944', navn: 'Grøn', sprite: 'green' },
-    { lak: '#ffd23f', navn: 'Gul', sprite: 'yellow' },
-    { lak: '#9b5de5', navn: 'Lilla', sprite: 'purple' },
-    { lak: '#f28cc0', navn: 'Pink', sprite: 'pink' }
+    { navn: 'Rød',   lys: '#f6a68d', lak: '#e4644a', moerk: '#a83a24' },
+    { navn: 'Blå',   lys: '#9ad2f0', lak: '#3f9ad6', moerk: '#23648f' },
+    { navn: 'Grøn',  lys: '#c3e08e', lak: '#7ab648', moerk: '#4a7a2c' },
+    { navn: 'Gul',   lys: '#ffe2a0', lak: '#f2c14e', moerk: '#c48f24' },
+    { navn: 'Lilla', lys: '#d3bff2', lak: '#9b7bd4', moerk: '#654a9c' },
+    { navn: 'Pink',  lys: '#fbc9dc', lak: '#ef94b8', moerk: '#c25f88' }
   ];
   var FJAES = ['glad', 'sej', 'soed'];
-  var ANSIGT = { glad: 'a', sej: 'e', soed: 'c', jubel: 'c', sur: 'k' };   // -> assets/kenney/ansigt_<x>.png
-  // Alle sprites hentes med det samme, saa de er klar foer foerste kamp
-  var ALLE_SPRITES = ['red', 'blue', 'green', 'yellow', 'purple', 'pink'].map(function (f) { return '../../assets/kenney/klat_' + f + '.png'; })
-    .concat(['a', 'c', 'e', 'k'].map(function (a) { return '../../assets/kenney/ansigt_' + a + '.png'; }));
-  Sprites.forhent(ALLE_SPRITES);
+
+  // Malet palet til banen. Samme toner som i Maskinen, saa spillene ligner hinanden.
+  var P = {
+    himmelTop: '#8fc7e8', himmelBund: '#dfeef0',
+    sol: '#ffdf9e', solKant: 'rgba(255,214,120,0)',
+    graesLys: '#93bc63', graesDyb: '#5d8240', straa: '#4d7a3c',
+    traeLys: '#f0dcb8', trae: '#d9ba8a', traeM: '#b18a56', traeDyb: '#8a663d',
+    blaek: '#4a3a2c', kridt: '#f8f0e0'
+  };
 
   // Kun i hukommelsen. Intet gemmes om boernene.
   var valg = [
@@ -257,182 +263,331 @@
 
   /* ---------- tegning ---------- */
 
+  // Papirkorn. Tegnes én gang og laegges som moenster hen over banen, saa
+  // farverne ikke staar helt flade. Ét moenster-fyld pr. billede, intet mere.
+  var korn = null, kornFyld = null;
+  function kornMoenster() {
+    if (!korn) {
+      korn = document.createElement('canvas');
+      korn.width = 160; korn.height = 160;
+      var k = korn.getContext('2d');
+      for (var i = 0; i < 2600; i++) {
+        k.fillStyle = 'rgba(74,58,44,' + (0.02 + Math.random() * 0.04).toFixed(3) + ')';
+        k.fillRect(Math.random() * 160, Math.random() * 160, 1, 1);
+      }
+    }
+    if (!kornFyld) kornFyld = ctx.createPattern(korn, 'repeat');
+    return kornFyld;
+  }
+
   function tegnBaggrund() {
-    var B = window.innerWidth, H = window.innerHeight;
-    var himmel = ctx.createLinearGradient(0, 0, 0, H);
-    himmel.addColorStop(0, '#7fd0f5');
-    himmel.addColorStop(1, '#c9ecfb');
+    var B = window.innerWidth, H = window.innerHeight, s = visning.skala;
+    var jord = sy(0);
+
+    var himmel = ctx.createLinearGradient(0, 0, 0, Math.max(jord, 1));
+    himmel.addColorStop(0, P.himmelTop);
+    himmel.addColorStop(1, P.himmelBund);
     ctx.fillStyle = himmel;
     ctx.fillRect(0, 0, B, H);
 
-    // Sol
-    ctx.fillStyle = '#ffd23f';
-    ctx.beginPath();
-    ctx.arc(sx(120), sy(INDSTIL.hoejde - 70), 38 * visning.skala, 0, Math.PI * 2);
-    ctx.fill();
+    // Sol: en bloed malet plet, samme sted og samme stoerrelse som foer
+    var solX = sx(120), solY = sy(INDSTIL.hoejde - 70), solR = 38 * s;
+    var skin = ctx.createRadialGradient(solX, solY, solR * 0.5, solX, solY, solR * 2.4);
+    skin.addColorStop(0, 'rgba(255,222,150,0.55)');
+    skin.addColorStop(1, 'rgba(255,222,150,0)');
+    ctx.fillStyle = skin;
+    ctx.beginPath(); ctx.arc(solX, solY, solR * 2.4, 0, Math.PI * 2); ctx.fill();
+    var kugle = ctx.createRadialGradient(solX - solR * 0.3, solY - solR * 0.3, solR * 0.15, solX, solY, solR);
+    kugle.addColorStop(0, '#fff4d2');
+    kugle.addColorStop(1, P.sol);
+    ctx.fillStyle = kugle;
+    ctx.beginPath(); ctx.arc(solX, solY, solR, 0, Math.PI * 2); ctx.fill();
 
-    // Skyer (faste, saa de ikke flimrer)
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    [[300, 450, 1], [640, 500, 0.8], [850, 430, 1.1]].forEach(function (s) {
-      var x = sx(s[0]), y = sy(s[1]), r = 26 * s[2] * visning.skala;
+    // Skyer (faste, saa de ikke flimrer) — malede, bloede kanter
+    [[300, 450, 1], [640, 500, 0.8], [850, 430, 1.1]].forEach(function (sk) {
+      var x = sx(sk[0]), y = sy(sk[1]), r = 26 * sk[2] * s;
+      ctx.save();
+      ctx.globalAlpha = 0.72;
+      ctx.fillStyle = '#ffffff';
+      [[0, 0, 1], [1.1, 0.2, 0.8], [-1.1, 0.25, 0.75], [0.4, -0.45, 0.6]].forEach(function (d) {
+        ctx.beginPath();
+        ctx.ellipse(x + r * d[0], y + r * d[1], r * d[2] * 1.15, r * d[2] * 0.8, 0, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = '#d8e9f2';
       ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.arc(x + r * 1.1, y + r * 0.2, r * 0.8, 0, Math.PI * 2);
-      ctx.arc(x - r * 1.1, y + r * 0.25, r * 0.75, 0, Math.PI * 2);
+      ctx.ellipse(x, y + r * 0.45, r * 1.5, r * 0.32, 0, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
     });
 
     // Graes under jorden og helt ned
-    ctx.fillStyle = '#3f8f52';
-    ctx.fillRect(0, sy(0), B, H - sy(0));
-    ctx.fillStyle = '#4cb944';
-    ctx.fillRect(sx(0), sy(0), INDSTIL.bredde * visning.skala, 10 * visning.skala);
+    var graes = ctx.createLinearGradient(0, jord, 0, H);
+    graes.addColorStop(0, P.graesLys);
+    graes.addColorStop(1, P.graesDyb);
+    ctx.fillStyle = graes;
+    ctx.fillRect(0, jord, B, H - jord);
 
-    // Midterlinje og midtercirkel
-    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-    ctx.lineWidth = 3 * visning.skala;
+    // Bloed kant af lys graes og spredte totter. Faste vaerdier, saa de staar stille.
+    ctx.save();
+    var kant = ctx.createLinearGradient(0, jord - 9 * s, 0, jord + 14 * s);
+    kant.addColorStop(0, 'rgba(190,214,140,0)');
+    kant.addColorStop(0.45, 'rgba(190,214,140,0.85)');
+    kant.addColorStop(1, 'rgba(147,188,99,0)');
+    ctx.fillStyle = kant;
+    ctx.fillRect(0, jord - 9 * s, B, 23 * s);
+    ctx.lineCap = 'round';
+    for (var n = 0; n < Math.ceil(B / (26 * s)); n++) {
+      var x = (n * 26 + (n * 13) % 11) * s;
+      var h = (7 + (n * 7) % 9) * s;
+      var lud = (((n % 3) - 1)) * 4 * s;
+      ctx.globalAlpha = n % 2 ? 0.28 : 0.4;
+      ctx.strokeStyle = n % 2 ? P.graesLys : P.straa;
+      ctx.lineWidth = 2.4 * s;
+      ctx.beginPath();
+      ctx.moveTo(x, jord + 5 * s);
+      ctx.quadraticCurveTo(x + 2 * s, jord - h * 0.5, x + lud, jord - h);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Papirkorn hen over det hele
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = kornMoenster();
+    ctx.fillRect(0, 0, B, H);
+    ctx.restore();
+
+    // Midterlinje, samme sted og samme laengde som foer
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+    ctx.lineWidth = 3 * s;
+    ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.moveTo(sx(INDSTIL.bredde / 2), sy(0));
-    ctx.lineTo(sx(INDSTIL.bredde / 2), sy(0) + 40 * visning.skala);
+    ctx.moveTo(sx(INDSTIL.bredde / 2), jord);
+    ctx.lineTo(sx(INDSTIL.bredde / 2), jord + 40 * s);
     ctx.stroke();
+    ctx.restore();
   }
 
   function tegnMaal(side) {
     var MD = INDSTIL.maalDybde, MH = INDSTIL.maalHoejde, B = INDSTIL.bredde;
     var x0 = side === 0 ? 0 : B - MD, x1 = side === 0 ? MD : B;
     var s = visning.skala;
-    // Net
-    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
-    ctx.lineWidth = 1.5 * s;
-    for (var x = x0; x <= x1; x += 12) {
+
+    // Net: samme traadafstand som foer, men malet garn i to toner
+    ctx.save();
+    ctx.lineCap = 'round';
+    var x, y;
+    ctx.strokeStyle = 'rgba(90,110,100,0.14)';
+    ctx.lineWidth = 1.8 * s;
+    for (x = x0; x <= x1; x += 12) {
+      ctx.beginPath(); ctx.moveTo(sx(x) + s, sy(0)); ctx.lineTo(sx(x) + s, sy(MH) + s); ctx.stroke();
+    }
+    for (y = 0; y <= MH; y += 12) {
+      ctx.beginPath(); ctx.moveTo(sx(x0), sy(y) + s); ctx.lineTo(sx(x1), sy(y) + s); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.42)';
+    ctx.lineWidth = 1.2 * s;
+    for (x = x0; x <= x1; x += 12) {
       ctx.beginPath(); ctx.moveTo(sx(x), sy(0)); ctx.lineTo(sx(x), sy(MH)); ctx.stroke();
     }
-    for (var y = 0; y <= MH; y += 12) {
+    for (y = 0; y <= MH; y += 12) {
       ctx.beginPath(); ctx.moveTo(sx(x0), sy(y)); ctx.lineTo(sx(x1), sy(y)); ctx.stroke();
     }
-    // Overligger og stolpe
-    ctx.strokeStyle = '#f7f3e8';
-    ctx.lineWidth = 8 * s;
+    ctx.restore();
+
+    // Overliggeren: malet trae, samme hoejde og samme tykkelse som foer
+    var xa = sx(side === 0 ? 0 : B), xb = sx(side === 0 ? MD : B - MD), yb = sy(MH);
+    ctx.save();
     ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(sx(side === 0 ? 0 : B), sy(MH));
-    ctx.lineTo(sx(side === 0 ? MD : B - MD), sy(MH));
+    ctx.strokeStyle = 'rgba(74,58,44,0.22)';
+    ctx.lineWidth = 9 * s;
+    ctx.beginPath(); ctx.moveTo(xa, yb + 3 * s); ctx.lineTo(xb, yb + 3 * s); ctx.stroke();
+    var bjaelke = ctx.createLinearGradient(0, yb - 5 * s, 0, yb + 5 * s);
+    bjaelke.addColorStop(0, P.traeLys);
+    bjaelke.addColorStop(0.55, P.trae);
+    bjaelke.addColorStop(1, P.traeM);
+    ctx.strokeStyle = bjaelke;
+    ctx.lineWidth = 8 * s;
+    ctx.beginPath(); ctx.moveTo(xa, yb); ctx.lineTo(xb, yb); ctx.stroke();
+    // Aarer i traeet
+    ctx.strokeStyle = 'rgba(138,102,61,0.35)';
+    ctx.lineWidth = 1.2 * s;
+    ctx.beginPath(); ctx.moveTo(xa, yb - 1.5 * s); ctx.lineTo(xb, yb - 1.5 * s); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(xa, yb + 2 * s); ctx.lineTo(xb, yb + 2 * s); ctx.stroke();
+    ctx.restore();
+
+    // Stolpen forrest. Den er rund i fysikken med radius 6, og saa stor tegnes den.
+    ctx.save();
+    var kugle = ctx.createRadialGradient(xb - 2 * s, yb - 2 * s, 1, xb, yb, 6 * s);
+    kugle.addColorStop(0, P.traeLys);
+    kugle.addColorStop(1, P.traeM);
+    ctx.fillStyle = kugle;
+    ctx.beginPath(); ctx.arc(xb, yb, 6 * s, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(138,102,61,0.5)';
+    ctx.lineWidth = 1.2 * s;
     ctx.stroke();
-    ctx.strokeStyle = '#12261f';
-    ctx.lineWidth = 2 * s;
-    ctx.beginPath();
-    ctx.moveTo(sx(side === 0 ? 0 : B), sy(MH) - 4 * s);
-    ctx.lineTo(sx(side === 0 ? MD : B - MD), sy(MH) - 4 * s);
-    ctx.stroke();
+    ctx.restore();
   }
 
   /**
    * Tegner en klat med fronten mod (kigX, kigY). Bruges baade paa banen og
    * i menuen, derfor egen context. Enheder i verden-px, skaleres udenom.
+   *
+   * Fem ansigter: glad, sej og soed vaelger barnet selv, og jubel og sur
+   * kommer af sig selv, naar der bliver scoret (stemning +1 / -1).
+   * Kroppen er stadig en halvcirkel med radius klatRadius, praecis som i fysikken.
    */
   function tegnKlatForm(c, farve, fjaes, kigX, kigY, sq, stemning) {
     var R = INDSTIL.klatRadius;
     var sqx = 1 + sq * 0.25, sqy = 1 - sq * 0.3;
     stemning = stemning || 0;
+    var side = kigX >= 0 ? 1 : -1;
+    var vinkel = Math.atan2(kigY, kigX);
 
-    // Sprite fra Kenney: en rund krop klippet til en halvcirkel, og et ansigt
-    // der kigger lidt mod bolden. Falder tilbage til kodetegningen til det er hentet.
-    var krop = Sprites.hent('../../assets/kenney/klat_' + farve.sprite + '.png');
-    var ansigt = Sprites.hent('../../assets/kenney/ansigt_' + (stemning > 0 ? ANSIGT.jubel : (stemning < 0 ? ANSIGT.sur : ANSIGT[fjaes] || 'a')) + '.png');
-    // Paa vej: tegn ingenting, saa den gamle kodetegning ikke blinker frem foerst
-    if (Sprites.venter(krop) || Sprites.venter(ansigt)) return;
-    if (Sprites.klar(krop) && Sprites.klar(ansigt)) {
-      c.save();
-      c.scale(sqx, sqy);
-      c.beginPath();
-      c.rect(-R - 4, -R - 4, R * 2 + 8, R + 4);
-      c.clip();
-      c.drawImage(krop, -R, -R, R * 2, R * 2);
-      c.restore();
-      var side = kigX >= 0 ? 1 : -1;
-      var aw = R * 1.05, ah = aw * 29 / 50;
-      var dx = Math.max(-1, Math.min(1, kigX / 200)) * R * 0.08;
-      c.drawImage(ansigt, -aw / 2 + dx + side * R * 0.05, -R * 0.78 + Math.max(0, stemning) * -2, aw, ah);
-      return;
-    }
-
+    /* ---- krop ---- */
     c.save();
     c.scale(sqx, sqy);
-    // Krop: halvcirkel
-    c.fillStyle = farve.lak;
-    c.strokeStyle = '#12261f';
-    c.lineWidth = 4;
+
+    // Oerer bag kroppen
+    [-1, 1].forEach(function (d) {
+      c.fillStyle = farve.moerk;
+      c.beginPath();
+      c.ellipse(d * R * 0.5, -R * 0.92, R * 0.19, R * 0.3, d * 0.3, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = farve.lak;
+      c.beginPath();
+      c.ellipse(d * R * 0.5, -R * 0.94, R * 0.12, R * 0.21, d * 0.3, 0, Math.PI * 2);
+      c.fill();
+    });
+
+    // Malet halvcirkel: lys foroven, dyb forneden
+    var maling = c.createRadialGradient(-side * R * 0.28, -R * 0.62, R * 0.06, 0, -R * 0.2, R * 1.25);
+    maling.addColorStop(0, farve.lys);
+    maling.addColorStop(0.42, farve.lak);
+    maling.addColorStop(1, farve.moerk);
     c.beginPath();
     c.arc(0, 0, R, Math.PI, 0);
     c.closePath();
+    c.fillStyle = maling;
     c.fill();
+    c.strokeStyle = farve.moerk;
+    c.lineWidth = 3;
     c.stroke();
-    // Glans
-    c.fillStyle = 'rgba(255,255,255,0.35)';
+
+    // Skygge langs jorden, saa den staar paa banen
+    c.save();
     c.beginPath();
-    c.ellipse(-R * 0.35, -R * 0.55, R * 0.22, R * 0.12, -0.5, 0, Math.PI * 2);
+    c.arc(0, 0, R, Math.PI, 0);
+    c.closePath();
+    c.clip();
+    var bund = c.createLinearGradient(0, -R * 0.35, 0, 0);
+    bund.addColorStop(0, 'rgba(74,58,44,0)');
+    bund.addColorStop(1, 'rgba(74,58,44,0.28)');
+    c.fillStyle = bund;
+    c.fillRect(-R, -R, R * 2, R);
+    c.restore();
+
+    // Glans
+    c.fillStyle = 'rgba(255,255,255,0.26)';
+    c.beginPath();
+    c.ellipse(-side * R * 0.36, -R * 0.66, R * 0.2, R * 0.09, -side * 0.5, 0, Math.PI * 2);
     c.fill();
     c.restore();
 
-    // Oejne kigger mod bolden
-    var vinkel = Math.atan2(kigY, kigX);
-    var side = kigX >= 0 ? 1 : -1;
-    var øx = side * R * 0.45, øy = -R * 0.5;
-    if (fjaes === 'sej') {
-      c.fillStyle = '#12261f';
+    /* ---- ansigt ---- */
+    // Ansigtet sidder paa den side klatten kigger, men holder sig inden for kroppen.
+    var øx = side * R * 0.36, øy = -R * 0.48;
+
+    function oejne(rr, laag) {
+      [-1, 1].forEach(function (d) {
+        var cx = øx + d * 12, cy = øy;
+        c.fillStyle = '#fff';
+        c.beginPath(); c.arc(cx, cy, rr, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = farve.moerk; c.lineWidth = 2; c.stroke();
+        var px = cx + Math.cos(vinkel) * rr * 0.38, py = cy + Math.sin(vinkel) * rr * 0.38;
+        c.fillStyle = P.blaek;
+        c.beginPath(); c.arc(px, py, rr * 0.46, 0, Math.PI * 2); c.fill();
+        c.fillStyle = 'rgba(255,255,255,0.9)';
+        c.beginPath(); c.arc(px - rr * 0.17, py - rr * 0.2, rr * 0.17, 0, Math.PI * 2); c.fill();
+        if (laag) {
+          c.strokeStyle = P.blaek; c.lineWidth = 2.5; c.lineCap = 'round';
+          c.beginPath(); c.arc(cx, cy, rr + 1, Math.PI * 1.1, Math.PI * 1.9); c.stroke();
+        }
+      });
+    }
+
+    function kinder(styrke, br) {
+      c.fillStyle = 'rgba(226,104,84,' + styrke + ')';
+      [-1, 1].forEach(function (d) {
+        c.beginPath();
+        c.ellipse(øx + d * 24, øy + 15, br, br * 0.68, 0, 0, Math.PI * 2);
+        c.fill();
+      });
+    }
+
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+
+    if (stemning > 0) {
+      // Jubel: lukkede glade oejne, aaben mund og roede kinder
+      kinder(0.42, 8);
+      c.strokeStyle = P.blaek; c.lineWidth = 3.5;
+      [-1, 1].forEach(function (d) {
+        c.beginPath();
+        c.arc(øx + d * 12, øy + 4, 10, Math.PI * 1.12, Math.PI * 1.88);
+        c.stroke();
+      });
+      c.fillStyle = P.blaek;
+      c.beginPath(); c.ellipse(øx, øy + 14, 12, 9, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#e4644a';
+      c.beginPath(); c.ellipse(øx, øy + 17, 6, 4, 0, 0, Math.PI * 2); c.fill();
+    } else if (stemning < 0) {
+      // Sur: bryn ned mod naesen og en nedadvendt mund
+      oejne(10, false);
+      c.strokeStyle = P.blaek; c.lineWidth = 3.5;
+      [-1, 1].forEach(function (d) {
+        c.beginPath();
+        c.moveTo(øx + d * 17, øy - 11);
+        c.lineTo(øx + d * 4, øy - 5);
+        c.stroke();
+      });
+      c.lineWidth = 3;
       c.beginPath();
-      c.roundRect(øx - 30, øy - 9, 60, 18, 6);
+      c.arc(øx, øy + 21, 9, Math.PI * 1.15, Math.PI * 1.85);
+      c.stroke();
+    } else if (fjaes === 'sej') {
+      // Sej: solbriller og et skaevt smil
+      c.fillStyle = P.blaek;
+      c.beginPath();
+      c.roundRect(øx - 21, øy - 8, 42, 16, 7);
       c.fill();
       c.fillStyle = 'rgba(255,255,255,0.35)';
-      c.fillRect(øx - 24, øy - 6, 10, 4);
-    } else if (fjaes === 'stjerne') {
-      c.fillStyle = '#ffd23f';
-      c.strokeStyle = '#12261f';
-      c.lineWidth = 2;
-      [-1, 1].forEach(function (d) {
-        var cx = øx + d * 14, cy = øy;
-        c.beginPath();
-        for (var k = 0; k < 10; k++) {
-          var r = k % 2 ? 4 : 10, v = -Math.PI / 2 + k * Math.PI / 5;
-          c.lineTo(cx + Math.cos(v) * r, cy + Math.sin(v) * r);
-        }
-        c.closePath();
-        c.fill();
-        c.stroke();
-      });
+      c.beginPath();
+      c.ellipse(øx - 11, øy - 2, 5, 2.6, -0.5, 0, Math.PI * 2);
+      c.fill();
+      c.strokeStyle = P.blaek; c.lineWidth = 3;
+      c.beginPath();
+      c.moveTo(øx - 9, øy + 16);
+      c.quadraticCurveTo(øx + 1, øy + 23, øx + 11, øy + 15);
+      c.stroke();
+    } else if (fjaes === 'soed') {
+      // Soed: store oejne med vipper, roede kinder og et lille smil
+      kinder(0.3, 7);
+      oejne(11, true);
+      c.strokeStyle = P.blaek; c.lineWidth = 3;
+      c.beginPath();
+      c.arc(øx, øy + 16, 7, 0.2 * Math.PI, 0.8 * Math.PI);
+      c.stroke();
     } else {
-      [-1, 1].forEach(function (d) {
-        var cx = øx + d * 13, cy = øy;
-        c.fillStyle = '#fff';
-        c.strokeStyle = '#12261f';
-        c.lineWidth = 2.5;
-        c.beginPath();
-        c.arc(cx, cy, 10, 0, Math.PI * 2);
-        c.fill();
-        c.stroke();
-        c.fillStyle = '#12261f';
-        c.beginPath();
-        c.arc(cx + Math.cos(vinkel) * 4, cy + Math.sin(vinkel) * 4, 4.5, 0, Math.PI * 2);
-        c.fill();
-      });
-    }
-    // Mund: smil, stort smil naar man har scoret, sur naar man har faaet et maal imod
-    c.strokeStyle = '#12261f';
-    c.lineWidth = 3;
-    c.lineCap = 'round';
-    c.beginPath();
-    if (stemning < 0) {
-      c.arc(side * R * 0.5, -R * 0.08, 9, 1.15 * Math.PI, 1.85 * Math.PI);
-    } else {
-      var størrelse = stemning > 0 ? 14 : 9;
-      c.arc(side * R * 0.5, -R * 0.2, størrelse, 0.15 * Math.PI, 0.85 * Math.PI);
-    }
-    c.stroke();
-    if (stemning > 0) {
-      // Roede kinder
-      c.fillStyle = 'rgba(232,68,46,0.45)';
-      c.beginPath(); c.arc(side * R * 0.15, -R * 0.15, 6, 0, Math.PI * 2); c.fill();
-      c.beginPath(); c.arc(side * R * 0.85, -R * 0.15, 6, 0, Math.PI * 2); c.fill();
+      // Glad: runde oejne og et bredt smil
+      oejne(10, false);
+      c.strokeStyle = P.blaek; c.lineWidth = 3;
+      c.beginPath();
+      c.arc(øx, øy + 12, 11, 0.15 * Math.PI, 0.85 * Math.PI);
+      c.stroke();
     }
   }
 
@@ -457,35 +612,46 @@
   function tegnBold() {
     var b = kamp.bold, s = visning.skala, r = b.r * s;
     hale.forEach(function (h) {
-      ctx.globalAlpha = h.liv * 1.6;
-      ctx.fillStyle = '#fff';
+      ctx.globalAlpha = h.liv * 1.1;
+      ctx.fillStyle = '#fff6e2';
       ctx.beginPath();
       ctx.arc(sx(h.x), sy(h.y), r * h.liv * 3, 0, Math.PI * 2);
       ctx.fill();
     });
     ctx.globalAlpha = 1;
     ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.fillStyle = 'rgba(74,58,44,0.2)';
     ctx.beginPath();
     ctx.ellipse(sx(b.x), sy(0) + 3 * s, r * Math.max(0.3, 1 - b.y / 500), 4 * s, 0, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.translate(sx(b.x), sy(b.y));
     ctx.rotate(b.x / 40);
-    ctx.fillStyle = '#fff';
-    ctx.strokeStyle = '#12261f';
-    ctx.lineWidth = 3 * s;
+    // Malet laederbold: lys foroven, varm skygge forneden
+    var maling = ctx.createRadialGradient(-r * 0.32, -r * 0.34, r * 0.08, 0, 0, r);
+    maling.addColorStop(0, '#ffffff');
+    maling.addColorStop(0.7, '#ffffff');
+    maling.addColorStop(1, '#e9e2d2');
+    ctx.fillStyle = maling;
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fill();
+    // Moerk kant, saa bolden kan ses mod himlen naar den er hurtig
+    ctx.strokeStyle = '#3c4a42';
+    ctx.lineWidth = 3 * s;
     ctx.stroke();
-    ctx.fillStyle = '#12261f';
+    // De fem felter, samme steder som foer
+    ctx.fillStyle = '#3c4a42';
     for (var k = 0; k < 5; k++) {
       var v = k * Math.PI * 2 / 5;
       ctx.beginPath();
       ctx.arc(Math.cos(v) * r * 0.55, Math.sin(v) * r * 0.55, r * 0.22, 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.36, -r * 0.4, r * 0.26, r * 0.15, -0.6, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 
@@ -710,9 +876,6 @@
       var v = valg[+cv.dataset.spiller];
       tegnEksempel(cv, FARVER[v.farve], FJAES[v.form], 1.6);
     });
-    if (!visKlatValg.venter) {
-      visKlatValg.venter = Sprites.naarKlar(ALLE_SPRITES, function () { visKlatValg.venter = false; if (overlay.querySelector('canvas[data-form]')) visKlatValg(); });
-    }
   }
 
   overlay.addEventListener('click', function (e) {
@@ -762,6 +925,9 @@
   };
 
   tilpasStørrelse();
+  // Pilen oeverst til venstre foerer tilbage hertil, ogsaa midt i et spil.
+  Skal.menuKnap(visMenu);
+
   visMenu();
   requestAnimationFrame(function (t) { sidsteTid = t; løkke(t); });
 })();

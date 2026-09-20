@@ -51,6 +51,10 @@ tjek('menu.js er med i service workerens FILER', sw.includes("'js/menu.js'"));
 tjek('alle spilsider bruger de faelles menu-ikoner', spilSider.every(h => h.includes('js/menu.js')));
 // Ingen knap i menuerne maa kraeve laesning: start, igen og menu er ikoner
 const spilKode = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'js', 'game.js'), 'utf8'));
+// Hvert spil skal kunne komme tilbage til sin egen menu midt i et spil
+const udenMenuKnap = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen']
+  .filter((s, i) => !/Skal\.menuKnap\(/.test(spilKode[i]));
+tjek('alle spil melder deres menu til pilen i hjoernet', udenMenuKnap.length === 0, udenMenuKnap.join());
 tjek('ingen spil har tekstknapper til start, igen eller menu', spilKode.every(k => !/>(1 spiller|2 spillere|Spil!|Kør!|Spil igen|Kør igen|Igen|Menu|Fri leg|Tegn alle)</.test(k)), 'tekstknapper: ' + ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen'].filter((s, i) => /(>(1 spiller|2 spillere|Spil!|Kør!|Spil igen|Kør igen|Igen|Menu|Fri leg|Tegn alle)<)/.test(spilKode[i])));
 // Overlayet skal vaere det der ruller (ikke kortet med en hoejde i vh: paa iOS er 100vh hoejere
 // end det synlige felt, saa knappen i bunden fjedrede tilbage), og lave skaerme skal have et kompakt layout.

@@ -29,9 +29,9 @@
     };
   }
 
-  var FARVER = ['#e8442e', '#3aa7e0', '#4cb944', '#ffd23f', '#9b5de5', '#ff8c42'];
+  var FARVER = ['#d95f45', '#5f9fc9', '#7ab648', '#f0c46a', '#9b7bd4', '#e08a52'];
   var TOLERANCE = [14, 10, 7];       // pr. stjerne, i kasse-enheder
-  var STREGFARVE = '#ff8c42';
+  var STREGFARVE = '#e08a52';
 
   var svaerhed = 0;
   var lydTil = true;
@@ -416,8 +416,8 @@
       var pos = koeretoejPos();
       var px = kasse.x + pos.x * sk, py = kasse.y + pos.y * sk;
       // Spor efter koeretoejet
-      if (koeretoej === 'raket') puf(px, py, Math.random() < 0.5 ? '#ffd23f' : '#ff8c42', 2, 90, 3, 0.45);
-      else if (koeretoej === 'bil') { if (Math.random() < 0.5) puf(px, py, '#c9b27c', 1, 50, 3, 0.5); }
+      if (koeretoej === 'raket') puf(px, py, Math.random() < 0.5 ? '#f0c46a' : '#e08a52', 2, 90, 3, 0.45);
+      else if (koeretoej === 'bil') { if (Math.random() < 0.5) puf(px, py, '#cbb382', 1, 50, 3, 0.5); }
       else puf(px, py, 'hsl(' + Math.floor(spor.andel() * 360) + ',85%,60%)', 1, 40, 4, 0.5);
       // Toner der stiger langs stregen, som et instrument
       var streg = spor.streger[Math.min(spor.aktiv, spor.streger.length - 1)];
@@ -573,20 +573,20 @@
     var B = window.innerWidth, H = window.innerHeight;
     var ms = Math.min(B, H) * 0.16;
     var hop = jubel > 0 && plads >= liste.length - 1 ? Math.abs(Math.sin(jubel * 6)) * 8 : 0;
-    ctx.fillStyle = '#f7f3e8'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
+    ctx.fillStyle = '#f8f1e6'; ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.roundRect(B / 2 - ms * 0.7, 40 - hop, ms * 1.4, ms * 1.25, 24); ctx.fill(); ctx.stroke();
     tegnTing(ordet.ting, B / 2, 40 - hop + ms * 0.62, ms * 0.9);
   }
 
   /** Ord: de andre bogstaver i ordet. Faerdige i farve, kommende som blege skabeloner. */
   function tegnOrdRundtOm() {
-    var skabelon = koeretoej === 'bil' ? '#8a8f97' : (koeretoej === 'raket' ? 'rgba(255,255,255,0.22)' : '#e6e1d4');
+    var skabelon = koeretoej === 'bil' ? '#a9a396' : (koeretoej === 'raket' ? 'rgba(255,255,255,0.22)' : '#e7ddc8');
     ordet.kasser.forEach(function (k, i) {
       if (i === plads) return;
       var glyf = G[liste[i]];
       if (i >= plads) { tegnGlyf(ctx, glyf, k.x, k.y, k.str, skabelon, 13); return; }
       if (koeretoej === 'pensel') tegnRegnbue(glyf.streger.map(Spor.sampl), k.x, k.y, k.str, null);
-      else tegnGlyf(ctx, glyf, k.x, k.y, k.str, koeretoej === 'raket' ? '#ffd23f' : STREGFARVE, 13);
+      else tegnGlyf(ctx, glyf, k.x, k.y, k.str, koeretoej === 'raket' ? '#f0c46a' : STREGFARVE, 13);
     });
   }
 
@@ -669,15 +669,15 @@
     var trin = hh * 1.15, y0 = Math.max(60, H * 0.1);
     var dele = [String(regn.a), regn.op, String(regn.b), '=', vaelgLoest ? String(regn.svar) : '?'];
     var bred = dele.length * trin, x0 = B / 2 - bred / 2;
-    ctx.fillStyle = '#f7f3e8'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
+    ctx.fillStyle = '#f8f1e6'; ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.roundRect(x0 - hh * 0.3, y0 - hh * 0.2, bred + hh * 0.6, hh * (regn.hjaelp ? 2.15 : 1.4), 26); ctx.fill(); ctx.stroke();
     dele.forEach(function (d, i) {
       var cx = x0 + (i + 0.5) * trin, cy = y0 + hh / 2;
-      ctx.strokeStyle = '#12261f'; ctx.lineWidth = Math.max(5, hh * 0.09); ctx.lineCap = 'round';
-      if (G[d]) tegnGlyf(ctx, G[d], cx - hh / 2, y0, hh, i === 4 ? '#ff8c42' : '#12261f', 11);
+      ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = Math.max(5, hh * 0.09); ctx.lineCap = 'round';
+      if (G[d]) tegnGlyf(ctx, G[d], cx - hh / 2, y0, hh, i === 4 ? '#e08a52' : '#5e4a3a', 11);
       else if (d === '?') {
         var p = 1 + Math.sin(tid * 5) * 0.06;
-        ctx.strokeStyle = '#ff8c42'; ctx.setLineDash([hh * 0.12, hh * 0.12]);
+        ctx.strokeStyle = '#e08a52'; ctx.setLineDash([hh * 0.12, hh * 0.12]);
         ctx.beginPath(); ctx.roundRect(cx - hh * 0.36 * p, cy - hh * 0.42 * p, hh * 0.72 * p, hh * 0.84 * p, 14); ctx.stroke(); ctx.setLineDash([]);
       } else {
         var l = hh * 0.24;
@@ -699,7 +699,7 @@
           var ax = x0 + trin * 1.5 + (i - (n - 1) / 2) * rr * 2.6, vaek = i >= n - regn.b;
           ctx.globalAlpha = vaek ? 0.4 : 1; tegnAeble(ctx, ax, ay, rr); ctx.globalAlpha = 1;
           if (vaek) {
-            ctx.strokeStyle = '#e8442e'; ctx.lineWidth = Math.max(3, rr * 0.3); ctx.lineCap = 'round';
+            ctx.strokeStyle = '#d95f45'; ctx.lineWidth = Math.max(3, rr * 0.3); ctx.lineCap = 'round';
             ctx.beginPath(); ctx.moveTo(ax - rr, ay - rr); ctx.lineTo(ax + rr, ay + rr); ctx.moveTo(ax + rr, ay - rr); ctx.lineTo(ax - rr, ay + rr); ctx.stroke();
           }
         }
@@ -712,9 +712,9 @@
       if (k.vip > 0) ctx.rotate(Math.sin(k.vip * 40) * 0.12);
       if (vaelgLoest && k.rigtig) ctx.scale(1 + Math.sin(tid * 8) * 0.04, 1 + Math.sin(tid * 8) * 0.04);
       ctx.globalAlpha = vaelgLoest && !k.rigtig ? 0.4 : 1;
-      ctx.fillStyle = vaelgLoest && k.rigtig ? '#ffd23f' : '#f7f3e8'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
+      ctx.fillStyle = vaelgLoest && k.rigtig ? '#f0c46a' : '#f8f1e6'; ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.roundRect(-k.str / 2, -k.str / 2, k.str, k.str, 26); ctx.fill(); ctx.stroke();
-      tegnGlyf(ctx, G[k.navn], -k.str * 0.32, -k.str * 0.32, k.str * 0.64, '#12261f', 11);
+      tegnGlyf(ctx, G[k.navn], -k.str * 0.32, -k.str * 0.32, k.str * 0.64, '#5e4a3a', 11);
       ctx.restore();
     });
     ctx.globalAlpha = 1;
@@ -789,11 +789,11 @@
       ctx.drawImage(img, -str / 2, -str / 2, str, str);
     } else if (t.tegn) {
       ctx.scale(str / 80, str / 80);
-      ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
       t.tegn(ctx);
     } else {
       // Billedet er ikke hentet endnu: en blid plads-holder
-      ctx.fillStyle = '#e6e1d4';
+      ctx.fillStyle = '#e7ddc8';
       ctx.beginPath(); ctx.arc(0, 0, str * 0.4, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
@@ -803,9 +803,9 @@
   function tegnFlueben(x, y, r) {
     ctx.save();
     ctx.translate(x, y);
-    ctx.fillStyle = '#4cb944'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
+    ctx.fillStyle = '#7ab648'; ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.strokeStyle = '#f7f3e8'; ctx.lineWidth = r * 0.24; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#f8f1e6'; ctx.lineWidth = r * 0.24; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     ctx.beginPath(); ctx.moveTo(-r * 0.45, 0.02 * r); ctx.lineTo(-r * 0.12, r * 0.34); ctx.lineTo(r * 0.48, -r * 0.32); ctx.stroke();
     ctx.restore();
   }
@@ -814,9 +814,9 @@
   function tegnHoejttaler(x, y, s) {
     ctx.save();
     ctx.translate(x, y);
-    ctx.fillStyle = '#12261f';
+    ctx.fillStyle = '#5e4a3a';
     ctx.beginPath(); ctx.moveTo(-s, -s * 0.35); ctx.lineTo(-s * 0.4, -s * 0.35); ctx.lineTo(s * 0.2, -s); ctx.lineTo(s * 0.2, s); ctx.lineTo(-s * 0.4, s * 0.35); ctx.lineTo(-s, s * 0.35); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#12261f'; ctx.lineWidth = s * 0.22; ctx.lineCap = 'round';
+    ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = s * 0.22; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.arc(s * 0.3, 0, s * 0.7, -0.9, 0.9); ctx.stroke();
     ctx.restore();
   }
@@ -827,7 +827,7 @@
     var b = hoejde * 0.72;
     var x0 = cx - bogstaver.length * b / 2;
     bogstaver.forEach(function (n, i) {
-      if (G[n]) tegnGlyf(ctx, G[n], x0 + i * b, cy - hoejde / 2, hoejde, fremhaev && i === 0 ? fremhaev : '#12261f', fremhaev ? 11 : 9);
+      if (G[n]) tegnGlyf(ctx, G[n], x0 + i * b, cy - hoejde / 2, hoejde, fremhaev && i === 0 ? fremhaev : '#5e4a3a', fremhaev ? 11 : 9);
     });
   }
 
@@ -835,7 +835,7 @@
     var B = window.innerWidth, H = window.innerHeight;
     // Bogstavet i en sky oeverst, som i Find. Et tryk paa skyen gentager spoergsmaalet.
     var sky = skyRect(), ms = sky.ms;
-    ctx.fillStyle = '#f7f3e8'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
+    ctx.fillStyle = '#f8f1e6'; ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.roundRect(sky.x, sky.y, sky.b, sky.h, 24); ctx.fill(); ctx.stroke();
     tegnGlyf(ctx, G[vaelgNavn], B / 2 - ms / 2, 50 + ms * 0.1, ms, STREGFARVE, 12);
     tegnHoejttaler(sky.x + sky.b - 22, sky.y + sky.h - 20, 9);
@@ -848,10 +848,10 @@
       if (k.vip > 0) ctx.rotate(Math.sin(k.vip * 40) * 0.12);
       if (vaelgLoest && k.rigtig) ctx.scale(1 + Math.sin(tid * 8) * 0.04, 1 + Math.sin(tid * 8) * 0.04);
       ctx.scale(Math.max(0.03, Math.abs(Math.cos(k.drej * Math.PI))), 1);   // vendes om den lodrette akse
-      ctx.fillStyle = vaelgLoest && k.rigtig ? '#ffd23f' : (ordSide ? '#fff8dc' : '#f7f3e8');
-      ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
+      ctx.fillStyle = vaelgLoest && k.rigtig ? '#f0c46a' : (ordSide ? '#fdf3d9' : '#f8f1e6');
+      ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.roundRect(-k.str / 2, -k.str / 2, k.str, k.str, 24); ctx.fill(); ctx.stroke();
-      if (ordSide) tegnOrd(t.ord, 0, 0, Math.min(k.str * 0.3, k.str * 0.95 / (t.ord.length * 0.72 + 0.4)), '#ff8c42');
+      if (ordSide) tegnOrd(t.ord, 0, 0, Math.min(k.str * 0.3, k.str * 0.95 / (t.ord.length * 0.72 + 0.4)), '#e08a52');
       else tegnTing(t, 0, 0, k.str * 0.62);
       ctx.restore();
       if (!vaelgLoest) tegnFlueben(k.x, knapY(k), vaelgKnapR);
@@ -862,16 +862,16 @@
       if (rigtig) {
         var ord = rigtig.ting.ord, hh = Math.min(H * 0.12, B * 0.8 / (ord.length * 0.72 + 1));
         var bb = ord.length * hh * 0.72 + hh * 0.9, yy = H - hh * 1.6 - 12;
-        ctx.fillStyle = '#f7f3e8'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 5;
+        ctx.fillStyle = '#f8f1e6'; ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 5;
         ctx.beginPath(); ctx.roundRect(B / 2 - bb / 2, yy, bb, hh * 1.6, 26); ctx.fill(); ctx.stroke();
-        tegnOrd(ord, B / 2, yy + hh * 0.8, hh, '#ff8c42');
+        tegnOrd(ord, B / 2, yy + hh * 0.8, hh, '#e08a52');
       }
     }
   }
 
   /** Koeretoejet, tegnet omkring (0,0) med fronten mod +x, i kasse-enheder. */
   function tegnKoeretoej(c, hvad, iGang, andel) {
-    c.strokeStyle = '#12261f';
+    c.strokeStyle = '#5e4a3a';
     c.lineWidth = 1.6;
     // Sprites fra Kenney for bil og raket. De peger opad, koeretoejet koerer mod +x.
     if (hvad === 'bil' || hvad === 'raket') {
@@ -879,7 +879,7 @@
       if (Sprites.venter(img)) return;   // paa vej: tegn ingenting, saa den gamle tegning ikke blinker frem
       if (Sprites.klar(img)) {
         if (hvad === 'raket' && iGang) {
-          c.fillStyle = '#ff8c42';
+          c.fillStyle = '#e08a52';
           c.beginPath(); c.moveTo(-10, -3); c.lineTo(-18 - Math.random() * 6, 0); c.lineTo(-10, 3); c.closePath(); c.fill();
         }
         var l = hvad === 'bil' ? 26 : 28;
@@ -892,31 +892,31 @@
       }
     }
     if (hvad === 'bil') {
-      c.fillStyle = '#12261f';
+      c.fillStyle = '#5e4a3a';
       c.fillRect(-7, -6.5, 4, 13); c.fillRect(3, -6.5, 4, 13);
-      c.fillStyle = '#e8442e';
+      c.fillStyle = '#d95f45';
       c.beginPath(); c.roundRect(-9, -5, 18, 10, 3.5); c.fill(); c.stroke();
-      c.fillStyle = '#ffd23f';
+      c.fillStyle = '#f0c46a';
       c.beginPath(); c.roundRect(-2, -3, 6, 6, 2); c.fill();
-      if (iGang) { c.fillStyle = '#ffd23f'; c.beginPath(); c.arc(9.5, -3, 1.4, 0, Math.PI * 2); c.arc(9.5, 3, 1.4, 0, Math.PI * 2); c.fill(); }
+      if (iGang) { c.fillStyle = '#f0c46a'; c.beginPath(); c.arc(9.5, -3, 1.4, 0, Math.PI * 2); c.arc(9.5, 3, 1.4, 0, Math.PI * 2); c.fill(); }
     } else if (hvad === 'raket') {
       if (iGang) {
-        c.fillStyle = '#ff8c42';
+        c.fillStyle = '#e08a52';
         c.beginPath(); c.moveTo(-8, -3); c.lineTo(-16 - Math.random() * 5, 0); c.lineTo(-8, 3); c.closePath(); c.fill();
       }
-      c.fillStyle = '#f7f3e8';
+      c.fillStyle = '#f8f1e6';
       c.beginPath(); c.moveTo(11, 0); c.lineTo(3, -5); c.lineTo(-8, -5); c.lineTo(-8, 5); c.lineTo(3, 5); c.closePath(); c.fill(); c.stroke();
-      c.fillStyle = '#e8442e';
+      c.fillStyle = '#d95f45';
       c.beginPath(); c.moveTo(-8, -5); c.lineTo(-12, -9); c.lineTo(-5, -5); c.closePath(); c.fill(); c.stroke();
       c.beginPath(); c.moveTo(-8, 5); c.lineTo(-12, 9); c.lineTo(-5, 5); c.closePath(); c.fill(); c.stroke();
-      c.fillStyle = '#3aa7e0';
+      c.fillStyle = '#5f9fc9';
       c.beginPath(); c.arc(1, 0, 2.6, 0, Math.PI * 2); c.fill(); c.stroke();
     } else {
       c.save();
       c.rotate(-Math.PI / 4);
-      c.fillStyle = '#c98f4a';
+      c.fillStyle = '#b9874f';
       c.beginPath(); c.roundRect(-4, -2, 20, 4, 2); c.fill(); c.stroke();
-      c.fillStyle = '#d9d4c7';
+      c.fillStyle = '#ddd4c0';
       c.beginPath(); c.roundRect(-11, -3.5, 8, 7, 1.5); c.fill(); c.stroke();
       c.fillStyle = 'hsl(' + Math.floor((andel || 0) * 360) + ',85%,60%)';
       c.beginPath(); c.arc(-12, 0, 3.5, 0, Math.PI * 2); c.fill();
@@ -936,12 +936,12 @@
     ctx.save();
     ctx.translate(cx, cy - hop);
     [-1, 1].forEach(function (d) {
-      ctx.fillStyle = '#fff'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3;
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(d * 9 * sk, 0, 7 * sk, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#12261f';
+      ctx.fillStyle = '#5e4a3a';
       ctx.beginPath(); ctx.arc(d * 9 * sk + 1.5 * sk, 1.5 * sk, 3 * sk, 0, Math.PI * 2); ctx.fill();
     });
-    ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 3; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.arc(0, 8 * sk, 8 * sk, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
     ctx.restore();
   }
@@ -979,15 +979,15 @@
       pladeX = x1; pladeY = y1; pladeB = x2 - x1; pladeH = y2 - y1;
     }
     // Baggrundsplade: lys for bil og pensel, moerk stjernehimmel for raketten
-    ctx.fillStyle = koeretoej === 'raket' ? '#1b2f5c' : '#f7f3e8';
-    ctx.strokeStyle = '#12261f';
+    ctx.fillStyle = koeretoej === 'raket' ? '#2a3358' : '#f8f1e6';
+    ctx.strokeStyle = '#5e4a3a';
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.roundRect(pladeX - 24, pladeY - 24, pladeB + 48, pladeH + 48, 30);
     ctx.fill();
     ctx.stroke();
     if (koeretoej === 'raket') {
-      ctx.fillStyle = '#f7f3e8';
+      ctx.fillStyle = '#f8f1e6';
       for (var st = 0; st < 30; st++) {
         var sx0 = pladeX + ((st * 137) % 100) / 100 * pladeB, sy0 = pladeY + ((st * 71) % 100) / 100 * pladeH;
         ctx.globalAlpha = 0.4 + 0.6 * Math.abs(Math.sin(tid * 2 + st));
@@ -1009,7 +1009,7 @@
     }
     if (ordet) tegnOrdRundtOm();
     // Skabelon: en vej for bilen, en stjernebane for raketten, et blegt strøg for penslen
-    var skabelon = koeretoej === 'bil' ? '#8a8f97' : (koeretoej === 'raket' ? 'rgba(255,255,255,0.22)' : '#e6e1d4');
+    var skabelon = koeretoej === 'bil' ? '#a9a396' : (koeretoej === 'raket' ? 'rgba(255,255,255,0.22)' : '#e7ddc8');
     tegnGlyf(ctx, glyf, kasse.x, kasse.y, s, skabelon, bredde);
     if (koeretoej === 'bil') {
       ctx.save(); ctx.setLineDash([4 * sk, 5 * sk]);
@@ -1021,11 +1021,11 @@
     if (koeretoej === 'pensel') {
       tegnRegnbue(spor.streger, kasse.x, kasse.y, s, indtil);
     } else {
-      tegnGlyf(ctx, glyf, kasse.x, kasse.y, s, koeretoej === 'raket' ? '#ffd23f' : STREGFARVE, bredde, indtil, spor);
+      tegnGlyf(ctx, glyf, kasse.x, kasse.y, s, koeretoej === 'raket' ? '#f0c46a' : STREGFARVE, bredde, indtil, spor);
       if (koeretoej === 'bil') {
         // Hjulspor oven paa den koerte vej
         ctx.save(); ctx.setLineDash([3 * sk, 4 * sk]);
-        tegnGlyf(ctx, glyf, kasse.x, kasse.y, s, 'rgba(18,38,31,0.35)', 1.4, indtil, spor);
+        tegnGlyf(ctx, glyf, kasse.x, kasse.y, s, 'rgba(94,74,58,0.35)', 1.4, indtil, spor);
         ctx.restore();
       }
     }
@@ -1046,7 +1046,7 @@
       if (n > 0) {
         var hp = streg[fra + Math.floor(hint * n)];
         ctx.fillStyle = 'rgba(255,255,255,0.85)';
-        ctx.strokeStyle = '#12261f';
+        ctx.strokeStyle = '#5e4a3a';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(kasse.x + hp[0] * sk, kasse.y + hp[1] * sk, 5 * sk * 0.9, 0, Math.PI * 2);
@@ -1058,10 +1058,10 @@
     var slut = streg[streg.length - 1];
     ctx.save();
     ctx.translate(kasse.x + slut[0] * sk, kasse.y + slut[1] * sk);
-    ctx.strokeStyle = '#12261f'; ctx.lineWidth = 2;
+    ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -16 * sk * 0.9); ctx.stroke();
     for (var r = 0; r < 2; r++) for (var k = 0; k < 3; k++) {
-      ctx.fillStyle = (r + k) % 2 ? '#12261f' : '#f7f3e8';
+      ctx.fillStyle = (r + k) % 2 ? '#5e4a3a' : '#f8f1e6';
       ctx.fillRect(k * 3.5 * sk, -16 * sk * 0.9 + r * 3.5 * sk, 3.5 * sk, 3.5 * sk);
     }
     ctx.restore();
@@ -1098,10 +1098,10 @@
       var fyldt = antal <= 12 ? i < gjort : i < Math.round(gjort / antal * vis);
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fillStyle = fyldt ? '#ffd23f' : 'rgba(255,255,255,0.35)';
+      ctx.fillStyle = fyldt ? '#f0c46a' : 'rgba(255,255,255,0.35)';
       ctx.fill();
       ctx.lineWidth = 3;
-      ctx.strokeStyle = '#12261f';
+      ctx.strokeStyle = '#5e4a3a';
       ctx.stroke();
     }
   }
@@ -1117,22 +1117,22 @@
 
   /** Et aeble tegnet i kode: roed cirkel med stilk og blad. */
   function tegnAeble(c, x, y, r) {
-    c.fillStyle = '#e8442e';
-    c.strokeStyle = '#12261f';
+    c.fillStyle = '#d95f45';
+    c.strokeStyle = '#5e4a3a';
     c.lineWidth = Math.max(2, r * 0.12);
     c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); c.stroke();
     c.fillStyle = 'rgba(255,255,255,0.35)';
     c.beginPath(); c.ellipse(x - r * 0.35, y - r * 0.4, r * 0.25, r * 0.15, -0.6, 0, Math.PI * 2); c.fill();
-    c.strokeStyle = '#12261f'; c.lineWidth = Math.max(2, r * 0.14); c.lineCap = 'round';
+    c.strokeStyle = '#5e4a3a'; c.lineWidth = Math.max(2, r * 0.14); c.lineCap = 'round';
     c.beginPath(); c.moveTo(x, y - r * 0.9); c.lineTo(x + r * 0.1, y - r * 1.35); c.stroke();
-    c.fillStyle = '#4cb944';
+    c.fillStyle = '#7ab648';
     c.beginPath(); c.ellipse(x + r * 0.35, y - r * 1.15, r * 0.35, r * 0.18, -0.5, 0, Math.PI * 2); c.fill(); c.stroke();
   }
 
   /** n aebler i et lille gitter omkring (cx, cy). 0 aebler = en tom tallerken. */
   function tegnMaengde(c, n, cx, cy, plads, hvorMange, iRaekke) {
     if (n === 0) {
-      c.fillStyle = '#fff'; c.strokeStyle = '#12261f'; c.lineWidth = 3;
+      c.fillStyle = '#fff'; c.strokeStyle = '#5e4a3a'; c.lineWidth = 3;
       c.beginPath(); c.ellipse(cx, cy, plads * 1.3, plads * 0.5, 0, 0, Math.PI * 2); c.fill(); c.stroke();
       return;
     }
@@ -1245,8 +1245,8 @@
     var B = window.innerWidth, H = window.innerHeight;
     // Maalet i en sky oeverst
     var ms = Math.min(B, H) * 0.16;
-    ctx.fillStyle = '#f7f3e8';
-    ctx.strokeStyle = '#12261f';
+    ctx.fillStyle = '#f8f1e6';
+    ctx.strokeStyle = '#5e4a3a';
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.roundRect(B / 2 - ms * 0.8, 50, ms * 1.6, ms * 1.25, 26);
@@ -1257,7 +1257,7 @@
     if (n >= 0) {
       // Tal: skyen viser maengden. Paa 1 stjerne ogsaa tallet, til det gaar godt.
       if (svaerhed === 0 && trin === 0) {
-        tegnGlyf(ctx, G[maal], B / 2 - ms * 0.72, 58 + ms * 0.2, ms * 0.7, '#12261f', 12);
+        tegnGlyf(ctx, G[maal], B / 2 - ms * 0.72, 58 + ms * 0.2, ms * 0.7, '#5e4a3a', 12);
         tegnMaengde(ctx, n, B / 2 + ms * 0.32, 50 + ms * 0.62, ms * 0.16);
       } else {
         tegnMaengde(ctx, n, B / 2, 50 + ms * 0.62, ms * 0.34);
@@ -1267,15 +1267,15 @@
       ctx.save();
       ctx.translate(B / 2, 50 + ms * 0.62);
       ctx.scale(ms / 60, ms / 60);
-      ctx.fillStyle = '#12261f';
+      ctx.fillStyle = '#5e4a3a';
       ctx.beginPath(); ctx.moveTo(-14, -8); ctx.lineTo(-6, -8); ctx.lineTo(4, -17); ctx.lineTo(4, 17); ctx.lineTo(-6, 8); ctx.lineTo(-14, 8); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+      ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 3; ctx.lineCap = 'round';
       var b1 = 1 + Math.sin(tid * 6) * 0.08;
       ctx.beginPath(); ctx.arc(6, 0, 9 * b1, -0.9, 0.9); ctx.stroke();
       ctx.beginPath(); ctx.arc(6, 0, 15 * b1, -0.9, 0.9); ctx.stroke();
       ctx.restore();
     } else {
-      tegnGlyf(ctx, G[maal], B / 2 - ms / 2, 58 + ms * 0.1, ms, '#12261f', 12);
+      tegnGlyf(ctx, G[maal], B / 2 - ms / 2, 58 + ms * 0.1, ms, '#5e4a3a', 12);
     }
 
     bobler.forEach(function (b) {
@@ -1284,7 +1284,7 @@
       if (b.vip > 0) ctx.rotate(Math.sin(b.vip * 40) * 0.15);
       ctx.globalAlpha = 0.9;
       ctx.fillStyle = b.farve;
-      ctx.strokeStyle = '#12261f';
+      ctx.strokeStyle = '#5e4a3a';
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.arc(0, 0, b.r, 0, Math.PI * 2);
@@ -1295,16 +1295,16 @@
       ctx.beginPath();
       ctx.ellipse(-b.r * 0.4, -b.r * 0.45, b.r * 0.25, b.r * 0.14, -0.6, 0, Math.PI * 2);
       ctx.fill();
-      tegnGlyf(ctx, G[b.navn], -b.r * 0.55, -b.r * 0.55, b.r * 1.1, '#12261f', 11);
+      tegnGlyf(ctx, G[b.navn], -b.r * 0.55, -b.r * 0.55, b.r * 1.1, '#5e4a3a', 11);
       // Oejne oeverst paa boblen, der kigger mod maalet og klemmer sammen naar den fniser
       var blink = Math.sin(tid * 1.7 + b.x * 0.01) > 0.97 || b.vip > 0;
       [-1, 1].forEach(function (d) {
-        ctx.fillStyle = '#fff'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 2.5;
+        ctx.fillStyle = '#fff'; ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 2.5;
         ctx.beginPath();
         if (blink) { ctx.moveTo(d * b.r * 0.3 - 6, -b.r * 0.72); ctx.lineTo(d * b.r * 0.3 + 6, -b.r * 0.72); ctx.stroke(); return; }
         ctx.arc(d * b.r * 0.3, -b.r * 0.72, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
         var vx = window.innerWidth / 2 - b.x, vy = 120 - b.y, vl = Math.hypot(vx, vy) || 1;
-        ctx.fillStyle = '#12261f';
+        ctx.fillStyle = '#5e4a3a';
         ctx.beginPath(); ctx.arc(d * b.r * 0.3 + vx / vl * 3, -b.r * 0.72 + vy / vl * 3, 3.5, 0, Math.PI * 2); ctx.fill();
       });
       ctx.restore();
@@ -1316,8 +1316,8 @@
   function tegnBaggrund() {
     var B = window.innerWidth, H = window.innerHeight;
     var g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#7fd0f5');
-    g.addColorStop(1, '#c9ecfb');
+    g.addColorStop(0, '#8fc7e8');
+    g.addColorStop(1, '#dfeef0');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, B, H);
     ctx.fillStyle = 'rgba(255,255,255,0.8)';
@@ -1342,10 +1342,10 @@
         ctx.lineTo(cx + Math.cos(v) * r, cy + Math.sin(v) * r);
       }
       ctx.closePath();
-      ctx.fillStyle = i < fyldt ? '#ffd23f' : 'rgba(255,255,255,0.45)';
+      ctx.fillStyle = i < fyldt ? '#f0c46a' : 'rgba(255,255,255,0.45)';
       ctx.fill();
       ctx.lineWidth = 2;
-      ctx.strokeStyle = '#12261f';
+      ctx.strokeStyle = '#5e4a3a';
       ctx.stroke();
     }
   }
@@ -1510,7 +1510,7 @@
     var c = cv.getContext('2d'), billede = cv.dataset.leg, B = cv.width, H = cv.height;
     c.clearRect(0, 0, B, H);
     // Den oeverste raekke: tegnet direkte paa knappen, der er blaa naar den er valgt
-    var valgtFarve = cv.closest('.valgt') ? '#f7f3e8' : '#12261f';
+    var valgtFarve = cv.closest('.valgt') ? '#f8f1e6' : '#5e4a3a';
     if (billede === 'store' || billede === 'smaa') {
       tegnGlyf(c, billede === 'store' ? G.A : G.a, B / 2 - 42, 12, 84, valgtFarve, 12);
       return;
@@ -1531,14 +1531,14 @@
       });
       return;
     }
-    c.fillStyle = '#f7f3e8'; c.strokeStyle = '#12261f'; c.lineWidth = 5;
+    c.fillStyle = '#f8f1e6'; c.strokeStyle = '#5e4a3a'; c.lineWidth = 5;
     c.beginPath(); c.roundRect(3, 3, B - 6, H - 6, 22); c.fill(); c.stroke();
     // Er tal valgt, viser Tegn og Find tal i stedet for bogstaver
     var tal = hvad === 'tal';
     if (billede === 'tegn') {
       // Et A (eller et 3-tal): vej i graat, foerste streg koert i orange, og bilen for enden af den
       var gt = tal ? G['3'] : G.A, s = 130, x = B / 2 - s / 2, y = 20;
-      tegnGlyf(c, gt, x, y, s, '#8a8f97', 14);
+      tegnGlyf(c, gt, x, y, s, '#a9a396', 14);
       tegnGlyf(c, gt, x, y, s, STREGFARVE, 14, { aktiv: 0, indeks: Math.floor(gt.streger[0].length * 0.6) });
       var slut = gt.streger[0][Math.floor(gt.streger[0].length * 0.6)], fra = gt.streger[0][Math.max(0, Math.floor(gt.streger[0].length * 0.6) - 1)];
       c.save();
@@ -1549,10 +1549,10 @@
       c.restore();
     } else if (billede === 'find') {
       // Tre bobler med bogstaver (eller tal); den midterste er fundet og lyser gult
-      [[tal ? '5' : 'K', 44, 98, '#7fd0f5'], [tal ? '2' : 'A', 110, 72, '#ffd23f'], [tal ? '7' : 'S', 176, 100, '#c9ecfb']].forEach(function (b) {
-        c.fillStyle = b[3]; c.strokeStyle = '#12261f'; c.lineWidth = 4;
+      [[tal ? '5' : 'K', 44, 98, '#8fc7e8'], [tal ? '2' : 'A', 110, 72, '#f0c46a'], [tal ? '7' : 'S', 176, 100, '#dfeef0']].forEach(function (b) {
+        c.fillStyle = b[3]; c.strokeStyle = '#5e4a3a'; c.lineWidth = 4;
         c.beginPath(); c.arc(b[1], b[2], 36, 0, Math.PI * 2); c.fill(); c.stroke();
-        tegnGlyf(c, G[b[0]], b[1] - 23, b[2] - 24, 46, '#12261f', 7);
+        tegnGlyf(c, G[b[0]], b[1] - 23, b[2] - 24, 46, '#5e4a3a', 7);
       });
     }
   }
@@ -1579,10 +1579,10 @@
     );
     overlay.querySelectorAll('canvas[data-navn]').forEach(function (cv) {
       var c = cv.getContext('2d');
-      tegnGlyf(c, G[cv.dataset.navn], 8, 8, 80, '#12261f', 9);
+      tegnGlyf(c, G[cv.dataset.navn], 8, 8, 80, '#5e4a3a', 9);
       if (tegnede[cv.dataset.navn]) {
         // Guldstjerne i hjoernet for tegn der er tegnet i denne omgang
-        c.fillStyle = '#ffd23f'; c.strokeStyle = '#12261f'; c.lineWidth = 2;
+        c.fillStyle = '#f0c46a'; c.strokeStyle = '#5e4a3a'; c.lineWidth = 2;
         c.beginPath();
         for (var k = 0; k < 10; k++) {
           var r = k % 2 ? 5 : 11, v = -Math.PI / 2 + k * Math.PI / 5;
@@ -1666,6 +1666,9 @@
   };
 
   tilpasStørrelse();
+  // Pilen oeverst til venstre foerer tilbage hertil, ogsaa midt i et spil.
+  Skal.menuKnap(visMenu);
+
   visMenu();
   requestAnimationFrame(function (t) { sidsteTid = t; løkke(t); });
 })();

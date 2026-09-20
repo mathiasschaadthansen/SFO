@@ -16,19 +16,20 @@
 (function () {
   'use strict';
 
-  var K = '#12261f', KRIDT = '#f7f3e8';
+  var K = '#6b5545', KRIDT = '#f8f1e6';
 
   var stil = document.createElement('style');
   stil.textContent =
     /* Startknapper: store, groenne, kun et billede */
-    '.knap.groen{background:#4cb944;color:#f7f3e8}' +
-    '.knap.groen.valgt{background:#3aa7e0}' +
+    '.knap.groen{background:#8fae86;color:#f8f1e6;box-shadow:0 6px 0 rgba(95,127,88,.4),0 10px 18px rgba(107,85,68,.2),inset 0 3px 0 rgba(255,255,255,.4)}' +
+    '.knap.groen:active{box-shadow:0 2px 0 rgba(95,127,88,.4),0 4px 10px rgba(107,85,68,.16)}' +
+    '.knap.groen.valgt{background:#87b3c9}' +
     '.knap.start{flex:1 1 0;display:flex;align-items:center;justify-content:center;padding:12px 16px;min-height:88px}' +
     '.knap.start svg{display:block;height:64px;width:auto}' +
     /* Valg af svaerhed og indstillinger: mindre og lettere, saa de ikke konkurrerer med start */
-    '.raekke.valg .knap{flex:1 1 0;min-width:0;box-shadow:3px 3px 0 #12261f;border-width:3px;padding:9px 8px}' +
+    '.raekke.valg .knap{flex:1 1 0;min-width:0;border:0;box-shadow:0 5px 0 rgba(107,85,68,.16),inset 0 2px 0 rgba(255,255,255,.8);padding:9px 8px}' +
     '.raekke.valg .knap svg{display:block;height:30px;width:auto;max-width:100%}' +
-    '.raekke.valg .knap.valgt{transform:translate(2px,2px);box-shadow:1px 1px 0 #12261f}' +
+    '.raekke.valg .knap.valgt{background:#aed3e4;transform:translateY(3px);box-shadow:0 2px 0 rgba(107,85,68,.16)}' +
     /* Slutskaerme: igen, skift udseende, tilbage til menuen */
     '.raekke.slut{margin:0}' +
     '.raekke.slut .knap{flex:1 1 0;display:flex;align-items:center;justify-content:center;padding:14px 12px}' +
@@ -56,13 +57,13 @@
   /** Én, to eller tre gule stjerner. Antallet er forskellen, ikke fyldet, saa det kan ses paa afstand. */
   function stjerner(antal) {
     var b = 30 * antal + 4, s = '';
-    for (var i = 0; i < antal; i++) s += stjerne(17 + i * 30, 16, 13, '#ffd23f');
+    for (var i = 0; i < antal; i++) s += stjerne(17 + i * 30, 16, 13, '#f0c46a');
     return svg(b, 32, s);
   }
 
   /** Et barn set forfra: rundt hoved og en bluse i spillerens farve. */
   function barn(x, farve) {
-    return '<circle cx="' + (x + 22) + '" cy="16" r="12" fill="#f9d7b5" stroke="' + K + '" stroke-width="3"/>' +
+    return '<circle cx="' + (x + 22) + '" cy="16" r="12" fill="#f4d3b4" stroke="' + K + '" stroke-width="3"/>' +
       '<circle cx="' + (x + 17) + '" cy="15" r="1.8" fill="' + K + '"/><circle cx="' + (x + 27) + '" cy="15" r="1.8" fill="' + K + '"/>' +
       '<path d="M' + (x + 17) + ' 21q5 4 10 0" fill="none" stroke="' + K + '" stroke-width="2" stroke-linecap="round"/>' +
       '<path d="M' + (x + 4) + ' 56v-16a18 18 0 0 1 36 0v16z" fill="' + farve + '" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>';
@@ -70,14 +71,14 @@
 
   /** Én eller to spillere: én figur, eller en roed og en blaa ved siden af hinanden. */
   function spillere(antal) {
-    if (antal === 1) return svg(44, 58, barn(0, '#e8442e'));
-    return svg(92, 58, barn(0, '#e8442e') + barn(48, '#3aa7e0'));
+    if (antal === 1) return svg(44, 58, barn(0, '#d97a5e'));
+    return svg(92, 58, barn(0, '#d97a5e') + barn(48, '#7fa8c4'));
   }
 
   /** Start: en trekant, som paa en afspiller. */
   function start() {
     return svg(56, 56, '<circle cx="28" cy="28" r="25" fill="' + KRIDT + '" stroke="' + K + '" stroke-width="3"/>' +
-      '<path d="M21 16l20 12-20 12z" fill="#4cb944" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>');
+      '<path d="M21 16l20 12-20 12z" fill="#8fae86" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>');
   }
 
   /** Igen: en pil der gaar rundt. */
@@ -95,21 +96,21 @@
   /** Skift udseende: en malerpalet, saa man kan vaelge farve og form igen. */
   function palet() {
     return svg(56, 56, '<path d="M28 6C15 6 5 16 5 28c0 10 8 16 14 16 4 0 4-3 4-5 0-3 2-5 5-5h5c8 0 18-4 18-13C51 12 41 6 28 6z" fill="' + KRIDT + '" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' +
-      '<circle cx="17" cy="22" r="4" fill="#e8442e"/><circle cx="27" cy="15" r="4" fill="#ffd23f"/><circle cx="38" cy="18" r="4" fill="#4cb944"/><circle cx="42" cy="29" r="4" fill="#3aa7e0"/>');
+      '<circle cx="17" cy="22" r="4" fill="#d97a5e"/><circle cx="27" cy="15" r="4" fill="#f0c46a"/><circle cx="38" cy="18" r="4" fill="#8fae86"/><circle cx="42" cy="29" r="4" fill="#7fa8c4"/>');
   }
 
   /** Vaelg bane: en lille rundbane. */
   function bane() {
-    return svg(56, 56, '<rect x="6" y="12" width="44" height="32" rx="14" fill="none" stroke="#8a8f97" stroke-width="10"/>' +
+    return svg(56, 56, '<rect x="6" y="12" width="44" height="32" rx="14" fill="none" stroke="#c3b49a" stroke-width="10"/>' +
       '<rect x="6" y="12" width="44" height="32" rx="14" fill="none" stroke="' + KRIDT + '" stroke-width="1.5" stroke-dasharray="4 4"/>' +
-      '<circle cx="14" cy="16" r="4" fill="#ffd23f" stroke="' + K + '" stroke-width="2"/>');
+      '<circle cx="14" cy="16" r="4" fill="#f0c46a" stroke="' + K + '" stroke-width="2"/>');
   }
 
   /** Fri leg: en tallerken med et hjerte. Man laver det, man selv har lyst til. */
   function fri() {
     return svg(56, 56, '<ellipse cx="28" cy="40" rx="24" ry="9" fill="' + KRIDT + '" stroke="' + K + '" stroke-width="3"/>' +
       '<ellipse cx="28" cy="40" rx="15" ry="5" fill="none" stroke="' + K + '" stroke-width="2" opacity=".5"/>' +
-      '<path d="M28 34l-11-11a6.5 6.5 0 0 1 11-7 6.5 6.5 0 0 1 11 7z" fill="#e8442e" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>');
+      '<path d="M28 34l-11-11a6.5 6.5 0 0 1 11-7 6.5 6.5 0 0 1 11 7z" fill="#c8624a" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>');
   }
 
   /** Tegn alle: en blyant over tre kasser. */
@@ -117,7 +118,7 @@
     return svg(64, 56, '<rect x="4" y="30" width="16" height="20" rx="4" fill="' + KRIDT + '" stroke="' + K + '" stroke-width="3"/>' +
       '<rect x="24" y="30" width="16" height="20" rx="4" fill="' + KRIDT + '" stroke="' + K + '" stroke-width="3"/>' +
       '<rect x="44" y="30" width="16" height="20" rx="4" fill="' + KRIDT + '" stroke="' + K + '" stroke-width="3"/>' +
-      '<path d="M14 24l4-12 30-9 5 6-30 12z" fill="#ffd23f" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M14 24l4-12 30-9 5 6-30 12z" fill="#f0c46a" stroke="' + K + '" stroke-width="3" stroke-linejoin="round"/>' +
       '<path d="M14 24l4-12 5 4z" fill="' + K + '"/>');
   }
 
@@ -126,7 +127,7 @@
     return svg(30, 30, '<path d="M4 11h6l7-6v20l-7-6H4z" fill="' + K + '"/>' +
       (til
         ? '<path d="M20 10c2 2.5 2 7.5 0 10M23.5 7c3.5 4.5 3.5 11.5 0 16" fill="none" stroke="' + K + '" stroke-width="2.5" stroke-linecap="round"/>'
-        : '<path d="M20 11l7 8M27 11l-7 8" fill="none" stroke="#e8442e" stroke-width="3" stroke-linecap="round"/>'));
+        : '<path d="M20 11l7 8M27 11l-7 8" fill="none" stroke="#c8624a" stroke-width="3" stroke-linecap="round"/>'));
   }
 
   /* ---------- faerdige knapper og raekker ---------- */

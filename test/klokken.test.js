@@ -160,6 +160,51 @@ tjek('halv fire: den roede viser staar midt mellem 3 og 4, den blaa paa 6', Math
     tjek('vinkel og doegn er hinandens modsatte (paa et minut naer)', Math.min(d, Math.PI * 2 - d) < 0.005, d); }
   tjek('klokken 15 vises som 3 paa uret', U.doegnTilUr(15 * 60) === 180 && U.tekst(U.doegnTilUr(15 * 60)) === 'klokken tre');
   tjek('ved klokken 7 boerster musen taender, ved klokken 10 sker der ikke noget', U.goeremaal(7 * 60 + 20).kort === 'tandboerste' && U.goeremaal(10 * 60) === null);
+
+  // Jorden drejer frit, men uret kan kun sige hele og halve timer. Slipper man
+  // jorden paa 7:17, skal den lande paa 7:00 — ikke blive staaende, mens musen
+  // siger "halv otte".
+  {
+    const daarlige = [];
+    for (let t = 0; t < 1440; t++) {
+      const L = U.landDoegn(t), ur = U.doegnTilUr(L);
+      if (U.minut(ur) !== 0 && U.minut(ur) !== 30) daarlige.push(t + ' -> ' + L);
+      const gm = U.goeremaal(L);
+      if (gm && gm.t !== L) daarlige.push('goeremaal passer ikke ved ' + t);
+      const spring = Math.abs((((L - t + 720) % 1440) + 1440) % 1440 - 720);
+      if (spring > U.NAER) daarlige.push('landede ' + spring + ' minutter vaek ved ' + t);
+    }
+    tjek('jorden lander altid paa en tid, uret kan sige, og hoejst 20 minutter vaek', daarlige.length === 0, daarlige.slice(0, 3).join(' | '));
+    tjek('landingen rammer dagens goeremaal: 7:17 bliver 7:00, og 13:41 bliver 14:00',
+      U.landDoegn(7 * 60 + 17) === 7 * 60 && U.landDoegn(13 * 60 + 41) === 14 * 60 && U.landDoegn(23 * 60 + 50) === 0,
+      U.landDoegn(7 * 60 + 17) + ' / ' + U.landDoegn(13 * 60 + 41) + ' / ' + U.landDoegn(23 * 60 + 50));
+    tjek('uret og stemmen er enige efter en landing',
+      [0, 137, 431, 760, 1111, 1439].every(t => { const ur = U.doegnTilUr(U.landDoegn(t)); return /^(klokken|halv)_/.test(U.klip(ur)) && (U.minut(ur) === 0 || U.minut(ur) === 30); }));
+  }
+
+  // Legen har en opgave: musen beder om et goeremaal, og barnet drejer derhen
+  {
+    const problemer = [];
+    for (let runde = 0; runde < 15; runde++) {
+      const r = U.nyRejse(1, 0, 'sol');
+      if (r.maal !== 6) problemer.push('forkert antal opgaver: ' + r.maal);
+      let vagt = 0;
+      while (!r.faerdig && vagt++ < 100) {
+        const s = r.stationer[0], o = s.opgave;
+        if (!o) { problemer.push('ingen opgave, men legen var ikke faerdig'); break; }
+        if (o.slags !== 'drej') problemer.push('forkert slags opgave: ' + o.slags);
+        if (!U.DAGEN.some(d => d.t === o.t && d.kort === o.kort)) problemer.push('opgaven er ikke et af dagens goeremaal');
+        const forkert = U.DAGEN.find(d => d.t !== o.t).t;
+        if (U.tjekDrej(r, 0, forkert)) problemer.push('et forkert tidspunkt blev godkendt');
+        if (s.forsoeg !== 1) problemer.push('forsoeget blev ikke talt');
+        if (s.opgave !== o) problemer.push('opgaven skiftede efter et forkert forsoeg');
+        if (!U.tjekDrej(r, 0, o.t + 14)) problemer.push('det rigtige tidspunkt blev afvist, fordi fingeren ramte lidt skaevt');
+        if (s.opgave && s.opgave.t === o.t) problemer.push('samme goeremaal to gange i raekke');
+      }
+      if (!r.faerdig) problemer.push('legen blev ikke faerdig');
+    }
+    tjek('robotten drejer jorden hen til alle seks goeremaal', problemer.length === 0, problemer.slice(0, 4).join(' | '));
+  }
 }
 
 /* Filer og offline-cache */
@@ -174,6 +219,8 @@ tjek('halv fire: den roede viser staar midt mellem 3 og 4, den blaa paa 6', Math
   const klip = JSON.parse(fs.readFileSync(path.join(ROD, 'games', 'klokken', 'lyd', 'klip.json'), 'utf8'));
   const klipMangler = klip.filter(f => !fs.existsSync(path.join(ROD, 'games', 'klokken', 'lyd', f)) || !sw.includes("'games/klokken/lyd/" + f + "'"));
   tjek('alle klip i klip.json findes og er i FILER', klipMangler.length === 0, klipMangler.join());
+  const drej = U.DAGEN.map(d => 'drej_' + d.kort + '.mp3').filter(f => !klip.includes(f));
+  tjek('hvert goeremaal har et klip til "drej jorden"-opgaven', drej.length === 0, drej.join());
   const kode = fs.readFileSync(path.join(ROD, 'games', 'klokken', 'js', 'game.js'), 'utf8');
   const naevnte = [...kode.matchAll(/'([a-z_0-9]+\.mp3)'/g)].map(m => m[1])
     .filter(f => !/^(klokken|halv)_/.test(f));

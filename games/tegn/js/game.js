@@ -24,7 +24,7 @@
     };
   }
 
-  var FARVER = ['#e8442e', '#3aa7e0', '#4cb944', '#ffd23f', '#9b5de5', '#ff8c42'];
+  var FARVER = ['#d95f45', '#5f9fc9', '#7ab648', '#f0c46a', '#9b7bd4', '#e08a52'];
   var TOLERANCE = [15, 12, 10];        // hvor taet fingeren skal foelge stregen, pr. stjerne
   var SKYGGE = [0.3, 0.12, 0];         // hvor tydeligt billedet anes paa braettet under puslespillet
 
@@ -143,11 +143,11 @@
     if (Figurer.lukket(d)) {
       sti(c, d.sti); c.closePath();
       if (d.fyld) { c.fillStyle = d.fyld; c.fill(); }
-      c.strokeStyle = '#12261f'; c.lineWidth = d.pynt ? 1.3 : 2; c.stroke();
+      c.strokeStyle = '#5e4a3a'; c.lineWidth = d.pynt ? 1.3 : 2; c.stroke();
     } else if (d.pynt) {
       sti(c, d.sti); c.strokeStyle = d.farve; c.lineWidth = 1.6; c.stroke();
     } else {
-      sti(c, d.sti); c.strokeStyle = '#12261f'; c.lineWidth = 6.2; c.stroke();
+      sti(c, d.sti); c.strokeStyle = '#5e4a3a'; c.lineWidth = 6.2; c.stroke();
       sti(c, d.sti); c.strokeStyle = d.farve; c.lineWidth = 3.6; c.stroke();
     }
   }
@@ -164,31 +164,31 @@
   function tegnBaggrund(c, id) {
     var g = c.createLinearGradient(0, 0, 0, 100);
     if (id === 'hav') {
-      g.addColorStop(0, '#bfe9ff'); g.addColorStop(1, '#6fc3ee'); c.fillStyle = g; c.fillRect(0, 0, 100, 100);
-      c.fillStyle = '#f3dcae'; c.beginPath(); c.moveTo(0, 100); c.lineTo(0, 92);
+      g.addColorStop(0, '#cfe6f2'); g.addColorStop(1, '#8fbfd8'); c.fillStyle = g; c.fillRect(0, 0, 100, 100);
+      c.fillStyle = '#ecd7ae'; c.beginPath(); c.moveTo(0, 100); c.lineTo(0, 92);
       for (var x = 0; x <= 100; x += 10) c.quadraticCurveTo(x + 5, 88 + (x % 20 ? 3 : -1), x + 10, 92);
       c.lineTo(100, 100); c.closePath(); c.fill();
       c.strokeStyle = 'rgba(255,255,255,0.8)'; c.lineWidth = 1;
       [[10, 20, 3], [16, 12, 2], [88, 30, 3.5], [82, 18, 2], [92, 60, 2.5], [6, 66, 2]].forEach(function (b) { c.beginPath(); c.arc(b[0], b[1], b[2], 0, Math.PI * 2); c.stroke(); });
-      c.strokeStyle = '#3f9b52'; c.lineWidth = 2.4; c.lineCap = 'round';
+      c.strokeStyle = '#66914f'; c.lineWidth = 2.4; c.lineCap = 'round';
       [[8, 0], [93, 1]].forEach(function (s) { c.beginPath(); c.moveTo(s[0], 94); c.quadraticCurveTo(s[0] - 5, 84, s[0] + 1, 76); c.quadraticCurveTo(s[0] + 5, 70, s[0], 64); c.stroke(); });
     } else {
-      g.addColorStop(0, '#bfe9ff'); g.addColorStop(1, '#e9f8ff'); c.fillStyle = g; c.fillRect(0, 0, 100, 100);
+      g.addColorStop(0, '#cfe6f2'); g.addColorStop(1, '#e8f2f5'); c.fillStyle = g; c.fillRect(0, 0, 100, 100);
       c.fillStyle = '#fff';
       [[16, 14], [80, 10]].forEach(function (s) { c.beginPath(); c.arc(s[0], s[1], 6, 0, Math.PI * 2); c.arc(s[0] + 7, s[1] + 1, 5, 0, Math.PI * 2); c.arc(s[0] - 7, s[1] + 2, 4.5, 0, Math.PI * 2); c.fill(); });
       if (id === 'maskiner') {
-        c.fillStyle = '#9bd17a'; c.fillRect(0, 78, 100, 22);
-        c.fillStyle = '#6d727b'; c.fillRect(0, 84, 100, 16);
+        c.fillStyle = '#a9c880'; c.fillRect(0, 78, 100, 22);
+        c.fillStyle = '#8d8578'; c.fillRect(0, 84, 100, 16);
         c.fillStyle = '#fff'; for (var v = 4; v < 100; v += 16) c.fillRect(v, 91, 8, 1.6);
       } else {
-        c.fillStyle = id === 'dyr' ? '#8fd16a' : '#9bd17a';
+        c.fillStyle = id === 'dyr' ? '#a3c976' : '#a9c880';
         c.beginPath(); c.moveTo(0, 100); c.lineTo(0, 84); c.quadraticCurveTo(30, 74, 60, 84); c.quadraticCurveTo(82, 90, 100, 80); c.lineTo(100, 100); c.closePath(); c.fill();
         if (id === 'dyr') {
-          c.strokeStyle = '#a97a4a'; c.lineWidth = 1.8;
+          c.strokeStyle = '#a98a63'; c.lineWidth = 1.8;
           for (var p = 4; p < 100; p += 12) { c.beginPath(); c.moveTo(p, 72); c.lineTo(p, 84); c.stroke(); }
           c.beginPath(); c.moveTo(0, 76); c.lineTo(100, 76); c.moveTo(0, 81); c.lineTo(100, 81); c.stroke();
         } else {
-          [[10, 92, '#ff7eb6'], [24, 95, '#ffd23f'], [78, 93, '#e8442e'], [92, 90, '#ff7eb6']].forEach(function (b) { c.fillStyle = b[2]; c.beginPath(); c.arc(b[0], b[1], 1.8, 0, Math.PI * 2); c.fill(); });
+          [[10, 92, '#e894b4'], [24, 95, '#f0c46a'], [78, 93, '#d95f45'], [92, 90, '#e894b4']].forEach(function (b) { c.fillStyle = b[2]; c.beginPath(); c.arc(b[0], b[1], 1.8, 0, Math.PI * 2); c.fill(); });
         }
       }
     }
@@ -238,7 +238,7 @@
       k.save(); brikSti(k, br); k.clip();
       k.drawImage(billede, -br.kol * pusle.b, -br.raek * pusle.h, 100, 100);
       k.restore();
-      brikSti(k, br); k.strokeStyle = '#12261f'; k.lineWidth = 0.9; k.lineJoin = 'round'; k.stroke();
+      brikSti(k, br); k.strokeStyle = '#5e4a3a'; k.lineWidth = 0.9; k.lineJoin = 'round'; k.stroke();
       return { billede: l, m: m };
     });
   }
@@ -355,16 +355,20 @@
 
   function tegnRum() {
     var B = window.innerWidth, H = window.innerHeight;
-    var farver = { hav: ['#d5f0ff', '#a8dcf7'], dyr: ['#e6f7d4', '#c6eaa6'], maskiner: ['#eceff3', '#d3d9e2'], have: ['#fff3c9', '#ffe39a'] }[univers ? univers.id : 'have'];
+    var farver = { hav: ['#dceef5', '#b5d6e6'], dyr: ['#e6f0d6', '#c7de9a'], maskiner: ['#eeeae0', '#d8d0c2'], have: ['#f7ecd2', '#ebd9ae'] }[univers ? univers.id : 'have'];
     var g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, farver[0]); g.addColorStop(1, farver[1]);
     ctx.fillStyle = g; ctx.fillRect(0, 0, B, H);
   }
 
   function tegnPapir(b) {
-    ctx.fillStyle = 'rgba(18,38,31,0.18)'; ctx.beginPath(); ctx.roundRect(b.x + 6, b.y + 8, b.str, b.str, 18); ctx.fill();
-    ctx.fillStyle = '#fffdf6'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.roundRect(b.x, b.y, b.str, b.str, 18); ctx.fill(); ctx.stroke();
+    ctx.save();
+    ctx.shadowColor = 'rgba(94,74,58,0.3)'; ctx.shadowBlur = 22; ctx.shadowOffsetY = 9;
+    ctx.fillStyle = '#fffaf0';
+    ctx.beginPath(); ctx.roundRect(b.x, b.y, b.str, b.str, 20); ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(94,74,58,0.18)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(b.x, b.y, b.str, b.str, 20); ctx.stroke();
   }
 
   function tegnTegning(b) {
@@ -377,7 +381,7 @@
     dele.forEach(function (d, k) {
       if (k < spor.aktiv) return;
       sti(ctx, d.sti);
-      ctx.setLineDash([2.5, 3.5]); ctx.strokeStyle = k === spor.aktiv ? '#7c8a84' : '#c9cfc9'; ctx.lineWidth = k === spor.aktiv ? 2.4 : 1.8; ctx.stroke();
+      ctx.setLineDash([2.5, 3.5]); ctx.strokeStyle = k === spor.aktiv ? '#9d8c78' : '#d6cdbd'; ctx.lineWidth = k === spor.aktiv ? 2.4 : 1.8; ctx.stroke();
       ctx.setLineDash([]);
     });
     dele.forEach(function (d, k) { if (k < spor.aktiv) tegnDel(ctx, d); });
@@ -385,17 +389,17 @@
       var d = dele[spor.aktiv], punkter = spor.streger[spor.aktiv];
       if (spor.indeks > 0) {
         sti(ctx, punkter.slice(0, spor.indeks + 1));
-        ctx.strokeStyle = '#12261f'; ctx.lineWidth = 5.4; ctx.stroke();
+        ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 5.4; ctx.stroke();
         sti(ctx, punkter.slice(0, spor.indeks + 1));
         ctx.strokeStyle = d.fyld || d.farve; ctx.lineWidth = 3.2; ctx.stroke();
       }
       // En lille prik loeber i forvejen og viser vejen
       var frem = Math.min(punkter.length - 1, spor.indeks + Math.floor(((tid * 1.1) % 1) * Math.min(30, punkter.length)));
-      ctx.fillStyle = 'rgba(18,38,31,0.35)'; ctx.beginPath(); ctx.arc(punkter[frem][0], punkter[frem][1], 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(94,74,58,0.35)'; ctx.beginPath(); ctx.arc(punkter[frem][0], punkter[frem][1], 1.6, 0, Math.PI * 2); ctx.fill();
       // Her skal fingeren vaere
       var n = spor.naeste(), puls = 1 + Math.sin(tid * 6) * 0.18;
-      ctx.fillStyle = 'rgba(255,210,63,0.45)'; ctx.beginPath(); ctx.arc(n[0], n[1], 7 * puls, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#12261f'; ctx.lineWidth = 1.2;
+      ctx.fillStyle = 'rgba(240,196,106,0.45)'; ctx.beginPath(); ctx.arc(n[0], n[1], 7 * puls, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f0c46a'; ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 1.2;
       ctx.beginPath(); ctx.arc(n[0], n[1], 3.6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     }
     ctx.restore();
@@ -407,11 +411,11 @@
     ctx.save();
     ctx.translate(x, y); ctx.rotate(-0.6);
     var l = u * 22, t = u * 5;
-    ctx.strokeStyle = '#12261f'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
-    ctx.fillStyle = '#f3dcae'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(t * 0.9, -t / 2); ctx.lineTo(t * 0.9, t / 2); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.rect(t * 0.9, -t / 2, l, t); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#ff7eb6'; ctx.beginPath(); ctx.roundRect(t * 0.9 + l, -t / 2, t * 0.8, t, 4); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#12261f'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(t * 0.3, -t * 0.17); ctx.lineTo(t * 0.3, t * 0.17); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+    ctx.fillStyle = '#ecd7ae'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(t * 0.9, -t / 2); ctx.lineTo(t * 0.9, t / 2); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#f0c46a'; ctx.beginPath(); ctx.rect(t * 0.9, -t / 2, l, t); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#e894b4'; ctx.beginPath(); ctx.roundRect(t * 0.9 + l, -t / 2, t * 0.8, t, 4); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#5e4a3a'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(t * 0.3, -t * 0.17); ctx.lineTo(t * 0.3, t * 0.17); ctx.closePath(); ctx.fill();
     ctx.restore();
   }
 
@@ -420,8 +424,8 @@
     var B = window.innerWidth, n = univers.figurer.length;
     for (var i = 0; i < n; i++) {
       ctx.beginPath(); ctx.arc(B / 2 + (i - (n - 1) / 2) * 28, 20, 9, 0, Math.PI * 2);
-      ctx.fillStyle = i < lavet.length ? '#4cb944' : 'rgba(255,255,255,0.75)'; ctx.fill();
-      ctx.lineWidth = 3; ctx.strokeStyle = '#12261f'; ctx.stroke();
+      ctx.fillStyle = i < lavet.length ? '#7ab648' : 'rgba(255,255,255,0.75)'; ctx.fill();
+      ctx.lineWidth = 3; ctx.strokeStyle = '#5e4a3a'; ctx.stroke();
     }
   }
 
@@ -440,7 +444,7 @@
     if (!bb) return;
     var px = b.x + (x - bb.m) * b.u, py = b.y + (y - bb.m) * b.u;
     var bred = (pusle.b + 2 * bb.m) * b.u, hoej = (pusle.h + 2 * bb.m) * b.u;
-    if (!br.paa) { ctx.shadowColor = 'rgba(18,38,31,0.35)'; ctx.shadowBlur = loeftet ? 18 : 6; ctx.shadowOffsetY = loeftet ? 10 : 3; }
+    if (!br.paa) { ctx.shadowColor = 'rgba(94,74,58,0.35)'; ctx.shadowBlur = loeftet ? 18 : 6; ctx.shadowOffsetY = loeftet ? 10 : 3; }
     ctx.drawImage(bb.billede, px, py, bred, hoej);
     ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
   }
@@ -451,7 +455,7 @@
     ctx.save();
     ctx.translate(b.x, b.y); ctx.scale(b.u, b.u);
     if (SKYGGE[svaerhed] > 0 && billede) { ctx.globalAlpha = SKYGGE[svaerhed]; ctx.drawImage(billede, 1, 1, 98, 98); ctx.globalAlpha = 1; }
-    ctx.strokeStyle = 'rgba(18,38,31,0.18)'; ctx.lineWidth = 0.6; ctx.setLineDash([2, 2]);
+    ctx.strokeStyle = 'rgba(94,74,58,0.18)'; ctx.lineWidth = 0.6; ctx.setLineDash([2, 2]);
     for (var k = 1; k < pusle.kol; k++) { ctx.beginPath(); ctx.moveTo(k * pusle.b, 2); ctx.lineTo(k * pusle.b, 98); ctx.stroke(); }
     for (var r = 1; r < pusle.raek; r++) { ctx.beginPath(); ctx.moveTo(2, r * pusle.h); ctx.lineTo(98, r * pusle.h); ctx.stroke(); }
     ctx.restore();
@@ -582,6 +586,9 @@
   };
 
   tilpasStørrelse();
+  // Pilen oeverst til venstre foerer tilbage hertil, ogsaa midt i et spil.
+  Skal.menuKnap(visMenu);
+
   visMenu();
   requestAnimationFrame(function (t) { sidsteTid = t; løkke(t); });
 })();

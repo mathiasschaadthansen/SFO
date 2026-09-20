@@ -53,6 +53,49 @@ Eksempel: `games/bogstaver/ting/` bruger Noto Emoji under Apache 2.0.
 (tekst, små filer), lyd laves med oscillatorer. Det holder repoet lille og
 offline-cachen hurtig. Nye filer skal med i `FILER` i `sw.js`.
 
+## Grafik og spil er to ting
+
+**En grafikændring må ikke ændre spillet.** Skal et spil se anderledes ud, er
+det kun malingen, der skiftes: farver, billeder, skygger, baggrund. Banerne,
+reglerne, styringen, knappernes placering og det, der kan trykkes på, bliver
+som de er. Vil man ændre selve spillet, er det en anden opgave, som skal
+aftales for sig.
+
+To fælder, der allerede er trådt i:
+
+- **Se den rigtige spilleplade først.** Bobler blev tegnet om som et helt
+  andet spil, fordi kun menuen var åbnet. Start spillet, før du tegner.
+- **Tydeligere er ikke det samme som pænere.** At gøre Racerbanens styrezoner
+  synlige er en ændring af spillet, ikke af grafikken — uanset hvor godt det
+  lyder.
+
+Bobler blev set efter og beholdt, som det er. Maskinens faste pladser er den
+ene undtagelse: dér blev spillet ændret, fordi det var det, der blev bedt om.
+
+## Den malede palet
+
+Alle spil bruger den samme dæmpede, malede palet. Skal noget have en farve,
+tages den herfra i stedet for en ny neonfarve:
+
+| Rolle | Farve |
+|---|---|
+| Blæk (streger, tekst) | `#5e4a3a`, lysere `#6b5545` |
+| Papir og kort | `#f8f1e6`, knapper `#efe3d0` |
+| Sand og træ | `#e5d3ae`, `#d9ba8a`, `#b18a56`, `#8a663d` |
+| Grøn | `#93bc63`, dyb `#5f8240`, salvie til startknapper `#8fae86` |
+| Blå | `#8fc7e8`, `#5f9fc9`, valgt-blå `#aed3e4` |
+| Rød og fersken | `#d95f45`, `#e08a52`, `#f0c46a` |
+| Lilla | `#9b7bd4` |
+
+Kort og knapper har bløde skygger, ikke sorte kanter: `0 6px 0 rgba(107,85,68,.18)`
+og `inset 0 3px 0 rgba(255,255,255,.85)`. Menuikonerne ligger i `js/menu.js` og
+hjem-knappen i `js/skal.js`, så en ændring dér slår igennem i alle spil.
+
+Malede billeder ligger i `assets/malet/` (forsiden) og
+`games/maskinen/billeder/` (Nøddeskoven). Noto Emoji bruges stadig, hvor et
+barn skal kunne genkende en ting med det samme: maden og gæsterne i
+Restauranten, kortene i Klokken og tingene i ABC og 123.
+
 ## Designregler for 6-årige
 
 - Ingen tekst der skal læses for at kunne spille. Omgangstælleren er cirkler,
@@ -62,6 +105,10 @@ offline-cachen hurtig. Nye filer skal med i `FILER` i `sw.js`.
 - Ingen tidspres og ingen højscore. Børnene sidder typisk to ved en iPad, og
   konkurrenceelementer skaber skænderier som pædagogerne skal håndtere.
 - Store trykflader. Styrezonerne fylder hele skærmhøjden.
+- To knapper i hjørnet hele tiden: huset øverst fører til forsiden, pilen
+  under fører tilbage til spillets egen menu. Pilen ligger i `js/skal.js`, og
+  hvert spil melder sig til med `Skal.menuKnap(visMenu)`. Den viser sig kun,
+  mens man spiller, så man aldrig skal spille færdig for at skifte bane.
 - Menuknapper er billeder, ikke ord. Ikonerne ligger i `js/menu.js` og bruges
   af alle spil: én eller to figurer for antal spillere, en trekant for start,
   en pil rundt for igen, en pil tilbage for menuen, og én, to eller tre

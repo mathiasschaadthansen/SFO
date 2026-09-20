@@ -89,6 +89,7 @@ def klokken():
             "const ud = [];"
             "for (let h = 1; h <= 12; h++) { ud.push(['klokken_' + h + '.mp3', 'Klokken ' + U.TIMEORD[h %% 12] + '.']); ud.push(['halv_' + h + '.mp3', 'Halv ' + U.TIMEORD[h %% 12] + '.']); }"
             "U.DAGEN.forEach(d => ud.push(['goer_' + d.kort + '.mp3', d.tekst]));"
+            "U.DAGEN.forEach(d => ud.push(['drej_' + d.kort + '.mp3', 'Drej jorden, til ' + d.tekst[0].toLowerCase() + d.tekst.slice(1)]));"
             "Object.keys(U.HIMMELORD).forEach(h => ud.push(['om_' + h + '.mp3', U.HIMMELORD[h] + '.']));"
             "console.log(JSON.stringify(ud));"
             ) % os.path.join(ROD, 'games', 'klokken', 'js', 'ur.js')

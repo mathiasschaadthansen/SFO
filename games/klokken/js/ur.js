@@ -9,7 +9,9 @@
  *         At stille uret og at aflaese det er to forskellige ting; foer blev
  *         kun den foerste oevet.
  *   dag   Musens dag. Uret viser en tid, og barnet vaelger, hvad musen goer nu.
- *   sol   Jorden drejer. Barnet drejer jorden, og uret nedenunder foelger med.
+ *   sol   Jorden drejer. Musen beder om et af dagens goeremaal, og barnet
+ *         drejer jorden, til uret staar der. Naar fingeren slipper, lander
+ *         jorden paa et tidspunkt, uret kan sige.
  *
  * Tiden regnes i minutter siden klokken 12 (0-719), saa én omgang paa uret er
  * 720. Viserne haenger sammen som paa et rigtigt ur: traekker man den blaa
@@ -132,11 +134,29 @@
    */
   function vinkelTilDoegn(v) { return normDoegn(720 - v / TAU * 1440); }
   function doegnTilVinkel(t) { return (720 - normDoegn(t)) / 1440 * TAU; }
-  /** Dagens goeremaal taet paa tiden, hvis der er et (inden for en halv time). */
+  /** Jorden drejer frit, men uret kan kun sige hele og halve timer. */
+  var DREJ_TRIN = 30;
+  /** Saa taet paa et goeremaal skal man vaere, foer det er "nu". */
+  var NAER = 20;
+
+  /** Dagens goeremaal taet paa tiden, hvis der er et. */
   function goeremaal(t) {
     var d = normDoegn(t);
-    for (var i = 0; i < DAGEN.length; i++) if (Math.abs(DAGEN[i].t - d) <= 30) return DAGEN[i];
+    for (var i = 0; i < DAGEN.length; i++) if (Math.abs(DAGEN[i].t - d) <= NAER) return DAGEN[i];
     return null;
+  }
+
+  function laasDoegn(t, trin) { return normDoegn(Math.round(normDoegn(t) / trin) * trin); }
+  /**
+   * Hvor jorden lander, naar fingeren slipper: paa dagens goeremaal, hvis et er
+   * taet nok paa, ellers paa naermeste halve time. Uden det kunne uret staa paa
+   * 7:17, mens musen sagde "halv otte" — tekst() og klip() kender kun hele og
+   * halve timer. Jorden flytter sig hoejst 20 minutter, naar den lander, og
+   * bagefter er uret, kortet paa dagens ring og det, musen siger, altid enige.
+   */
+  function landDoegn(t) {
+    var d = normDoegn(t), gm = goeremaal(d);
+    return gm ? gm.t : laasDoegn(d, DREJ_TRIN);
   }
 
   /* ---------- rejsen: opgaver og fremskridt ---------- */
@@ -158,7 +178,7 @@
   }
 
   /**
-   * Ny rejse. leg er stil eller dag; sol har ingen opgaver og bruger ikke rejsen.
+   * Ny rejse. Alle tre lege bruger den: stil, dag og sol.
    * Hver station har sit eget ur og sin egen opgave; maalet er faelles.
    */
   function nyRejse(antalSpillere, niveau, leg) {
@@ -190,6 +210,12 @@
         s.ur.t = vaelgEn(tider(r.niveau).filter(function (x) { return x !== t && skiveAfstand(x, t) >= 2; }));
         s.opgave = { slags: 'stil', t: t, klip: klip(t), tekst: tekst(t) };
       }
+    } else if (r.leg === 'sol') {
+      // Jorden drejer: musen beder om et goeremaal, og barnet drejer derhen.
+      var drej = vaelgEn(DAGEN.filter(function (d) { return s.sidste === null || d.t !== s.sidste.t; }));
+      s.ur.t = doegnTilUr(drej.t);
+      s.opgave = { slags: 'drej', t: drej.t, kort: drej.kort, tekst: drej.tekst,
+        klip: klip(doegnTilUr(drej.t)), himmel: himmel(drej.t) };
     } else {
       var maal = vaelgEn(DAGEN.filter(function (d) { return s.sidste === null || d.t !== s.sidste.t; }));
       s.ur.t = doegnTilUr(maal.t);
@@ -249,6 +275,18 @@
     return 'rigtigt';
   }
 
+  /**
+   * Jorden drejer: fingeren slap jorden ved doegn-tiden t. Jorden lander paa
+   * landDoegn(t); er det musens goeremaal, er opgaven loest.
+   */
+  function tjekDrej(r, station, t) {
+    var s = r.stationer[station];
+    if (r.faerdig || !s.opgave || s.opgave.slags !== 'drej') return false;
+    if (landDoegn(t) !== s.opgave.t) { s.forsoeg++; return false; }
+    loest(r, station);
+    return true;
+  }
+
   /** Musens dag: vaelg et kort. 'rigtigt' eller 'forkert' (ingen straf, kortet ryster bare). */
   function vaelg(r, station, kort) {
     var s = r.stationer[station];
@@ -262,7 +300,8 @@
     INDSTIL: INDSTIL, TIMEORD: TIMEORD, DAGEN: DAGEN, HIMMELORD: HIMMELORD,
     norm: norm, normDoegn: normDoegn, time: time, minut: minut, talFor: talFor, timeVinkel: timeVinkel, minutVinkel: minutVinkel, laas: laas, traek: traek,
     tekst: tekst, klip: klip, skiveAfstand: skiveAfstand, doegnTilUr: doegnTilUr, himmel: himmel, vinkelTilDoegn: vinkelTilDoegn,
-    doegnTilVinkel: doegnTilVinkel, goeremaal: goeremaal, tider: tider, nyRejse: nyRejse, nyOpgave: nyOpgave, kortTil: kortTil,
-    tjek: tjek, tjekTal: tjekTal, vaelg: vaelg
+    doegnTilVinkel: doegnTilVinkel, goeremaal: goeremaal, laasDoegn: laasDoegn, landDoegn: landDoegn, DREJ_TRIN: DREJ_TRIN, NAER: NAER,
+    tider: tider, nyRejse: nyRejse, nyOpgave: nyOpgave, kortTil: kortTil,
+    tjek: tjek, tjekTal: tjekTal, vaelg: vaelg, tjekDrej: tjekDrej
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);

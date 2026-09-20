@@ -43,6 +43,11 @@ function lavCanvasStub() {
     save() {}, restore() {},
     fillRect() {}, drawImage() {}, arc() {}, fill() {},
     translate() {}, rotate() {}, strokeRect() {},
+    ellipse() {}, quadraticCurveTo() {}, roundRect() {}, clip() {},
+    // Maling: farveforloeb og moenstre bruges kun til udseendet, ikke til masken
+    createLinearGradient() { return { addColorStop() {} }; },
+    createRadialGradient() { return { addColorStop() {} }; },
+    createPattern() { return {}; },
     scale(s) { this._skala = s; },
     stroke() {
       // Kun den hvide streg paa maske-canvas er interessant

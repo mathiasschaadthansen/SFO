@@ -96,6 +96,11 @@ anderledes.
 
 Alt ligger i `INDSTIL` øverst i `games/racer/js/physics.js`.
 
+Banens udseende tegnes én gang i `games/racer/js/track.js` — malet eng, grussti,
+midterstribe og turbopile. Vejen tegnes i præcis `vejbredde`, den samme bredde
+som kollisionsmasken bruger, så det man ser er det man kan køre på. Bilerne er
+tegnet i kode i `tegnKaross` i `game.js`, tre former i seks farver.
+
 | Værdi | Betyder |
 |---|---|
 | `topfart` | Hvor hurtigt bilen kører på asfalt |
@@ -161,6 +166,13 @@ sjove for 6-årige, og de er det første testen brokker sig over.
 `INDSTIL` øverst i `games/klatbold/js/physics.js`: tyngde, hoppehøjde, boldens
 hop, målhøjde og hvor mange mål der skal til. `SVAERHED` sætter AI'ens fart,
 reaktionstid og hoppelyst for 1, 2 og 3 stjerner. Kør `npm test` bagefter.
+
+Klatterne er tegnet i kode i `games/klatbold/js/game.js`. `FARVER` er de seks
+farver med en lys top, en grundfarve og en dyb bund, og `tegnKlatForm` tegner
+kroppen og de fem ansigter: glad, sej og sød vælger barnet selv, og jubel og
+sur kommer af sig selv, når der bliver scoret. Kroppen er stadig en halvcirkel
+med radius `klatRadius`, præcis som i fysikken — ændrer man tegningen, må den
+ikke blive større eller mindre end det, bolden rammer.
 
 ## Skrue på Bobler
 
@@ -405,19 +417,29 @@ dag eller nat, og barnet vælger kortet med det, musen gør nu: 7 tandbørste,
 tilfældige. Tre stjerner: de kort, der ligger tættest på uret, så 7 om
 morgenen og 7 om aftenen ligger side om side.
 
-**Jorden drejer (`sol`).** Fri leg for én. Barnet drejer jorden med fingeren,
-solen står stille. Musens hus på kanten går fra dag til skygge til nat, uret
-nederst følger med, og hele himlen skifter farve med tidspunktet. Uden om
-jorden ligger dagens ring: døgnet som en cirkel med et mærke pr. time og
-gøremålene, hvor de hører til, så det kan ses, at en dag går rundt ligesom
-uret. Det gøremål, klokken er ved, lyser gult. Et tryk på uret siger tiden:
-"Klokken syv om morgenen". En hel omgang giver en gul stjerne: én dag.
+**Jorden drejer (`sol`).** For én. Musen beder om et af dagens gøremål —
+"Drej jorden, til musen børster tænder" — og barnet drejer jorden med
+fingeren, til uret står der. Seks opgaver, ligesom de to andre lege, og
+tælleren øverst er den samme. Solen står stille. Musens hus på kanten går fra
+dag til skygge til nat, uret nederst følger med, og hele himlen skifter farve
+med tidspunktet. Uden om jorden ligger dagens ring: døgnet som en cirkel med
+et mærke pr. time og gøremålene, hvor de hører til, så det kan ses, at en dag
+går rundt ligesom uret. Det gøremål, klokken er ved, lyser gult; efter to
+forsøg blinker det, der skal findes, og musen peger.
+
+Jorden drejer frit, men uret kan kun sige hele og halve timer. Derfor lander
+jorden på et tidspunkt, uret kan sige, når fingeren slipper: på gøremålet,
+hvis et er inden for tyve minutter, ellers på nærmeste halve time
+(`landDoegn` i `ur.js`). Uden den regel kunne uret stå på 7:17, mens musen
+sagde "halv otte". Et tryk på uret siger tiden: "Klokken syv om morgenen".
+En hel omgang giver en gul stjerne: én dag.
 
 **Stemme.** Klippene ligger i `games/klokken/lyd/` og laves med
 `vaerktoej/lav-lyd-elevenlabs.py --spil klokken`: `klokken_1.mp3` til
 `klokken_12.mp3`, `halv_1.mp3` til `halv_12.mp3` (tallet er det, der siges),
 `stil_uret.mp3`, `hvad_goer.mp3`, `om_morgen/dag/aften/nat.mp3`,
-`goer_<kort>.mp3`, `flot_1-3.mp3`, `naesten.mp3` og `rejse.mp3`. Sætningerne
+`goer_<kort>.mp3`, `drej_<kort>.mp3`, `flot_1-3.mp3`, `naesten.mp3` og
+`rejse.mp3`. Sætningerne
 sættes sammen af klip: "Stil uret på" + "klokken tre".
 
 **Grafikken.** Stjernehimlen er tre lag, der glider forskelligt, så rummet får
