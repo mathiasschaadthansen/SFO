@@ -582,8 +582,8 @@
     var v = visning[i], s = dag.stationer[i], g = v.gaard;
     if (!g || g.fundet) return;
     var kilde = K.KILDER[kildeNavn];
-    // Koen: foerst malkes der, saa bliver maelken til ost eller smoer
-    if (kildeNavn === 'ko' && K.kildeFor(g.ting) === 'ko' && g.spand < 1) {
+    // Koen: skal der ost eller smoer, malkes der foerst, saa bliver maelken til det
+    if (kilde.malk && kilde.malk.indexOf(g.ting) >= 0 && g.spand < 1) {
       g.spand = 1; g.spandT = 0;
       tone(392, 0.2, 0.1, 'sine'); tone(330, 0.3, 0.08, 'sine');
       puf(kx, ky, '#fff', 8, 90, 4, 0.5);
@@ -1491,7 +1491,7 @@
     ctx.beginPath(); ctx.roundRect(x - r * 0.12, y, r * 0.24, h, r * 0.08); ctx.fill(); ctx.stroke();
   }
 
-  /** En kilde paa gaarden: dyr, plante eller butik, med den ting den giver haengende paa. */
+  /** En kilde paa gaarden: dyr eller plante, med den ting den giver haengende paa. */
   function tegnKilde(navn, x, y, r, ryst, g) {
     var kilde = K.KILDER[navn], form = kilde.form, ting = kilde.giver[0];
     ctx.save();
@@ -1516,16 +1516,10 @@
       ctx.fillStyle = MOERK; ctx.beginPath(); ctx.roundRect(-r * 0.22, r * 0.3, r * 0.44, r * 0.12, 5); ctx.fill();
       tegnBillede('bi', r * 0.55 + Math.sin(tid * 3) * r * 0.15, -r * 0.55 + Math.cos(tid * 4) * r * 0.1, r * 0.55);
       frugt(-r * 0.6, r * 0.55, r * 0.55);
-    } else if (form === 'slagter') {
-      // Slagterens bod: markise og disk, med et gris-skilt
-      ctx.fillStyle = '#d95f45'; ctx.strokeStyle = KANT; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.roundRect(-r * 0.95, -r * 0.85, r * 1.9, r * 0.35, 8); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = KRIDT; for (var q = 0; q < 5; q++) { if (q % 2) continue; ctx.fillRect(-r * 0.95 + q * r * 0.38, -r * 0.85, r * 0.38, r * 0.35); }
-      ctx.strokeStyle = KANT; ctx.beginPath(); ctx.roundRect(-r * 0.95, -r * 0.85, r * 1.9, r * 0.35, 8); ctx.stroke();
-      ctx.fillStyle = '#d9a05b'; ctx.beginPath(); ctx.roundRect(-r * 0.85, r * 0.15, r * 1.7, r * 0.6, 8); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = KRIDT; ctx.beginPath(); ctx.roundRect(-r * 0.32, -r * 0.45, r * 0.64, r * 0.55, 8); ctx.fill(); ctx.stroke();
-      tegnBillede('gris', 0, -r * 0.17, r * 0.45);
-      frugt(-r * 0.5, r * 0.1, r * 0.5); tegnBillede(kilde.giver[1] || ting, r * 0.5, r * 0.1, r * 0.5);
+    } else if (form === 'gris') {
+      // Grisen staar paa marken som koen, med baconen ved siden af
+      tegnBillede('gris', 0, 0, r * 1.7);
+      frugt(r * 0.8, r * 0.05, r * 0.55);
     } else if (form === 'plante') {
       stamme(0, -r * 0.1, r, r * 0.9);
       ctx.fillStyle = '#7ab648'; ctx.strokeStyle = KANT; ctx.lineWidth = 2.5;
@@ -1622,7 +1616,8 @@
     });
     // Forkert kilde: en lille tankeboble viser, hvad den giver
     if (g.tanke) {
-      var t = g.tanke, kilde = K.KILDER[t.kilde], tb = Math.min(p.sw * 0.28, 150), th = tb * 0.5;
+      var t = g.tanke, kilde = K.KILDER[t.kilde], th = Math.min(p.sw * 0.28, 150) * 0.5;
+      var tb = th * 2 * Math.max(1, kilde.giver.length / 2);      // bred nok til koens tre ting
       var tx = Math.max(p.x0 + tb / 2 + 8, Math.min(p.x0 + p.sw - tb / 2 - 8, t.x));
       var ty = Math.max(p.boble.y + p.boble.h + th * 0.8, t.y - th * 1.9);      // aldrig oven i kunden
       ctx.globalAlpha = Math.min(1, t.t * 3);

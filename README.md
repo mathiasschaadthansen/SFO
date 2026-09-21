@@ -342,9 +342,10 @@ har en grøn spire, og både i boblen og på hylden kan man se, hvad der mangler
 Et tryk på kassen sender barnet ud på gården, hvor kunden spørger "Hvor kommer
 osten fra?". Gården viser kilderne til alt på rettens hylde: koen giver mælk,
 som bliver til ost og smør (tryk to gange: først malkes der), bien giver
-honning, og resten vokser på planter, buske og træer. Kød kommer fra
-slagteren, en bod med et gris-skilt, ikke fra et dyr på gården. En forkert
-kilde vipper og viser i en tankeboble, hvad den giver. Kilderne står i
+honning, og resten vokser på planter, buske og træer. Bøffen kommer også
+fra koen (uden malkning), og bacon kommer fra grisen. Der var før en
+slagterbod, men børnene trykkede på koen, når der blev spurgt om bøffen, og
+de havde ret. En forkert kilde vipper og viser i en tankeboble, hvad den giver. Kilderne står i
 `KILDER` i `koekken.js`, og tegningerne er i kode i `tegnKilde` i `game.js`.
 
 **Regningen.** Når kunden har spist, kommer regningen i boblen: hver

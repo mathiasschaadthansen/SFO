@@ -7,7 +7,7 @@
  * intet ur. Kunden venter, til maden er klar.
  *
  * Én ingrediens pr. bestilling mangler paa hylden og skal hentes paa gaarden:
- * barnet finder, hvor den kommer fra (koen, bien, tomatplanten, slagteren).
+ * barnet finder, hvor den kommer fra (koen, grisen, bien, tomatplanten).
  * Naar kunden har spist, kommer regningen: hver ingrediens har en pris i
  * moenter, og barnet betaler med moenter, til det passer. En moent for meget
  * hopper bare tilbage.
@@ -63,15 +63,16 @@
 
   /**
    * Gaarden: hvor hver ingrediens kommer fra. kilde er det, man trykker paa.
-   * Koen giver maelk, som bliver til ost og smoer. Bien giver honning. Koed
-   * kommer fra slagteren (en butik med et gris-skilt), ikke fra et dyr paa
-   * gaarden. Resten vokser paa planter, buske og traeer.
-   * form bestemmer tegningen: ko, bi, slagter, plante, busk, trae, palme, ranke, bed, stok, kakao.
+   * Koen giver maelk, som bliver til ost og smoer (malk: der malkes foerst),
+   * og boeffen. Grisen giver bacon. Bien giver honning. Resten vokser paa
+   * planter, buske og traeer. Slagteren blev fjernet i september 2026: boernene
+   * trykkede paa koen, naar der blev spurgt om boeffen, og de havde jo ret.
+   * form bestemmer tegningen: ko, gris, bi, plante, busk, trae, palme, ranke, bed, stok, kakao.
    */
   var KILDER = {
-    ko:        { form: 'ko',      giver: ['ost', 'smoer'],  navn: 'koen' },
+    ko:        { form: 'ko',      giver: ['ost', 'smoer', 'boef'], navn: 'koen', malk: ['ost', 'smoer'] },
+    gris:      { form: 'gris',    giver: ['bacon'],         navn: 'grisen' },
     bi:        { form: 'bi',      giver: ['honning'],       navn: 'bien' },
-    slagter:   { form: 'slagter', giver: ['boef', 'bacon'], navn: 'slagteren' },
     tomat:     { form: 'plante',  giver: ['tomat'],         navn: 'tomatplanten' },
     champignon:{ form: 'stok',    giver: ['champignon'],    navn: 'skovbunden' },
     peberfrugt:{ form: 'plante',  giver: ['peberfrugt'],    navn: 'peberplanten' },

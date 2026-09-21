@@ -180,7 +180,9 @@ console.log('\nRestauranten\n');
   const alleTing = Object.keys(K.INGREDIENSER);
   const udenKilde = alleTing.filter(t => !K.kildeFor(t));
   tjek('alle ingredienser kommer et sted fra', udenKilde.length === 0, 'uden kilde: ' + udenKilde);
-  tjek('koed kommer fra slagteren, ikke fra et dyr', K.kildeFor('boef') === 'slagter' && K.kildeFor('bacon') === 'slagter');
+  tjek('boeffen kommer fra koen og bacon fra grisen', K.kildeFor('boef') === 'ko' && K.kildeFor('bacon') === 'gris');
+  tjek('kun ost og smoer kraever malkning, ikke boeffen', K.KILDER.ko.malk.join() === 'ost,smoer' && !K.KILDER.gris.malk);
+  tjek('der er ingen slagter laengere', !K.KILDER.slagter);
   tjek('ost og smoer kommer fra koen, honning fra bien', K.kildeFor('ost') === 'ko' && K.kildeFor('smoer') === 'ko' && K.kildeFor('honning') === 'bi');
   Object.keys(K.RETTER).forEach(r => {
     const k = K.gaardKilder(r);
