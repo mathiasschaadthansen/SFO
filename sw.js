@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v81';
+const VERSION = 'sfo-spil-v82';
 
 const FILER = [
   './',
@@ -306,6 +306,21 @@ const FILER = [
   'games/rim/lyd/ord_sky.mp3',
   'games/rim/lyd/ord_stol.mp3',
   'games/rim/lyd/ord_vand.mp3',
+  'games/find/',
+  'games/find/index.html',
+  'games/find/js/find.js',
+  'games/find/js/game.js',
+  'games/find/lyd/klip.json',
+  'games/find/lyd/alle_sammen.mp3',
+  'games/find/lyd/du_fandt_den.mp3',
+  'games/find/lyd/find_dyr.mp3',
+  'games/find/lyd/find_flyve.mp3',
+  'games/find/lyd/find_groenne.mp3',
+  'games/find/lyd/find_gule.mp3',
+  'games/find/lyd/find_koere.mp3',
+  'games/find/lyd/find_roede.mp3',
+  'games/find/lyd/find_spise.mp3',
+  'games/find/lyd/kan_du_finde.mp3',
   'games/tegn/index.html',
   'games/tegn/js/figurer.js',
   'games/tegn/js/pusle.js',
@@ -529,6 +544,8 @@ const FILER = [
   'assets/malet/hus.png',
   'assets/malet/hat.png',
   'assets/malet/kat.png',
+  'assets/malet/raev.png',
+  'assets/malet/svamp.png',
   'assets/malet/pindsvin.png',
   'assets/malet/pizza.png',
   'assets/malet/rummus.png',

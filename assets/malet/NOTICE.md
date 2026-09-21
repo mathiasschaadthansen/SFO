@@ -12,6 +12,8 @@ Aeblet og pindsvinet er de samme billeder som i `games/maskinen/billeder/`,
 lagt her, saa forsiden ikke henter noget fra et spils egen mappe.
 Katten og hatten er de samme som i `games/bogstaver/billeder/` (Rimhulens kort
 paa forsiden), af samme grund.
+Raeven er den samme som i `games/bogstaver/billeder/` og svampen den samme som i
+`games/maskinen/billeder/` (Vrimleskovens kort paa forsiden).
 
 Efterbehandling: den hvide baggrund er skaaret fra i kode, billedet er
 beskaaret til indholdet, skaleret til 320 px paa den lange led og gemt som

@@ -95,6 +95,11 @@ games/rim/
   billeder/*.png        bjørn, kanin og salat, malede og kvadratiske (se billeder/NOTICE.md)
   lyd/*.mp3             de ekstra ord og hulens fire sætninger; resten er Bogstavvejens klip
 test/rim.test.js        en robot spiller rim og klapper alle ord på alle tre stjerner
+games/find/
+  js/find.js            ordene, kategorierne, stederne og reglerne: hvor tingene lægges — ingen DOM
+  js/game.js            engen og skoven, tingene, skyerne, menu, stemme
+  lyd/*.mp3             "Kan du finde den?" og kategorierne; ordene lånes fra Bogstavvejen
+test/find.test.js       en robot spiller alle steder på alle tre stjerner og tjekker, at alt kan findes
 test/restaurant.test.js en robot henter på gården, serverer og betaler en hel dag på alle tre stjerner
 ```
 
@@ -632,3 +637,39 @@ En omgang er otte spørgsmål, talt med cirkler. Testen lader en robot spille
 begge lege på alle tre stjerner og tjekker, at hvert spørgsmål har præcis ét
 rigtigt kort, at ingen forkerte kort rimer, at alle ord har billede, stemme
 og stavelser, og at n klap er fuld og n+1 starter forfra.
+
+## Vrimleskoven (mappen `find`)
+
+Find det, stemmen siger, i et stort billede: "Her har du ordet kat. Kan du
+finde den?". Det er det klassiske finde-spil, og det bedste til to børn ved én
+iPad, fordi de leder i det samme billede og hjælper hinanden.
+
+**Billedet.** Stedet (engen, skoven) tegnes i kode: himmel, træer, eng, sti,
+sø, hus og buske. Tingene er Bogstavvejens malede ting plus kaninen og
+bjørnen, og de spredes tilfældigt hver omgang i `laegTing` i `find.js`: aldrig
+oven i hinanden, og cirka hver tredje halvt bag en busk, men aldrig helt gemt.
+Ingen to omgange er ens. Én stjerne giver 18 store ting, to 26 mindre, tre 34
+små.
+
+**Legen.** Skyen øverst viser det, der skal findes, og et tryk på den gentager
+stemmen. Et tryk på den rigtige ting giver en ring i spillerens farve og "Du
+fandt den!". Et tryk på en forkert ting siger tingens ord, "Her har du ordet
+hund", så et forkert tryk også lærer noget. Ingen straf. Har barnet ledt
+længe, lyser et blødt skær omkring tingen. En omgang er seks spørgsmål, talt
+med cirkler under skyen. Med to spillere er der to skyer, rød og blå, med hver
+sit ord i det samme billede; finder man den andens ting, siges ordet bare.
+
+**Tre stjerner** skifter to af spørgsmålene til kategorier: "Find alle de
+røde", "Find alle, der kan flyve", "Find alle dyrene", "Find alt det, man kan
+spise" og "Find alt det, man kan køre i". Skyen viser en farveplet eller et
+lille tegn (vinge, pote, gaffel, hjul) og en prik pr. ting, der skal findes.
+Kategorierne står i `KATEGORIER` i `find.js`. Farverne er dem, tingene
+faktisk er malet i, målt på billederne, og `nyOmgang` sørger for, at hver
+kategori har to til fire medlemmer i billedet, og at ingen af enkeltordene i
+samme omgang også er medlem af en kategori.
+
+Testen lader en robot spille alle steder på alle tre stjerner og tjekker, at
+alle ting ligger inden for stedets zoner, at ingen ligger oven i hinanden
+eller helt bag en busk, at hvert spørgsmål kan besvares med det, der er i
+billedet, at kategorierne har to til fire medlemmer, og at alle ord har
+billede og stemme.

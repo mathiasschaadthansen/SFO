@@ -55,7 +55,7 @@ tjek('service workeren falder tilbage til index.html paa en mappe-adresse',
   /mode === 'navigate'/.test(sw) && /index\.html'/.test(sw));
 const stier = [...fs.readFileSync(path.join(ROD, 'js', 'games.js'), 'utf8')
   .matchAll(/sti:\s*'([^']+)'/g)].map(m => m[1]);
-tjek('forsiden linker til alle ni spil', stier.length === 9, stier.length + ' stier');
+tjek('forsiden linker til alle ti spil', stier.length === 10, stier.length + ' stier');
 const udenIndex = stier.filter(s2 => !sw.includes("'" + s2 + "index.html'"));
 tjek('hvert spil forsiden linker til har sin index.html i FILER', udenIndex.length === 0, udenIndex.join());
 
@@ -66,17 +66,17 @@ const ikkePaaDisk = alleFiler.filter(f => !f.endsWith('/') && !fs.existsSync(pat
 tjek('alle filer i FILER findes paa disken', ikkePaaDisk.length === 0, 'mangler: ' + ikkePaaDisk.slice(0, 5).join());
 const dubletter = alleFiler.filter((f, i) => alleFiler.indexOf(f) !== i);
 tjek('ingen fil staar to gange i FILER (addAll afviser dubletter)', dubletter.length === 0, 'to gange: ' + dubletter.join());
-const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen', 'rim'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
+const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen', 'rim', 'find'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
 tjek('alle spilsider har skallen med hjem-knappen', spilSider.every(h => h.includes('js/skal.js')));
 tjek('menu.js er med i service workerens FILER', sw.includes("'js/menu.js'"));
 tjek('alle spilsider bruger de faelles menu-ikoner', spilSider.every(h => h.includes('js/menu.js')));
 // Ingen knap i menuerne maa kraeve laesning: start, igen og menu er ikoner
-const spilKode = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen', 'rim'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'js', 'game.js'), 'utf8'));
+const spilKode = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen', 'rim', 'find'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'js', 'game.js'), 'utf8'));
 // Hvert spil skal kunne komme tilbage til sin egen menu midt i et spil
-const udenMenuKnap = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen', 'rim']
+const udenMenuKnap = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen', 'rim', 'find']
   .filter((s, i) => !/Skal\.menuKnap\(/.test(spilKode[i]));
 tjek('alle spil melder deres menu til pilen i hjoernet', udenMenuKnap.length === 0, udenMenuKnap.join());
-tjek('ingen spil har tekstknapper til start, igen eller menu', spilKode.every(k => !/>(1 spiller|2 spillere|Spil!|Kør!|Spil igen|Kør igen|Igen|Menu|Fri leg|Tegn alle)</.test(k)), 'tekstknapper: ' + ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen', 'rim'].filter((s, i) => /(>(1 spiller|2 spillere|Spil!|Kør!|Spil igen|Kør igen|Igen|Menu|Fri leg|Tegn alle)<)/.test(spilKode[i])));
+tjek('ingen spil har tekstknapper til start, igen eller menu', spilKode.every(k => !/>(1 spiller|2 spillere|Spil!|Kør!|Spil igen|Kør igen|Igen|Menu|Fri leg|Tegn alle)</.test(k)), 'tekstknapper: ' + ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen', 'rim', 'find'].filter((s, i) => /(>(1 spiller|2 spillere|Spil!|Kør!|Spil igen|Kør igen|Igen|Menu|Fri leg|Tegn alle)<)/.test(spilKode[i])));
 // Overlayet skal vaere det der ruller (ikke kortet med en hoejde i vh: paa iOS er 100vh hoejere
 // end det synlige felt, saa knappen i bunden fjedrede tilbage), og lave skaerme skal have et kompakt layout.
 tjek('alle spilsider lader overlayet rulle og centrerer kortet med margin:auto',

@@ -123,6 +123,17 @@ window.SPIL = [
          '</div>'
   },
   {
+    id: 'find',
+    navn: 'Vrimleskoven',
+    tekst: 'Find det, stemmen siger, i det store billede. Nye ting hver gang. 1 eller 2 spillere.',
+    farve: '#d5e6c0',
+    sti: 'games/find/',
+    art: '<div class="art">' +
+         '<img src="assets/malet/svamp.png" alt="" style="left:4px;top:40px;width:52px">' +
+         '<img src="assets/malet/raev.png" alt="" style="left:44px;top:10px;width:72px">' +
+         '</div>'
+  },
+  {
     id: 'tegn',
     navn: 'Tegnestuen',
     tekst: 'Tegn en fisk, en raket eller et hus med fingeren, og saml den som puslespil.',

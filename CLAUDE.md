@@ -28,7 +28,10 @@ enkelte dele (kanon, tragt, vippe, bånd, blæser), stoffet i murene (is, sne,
 åkande) og at hvert kapitel har sine baner og sin kugle. Rimhule-testen lader en
 robot spille rim og klappe stavelser på alle tre stjerner og tjekker, at hvert
 spørgsmål har præcis ét rigtigt kort, at ingen forkerte kort rimer, og at alle
-ord har billede, stemme og stavelser.
+ord har billede, stemme og stavelser. Vrimleskov-testen lader en robot spille alle
+steder på alle tre stjerner og tjekker, at tingene ligger frit og inden for
+stedet, at hvert spørgsmål kan besvares med det, der er i billedet, og at
+kategorierne har to til fire medlemmer.
 
 **Stemme.** Bogstavvejen (og Rimhulen, som låner dens ordklip) bruger rigtige
 klip med en dansk stemme fra ElevenLabs (Camilla) til bogstavnavne, tal, ord og
@@ -94,6 +97,7 @@ spillet. Koden er ikke doebt om: modulerne hedder stadig `Klatbold`, `Bobler`,
 | Nøddeskoven | `games/maskinen/` | `test/maskinen.test.js` |
 | Tegnestuen | `games/tegn/` | `test/tegn.test.js` |
 | Rimhulen | `games/rim/` | `test/rim.test.js` |
+| Vrimleskoven | `games/find/` | `test/find.test.js` |
 
 Navnet står tre steder pr. spil: `<title>` i `index.html`, `<h2>` i `visMenu`
 og `navn` i `js/games.js`. App-ikonet er pindsvinet Pelle, den samme figur som
@@ -123,8 +127,8 @@ Malede billeder ligger i `assets/malet/` (forsiden),
 (Skovkøkkenets 16 ingredienser, 3 retter og 12 gæster) og
 `games/bogstaver/billeder/` (Bogstavvejens 69 ting, kvadratiske som
 Skovkøkkenets; listen `MALET` i `ting.js` siger, hvilke ting der er malet).
-Rimhulen genbruger Bogstavvejens billeder og ordklip fra `../bogstaver/` og
-har kun sine elleve ekstra rimord selv.
+Rimhulen og Vrimleskoven genbruger Bogstavvejens billeder og ordklip fra
+`../bogstaver/`; Rimhulen har kun sine elleve ekstra rimord selv.
 Noto Emoji bruges stadig, hvor et barn skal kunne genkende en ting med det
 samme: kortene i Stjerneuret, de sidste syv ting i Bogstavvejen (sol,
 sommerfugl, ur, vandmelon, vante, vulkan, yoyo) og de få rekvisitter i
