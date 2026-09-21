@@ -58,6 +58,14 @@ const stier = [...fs.readFileSync(path.join(ROD, 'js', 'games.js'), 'utf8')
 tjek('forsiden linker til alle otte spil', stier.length === 8, stier.length + ' stier');
 const udenIndex = stier.filter(s2 => !sw.includes("'" + s2 + "index.html'"));
 tjek('hvert spil forsiden linker til har sin index.html i FILER', udenIndex.length === 0, udenIndex.join());
+
+// Findes en fil i FILER ikke, fejler addAll i install med en 404, og iPad'en
+// beholder den gamle version i stilhed. Det skete med Bogstavvejens SVG'er i v77.
+const alleFiler = [...sw.match(/const FILER = \[([\s\S]*?)\];/)[1].matchAll(/'([^']+)'/g)].map(m => m[1]);
+const ikkePaaDisk = alleFiler.filter(f => !f.endsWith('/') && !fs.existsSync(path.join(ROD, f)));
+tjek('alle filer i FILER findes paa disken', ikkePaaDisk.length === 0, 'mangler: ' + ikkePaaDisk.slice(0, 5).join());
+const dubletter = alleFiler.filter((f, i) => alleFiler.indexOf(f) !== i);
+tjek('ingen fil staar to gange i FILER (addAll afviser dubletter)', dubletter.length === 0, 'to gange: ' + dubletter.join());
 const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
 tjek('alle spilsider har skallen med hjem-knappen', spilSider.every(h => h.includes('js/skal.js')));
 tjek('menu.js er med i service workerens FILER', sw.includes("'js/menu.js'"));

@@ -180,6 +180,12 @@ skal den samme prompt bruges igen — prompten står i
   er ikke den samme, så `caches.match` rammer forbi. Uden et fald tilbage til
   `index.html` i `fetch`-handleren kunne forsiden åbnes uden net, men ingen af
   spillene. Det stod der fra begyndelsen og blev først fanget i september 2026.
+- **Alle filer i `FILER` skal findes.** `addAll` fejler på én 404, og så
+  installerer den nye version aldrig: iPad'en beholder den gamle i stilhed,
+  uden fejl nogen ser. Det samme sker, hvis en fil står to gange. Sletter
+  man filer, skal deres linjer ud af `FILER` — og listen kan have samme
+  mappe to steder, så søg på hele listen. Det skete med Bogstavvejens
+  SVG'er i v77. `test/assets.test.js` fanger begge dele nu.
 - **Service workeren må ikke hente fra browserens egen cache.** Filerne i
   `install` hentes med `cache: 'reload'`. Uden det fyldte den nye version sin
   cache med de gamle filer: cachen skiftede navn til den nye `VERSION`, men
