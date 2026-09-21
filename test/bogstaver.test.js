@@ -142,10 +142,23 @@ function foelg(glyf, tolerance, afvig) {
   tjek('ingen to ting har samme ord', new Set(ord).size === ord.length);
   const fs = require('fs');
   const manglerFil = alleTing.filter(t => t.fil && !fs.existsSync(path.join(ROD, '..', t.fil))).map(t => t.ord);
-  tjek('alle SVG-tegninger findes paa disken', manglerFil.length === 0, 'mangler: ' + manglerFil);
+  tjek('alle tingenes billeder findes paa disken', manglerFil.length === 0, 'mangler: ' + manglerFil);
   const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
   const ikkeICache = alleTing.filter(t => t.fil && !sw.includes("'games/bogstaver/" + t.fil + "'")).map(t => t.ord);
-  tjek('alle SVG-tegninger er med i service workerens FILER', ikkeICache.length === 0, 'mangler: ' + ikkeICache);
+  tjek('alle tingenes billeder er med i service workerens FILER', ikkeICache.length === 0, 'mangler: ' + ikkeICache);
+  // De malede billeder tegnes som kvadrater (drawImage med samme bredde og hoejde),
+  // saa et billede, der ikke er kvadratisk, bliver trukket skaevt. Og de skal vaere smaa.
+  const malede = alleTing.filter(t => t.fil && t.fil.startsWith('billeder/'));
+  const png = t => fs.readFileSync(path.join(ROD, '..', t.fil));
+  const skaeve = malede.filter(t => { const d = png(t); return d.readUInt32BE(16) !== d.readUInt32BE(20); }).map(t => t.ord);
+  const store = malede.filter(t => png(t).length > 40 * 1024).map(t => t.ord);
+  tjek('der er mindst 60 malede billeder', malede.length >= 60, malede.length + ' malede');
+  tjek('alle malede billeder er kvadratiske', skaeve.length === 0, 'skaeve: ' + skaeve);
+  tjek('ingen malet billede fylder over 40 KB', store.length === 0, 'for store: ' + store);
+  const billedMappe = fs.readdirSync(path.join(ROD, '..', 'billeder')).filter(f => f.endsWith('.png')).map(f => f.slice(0, -4));
+  const brugte = new Set(malede.map(t => t.fil.slice('billeder/'.length, -4)));
+  tjek('alle billeder i billeder/ bruges af en ting', billedMappe.every(n => brugte.has(n)), 'ubrugte: ' + billedMappe.filter(n => !brugte.has(n)));
+  tjek('billeder/ og ting/ har en NOTICE.md med kilden', fs.existsSync(path.join(ROD, '..', 'billeder', 'NOTICE.md')) && fs.existsSync(path.join(ROD, '..', 'ting', 'NOTICE.md')));
   // vaelg() skifter ting naar der er flere at vaelge imellem
   let skiftede = 0;
   for (let i = 0; i < 20; i++) { const a = Ting.vaelg('B'), b = Ting.vaelg('B'); if (a !== b) skiftede++; }
@@ -169,7 +182,7 @@ function foelg(glyf, tolerance, afvig) {
   tjek('alle ord kan tegnes med smaa bogstaver', manglerLille.length === 0, 'mangler: ' + manglerLille);
   // Ordet siges med Camillas stemme, naar det skal tegnes, saa alle ord skal vaere indtalt
   const klip = JSON.parse(fs.readFileSync(path.join(ROD, '..', 'lyd', 'klip.json'), 'utf8'));
-  const ordFil = t => t.fil ? t.fil.replace('ting/', '').replace('.svg', '') : ({ 'xylofon': 'xylofon', 'ål': 'aal' })[t.ord];
+  const ordFil = t => t.fil ? t.fil.replace(/^.*\//, '').replace(/\.(svg|png)$/, '') : ({ 'xylofon': 'xylofon', 'ål': 'aal' })[t.ord];
   const udenKlip = tre.filter(t => !klip.includes('ord_' + ordFil(t) + '.mp3')).map(t => t.ord);
   tjek('alle ord har et indtalt klip', udenKlip.length === 0, 'mangler: ' + udenKlip);
   // Det laengste ord skal kunne staa paa en iPad i landskab (1024 x 768) med kasser, en finger kan ramme

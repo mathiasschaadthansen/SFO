@@ -65,7 +65,8 @@ games/bogstaver/
   js/glyffer.js         A-Å og 0-9 som streger i skriveretning — ingen DOM
   js/spor.js            følger fingeren langs stregerne — ingen DOM
   js/ting.js            ting pr. bogstav til "hvad starter med" og til Ord
-  ting/*.svg            tingenes tegninger, Noto Emoji (Apache 2.0, se ting/NOTICE.md)
+  billeder/*.png        tingenes malede billeder, kvadratiske (se billeder/NOTICE.md)
+  ting/*.svg            de sidste syv tings tegninger, Noto Emoji (Apache 2.0, se ting/NOTICE.md)
   js/game.js            tegn- og find-legen, minispillet, menu, stemme
   lyd/klip.json         rigtige optagelser, hvis der er nogen (se lyd/NOTICE.md)
 vaerktoej/lav-lyd.py    pakker optagelser som MP3 og skriver klip.json
@@ -202,8 +203,9 @@ vender det, så ordet står på bagsiden med forbogstavet i farve, og stemmen
 siger ordet. Kortene må vendes så tit man vil. Svaret gives med det grønne
 flueben under kortet, og et tryk på skyen gentager spørgsmålet. Forkert svar
 vender kortet og stiller spørgsmålet igen, ingen straf. Tingene ligger i
-`games/bogstaver/js/ting.js` med ét ord, en SVG i `ting/` og en tegning i kode
-som reserve pr. bogstav. Se `ting/NOTICE.md` for hvordan man tilføjer en ting.
+`games/bogstaver/js/ting.js` med ét ord, et malet billede i `billeder/` (eller
+en Noto-SVG i `ting/` for de sidste syv) og en tegning i kode som reserve pr.
+bogstav. Se `billeder/NOTICE.md` for hvordan man tilføjer en ting.
 Q, W og Z har ingen ting og springer minispillet over.
 
 Menuen er én skærm i tre zoner: øverst hvilke tegn (A, a, katten med KAT,

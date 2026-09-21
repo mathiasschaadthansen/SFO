@@ -40,8 +40,9 @@
   var stoerrelse = 'bogstaver';      // bogstaver | smaa: ord skrives med den stoerrelse, der sidst blev valgt
   var KOERETOEJER = ['bil', 'raket', 'pensel'];
 
-  // Tingenes SVG-tegninger hentes én gang. Ligger i cachen, saa det virker offline.
+  // Tingenes billeder hentes én gang. Ligger i cachen, saa det virker offline.
   var billeder = {};
+  var KAT = Ting.TING.K[0];      // katten over KAT i menuen
   Object.keys(Ting.TING).forEach(function (n) {
     Ting.TING[n].forEach(function (t) {
       if (!t.fil || billeder[t.fil]) return;
@@ -221,7 +222,7 @@
     afspil('spoerg_' + String(navn).toUpperCase() + '.mp3', 'Hvad starter med ' + G[navn].tegn + '?');
   }
   function ordFil(t) {
-    return t.fil ? t.fil.replace('ting/', '').replace('.svg', '') : ({ 'xylofon': 'xylofon', 'ål': 'aal' })[t.ord];
+    return t.fil ? t.fil.replace(/^.*\//, '').replace(/\.(svg|png)$/, '') : ({ 'xylofon': 'xylofon', 'ål': 'aal' })[t.ord];
   }
   function sigOrd(t) { afspil('ord_' + ordFil(t) + '.mp3', t.ord); }
 
@@ -778,7 +779,7 @@
     }
   }
 
-  /** En ting (SVG, ellers tegningen i kode) centreret om (cx, cy). str er billedets bredde. */
+  /** En ting (billedet, ellers tegningen i kode) centreret om (cx, cy). str er billedets bredde. Billederne er kvadratiske. */
   function tegnTing(t, cx, cy, str) {
     var img = t.fil && billeder[t.fil];
     ctx.save();
@@ -1529,8 +1530,8 @@
       c.restore();
     });
     overlay.querySelectorAll('canvas[data-leg]').forEach(tegnLegIkon);
-    // Kattens SVG kan vaere paa vej: tegn ordbilledet igen, naar den er hentet
-    var kat = billeder['ting/kat.svg'];
+    // Kattens billede kan vaere paa vej: tegn ordbilledet igen, naar det er hentet
+    var kat = billeder[KAT.fil];
     if (kat && !(kat.complete && kat.naturalWidth > 0)) {
       kat.addEventListener('load', function () { var cv = overlay.querySelector('canvas[data-leg="ord"]'); if (cv) tegnLegIkon(cv); }, { once: true });
     }
@@ -1561,7 +1562,7 @@
     }
     if (billede === 'ord') {
       // Katten lille over KAT
-      var kat = billeder['ting/kat.svg'];
+      var kat = billeder[KAT.fil];
       if (kat && kat.complete && kat.naturalWidth > 0) c.drawImage(kat, B / 2 - 24, 2, 48, 48);
       ['K', 'A', 'T'].forEach(function (n, i) {
         tegnGlyf(c, G[n], 34 + i * 34, 52, 46, i < 2 ? STREGFARVE : valgtFarve, 8);

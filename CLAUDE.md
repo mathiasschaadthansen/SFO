@@ -114,11 +114,14 @@ og `inset 0 3px 0 rgba(255,255,255,.85)`. Menuikonerne ligger i `js/menu.js` og
 hjem-knappen i `js/skal.js`, så en ændring dér slår igennem i alle spil.
 
 Malede billeder ligger i `assets/malet/` (forsiden),
-`games/maskinen/billeder/` (Nøddeskoven) og `games/restaurant/billeder/`
-(Skovkøkkenets 16 ingredienser, 3 retter og 12 gæster). Noto Emoji bruges
-stadig, hvor et barn skal kunne genkende en ting med det samme: kortene i
-Stjerneuret, tingene i Bogstavvejen og de få rekvisitter i Skovkøkkenet, der
-ikke er mad — klokken, hjertet, koen, mælken og bien.
+`games/maskinen/billeder/` (Nøddeskoven), `games/restaurant/billeder/`
+(Skovkøkkenets 16 ingredienser, 3 retter og 12 gæster) og
+`games/bogstaver/billeder/` (Bogstavvejens 69 ting, kvadratiske som
+Skovkøkkenets; listen `MALET` i `ting.js` siger, hvilke ting der er malet).
+Noto Emoji bruges stadig, hvor et barn skal kunne genkende en ting med det
+samme: kortene i Stjerneuret, de sidste syv ting i Bogstavvejen (sol,
+sommerfugl, ur, vandmelon, vante, vulkan, yoyo) og de få rekvisitter i
+Skovkøkkenet, der ikke er mad — klokken, hjertet, koen, mælken og bien.
 
 Skovkøkkenets tolv gæster er lavet med den samme prompt, hvor kun dyret er
 skiftet ud. Det er grunden til, at de ligner hinanden. Skal en gæst laves om,
