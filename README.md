@@ -91,7 +91,7 @@ test/tegn.test.js       alle figurer kan tegnes, og puslespillet kan samles på 
 games/rim/
   js/rim.js             ordene, rimgrupperne, stavelserne og reglerne — ingen DOM
   js/game.js            hulen, rim-legen, klap-legen, menu, stemme
-  ting/*.svg            ni ekstra rimord, Noto Emoji (Apache 2.0, se ting/NOTICE.md)
+  ting/*.svg            otte ekstra rimord, Noto Emoji (Apache 2.0, se ting/NOTICE.md)
   billeder/*.png        bjørn, kanin og salat, malede og kvadratiske (se billeder/NOTICE.md)
   lyd/*.mp3             de ekstra ord og hulens fire sætninger; resten er Bogstavvejens klip
 test/rim.test.js        en robot spiller rim og klapper alle ord på alle tre stjerner
@@ -601,15 +601,17 @@ skæv og en hurtig finger.
 Rim og stavelser: det, et barn hører i sproget, før det kan læse. Spillet
 foregår i en hule, hvor ekkoet svarer, når stemmen taler. Billeder og ord er
 Bogstavvejens ting, hentet fra `../bogstaver/`, så intet er malet eller
-indtalt to gange. Tolv ekstra ord, der rimer på dem (stol, mur, mål, bog,
-pil, vand, mund, sky, ski, bjørn, kanin, salat), ligger i spillets egne
+indtalt to gange. Ordklippene siger "Her har du ordet kat" med vilje: et
+enkelt ord alene udtales forkert af stemmen, så alle sætninger er bygget, så
+den ramme passer. Elleve ekstra ord, der rimer på dem (stol, mur, mål, bog,
+pil, vand, mund, sky, bjørn, kanin, salat), ligger i spillets egne
 mapper.
 
-**Rim.** Camilla siger "Hvad rimer på … kat?", og barnet finder det kort,
-der rimer, og svarer med det grønne flueben under kortet, som i
-Bogstavvejens minispil. Et tryk på kortet siger kortets ord, og et tryk på
-skyen gentager spørgsmålet. Rigtigt svar: kortet bliver gult, stemmen siger
-"kat, hat, ja, det rimer!". Forkert: kortet vipper, ordet siges, spørgsmålet
+**Rim.** Camilla siger "Her har du ordet kat. Hvad rimer på det?", og barnet
+finder det kort, der rimer, og svarer med det grønne flueben under kortet,
+som i Bogstavvejens minispil. Et tryk på kortet siger kortets ord, og et tryk
+på skyen gentager spørgsmålet. Rigtigt svar: kortet bliver gult, og stemmen
+siger "Ja, det rimer!". Forkert: kortet vipper, ordet siges, spørgsmålet
 stilles igen. Ingen straf. Én stjerne giver to kort, to stjerner tre, tre
 stjerner fire, og ved tre stjerner har de forkerte kort samme antal
 stavelser som det rigtige, så man ikke kan høre sig frem på længden.
@@ -617,10 +619,11 @@ Rimgrupperne står i `RIM` i `rim.js` og er skrevet i hånden, fordi dansk
 ikke kan rimes i kode. Med to spillere har hvert barn sin egen række kort i
 sin egen farve.
 
-**Klap.** Camilla siger "Klap ordet … elefant", og barnet klapper stavelserne
-på trommen. En prik pr. stavelse fyldes. Når prikkerne er fulde, og der har
-været ro et øjeblik, siges ordet igen, mens prikkerne pulserer, og "Flot
-klappet!". Klapper man én gang for meget, vipper prikkerne, og man starter
+**Klap.** Camilla siger "Her har du ordet elefant. Klap det!", og barnet
+klapper stavelserne på trommen. En prik pr. stavelse fyldes. Når prikkerne er
+fulde, og der har været ro et øjeblik, pulserer prikkerne, og stemmen siger
+"Flot klappet!". Ordene veksler mellem en, to og tre stavelser, også ved én
+stjerne, så der er noget at høre efter. Klapper man én gang for meget, vipper prikkerne, og man starter
 forfra. Stavelserne står i `STAVELSER` i `rim.js`. Én stjerne giver ord med
 højst to stavelser, to stjerner tre, tre stjerner alle. Med to spillere er
 der to trommer, en rød og en blå, og ordet er fælles.

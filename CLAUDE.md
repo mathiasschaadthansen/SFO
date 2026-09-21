@@ -124,7 +124,7 @@ Malede billeder ligger i `assets/malet/` (forsiden),
 `games/bogstaver/billeder/` (Bogstavvejens 69 ting, kvadratiske som
 Skovkøkkenets; listen `MALET` i `ting.js` siger, hvilke ting der er malet).
 Rimhulen genbruger Bogstavvejens billeder og ordklip fra `../bogstaver/` og
-har kun sine tolv ekstra rimord selv.
+har kun sine elleve ekstra rimord selv.
 Noto Emoji bruges stadig, hvor et barn skal kunne genkende en ting med det
 samme: kortene i Stjerneuret, de sidste syv ting i Bogstavvejen (sol,
 sommerfugl, ur, vandmelon, vante, vulkan, yoyo) og de få rekvisitter i
@@ -175,6 +175,11 @@ skal den samme prompt bruges igen — prompten står i
   er kvadratisk, bliver trukket skævt — det ses tydeligst på en gæst med høje
   ører. Læg tegningen midt i et kvadratisk lærred, i stedet for at ændre
   `tegnBillede`. Testen fanger det.
+- **Ordklippene siger "Her har du ordet kat" med vilje.** Et enkelt kort ord
+  alene bliver udtalt forkert af stemmen (ski blev til "skie"), så ordene er
+  indtalt inde i den sætning. Nye sætninger, der bruger et ordklip, skal
+  bygges, så rammen passer: "Her har du ordet kat. Hvad rimer på det?" —
+  aldrig "Hvad rimer på" + ordklip. Rimhulen faldt i den fælde i v80.
 - **Service worker.** Nye filer skal tilføjes til `FILER` i `sw.js`, og
   `VERSION` skal tælles op. Ellers henter iPad'en den gamle version.
 - **Offline skal testes med serveren slukket.** Playwrights `setOffline(true)`

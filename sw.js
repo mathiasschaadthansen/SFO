@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v80';
+const VERSION = 'sfo-spil-v81';
 
 const FILER = [
   './',
@@ -284,7 +284,6 @@ const FILER = [
   'games/rim/ting/mund.svg',
   'games/rim/ting/mur.svg',
   'games/rim/ting/pil.svg',
-  'games/rim/ting/ski.svg',
   'games/rim/ting/sky.svg',
   'games/rim/ting/stol.svg',
   'games/rim/ting/vand.svg',
@@ -292,10 +291,10 @@ const FILER = [
   'games/rim/billeder/kanin.png',
   'games/rim/billeder/salat.png',
   'games/rim/lyd/klip.json',
+  'games/rim/lyd/hvad_rimer_det.mp3',
+  'games/rim/lyd/klap_det.mp3',
   'games/rim/lyd/det_rimer.mp3',
   'games/rim/lyd/flot_klappet.mp3',
-  'games/rim/lyd/hvad_rimer.mp3',
-  'games/rim/lyd/klap_ordet.mp3',
   'games/rim/lyd/ord_bjoern.mp3',
   'games/rim/lyd/ord_bog.mp3',
   'games/rim/lyd/ord_kanin.mp3',
@@ -304,7 +303,6 @@ const FILER = [
   'games/rim/lyd/ord_mur.mp3',
   'games/rim/lyd/ord_pil.mp3',
   'games/rim/lyd/ord_salat.mp3',
-  'games/rim/lyd/ord_ski.mp3',
   'games/rim/lyd/ord_sky.mp3',
   'games/rim/lyd/ord_stol.mp3',
   'games/rim/lyd/ord_vand.mp3',

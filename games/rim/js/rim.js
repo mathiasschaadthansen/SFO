@@ -4,8 +4,9 @@
  *
  * Ordene er Bogstavvejens ting (billeder og stemme genbruges derfra, saa
  * intet skal males eller indtales to gange) plus nogle faa ekstra ord, som
- * rimer paa dem: stol, mur, maal, bog, pil, vand, mund, sky, ski (Noto Emoji i
+ * rimer paa dem: stol, mur, maal, bog, pil, vand, mund, sky (Noto Emoji i
  * ting/), bjoern og kanin (Noeddeskovens malede) og salat (Skovkoekkenets).
+ * Ski blev proevet og taget ud igen: stemmen sagde "skie".
  *
  * RIM er grupperne af ord, der rimer. STAVELSER er antal stavelser i hvert ord.
  * Begge er skrevet i haanden, fordi dansk ikke kan rimes eller deles i kode.
@@ -37,7 +38,7 @@
   var EKSTRA = [
     ['stol', 'stol', 'ting/stol.svg'], ['mur', 'mur', 'ting/mur.svg'], ['mål', 'maal', 'ting/maal.svg'],
     ['bog', 'bog', 'ting/bog.svg'], ['pil', 'pil', 'ting/pil.svg'], ['vand', 'vand', 'ting/vand.svg'],
-    ['mund', 'mund', 'ting/mund.svg'], ['sky', 'sky', 'ting/sky.svg'], ['ski', 'ski', 'ting/ski.svg'],
+    ['mund', 'mund', 'ting/mund.svg'], ['sky', 'sky', 'ting/sky.svg'],
     ['bjørn', 'bjoern', 'billeder/bjoern.png'], ['kanin', 'kanin', 'billeder/kanin.png'], ['salat', 'salat', 'billeder/salat.png']
   ];
   EKSTRA.forEach(function (e) { laeg({ ord: e[0], navn: e[1], fil: e[2], tegn: null, klip: 'lyd/ord_' + e[1] + '.mp3' }); });
@@ -46,7 +47,7 @@
   var RIM = [
     ['kat', 'hat'], ['hus', 'mus'], ['ko', 'sko'], ['is', 'gris'], ['ø', 'frø'], ['ørn', 'bjørn'],
     ['salat', 'tomat'], ['sol', 'stol'], ['ur', 'mur'], ['ål', 'mål'], ['tog', 'bog'], ['bil', 'pil'],
-    ['and', 'vand'], ['hund', 'mund'], ['fly', 'sky', 'paraply'], ['bi', 'ski'],
+    ['and', 'vand'], ['hund', 'mund'], ['fly', 'sky', 'paraply'],
     ['pingvin', 'delfin', 'kanin'], ['vulkan', 'banan'], ['vandmelon', 'citron']
   ];
   var GRUPPE = {};
@@ -61,16 +62,23 @@
     jakke: 2, 'juletræ': 3, ko: 1, kage: 2, krone: 2, lastbil: 2, lampe: 2, mus: 1, 'mælk': 1, 'næse': 2, 'nød': 1,
     orm: 1, pandekage: 4, pingvin: 2, pizza: 2, raket: 2, robot: 2, 'ræv': 1, slange: 2, sko: 1, sommerfugl: 3, tog: 1,
     tiger: 2, tomat: 2, ugle: 2, vandmelon: 3, vulkan: 2, 'æg': 1, 'æsel': 2, 'ø': 1, 'ørn': 1,
-    stol: 1, mur: 1, 'mål': 1, bog: 1, pil: 1, vand: 1, mund: 1, sky: 1, ski: 1, 'bjørn': 1, kanin: 2, salat: 2
+    stol: 1, mur: 1, 'mål': 1, bog: 1, pil: 1, vand: 1, mund: 1, sky: 1, 'bjørn': 1, kanin: 2, salat: 2
   };
 
-  /** Faelles klip (ud over ordene), med den tekst enhedens stemme siger, hvis klippet mangler. */
+  /**
+   * Faelles klip (ud over ordene), med den tekst enhedens stemme siger, hvis
+   * klippet mangler. Ordklippene siger "Her har du ordet kat" — med vilje, for
+   * et enkelt ord alene bliver udtalt forkert af stemmen. Saetningerne er
+   * derfor bygget, saa den ramme passer: "Her har du ordet kat. Hvad rimer paa
+   * det?" og "Her har du ordet elefant. Klap det!".
+   */
   var KLIP = {
-    hvad_rimer: ['lyd/hvad_rimer.mp3', 'Hvad rimer på'],
-    klap_ordet: ['lyd/klap_ordet.mp3', 'Klap ordet'],
+    hvad_rimer_det: ['lyd/hvad_rimer_det.mp3', 'Hvad rimer på det?'],
+    klap_det: ['lyd/klap_det.mp3', 'Klap det!'],
     det_rimer: ['lyd/det_rimer.mp3', 'Ja! Det rimer!'],
     flot_klappet: ['lyd/flot_klappet.mp3', 'Flot klappet!']
   };
+  var ORDET = 'Her har du ordet ';      // det, ordklippene siger foran ordet
 
   var KORT = [2, 3, 4];            // kort pr. spoergsmaal ved 1, 2 og 3 stjerner
   var STAV_MAKS = [2, 3, 9];       // stavelser hoejst ved 1, 2 og 3 stjerner
@@ -111,12 +119,25 @@
     return k && k.rigtig ? 'rigtig' : 'forkert';
   }
 
-  /** En omgang klap: OMGANG ord, ingen gengangere, hoejst STAV_MAKS stavelser. */
+  /**
+   * En omgang klap: OMGANG ord, ingen gengangere, hoejst STAV_MAKS stavelser.
+   * Ordene skiftes til at have et, to, tre ... stavelser, saa det ikke bliver
+   * otte ord med én stavelse ved én stjerne — saa er der intet at hoere efter.
+   */
   function nyKlapOmgang(svaerhed) {
     svaerhed = Math.max(0, Math.min(2, svaerhed | 0));
     var maks = STAV_MAKS[svaerhed];
-    var ord = ALLE.filter(function (o) { return STAVELSER[o.ord] <= maks; }).map(function (o) { return o.ord; });
-    return bland(ord).slice(0, OMGANG).map(function (o) { return { ord: o, n: STAVELSER[o] }; });
+    var kurve = [];
+    for (var n = 1; n <= maks; n++) {
+      var k = bland(ALLE.filter(function (o) { return STAVELSER[o.ord] === n; }).map(function (o) { return o.ord; }));
+      if (k.length) kurve.push(k);
+    }
+    var ud = [], start = Math.floor(Math.random() * kurve.length);
+    for (var i = 0; ud.length < OMGANG && kurve.some(function (k) { return k.length; }); i++) {
+      var k2 = kurve[(start + i) % kurve.length];
+      if (k2.length) ud.push(k2.pop());
+    }
+    return ud.map(function (o) { return { ord: o, n: STAVELSER[o] }; });
   }
 
   /**
@@ -131,7 +152,7 @@
   }
 
   rod.Rim = {
-    ORD: ORD, ALLE: ALLE, RIM: RIM, GRUPPE: GRUPPE, STAVELSER: STAVELSER, KLIP: KLIP,
+    ORD: ORD, ALLE: ALLE, RIM: RIM, GRUPPE: GRUPPE, STAVELSER: STAVELSER, KLIP: KLIP, ORDET: ORDET,
     KORT: KORT, STAV_MAKS: STAV_MAKS, OMGANG: OMGANG,
     nyRimOmgang: nyRimOmgang, svar: svar, nyKlapOmgang: nyKlapOmgang, klap: klap, ordFil: ordFil
   };

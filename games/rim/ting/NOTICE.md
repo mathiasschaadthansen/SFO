@@ -1,7 +1,7 @@
 # Tegningerne i denne mappe
 
-Ni ord, der rimer paa Bogstavvejens ting, men som ikke findes dér: stol, mur,
-maal, bog, pil, vand, mund, sky og ski. Filerne er Noto Emoji fra Google,
+Otte ord, der rimer paa Bogstavvejens ting, men som ikke findes dér: stol, mur,
+maal, bog, pil, vand, mund og sky. Filerne er Noto Emoji fra Google,
 hentet fra https://github.com/googlefonts/noto-emoji (mappen `2D/svg/`).
 
 Licens: Apache License 2.0, se LICENSE i denne mappe.

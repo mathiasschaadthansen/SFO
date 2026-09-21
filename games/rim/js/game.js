@@ -2,10 +2,12 @@
  * Rimhulen — skaerm og lyd. Reglerne ligger i rim.js.
  *
  * To lege i en hule, hvor ekkoet svarer:
- *  - Rim: stemmen siger et ord, og barnet finder det kort, der rimer. Fluebenet
+ *  - Rim: stemmen siger "Her har du ordet kat. Hvad rimer paa det?", og barnet
+ *    finder det kort, der rimer. Fluebenet
  *    under kortet er svaret, som i Bogstavvejens minispil. Et tryk paa kortet
  *    siger kortets ord, saa man kan hoere, om det rimer.
- *  - Klap: stemmen siger et ord, og barnet klapper stavelserne paa trommen.
+ *  - Klap: stemmen siger "Her har du ordet elefant. Klap det!", og barnet
+ *    klapper stavelserne paa trommen.
  *    En prik pr. stavelse fyldes. Klapper man for meget, vipper prikkerne og
  *    man begynder forfra — ingen straf.
  * To spillere: hver sin raekke kort, eller hver sin tromme (roed og blaa).
@@ -302,7 +304,8 @@
 
   function sigRimSpoergsmaal(st) {
     var o = st.opgaver[st.i], l = rimLayout(st);
-    afspil([R.KLIP.hvad_rimer[0], ordKlip(o.ord)], R.KLIP.hvad_rimer[1] + ' ' + o.ord + '?', { x: l.sky.x + l.sky.b / 2, y: l.sky.y + l.sky.h });
+    // "Her har du ordet kat. Hvad rimer paa det?" — ordklippet foerst, saa rammen passer
+    afspil([ordKlip(o.ord), R.KLIP.hvad_rimer_det[0]], R.ORDET + o.ord + '. ' + R.KLIP.hvad_rimer_det[1], { x: l.sky.x + l.sky.b / 2, y: l.sky.y + l.sky.h });
   }
 
   /** Hvor skyen, kortene og fluebenene staar for en station. Én spiller: sky oeverst, kort under. To: hver sin baane. */
@@ -349,7 +352,7 @@
         if (Math.abs(x - k.x) < k.str / 2 && Math.abs(y - k.y) < k.str / 2) {
           // Hoer kortets ord, saa man kan hoere om det rimer
           tone(520, 0.06, 0.06);
-          afspil([ordKlip(k.ord)], k.ord, { x: k.x, y: k.y - k.str / 2 });
+          afspil([ordKlip(k.ord)], R.ORDET + k.ord, { x: k.x, y: k.y - k.str / 2 });
           return;
         }
       }
@@ -361,12 +364,12 @@
     if (R.svar(o, k.ord) === 'rigtig') {
       st.loest = { ord: k.ord, t: 0 };
       melodi([660, 880, 1100, 1320], 90);
-      afspil([ordKlip(o.ord), ordKlip(k.ord), R.KLIP.det_rimer[0]], o.ord + ', ' + k.ord + '. ' + R.KLIP.det_rimer[1], { x: k.x, y: k.y - k.str / 2 });
-      setTimeout(function () { naesteRim(st); }, 3000);
+      afspil([R.KLIP.det_rimer[0]], R.KLIP.det_rimer[1], { x: k.x, y: k.y - k.str / 2 });
+      setTimeout(function () { naesteRim(st); }, 2400);
     } else {
       st.vip[k.ord] = 0.7;
       melodi([330, 262], 110);
-      afspil([ordKlip(k.ord)], k.ord, { x: k.x, y: k.y - k.str / 2 });
+      afspil([ordKlip(k.ord)], R.ORDET + k.ord, { x: k.x, y: k.y - k.str / 2 });
       st.pause = 1.2;
       setTimeout(function () { if (tilstand === 'rim' && !st.loest) sigRimSpoergsmaal(st); }, 1800);
     }
@@ -419,7 +422,8 @@
 
   function sigKlapOrd() {
     var o = klapOpgaver[klapI], l = klapLayout();
-    afspil([R.KLIP.klap_ordet[0], ordKlip(o.ord)], R.KLIP.klap_ordet[1] + ' ' + o.ord, { x: l.sky.x + l.sky.b / 2, y: l.sky.y + l.sky.h });
+    // "Her har du ordet elefant. Klap det!"
+    afspil([ordKlip(o.ord), R.KLIP.klap_det[0]], R.ORDET + o.ord + '. ' + R.KLIP.klap_det[1], { x: l.sky.x + l.sky.b / 2, y: l.sky.y + l.sky.h });
   }
 
   function klapLayout() {
@@ -453,7 +457,7 @@
     var o = klapOpgaver[klapI], l = klapLayout(), t = l.trommer[st.nr];
     st.faerdig = { t: 0 };
     melodi([660, 880, 1100], 90);
-    afspil([ordKlip(o.ord), R.KLIP.flot_klappet[0]], o.ord + '. ' + R.KLIP.flot_klappet[1], { x: t.x, y: t.y - t.rh });
+    afspil([R.KLIP.flot_klappet[0]], R.KLIP.flot_klappet[1], { x: t.x, y: t.y - t.rh });
     if (stationer.every(function (s) { return s.faerdig; })) klapSkift = 2.6;
   }
 

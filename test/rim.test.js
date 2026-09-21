@@ -120,6 +120,15 @@ const paaDisk = f => fs.existsSync(path.join(ROD, f));
   }
   tjek('robotten kan klappe alle ord: n klap er fuld, n+1 starter forfra', problemer.length === 0, problemer.slice(0, 4).join(' | '));
   tjek('én stjerne giver kun korte ord', R.nyKlapOmgang(0).every(o => o.n <= 2));
+  // Ordene skal veksle: hvert antal stavelser op til grænsen er med, og to ord i træk har sjældent samme antal
+  let ensIRaekke = 0, par = 0, manglerN = [];
+  for (let s = 0; s < 3; s++) for (let runde = 0; runde < 20; runde++) {
+    const o = R.nyKlapOmgang(s), set = new Set(o.map(x => x.n));
+    for (let n = 1; n <= Math.min(R.STAV_MAKS[s], 3); n++) if (!set.has(n)) manglerN.push(s + ':' + n);
+    for (let i = 1; i < o.length; i++) { par++; if (o[i].n === o[i - 1].n) ensIRaekke++; }
+  }
+  tjek('klap-omgangen har ord med alle antal stavelser op til graensen', manglerN.length === 0, 'mangler: ' + manglerN.slice(0, 5));
+  tjek('to ord i traek har sjaeldent samme antal stavelser', ensIRaekke / par < 0.15, Math.round(ensIRaekke / par * 100) + ' %');
 }
 
 /* Billeder og tegninger: kvadratiske, smaa, med licens */
