@@ -10,7 +10,11 @@
  * ledt laenge, lyser et bloedt skaer om tingen. To spillere: to skyer, roed og
  * blaa, i det samme billede.
  *
- * Stedet (himmel, huse, soe, sti, blomster, sten, fugle, roeg) tegnes én gang
+ * Stedet (himmel, huse, soe, sti, blomster, sten, fugle, roeg) tegnes én gang.
+ * Byens bod, broend og baenk og landsbyen paa bakken er malede billeder fra
+ * billeder/; husene forrest er tegnet i kode, fordi tingene skal kunne sidde i
+ * vinduerne. Mangler et billede, tegnes stykket i kode.
+ * Stedet tegnes
  * pr. skaermstoerrelse til et laerred i baggrunden; tingene, skjulene
  * (traeer, hegn, broend), ringene og skyerne tegnes hver frame, bagfra og
  * frem.
@@ -57,6 +61,8 @@
   F.ALLE.forEach(function (o) { hent(o.ord, o.fil); });
   ['trae', 'gran', 'siv', 'svamp', 'kastanje', 'pindsvin'].forEach(function (n) { hent('#' + n, '../maskinen/billeder/' + n + '.png'); });
   var SKJUL_BILLEDE = { trae: '#trae', gran: '#gran' };
+  // Byens malede stykker (games/find/billeder/): staar der intet billede, tegnes stykket i kode
+  ['hus1', 'hus2', 'hus3', 'bod', 'broend', 'baenk'].forEach(function (n) { hent('#by-' + n, 'billeder/' + n + '.png'); });
   hent('#hus', '../../assets/malet/hus.png');
   function tegnB(n, x, y, s, h) {
     var i = billeder[n];
@@ -152,6 +158,15 @@
     [[B * 0.2, 60, 1], [B * 0.62, 40, 0.8]].forEach(function (s) { c.beginPath(); c.arc(s[0], s[1], 24 * s[2], 0, 7); c.arc(s[0] + 26 * s[2], s[1] - 10 * s[2], 30 * s[2], 0, 7); c.arc(s[0] + 56 * s[2], s[1], 22 * s[2], 0, 7); c.fill(); });
   }
   function billede(c, n, x, y, s) { var i = billeder[n]; if (i && i.complete && i.naturalWidth) c.drawImage(i, x - s / 2, y - s * (i.naturalHeight / i.naturalWidth) / 2, s, s * (i.naturalHeight / i.naturalWidth)); }
+  /** Et billede med foden i (x, y): bredden s, og kun den oeverste 'andel' af billedet, hvis den er sat. Falsk, hvis billedet mangler. */
+  function billedeFod(c, n, x, y, s, andel) {
+    var i = billeder[n]; if (!(i && i.complete && i.naturalWidth)) return false;
+    andel = andel || 1;
+    var h = s * (i.naturalHeight / i.naturalWidth) * andel;
+    c.fillStyle = 'rgba(94,74,58,.14)'; c.beginPath(); c.ellipse(x, y, s * 0.5, s * 0.08, 0, 0, 7); c.fill();
+    c.drawImage(i, 0, 0, i.naturalWidth, i.naturalHeight * andel, x - s / 2, y - h, s, h);
+    return true;
+  }
   function rr(c, x, y, b, h, r, fyld, kant, lw) { c.fillStyle = fyld; c.beginPath(); c.roundRect(x, y, b, h, r); c.fill(); if (kant) { c.strokeStyle = kant; c.lineWidth = lw || 3; c.stroke(); } }
 
   /* Fyld og liv: det, der goer et sted levende uden at vaere noget, man kan finde.
@@ -181,7 +196,9 @@
     }
   }
   function hoestak(c, x, y, r) { c.fillStyle = '#e5c37a'; c.beginPath(); c.arc(x, y, r, Math.PI, 0); c.lineTo(x + r, y + r * 0.3); c.lineTo(x - r, y + r * 0.3); c.closePath(); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke(); c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = 2; [-0.5, 0, 0.5].forEach(function (d) { c.beginPath(); c.moveTo(x + d * r, y - r * 0.2); c.lineTo(x + d * r * 1.2, y + r * 0.2); c.stroke(); }); }
-  function baenk(c, x, y, k) { k = k || 1; rr(c, x - 40 * k, y - 12 * k, 80 * k, 8 * k, 3, '#b18a56', KANT, 2); rr(c, x - 40 * k, y - 34 * k, 80 * k, 8 * k, 3, '#b18a56', KANT, 2); c.strokeStyle = KANT; c.lineWidth = 3; [-30, 30].forEach(function (d) { c.beginPath(); c.moveTo(x + d * k, y - 34 * k); c.lineTo(x + d * k, y + 6 * k); c.stroke(); }); }
+  function baenk(c, x, y, k) {
+    if (billedeFod(c, '#by-baenk', x, y + 6 * (k || 1), 104 * (k || 1))) return;
+    k = k || 1; rr(c, x - 40 * k, y - 12 * k, 80 * k, 8 * k, 3, '#b18a56', KANT, 2); rr(c, x - 40 * k, y - 34 * k, 80 * k, 8 * k, 3, '#b18a56', KANT, 2); c.strokeStyle = KANT; c.lineWidth = 3; [-30, 30].forEach(function (d) { c.beginPath(); c.moveTo(x + d * k, y - 34 * k); c.lineTo(x + d * k, y + 6 * k); c.stroke(); }); }
   function baad(c, x, y, k) { k = k || 1; c.fillStyle = '#b18a56'; c.beginPath(); c.moveTo(x - 46 * k, y - 10 * k); c.lineTo(x + 46 * k, y - 10 * k); c.lineTo(x + 34 * k, y + 12 * k); c.lineTo(x - 34 * k, y + 12 * k); c.closePath(); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke(); c.strokeStyle = '#8a663d'; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 40 * k, y); c.lineTo(x + 40 * k, y); c.stroke(); }
   function stub(c, x, y, k) { k = k || 1; c.fillStyle = '#8a663d'; c.beginPath(); c.roundRect(x - 26 * k, y - 18 * k, 52 * k, 30 * k, 6); c.fill(); c.fillStyle = '#d9ba8a'; c.beginPath(); c.ellipse(x, y - 18 * k, 26 * k, 10 * k, 0, 0, 7); c.fill(); c.strokeStyle = KANT; c.lineWidth = 2.5; c.stroke(); c.strokeStyle = 'rgba(94,74,58,.4)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(x, y - 18 * k, 14 * k, 5 * k, 0, 0, 7); c.stroke(); }
   /** En vaeltet stamme med et hul i enden, som en ting kan kigge ud af (pladsen 'stamme'). */
@@ -212,6 +229,14 @@
   }
   function bod(c, bo) {
     var x = fx(bo.x), y = fy(bo.y), b = fs(bo.b), h = fh(30), tag = fh(22), top = y - fh(110);
+    // Den malede bod: disken staar, hvor tingene paa boden har foedderne; det nederste af forsiden klippes fra, saa den ikke rager ud paa gaden
+    var i = billeder['#by-bod'];
+    if (i && i.complete && i.naturalWidth) {
+      var bb = fs(bo.b * 0.8), hh = bb * (i.naturalHeight / i.naturalWidth), diskY = fy(bo.y - 20), t = diskY - hh * 0.6;   // markisen maa ikke naa op over doeren i huset bagved
+      c.fillStyle = 'rgba(94,74,58,.14)'; c.beginPath(); c.ellipse(x, t + hh * 0.74, bb * 0.5, 8, 0, 0, 7); c.fill();
+      c.drawImage(i, 0, 0, i.naturalWidth, i.naturalHeight * 0.74, x - bb / 2, t, bb, hh * 0.74);
+      return;
+    }
     rr(c, x - b / 2, y - h, b, h, 6, '#d9ba8a', KANT, 3);
     c.strokeStyle = KANT; c.lineWidth = 3; c.beginPath(); c.moveTo(x - b / 2 + 4, top + tag); c.lineTo(x - b / 2 + 4, y - h); c.moveTo(x + b / 2 - 4, top + tag); c.lineTo(x + b / 2 - 4, y - h); c.stroke();
     for (var i = 0; i < 6; i++) { c.fillStyle = i % 2 ? PAPIR : '#d95f45'; c.fillRect(x - b / 2 + i * b / 6, top, b / 6, tag); }
@@ -278,7 +303,9 @@
     sky(c, B, H, '#8fc7e8', '#dcecf3'); fugle(c, B, H);
     var hor = H * HORISONT;
     c.fillStyle = '#93bc63'; c.beginPath(); c.moveTo(0, hor - 40); c.quadraticCurveTo(B * 0.3, hor - 75, B * 0.6, hor - 45); c.quadraticCurveTo(B * 0.85, hor - 20, B, hor - 60); c.lineTo(B, H); c.lineTo(0, H); c.fill();
-    [[0.06, 0], [0.45, 8], [0.62, -4], [0.98, 6]].forEach(function (p, i) { billede(c, i % 2 ? '#gran' : '#trae', B * p[0], hor - 70 + p[1], 110 + (i % 2) * 16); });
+    [[0.06, 0], [0.45, 8], [0.98, 6]].forEach(function (p, i) { billede(c, i % 2 ? '#gran' : '#trae', B * p[0], hor - 70 + p[1], 110 + (i % 2) * 16); });
+    // Landsbyen bag byen: de malede huse paa bakken, i mellemrummene mellem husene forrest
+    [['#by-hus1', 210], ['#by-hus3', 630], ['#by-hus2', 870]].forEach(function (h) { billedeFod(c, h[0], fx(h[1]), hor - 4, 112); });
     // Gaden af brosten mellem husene og haven forrest
     brosten(c, B, 232, 402);
     c.fillStyle = '#a9c97a'; c.beginPath(); c.moveTo(0, fy(402)); c.lineTo(B, fy(402)); c.lineTo(B, H); c.lineTo(0, H); c.fill();
@@ -303,7 +330,7 @@
     ctx.drawImage(bag, 0, 0, B, H);
   }
   // Baggrunden tegnes igen, naar traeerne og huset er hentet
-  ['#trae', '#gran', '#hus', '#siv', '#svamp', '#kastanje'].forEach(function (n) { billeder[n].addEventListener('load', function () { bag = null; }); });
+  ['#trae', '#gran', '#hus', '#siv', '#svamp', '#kastanje', '#by-hus1', '#by-hus2', '#by-hus3', '#by-bod', '#by-baenk'].forEach(function (n) { billeder[n].addEventListener('load', function () { bag = null; }); });
 
   /** Skjulet: et malet trae eller en gran med foden i (x, y), et stakit eller en broend tegnet i kode. Tingene bag det tegnes lige foer det. */
   function tegnSkjul(sk) {
@@ -315,6 +342,7 @@
     }
     if (sk.type === 'broend') {
       var bx = fx(sk.x), by = fy(sk.y), r = fs(sk.r);
+      if (billedeFod(ctx, '#by-broend', bx, by + fs(4), r * 2.7)) return;
       ctx.fillStyle = 'rgba(94,74,58,.15)'; ctx.beginPath(); ctx.ellipse(bx, by + 4, r * 1.3, r * 0.3, 0, 0, 7); ctx.fill();
       ctx.fillStyle = '#b8b2a4'; ctx.beginPath(); ctx.roundRect(bx - r, by - r * 1.1, r * 2, r * 1.1, 6); ctx.fill(); ctx.strokeStyle = KANT; ctx.lineWidth = 3; ctx.stroke();
       ctx.strokeStyle = 'rgba(94,74,58,.3)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(bx - r, by - r * 0.55); ctx.lineTo(bx + r, by - r * 0.55); ctx.moveTo(bx - r * 0.3, by - r * 1.1); ctx.lineTo(bx - r * 0.3, by - r * 0.55); ctx.moveTo(bx + r * 0.4, by - r * 0.55); ctx.lineTo(bx + r * 0.4, by); ctx.stroke();

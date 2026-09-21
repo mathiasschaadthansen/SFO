@@ -181,6 +181,20 @@ const paaDisk = f => fs.existsSync(path.join(ROD, f));
   tjek('ukendt sted falder tilbage til det foerste', F.nyOmgang('maanen', 0, 1).sted === F.STEDNAVNE[0]);
 }
 
+/* De malede stykker i byen */
+{
+  const mappe = path.join(ROD, 'billeder');
+  const png = fs.readdirSync(mappe).filter(f => f.endsWith('.png')).sort();
+  tjek('byen har seks malede stykker', png.join(',') === 'baenk.png,bod.png,broend.png,hus1.png,hus2.png,hus3.png', png.join(','));
+  const store = png.filter(f => fs.statSync(path.join(mappe, f)).size > 40 * 1024);
+  tjek('ingen af dem fylder over 40 KB', store.length === 0, store.join(','));
+  const ikkeICache = png.filter(f => !iFiler('billeder/' + f));
+  tjek('alle malede stykker er med i FILER', ikkeICache.length === 0, ikkeICache.join(','));
+  tjek('billeder/ har en NOTICE.md', paaDisk('billeder/NOTICE.md'));
+  const game = fs.readFileSync(path.join(ROD, 'js', 'game.js'), 'utf8');
+  tjek('skaermen henter dem fra billeder/', png.every(f => game.includes("'" + f.replace('.png', '') + "'")) && game.includes("'billeder/'"));
+}
+
 /* Siden og service workeren */
 {
   const html = fs.readFileSync(path.join(ROD, 'index.html'), 'utf8');

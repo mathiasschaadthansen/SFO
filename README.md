@@ -98,6 +98,7 @@ test/rim.test.js        en robot spiller rim og klapper alle ord på alle tre st
 games/find/
   js/find.js            ordene, kategorierne, lookalikes, stederne med pladser og skjul, reglerne — ingen DOM
   js/game.js            engen og skoven, tingene, skyerne, menu, stemme
+  billeder/*.png        byens malede stykker: tre huse på bakken, boden, brønden og bænken
   lyd/*.mp3             "Kan du finde den?" og kategorierne; ordene lånes fra Bogstavvejen
 test/find.test.js       en robot spiller alle steder på alle tre stjerner og tjekker, at alt kan findes
 test/restaurant.test.js en robot henter på gården, serverer og betaler en hel dag på alle tre stjerner
@@ -647,7 +648,10 @@ iPad, fordi de leder i det samme billede og hjælper hinanden.
 **Billedet.** Stedet (engen, skoven, byen) tegnes i kode: himmel, skovbryn,
 eng, sti, sø, huse, gade af brosten, og fyld og liv, der ikke er noget at
 finde — blomster, græs, sten, fugle i himlen, røg fra skorstenene og tøj på
-snoren. Tingene er Bogstavvejens malede ting plus kaninen og bjørnen, og de
+snoren. Boden, brønden, bænken og de tre huse på bakken bag byen er malede
+billeder i `billeder/`; husene forrest i byen er tegnet i kode, fordi tingene
+skal kunne sidde i vinduerne, og malede huse har alt for små vinduer til en
+finger. Mangler et billede, tegnes stykket i kode. Tingene er Bogstavvejens malede ting plus kaninen og bjørnen, og de
 lægges som i en vrimlebog i `laegTing` i `find.js` tre slags steder:
 
 - **På en plads.** Hvert sted har faste pladser i `STEDER[...].pladser`: i

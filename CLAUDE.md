@@ -130,7 +130,9 @@ Malede billeder ligger i `assets/malet/` (forsiden),
 `games/bogstaver/billeder/` (Bogstavvejens 69 ting, kvadratiske som
 Skovkøkkenets; listen `MALET` i `ting.js` siger, hvilke ting der er malet).
 Rimhulen og Vrimleskoven genbruger Bogstavvejens billeder og ordklip fra
-`../bogstaver/`; Rimhulen har kun sine elleve ekstra rimord selv.
+`../bogstaver/`; Rimhulen har kun sine elleve ekstra rimord selv, og
+Vrimleskoven har byens seks malede stykker i `games/find/billeder/` (husene
+forrest i byen er tegnet i kode, fordi tingene skal kunne sidde i vinduerne).
 Noto Emoji bruges stadig, hvor et barn skal kunne genkende en ting med det
 samme: kortene i Stjerneuret, de sidste syv ting i Bogstavvejen (sol,
 sommerfugl, ur, vandmelon, vante, vulkan, yoyo) og de få rekvisitter i
