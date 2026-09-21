@@ -25,10 +25,14 @@ gennemspiller alle 36 baners gemte løsning i fysikken og fanger, hvis en
 løsningen tåler, at delene ligger op til 40 px skævt, så ingen bane er en nål i
 en høstak, og at hver bane har faste pladser, som løsningen passer på. Den tjekker også de
 enkelte dele (kanon, tragt, vippe, bånd, blæser), stoffet i murene (is, sne,
-åkande) og at hvert kapitel har sine baner og sin kugle.
+åkande) og at hvert kapitel har sine baner og sin kugle. Rimhule-testen lader en
+robot spille rim og klappe stavelser på alle tre stjerner og tjekker, at hvert
+spørgsmål har præcis ét rigtigt kort, at ingen forkerte kort rimer, og at alle
+ord har billede, stemme og stavelser.
 
-**Stemme.** Bogstavvejen bruger rigtige klip med en dansk stemme fra ElevenLabs
-(Camilla) til bogstavnavne, tal, ord og spørgsmål. Klippene ligger som små
+**Stemme.** Bogstavvejen (og Rimhulen, som låner dens ordklip) bruger rigtige
+klip med en dansk stemme fra ElevenLabs (Camilla) til bogstavnavne, tal, ord og
+spørgsmål. Klippene ligger som små
 MP3-filer i `games/bogstaver/lyd/` og står i `lyd/klip.json`. Mangler et klip,
 siger enhedens egen talesyntese det i stedet, og kun stemmer med `localService`
 bruges, så der aldrig går noget over nettet. Klip laves én gang med
@@ -89,6 +93,7 @@ spillet. Koden er ikke doebt om: modulerne hedder stadig `Klatbold`, `Bobler`,
 | Stjerneuret | `games/klokken/` | `test/klokken.test.js` |
 | Nøddeskoven | `games/maskinen/` | `test/maskinen.test.js` |
 | Tegnestuen | `games/tegn/` | `test/tegn.test.js` |
+| Rimhulen | `games/rim/` | `test/rim.test.js` |
 
 Navnet står tre steder pr. spil: `<title>` i `index.html`, `<h2>` i `visMenu`
 og `navn` i `js/games.js`. App-ikonet er pindsvinet Pelle, den samme figur som
@@ -118,6 +123,8 @@ Malede billeder ligger i `assets/malet/` (forsiden),
 (Skovkøkkenets 16 ingredienser, 3 retter og 12 gæster) og
 `games/bogstaver/billeder/` (Bogstavvejens 69 ting, kvadratiske som
 Skovkøkkenets; listen `MALET` i `ting.js` siger, hvilke ting der er malet).
+Rimhulen genbruger Bogstavvejens billeder og ordklip fra `../bogstaver/` og
+har kun sine tolv ekstra rimord selv.
 Noto Emoji bruges stadig, hvor et barn skal kunne genkende en ting med det
 samme: kortene i Stjerneuret, de sidste syv ting i Bogstavvejen (sol,
 sommerfugl, ur, vandmelon, vante, vulkan, yoyo) og de få rekvisitter i

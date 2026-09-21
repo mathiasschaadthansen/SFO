@@ -5,6 +5,6 @@
   "private": true,
   "scripts": {
     "start": "npx --yes serve . -l 3000",
-    "test": "node test/racer.test.js && node test/klatbold.test.js && node test/bobler.test.js && node test/bogstaver.test.js && node test/restaurant.test.js && node test/tegn.test.js && node test/klokken.test.js && node test/maskinen.test.js && node test/assets.test.js"
+    "test": "node test/racer.test.js && node test/klatbold.test.js && node test/bobler.test.js && node test/bogstaver.test.js && node test/restaurant.test.js && node test/tegn.test.js && node test/klokken.test.js && node test/maskinen.test.js && node test/rim.test.js && node test/assets.test.js"
   }
 }

@@ -10,6 +10,8 @@ Der er ingen tredjepartsfigurer i dem.
 
 Aeblet og pindsvinet er de samme billeder som i `games/maskinen/billeder/`,
 lagt her, saa forsiden ikke henter noget fra et spils egen mappe.
+Katten og hatten er de samme som i `games/bogstaver/billeder/` (Rimhulens kort
+paa forsiden), af samme grund.
 
 Efterbehandling: den hvide baggrund er skaaret fra i kode, billedet er
 beskaaret til indholdet, skaleret til 320 px paa den lange led og gemt som

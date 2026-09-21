@@ -112,6 +112,17 @@ window.SPIL = [
          '</div>'
   },
   {
+    id: 'rim',
+    navn: 'Rimhulen',
+    tekst: 'Find det ord, der rimer, eller klap stavelserne på trommen. 1 eller 2 spillere.',
+    farve: '#e8d9bf',
+    sti: 'games/rim/',
+    art: '<div class="art">' +
+         '<img src="assets/malet/kat.png" alt="" style="left:2px;top:14px;width:64px">' +
+         '<img src="assets/malet/hat.png" alt="" style="left:52px;top:34px;width:64px">' +
+         '</div>'
+  },
+  {
     id: 'tegn',
     navn: 'Tegnestuen',
     tekst: 'Tegn en fisk, en raket eller et hus med fingeren, og saml den som puslespil.',
