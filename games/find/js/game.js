@@ -209,23 +209,83 @@
     c.fillStyle = '#4a3a2c'; c.beginPath(); c.ellipse(x + h * 0.5, y + h / 2, h * 0.5, h * 0.48, 0, 0, 7); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke();
     c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = 2; [0.35, 0.6, 0.85].forEach(function (t) { c.beginPath(); c.moveTo(x + b * t, y + 4); c.lineTo(x + b * t - 8, y + h - 4); c.stroke(); });
   }
-  /** Et hus i byen, tegnet efter Find.STEDER.by.huse: vinduerne og doeren er pladser. */
+  /* ---- malet i kode: vask, korn og bloede kanter, saa kodehusene passer til de malede stykker ---- */
+  function rgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+  /** Farven h, moerkere (k < 1) eller lysere (k > 1, blandet med hvid), med alfa a. */
+  function farvetone(h, k, a) {
+    var r = rgb(h).map(function (v) { return Math.round(k <= 1 ? v * k : v + (255 - v) * (k - 1)); });
+    return 'rgba(' + r[0] + ',' + r[1] + ',' + r[2] + ',' + (a === undefined ? 1 : a) + ')';
+  }
+  /** En haandtegnet streg gennem punkterne: hvert stykke boejer lidt, som en pensel goer. */
+  function haandsti(c, pts, luk) {
+    c.beginPath(); c.moveTo(pts[0][0], pts[0][1]);
+    var n = luk ? pts.length : pts.length - 1;
+    for (var i = 0; i < n; i++) {
+      var p = pts[i], q = pts[(i + 1) % pts.length], mx = (p[0] + q[0]) / 2 + (rnd() - 0.5) * 3, my = (p[1] + q[1]) / 2 + (rnd() - 0.5) * 3;
+      c.quadraticCurveTo(mx, my, q[0], q[1]);
+    }
+    if (luk) c.closePath();
+  }
+  /** Akvarelvask inden i den aktuelle sti: fyld, lyse og moerke skyer, papirkorn og en bloed kant i samme farve. */
+  function vask(c, pts, farve, luk) {
+    haandsti(c, pts, luk !== false);
+    c.save(); c.clip();
+    var xs = pts.map(function (p) { return p[0]; }), ys = pts.map(function (p) { return p[1]; });
+    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys), b = x1 - x0, h = y1 - y0;
+    c.fillStyle = farve; c.fillRect(x0 - 4, y0 - 4, b + 8, h + 8);
+    for (var i = 0; i < 7; i++) {
+      c.fillStyle = farvetone(farve, i % 2 ? 0.88 : 1.3, 0.1);
+      c.beginPath(); c.ellipse(x0 + rnd() * b, y0 + rnd() * h, b * (0.2 + rnd() * 0.35), h * (0.15 + rnd() * 0.35), rnd() * 3, 0, 7); c.fill();
+    }
+    c.fillStyle = farvetone(farve, 0.7, 0.06);
+    for (var k = 0; k < b * h / 90; k++) { c.beginPath(); c.arc(x0 + rnd() * b, y0 + rnd() * h, 0.8 + rnd() * 1.2, 0, 7); c.fill(); }
+    // kanten er moerkere, som naar vandet samler farven yderst
+    c.strokeStyle = farvetone(farve, 0.72, 0.5); c.lineWidth = 3; haandsti(c, pts, luk !== false); c.stroke();
+    c.restore();
+  }
+  /** Et hus i byen, malet i kode efter Find.STEDER.by.huse: vinduerne og doeren er pladser og ligger praecis, hvor reglerne siger. */
   function hus(c, h) {
-    var x = fx(h.x), y = fy(h.y), b = fs(h.b), hh = fh(h.h);
+    var x = fx(h.x), y = fy(h.y), b = fs(h.b), hh = fh(h.h), top = y - hh * 0.42;
     c.fillStyle = 'rgba(94,74,58,.15)'; c.beginPath(); c.ellipse(x + b / 2, y + hh + 4, b * 0.6, 8, 0, 0, 7); c.fill();
-    rr(c, x, y, b, hh, 5, h.farve, KANT, 3);
-    if (h.skorsten) { rr(c, x + b * 0.72, y - fh(34), fs(18), fh(40), 3, '#8a663d', KANT, 3); roeg(c, x + b * 0.72 + fs(9), y - fh(40), 0.8); }
-    c.fillStyle = h.tag; c.beginPath(); c.moveTo(x - 12, y + 2); c.lineTo(x + b / 2, y - hh * 0.42); c.lineTo(x + b + 12, y + 2); c.closePath(); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke();
+    // vaeggen
+    vask(c, [[x, y + 3], [x + b, y + 3], [x + b, y + hh], [x, y + hh]], h.farve);
+    // skorstenen: mursten
+    if (h.skorsten) {
+      var sx = x + b * 0.72, sy = y - fh(34), sb = fs(18), sh = fh(40);
+      vask(c, [[sx, sy], [sx + sb, sy], [sx + sb, sy + sh], [sx, sy + sh]], '#b0705a');
+      c.strokeStyle = farvetone('#b0705a', 0.7, 0.4); c.lineWidth = 1; for (var r = sy + 5; r < sy + sh; r += 6) { c.beginPath(); c.moveTo(sx + 1, r); c.lineTo(sx + sb - 1, r); c.stroke(); }
+      roeg(c, sx + sb / 2, sy - 6, 0.8);
+    }
+    // taget: vask og raekker af tegl, og en skygge under udhaenget
+    var tag = [[x - 12, y + 2], [x + b / 2, top], [x + b + 12, y + 2]];
+    vask(c, tag, h.tag);
+    c.save(); haandsti(c, tag, true); c.clip();
+    c.strokeStyle = farvetone(h.tag, 0.72, 0.45); c.lineWidth = 1.3;
+    for (var ry = top + 9, n = 0; ry < y + 6; ry += 8, n++) { for (var tx = x - 16 + (n % 2) * 7; tx < x + b + 16; tx += 14) { c.beginPath(); c.arc(tx, ry - 4, 6.5, 0.15, Math.PI - 0.15); c.stroke(); } }
+    c.restore();
+    var g = c.createLinearGradient(0, y + 2, 0, y + 14); g.addColorStop(0, 'rgba(94,74,58,.28)'); g.addColorStop(1, 'rgba(94,74,58,0)');
+    c.fillStyle = g; c.fillRect(x, y + 2, b, 12);
+    // vinduer og doer
     F.husPladser(h).forEach(function (p) {
       var k = p.klip, kx = fx(k.x), ky = fy(k.y), kb = fs(k.b), kh = fh(k.h);
-      if (p.type === 'vindue') { rr(c, kx, ky, kb, kh, 5, '#dcecf3', KANT, 3); rr(c, kx - 4, ky + kh, kb + 8, 6, 2, '#b18a56', KANT, 2); }
-      else { rr(c, kx, ky, kb, kh, [8, 8, 0, 0], '#4a3a2c', KANT, 3); c.fillStyle = GUL; c.beginPath(); c.arc(kx + kb * 0.8, ky + kh * 0.5, 3, 0, 7); c.fill(); }
+      if (p.type === 'vindue') {
+        vask(c, [[kx - 4, ky - 4], [kx + kb + 4, ky - 4], [kx + kb + 4, ky + kh + 3], [kx - 4, ky + kh + 3]], '#f3e9d8');
+        var gl = c.createLinearGradient(kx, ky, kx + kb, ky + kh); gl.addColorStop(0, '#e4f0f7'); gl.addColorStop(1, '#b6d3e4');
+        c.fillStyle = gl; c.beginPath(); c.roundRect(kx, ky, kb, kh, 3); c.fill();
+        c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.moveTo(kx + kb * 0.1, ky + kh); c.lineTo(kx + kb * 0.55, ky); c.lineTo(kx + kb * 0.8, ky); c.lineTo(kx + kb * 0.35, ky + kh); c.closePath(); c.fill();
+        vask(c, [[kx - 6, ky + kh + 2], [kx + kb + 6, ky + kh + 2], [kx + kb + 6, ky + kh + 8], [kx - 6, ky + kh + 8]], '#d9ba8a');
+      } else {
+        vask(c, [[kx - 4, ky - 3], [kx + kb + 4, ky - 3], [kx + kb + 4, ky + kh + 2], [kx - 4, ky + kh + 2]], '#b18a56');
+        vask(c, [[kx, ky], [kx + kb, ky], [kx + kb, ky + kh], [kx, ky + kh]], '#4f3f30');
+        c.fillStyle = GUL; c.beginPath(); c.arc(kx + kb * 0.8, ky + kh * 0.5, 3, 0, 7); c.fill();
+      }
     });
   }
+  /** Vindueskorset og karmen tegnes oven paa den ting, der sidder i vinduet, saa den ser ud til at vaere indenfor. */
   function vindueskors(k) {
     var kx = fx(k.x), ky = fy(k.y), kb = fs(k.b), kh = fh(k.h);
-    ctx.strokeStyle = KANT; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(kx + kb / 2, ky); ctx.lineTo(kx + kb / 2, ky + kh); ctx.moveTo(kx, ky + kh / 2); ctx.lineTo(kx + kb, ky + kh / 2); ctx.stroke();
-    ctx.strokeStyle = KANT; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(kx, ky, kb, kh, 5); ctx.stroke();
+    ctx.strokeStyle = 'rgba(94,74,58,.55)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(kx + kb / 2, ky); ctx.lineTo(kx + kb / 2, ky + kh); ctx.moveTo(kx, ky + kh / 2); ctx.lineTo(kx + kb, ky + kh / 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(94,74,58,.45)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.roundRect(kx, ky, kb, kh, 3); ctx.stroke();
   }
   function bod(c, bo) {
     var x = fx(bo.x), y = fy(bo.y), b = fs(bo.b), h = fh(30), tag = fh(22), top = y - fh(110);
@@ -245,16 +305,15 @@
   }
   function trillebør(c, t) {
     var x = fx(t.x), y = fy(t.y);
-    c.strokeStyle = KANT; c.lineWidth = 3; c.fillStyle = '#5f9fc9';
-    c.beginPath(); c.moveTo(x - 30, y - 22); c.lineTo(x + 26, y - 22); c.lineTo(x + 18, y); c.lineTo(x - 22, y); c.closePath(); c.fill(); c.stroke();
-    c.beginPath(); c.moveTo(x + 26, y - 22); c.lineTo(x + 52, y - 26); c.stroke();
+    vask(c, [[x - 30, y - 22], [x + 26, y - 22], [x + 18, y], [x - 22, y]], '#5f9fc9');
+    c.strokeStyle = farvetone('#8a663d', 1, 0.9); c.lineWidth = 3; c.lineCap = 'round'; c.beginPath(); c.moveTo(x + 26, y - 22); c.lineTo(x + 52, y - 26); c.stroke();
     c.fillStyle = '#4a4239'; c.beginPath(); c.arc(x - 20, y + 4, 9, 0, 7); c.fill();
   }
   function toerresnor(c, sn) {
     var x1 = fx(sn.x1), y1 = fy(sn.y1), x2 = fx(sn.x2), y2 = fy(sn.y2);
     c.strokeStyle = '#8a663d'; c.lineWidth = 4; c.beginPath(); c.moveTo(x1, y1 - 30); c.lineTo(x1, y1 + 14); c.moveTo(x2, y2 - 30); c.lineTo(x2, y2 + 14); c.stroke();
     c.strokeStyle = KANT; c.lineWidth = 2; c.beginPath(); c.moveTo(x1, y1 - 28); c.quadraticCurveTo((x1 + x2) / 2, y1 - 16, x2, y2 - 28); c.stroke();
-    ['#d95f45', '#8fc7e8', '#f0c46a', '#9b7bd4'].forEach(function (f, i) { var t = 0.2 + i * 0.2, x = x1 + (x2 - x1) * t, yy = y1 - 28 + 12 * 4 * t * (1 - t); rr(c, x - 8, yy, 16, 18 + (i % 2) * 6, 3, f, KANT, 2); });
+    ['#d95f45', '#8fc7e8', '#f0c46a', '#9b7bd4'].forEach(function (f, i) { var t = 0.2 + i * 0.2, x = x1 + (x2 - x1) * t, yy = y1 - 28 + 12 * 4 * t * (1 - t), hh = 18 + (i % 2) * 6; vask(c, [[x - 8, yy], [x + 8, yy], [x + 8, yy + hh], [x - 8, yy + hh]], f); });
   }
   function brosten(c, B, yFra, yTil) {
     var y0 = fy(yFra), y1 = fy(yTil);
@@ -337,7 +396,7 @@
     if (sk.type === 'hegn') {
       var x0 = fx(sk.x), x1 = fx(sk.x + sk.b), y = fy(sk.y), h = fh(sk.h), bb = fs(9);
       ctx.strokeStyle = '#b18a56'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x0, y - h * 0.7); ctx.lineTo(x1, y - h * 0.7); ctx.moveTo(x0, y - h * 0.3); ctx.lineTo(x1, y - h * 0.3); ctx.stroke();
-      for (var x = x0 + bb / 2; x < x1; x += fs(20)) { ctx.fillStyle = '#d9ba8a'; ctx.beginPath(); ctx.moveTo(x - bb / 2, y); ctx.lineTo(x - bb / 2, y - h * 0.85); ctx.lineTo(x, y - h); ctx.lineTo(x + bb / 2, y - h * 0.85); ctx.lineTo(x + bb / 2, y); ctx.closePath(); ctx.fill(); ctx.strokeStyle = KANT; ctx.lineWidth = 2; ctx.stroke(); }
+      for (var x = x0 + bb / 2; x < x1; x += fs(20)) { ctx.fillStyle = '#d9ba8a'; ctx.beginPath(); ctx.moveTo(x - bb / 2, y); ctx.lineTo(x - bb / 2, y - h * 0.85); ctx.lineTo(x, y - h); ctx.lineTo(x + bb / 2, y - h * 0.85); ctx.lineTo(x + bb / 2, y); ctx.closePath(); ctx.fill(); ctx.strokeStyle = farvetone('#d9ba8a', 0.65, 0.6); ctx.lineWidth = 2; ctx.stroke(); }
       return;
     }
     if (sk.type === 'broend') {
