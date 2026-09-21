@@ -55,8 +55,9 @@
   };
 
   /**
-   * Stederne: hvor tingene maa ligge (zoner i feltet) og buskene, de kan
-   * gemme sig bag. Resten af stedet (soe, hus, traeer) tegnes af skaermen.
+   * Stederne: hvor tingene maa ligge (zoner i feltet) og skjulene (kaldet
+   * buske i data, tegnet som traeer af skaermen), de kan gemme sig bag. Resten
+   * af stedet (soe, hus, skovbryn) tegnes af skaermen.
    */
   var STEDER = {
     eng: {
@@ -82,32 +83,44 @@
   }
   function iZone(z, x, y) { return x >= z.x && x <= z.x + z.b && y >= z.y && y <= z.y + z.h; }
 
-  /** Laeg antal ting i stedet uden at de ligger oven i hinanden. Ca. hver tredje ligger halvt bag en busk. */
+  /**
+   * Laeg tingene i stedet som i en vrimlebog: i loese raekker fra bagerst til
+   * forrest, smaa bagest og stoerre forrest (DYBDE), aldrig oven i hinanden.
+   * Ca. hver tredje ligger halvt bag et af stedets skjul (traeerne), men aldrig
+   * helt gemt. Raekkerne goer billedet roligt at se paa; jitteren goer, at det
+   * ikke ligner et gitter.
+   */
+  var DYBDE = [0.78, 1.18];        // stoerrelse bagest og forrest i forhold til str
+  function skala(y) { return DYBDE[0] + (DYBDE[1] - DYBDE[0]) * Math.max(0, Math.min(1, y / 600)); }
+
   function laegTing(sted, navne, str) {
-    var st = STEDER[sted], ud = [], mindst = str * 1.15;
-    var vaegt = st.zoner.map(function (z) { return z.b * z.h; }), sum = vaegt.reduce(function (a, b) { return a + b; }, 0);
-    function tilfaeldigZone() { var r = Math.random() * sum; for (var i = 0; i < st.zoner.length; i++) { r -= vaegt[i]; if (r <= 0) return st.zoner[i]; } return st.zoner[st.zoner.length - 1]; }
-    function fri(x, y) {
-      if (x < str / 2 || x > 1000 - str / 2 || y < str / 2 || y > 600 - str / 2) return false;
-      for (var i = 0; i < ud.length; i++) if (Math.hypot(ud[i].x - x, ud[i].y - y) < mindst) return false;
-      // Busken er bredere end sin radius (op til 1,2 r), saa under 0,95 r er tingen helt vaek
+    var st = STEDER[sted], ud = [];
+    var raekker = Math.max(4, Math.round(navne.length / 5));
+    var top = Math.min.apply(null, st.zoner.map(function (z) { return z.y; })), bund = Math.max.apply(null, st.zoner.map(function (z) { return z.y + z.h; }));
+    function fri(x, y, s) {
+      if (x < s / 2 + 1 || x > 999 - s / 2 || y < s / 2 + 1 || y > 599 - s / 2) return false;   // +1: koordinaterne rundes bagefter
+      if (!st.zoner.some(function (z) { return iZone(z, x, y); })) return false;
+      for (var i = 0; i < ud.length; i++) if (Math.hypot(ud[i].x - x, ud[i].y - y) < (ud[i].str + s) / 2 * 1.15) return false;
+      // Skjulet daekker op til ca. 1,2 r; under 0,95 r er tingen helt vaek
       for (var j = 0; j < st.buske.length; j++) if (Math.hypot(st.buske[j].x - x, st.buske[j].y - y) < st.buske[j].r * 0.95) return false;
       return true;
     }
     navne.forEach(function (n, i) {
-      var x, y, bag = false, forsoeg = 0, ok = false;
-      while (!ok && forsoeg++ < 120) {
+      var x, y, s, bag = false, skjul = -1, forsoeg = 0, ok = false;
+      var raekke = i % raekker, rh = (bund - top) / raekker;
+      while (!ok && forsoeg++ < 160) {
         if (i % 3 === 0 && st.buske.length && forsoeg < 60) {
-          var bu = st.buske[Math.floor(Math.random() * st.buske.length)], v = Math.random() * Math.PI * 2, d = bu.r * (1.0 + Math.random() * 0.25);
+          skjul = Math.floor(Math.random() * st.buske.length);
+          var bu = st.buske[skjul], v = Math.random() * Math.PI * 2, d = bu.r * (1.0 + Math.random() * 0.25);
           x = bu.x + Math.cos(v) * d; y = bu.y + Math.sin(v) * d; bag = true;
-          ok = fri(x, y) && st.zoner.some(function (z) { return iZone(z, x, y); });
         } else {
-          var z = tilfaeldigZone();
-          x = z.x + Math.random() * z.b; y = z.y + Math.random() * z.h; bag = false;
-          ok = fri(x, y);
+          y = top + (raekke + 0.15 + Math.random() * 0.7) * rh;
+          x = 20 + Math.random() * 960; bag = false; skjul = -1;
         }
+        s = str * skala(y);
+        ok = fri(x, y, s);
       }
-      if (ok) ud.push({ ord: n, x: Math.round(x), y: Math.round(y), str: str, bag: bag });
+      if (ok) ud.push({ ord: n, x: Math.round(x), y: Math.round(y), str: Math.round(s), bag: bag, skjul: skjul });
     });
     return ud;
   }
@@ -190,7 +203,7 @@
 
   rod.Find = {
     ORD: ORD, ALLE: ALLE, KLIP: KLIP, ORDET: ORDET, KATEGORIER: KATEGORIER, STEDER: STEDER, STEDNAVNE: STEDNAVNE,
-    STR: STR, ANTAL: ANTAL, OMGANG: OMGANG, KATEGORI_VED: KATEGORI_VED,
+    STR: STR, ANTAL: ANTAL, OMGANG: OMGANG, KATEGORI_VED: KATEGORI_VED, DYBDE: DYBDE, skala: skala,
     nyOmgang: nyOmgang, tryk: tryk, naeste: naeste, laegTing: laegTing
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);

@@ -75,9 +75,11 @@ const paaDisk = f => fs.existsSync(path.join(ROD, f));
       if (new Set(o.ting.map(t => t.ord)).size !== o.ting.length) problemer.push(navn + ': samme ting to gange');
       o.ting.forEach((t, i) => {
         alleTing++; if (t.bag) bag++;
-        if (!st.zoner.some(z => t.x >= z.x - 1 && t.x <= z.x + z.b + 1 && t.y >= z.y - 1 && t.y <= z.y + z.h + 1) && !t.bag) problemer.push(navn + ': ' + t.ord + ' uden for zonerne');
-        if (t.x < str / 2 || t.x > 1000 - str / 2 || t.y < str / 2 || t.y > 600 - str / 2) problemer.push(navn + ': ' + t.ord + ' uden for feltet');
-        for (let j = i + 1; j < o.ting.length; j++) if (Math.hypot(t.x - o.ting[j].x, t.y - o.ting[j].y) < str * 1.1) problemer.push(navn + ': ' + t.ord + ' oven i ' + o.ting[j].ord);
+        if (!st.zoner.some(z => t.x >= z.x - 1 && t.x <= z.x + z.b + 1 && t.y >= z.y - 1 && t.y <= z.y + z.h + 1)) problemer.push(navn + ': ' + t.ord + ' uden for zonerne');
+        if (t.bag && !(t.skjul >= 0 && t.skjul < st.buske.length)) problemer.push(navn + ': ' + t.ord + ' bag et skjul, der ikke findes');
+        if (t.x < t.str / 2 || t.x > 1000 - t.str / 2 || t.y < t.str / 2 || t.y > 600 - t.str / 2) problemer.push(navn + ': ' + t.ord + ' uden for feltet');
+        if (Math.abs(t.str - str * F.skala(t.y)) > 1) problemer.push(navn + ': ' + t.ord + ' har forkert dybde');
+        for (let j = i + 1; j < o.ting.length; j++) if (Math.hypot(t.x - o.ting[j].x, t.y - o.ting[j].y) < (t.str + o.ting[j].str) / 2 * 1.1) problemer.push(navn + ': ' + t.ord + ' oven i ' + o.ting[j].ord);
         st.buske.forEach(b => { if (Math.hypot(t.x - b.x, t.y - b.y) < b.r * 0.9) problemer.push(navn + ': ' + t.ord + ' helt bag en busk'); });
       });
       const iBilledet = new Set(o.ting.map(t => t.ord));
@@ -118,7 +120,11 @@ const paaDisk = f => fs.existsSync(path.join(ROD, f));
     }
   });
   tjek('robotten kan spille alle steder paa alle stjerner: alt kan findes, intet ligger oven i hinanden', problemer.length === 0, problemer.slice(0, 5).join(' | '));
-  tjek('cirka hver tredje ting ligger halvt bag en busk', bag / alleTing > 0.15 && bag / alleTing < 0.45, Math.round(bag / alleTing * 100) + ' %');
+  tjek('cirka hver tredje ting ligger halvt bag et skjul', bag / alleTing > 0.15 && bag / alleTing < 0.45, Math.round(bag / alleTing * 100) + ' %');
+  // Dybden: tingene bagest er mindre end forrest, og de er fordelt over hele hoejden
+  const o0 = F.nyOmgang('eng', 0, 1), oev = o0.ting.filter(t => t.y < 230), ned = o0.ting.filter(t => t.y > 400);
+  tjek('der ligger ting baade bagest og forrest', oev.length >= 3 && ned.length >= 3, oev.length + ' bagest, ' + ned.length + ' forrest');
+  tjek('tingene bagest er mindre end tingene forrest', Math.max(...oev.map(t => t.str)) < Math.min(...ned.map(t => t.str)));
   tjek('ukendt sted falder tilbage til det foerste', F.nyOmgang('maanen', 0, 1).sted === F.STEDNAVNE[0]);
 }
 

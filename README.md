@@ -644,12 +644,13 @@ Find det, stemmen siger, i et stort billede: "Her har du ordet kat. Kan du
 finde den?". Det er det klassiske finde-spil, og det bedste til to børn ved én
 iPad, fordi de leder i det samme billede og hjælper hinanden.
 
-**Billedet.** Stedet (engen, skoven) tegnes i kode: himmel, træer, eng, sti,
-sø, hus og buske. Tingene er Bogstavvejens malede ting plus kaninen og
-bjørnen, og de spredes tilfældigt hver omgang i `laegTing` i `find.js`: aldrig
-oven i hinanden, og cirka hver tredje halvt bag en busk, men aldrig helt gemt.
-Ingen to omgange er ens. Én stjerne giver 18 store ting, to 26 mindre, tre 34
-små.
+**Billedet.** Stedet (engen, skoven) tegnes i kode: himmel, skovbryn, eng,
+sti, sø og hus. Tingene er Bogstavvejens malede ting plus kaninen og bjørnen,
+og de lægges som i en vrimlebog i `laegTing` i `find.js`: i løse rækker fra
+bagerst til forrest, små bagest og større forrest, aldrig oven i hinanden, og
+cirka hver tredje halvt bag et af stedets malede træer, men aldrig helt gemt.
+Alt på jorden tegnes bagfra og frem, så det nederste er nærmest. Ingen to
+omgange er ens. Én stjerne giver 18 store ting, to 26 mindre, tre 34 små.
 
 **Legen.** Skyen øverst viser det, der skal findes, og et tryk på den gentager
 stemmen. Et tryk på den rigtige ting giver en ring i spillerens farve og "Du

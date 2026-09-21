@@ -151,7 +151,7 @@
     sky(c, B, H, '#8fc7e8', '#dcecf3');
     var hor = H * HORISONT;
     c.fillStyle = '#7fa955'; c.beginPath(); c.moveTo(0, hor - 30); c.quadraticCurveTo(B * 0.25, hor - 70, B * 0.5, hor - 40); c.quadraticCurveTo(B * 0.78, hor - 10, B, hor - 60); c.lineTo(B, H); c.lineTo(0, H); c.fill();
-    for (var i = 0; i < 9; i++) billede(c, i % 3 === 1 ? '#gran' : '#trae', 60 + i * B * 0.115, hor - 60 - (i % 2) * 14, 120 + (i % 3) * 20);
+    for (var i = 0; i < 7; i++) billede(c, i % 3 === 1 ? '#gran' : '#trae', 40 + i * B * 0.135, hor - 62 - (i % 2) * 10, 96 + (i % 3) * 14);
     c.fillStyle = '#93bc63'; c.beginPath(); c.moveTo(0, hor + 10); c.quadraticCurveTo(B * 0.4, hor - 14, B * 0.7, hor + 8); c.quadraticCurveTo(B * 0.9, hor + 22, B, hor); c.lineTo(B, H); c.lineTo(0, H); c.fill();
     c.fillStyle = '#a9c97a'; c.beginPath(); c.moveTo(0, H * 0.7); c.quadraticCurveTo(B * 0.5, H * 0.62, B, H * 0.72); c.lineTo(B, H); c.lineTo(0, H); c.fill();
     c.strokeStyle = '#e5d3ae'; c.lineWidth = 44; c.lineCap = 'round'; c.beginPath(); c.moveTo(B * 0.05, H); c.quadraticCurveTo(B * 0.3, H * 0.7, B * 0.55, H * 0.62); c.quadraticCurveTo(B * 0.8, H * 0.55, B * 0.95, hor + 10); c.stroke();
@@ -166,13 +166,12 @@
     sky(c, B, H, '#c9dfe9', '#eaf0d8');
     var hor = H * HORISONT;
     c.fillStyle = '#5f8240'; c.beginPath(); c.moveTo(0, hor - 20); c.quadraticCurveTo(B * 0.3, hor - 80, B * 0.6, hor - 30); c.quadraticCurveTo(B * 0.85, hor - 5, B, hor - 50); c.lineTo(B, H); c.lineTo(0, H); c.fill();
-    for (var i = 0; i < 12; i++) billede(c, i % 2 ? '#gran' : '#trae', 30 + i * B * 0.088, hor - 70 - (i % 3) * 16, 130 + (i % 2) * 30);
+    for (var i = 0; i < 10; i++) billede(c, i % 2 ? '#gran' : '#trae', 30 + i * B * 0.105, hor - 66 - (i % 3) * 12, 104 + (i % 2) * 24);
     c.fillStyle = '#7fa955'; c.beginPath(); c.moveTo(0, hor + 6); c.quadraticCurveTo(B * 0.5, hor - 16, B, hor + 4); c.lineTo(B, H); c.lineTo(0, H); c.fill();
     // Moerkere pletter, stubbe, svampe og kastanjer paa skovbunden
     c.fillStyle = 'rgba(95,130,64,.35)';
     [[0.15, 0.62, 140, 40], [0.55, 0.75, 180, 46], [0.85, 0.58, 120, 34], [0.35, 0.9, 160, 40]].forEach(function (p) { c.beginPath(); c.ellipse(B * p[0], H * p[1], p[2], p[3], 0, 0, 7); c.fill(); });
     [[0.3, 0.55], [0.72, 0.85]].forEach(function (p) { var x = B * p[0], y = H * p[1]; c.fillStyle = '#8a663d'; c.beginPath(); c.roundRect(x - 26, y - 18, 52, 30, 6); c.fill(); c.fillStyle = '#d9ba8a'; c.beginPath(); c.ellipse(x, y - 18, 26, 10, 0, 0, 7); c.fill(); c.strokeStyle = KANT; c.lineWidth = 2.5; c.stroke(); });
-    billede(c, '#svamp', B * 0.08, H * 0.95, 48); billede(c, '#svamp', B * 0.6, H * 0.5, 40); billede(c, '#kastanje', B * 0.45, H * 0.97, 44);
     c.strokeStyle = '#e5d3ae'; c.lineWidth = 34; c.lineCap = 'round'; c.beginPath(); c.moveTo(B * 0.9, H); c.quadraticCurveTo(B * 0.6, H * 0.8, B * 0.5, H * 0.62); c.quadraticCurveTo(B * 0.35, hor + 40, B * 0.1, hor + 20); c.stroke();
   }
   function tegnBaggrund() {
@@ -189,10 +188,11 @@
   // Baggrunden tegnes igen, naar traeerne og huset er hentet
   ['#trae', '#gran', '#hus', '#siv', '#svamp', '#kastanje'].forEach(function (n) { billeder[n].addEventListener('load', function () { bag = null; }); });
 
-  function busk(x, y, r, farve) {
-    ctx.fillStyle = farve; ctx.beginPath();
-    ctx.arc(x - r * 0.6, y, r * 0.6, 0, 7); ctx.arc(x, y - r * 0.35, r * 0.75, 0, 7); ctx.arc(x + r * 0.6, y, r * 0.6, 0, 7); ctx.arc(x, y + r * 0.15, r * 0.7, 0, 7); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.beginPath(); ctx.arc(x - r * 0.2, y - r * 0.45, r * 0.35, 0, 7); ctx.fill();
+  /** Skjulet: et malet trae, gran eller loevtrae, med foden i skjulets midte. Tingene bag det tegnes lige foer det. */
+  function tegnSkjul(b, i) {
+    var x = fx(b.x), y = fy(b.y), r = fs(b.r);
+    ctx.fillStyle = 'rgba(94,74,58,.14)'; ctx.beginPath(); ctx.ellipse(x, y + r * 0.75, r * 1.1, r * 0.22, 0, 0, 7); ctx.fill();
+    if (!tegnB(i % 3 === 1 ? '#gran' : '#trae', x, y - r * 0.5, r * 2.6)) { ctx.fillStyle = '#5f8240'; ctx.beginPath(); ctx.arc(x, y - r * 0.3, r, 0, 7); ctx.fill(); }
   }
 
   /* ---------- spillet ---------- */
@@ -288,7 +288,7 @@
     var x = fx(t.x), y = fy(t.y), s = fs(t.str), v = vip[t.ord] || 0;
     ctx.save(); ctx.translate(x, y);
     if (v > 0) ctx.rotate(Math.sin(v * 40) * 0.12);
-    ctx.fillStyle = 'rgba(94,74,58,.16)'; ctx.beginPath(); ctx.ellipse(0, s * 0.42, s * 0.42, s * 0.1, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(94,74,58,.12)'; ctx.beginPath(); ctx.ellipse(0, s * 0.44, s * 0.38, s * 0.08, 0, 0, 7); ctx.fill();
     if (!tegnB(t.ord, 0, 0, s, s)) { ctx.fillStyle = '#e7ddc8'; ctx.beginPath(); ctx.arc(0, 0, s * 0.4, 0, 7); ctx.fill(); }
     ctx.restore();
   }
@@ -348,11 +348,22 @@
     g.addColorStop(0, 'rgba(240,196,106,0)'); g.addColorStop(0.7, 'rgba(240,196,106,.45)'); g.addColorStop(1, 'rgba(240,196,106,0)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
   }
+  /** Alt paa jorden tegnes bagfra og frem: det, der staar laengst nede, er naermest. En ting bag et skjul tegnes lige foer skjulet. */
+  var lag = null, lagFor = null;
+  function tegnJorden() {
+    var st = F.STEDER[sted];
+    if (lagFor !== omgang) {
+      lag = [];
+      st.buske.forEach(function (b, i) { lag.push({ y: b.y + b.r * 0.75, skjul: b, i: i }); });
+      omgang.ting.forEach(function (t) { lag.push({ y: t.bag ? st.buske[t.skjul].y + st.buske[t.skjul].r * 0.75 - 0.5 : t.y + t.str / 2, ting: t }); });
+      lag.sort(function (a, b) { return a.y - b.y; });
+      lagFor = omgang;
+    }
+    lag.forEach(function (l) { if (l.ting) tegnTing(l.ting); else tegnSkjul(l.skjul, l.i); });
+  }
   function tegnSpil() {
-    var st = F.STEDER[sted], B = window.innerWidth, H = window.innerHeight;
-    omgang.ting.forEach(function (t) { if (t.bag) tegnTing(t); });
-    st.buske.forEach(function (b, i) { busk(fx(b.x), fy(b.y), fs(b.r), i % 2 ? '#6f9a4a' : '#5f8240'); });
-    omgang.ting.forEach(function (t) { if (!t.bag) tegnTing(t); });
+    var B = window.innerWidth, H = window.innerHeight;
+    tegnJorden();
     for (var s = 0; s < spillere; s++) {
       tegnHjaelp(s);
       spil[s].ringe.forEach(function (o) { var t = omgang.ting.filter(function (x) { return x.ord === o; })[0]; if (t) ring(fx(t.x), fy(t.y), fs(t.str) * 0.6, spillere === 2 ? FARVER[s] : GUL); });
