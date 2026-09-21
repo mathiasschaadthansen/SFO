@@ -30,8 +30,10 @@ robot spille rim og klappe stavelser på alle tre stjerner og tjekker, at hvert
 spørgsmål har præcis ét rigtigt kort, at ingen forkerte kort rimer, og at alle
 ord har billede, stemme og stavelser. Vrimleskov-testen lader en robot spille alle
 steder på alle tre stjerner og tjekker, at tingene ligger frit og inden for
-stedet, at hvert spørgsmål kan besvares med det, der er i billedet, og at
-kategorierne har to til fire medlemmer.
+stedet eller præcis på deres plads (vindue, bænk, båd, træ), at ingen er helt
+gemt bag et skjul, at hvert spørgsmål kan besvares med det, der er i billedet,
+at der ved tre stjerner ligger en lookalike tæt ved hver ting, der spørges om,
+og at kategorierne har to til fire medlemmer.
 
 **Stemme.** Bogstavvejen (og Rimhulen, som låner dens ordklip) bruger rigtige
 klip med en dansk stemme fra ElevenLabs (Camilla) til bogstavnavne, tal, ord og

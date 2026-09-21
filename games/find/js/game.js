@@ -1,15 +1,19 @@
 /**
  * Vrimleskoven — skaerm og lyd. Reglerne ligger i find.js.
  *
- * Et stort billede (engen eller skoven) tegnet i kode, med Bogstavvejens
- * malede ting spredt ud, nogle halvt bag en busk. Stemmen siger "Her har du
- * ordet kat. Kan du finde den?", og barnet trykker paa tingen. Rigtigt: en
- * ring i spillerens farve og "Du fandt den!". Forkert: tingens eget ord, saa
- * et forkert tryk ogsaa laerer noget. Har man ledt laenge, lyser et bloedt
- * skaer om tingen. To spillere: to skyer, roed og blaa, i det samme billede.
+ * Et stort billede (engen, skoven eller byen) tegnet i kode, med Bogstavvejens
+ * malede ting spredt ud som i en vrimlebog: i vinduerne, paa baenken, i
+ * baaden, oppe i traeerne, halvt bag et trae eller et hegn, og loest paa
+ * jorden. Stemmen siger "Her har du ordet kat. Kan du finde den?", og barnet
+ * trykker paa tingen. Rigtigt: en ring i spillerens farve og "Du fandt den!".
+ * Forkert: tingens eget ord, saa et forkert tryk ogsaa laerer noget. Har man
+ * ledt laenge, lyser et bloedt skaer om tingen. To spillere: to skyer, roed og
+ * blaa, i det samme billede.
  *
- * Stedet tegnes én gang pr. skaermstoerrelse til et lærred i baggrunden;
- * tingene, buskene, ringene og skyerne tegnes hver frame.
+ * Stedet (himmel, huse, soe, sti, blomster, sten, fugle, roeg) tegnes én gang
+ * pr. skaermstoerrelse til et laerred i baggrunden; tingene, skjulene
+ * (traeer, hegn, broend), ringene og skyerne tegnes hver frame, bagfra og
+ * frem.
  */
 (function () {
   'use strict';
@@ -52,6 +56,7 @@
   function hent(n, sti) { if (billeder[n]) return; var img = new Image(); img.src = sti; billeder[n] = img; }
   F.ALLE.forEach(function (o) { hent(o.ord, o.fil); });
   ['trae', 'gran', 'siv', 'svamp', 'kastanje', 'pindsvin'].forEach(function (n) { hent('#' + n, '../maskinen/billeder/' + n + '.png'); });
+  var SKJUL_BILLEDE = { trae: '#trae', gran: '#gran' };
   hent('#hus', '../../assets/malet/hus.png');
   function tegnB(n, x, y, s, h) {
     var i = billeder[n];
@@ -138,6 +143,7 @@
   function fx(X) { return X / 1000 * window.innerWidth; }
   function fy(Y) { return window.innerHeight * HORISONT + Y / 600 * window.innerHeight * (1 - HORISONT); }
   function fs(S) { return S / 1000 * window.innerWidth; }
+  function fh(S) { return S / 600 * window.innerHeight * (1 - HORISONT); }     // en hoejde i feltets enheder
 
   function sky(c, B, H, farve1, farve2) {
     var g = c.createLinearGradient(0, 0, 0, H * HORISONT); g.addColorStop(0, farve1); g.addColorStop(1, farve2);
@@ -146,34 +152,145 @@
     [[B * 0.2, 60, 1], [B * 0.62, 40, 0.8]].forEach(function (s) { c.beginPath(); c.arc(s[0], s[1], 24 * s[2], 0, 7); c.arc(s[0] + 26 * s[2], s[1] - 10 * s[2], 30 * s[2], 0, 7); c.arc(s[0] + 56 * s[2], s[1], 22 * s[2], 0, 7); c.fill(); });
   }
   function billede(c, n, x, y, s) { var i = billeder[n]; if (i && i.complete && i.naturalWidth) c.drawImage(i, x - s / 2, y - s * (i.naturalHeight / i.naturalWidth) / 2, s, s * (i.naturalHeight / i.naturalWidth)); }
+  function rr(c, x, y, b, h, r, fyld, kant, lw) { c.fillStyle = fyld; c.beginPath(); c.roundRect(x, y, b, h, r); c.fill(); if (kant) { c.strokeStyle = kant; c.lineWidth = lw || 3; c.stroke(); } }
+
+  /* Fyld og liv: det, der goer et sted levende uden at vaere noget, man kan finde.
+     Tegnet med en fast frø, saa billedet er det samme efter en drejning af skaermen. */
+  var froe = 1;
+  function rnd() { froe = (froe * 1664525 + 1013904223) % 4294967296; return froe / 4294967296; }
+  function blomst(c, x, y, f, k) {
+    k = k || 1;
+    c.strokeStyle = '#5f8240'; c.lineWidth = 2 * k; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y - 12 * k); c.stroke();
+    c.fillStyle = f; for (var i = 0; i < 5; i++) { var v = i * Math.PI * 2 / 5; c.beginPath(); c.arc(x + Math.cos(v) * 4 * k, y - 14 * k + Math.sin(v) * 4 * k, 3.2 * k, 0, 7); c.fill(); }
+    c.fillStyle = GUL; c.beginPath(); c.arc(x, y - 14 * k, 2.2 * k, 0, 7); c.fill();
+  }
+  function graes(c, x, y, k) { k = k || 1; c.strokeStyle = '#5f8240'; c.lineWidth = 2 * k; c.lineCap = 'round'; [-6, 0, 6].forEach(function (d, i) { c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + d * k, y - 8 * k, x + d * 1.4 * k, y - (14 - (i % 2) * 3) * k); c.stroke(); }); }
+  function sten(c, x, y, r) { c.fillStyle = '#b8b2a4'; c.beginPath(); c.ellipse(x, y, r, r * 0.65, 0, 0, 7); c.fill(); c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.ellipse(x - r * 0.3, y - r * 0.25, r * 0.4, r * 0.2, 0, 0, 7); c.fill(); }
+  function fugl(c, x, y, s) { c.strokeStyle = KANT; c.lineWidth = 2.5; c.lineCap = 'round'; c.beginPath(); c.moveTo(x - s, y); c.quadraticCurveTo(x - s / 2, y - s * 0.8, x, y); c.quadraticCurveTo(x + s / 2, y - s * 0.8, x + s, y); c.stroke(); }
+  function fugle(c, B, H) { fugl(c, B * 0.3, H * 0.09, 10); fugl(c, B * 0.34, H * 0.075, 8); fugl(c, B * 0.75, H * 0.12, 9); }
+  function roeg(c, x, y, k) { c.fillStyle = 'rgba(255,255,255,.75)'; [[0, 0, 8], [6, -14, 10], [-2, -30, 12], [8, -48, 14]].forEach(function (p) { c.beginPath(); c.arc(x + p[0] * k, y + p[1] * k, p[2] * k, 0, 7); c.fill(); }); }
+  /** Blomster, graes og sten spredt i feltet, uden om det, der er optaget (soeen, boden ...). */
+  function strø(c, sted, antal, yFra, yTil, k) {
+    var st = F.STEDER[sted], farver = ['#d95f45', '#9b7bd4', '#f8f1e6', '#f0c46a'];
+    for (var i = 0; i < antal; i++) {
+      var X = 15 + rnd() * 970, Y = yFra + rnd() * (yTil - yFra);
+      if (st.optaget.some(function (o) { return X > o.x - 10 && X < o.x + o.b + 10 && Y > o.y - 10 && Y < o.y + o.h + 10; })) continue;
+      if (st.soe && Math.hypot((X - st.soe.x) / (st.soe.rx + 20), (Y - st.soe.y) / (st.soe.ry + 20)) < 1) continue;
+      var x = fx(X), y = fy(Y), kk = (k || 1) * (0.85 + F.skala(Y) * 0.25);
+      if (i % 4 === 0) sten(c, x, y, (5 + rnd() * 5) * kk); else if (i % 4 === 1) blomst(c, x, y, farver[i % farver.length], kk); else graes(c, x, y, kk);
+    }
+  }
+  function hoestak(c, x, y, r) { c.fillStyle = '#e5c37a'; c.beginPath(); c.arc(x, y, r, Math.PI, 0); c.lineTo(x + r, y + r * 0.3); c.lineTo(x - r, y + r * 0.3); c.closePath(); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke(); c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = 2; [-0.5, 0, 0.5].forEach(function (d) { c.beginPath(); c.moveTo(x + d * r, y - r * 0.2); c.lineTo(x + d * r * 1.2, y + r * 0.2); c.stroke(); }); }
+  function baenk(c, x, y, k) { k = k || 1; rr(c, x - 40 * k, y - 12 * k, 80 * k, 8 * k, 3, '#b18a56', KANT, 2); rr(c, x - 40 * k, y - 34 * k, 80 * k, 8 * k, 3, '#b18a56', KANT, 2); c.strokeStyle = KANT; c.lineWidth = 3; [-30, 30].forEach(function (d) { c.beginPath(); c.moveTo(x + d * k, y - 34 * k); c.lineTo(x + d * k, y + 6 * k); c.stroke(); }); }
+  function baad(c, x, y, k) { k = k || 1; c.fillStyle = '#b18a56'; c.beginPath(); c.moveTo(x - 46 * k, y - 10 * k); c.lineTo(x + 46 * k, y - 10 * k); c.lineTo(x + 34 * k, y + 12 * k); c.lineTo(x - 34 * k, y + 12 * k); c.closePath(); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke(); c.strokeStyle = '#8a663d'; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 40 * k, y); c.lineTo(x + 40 * k, y); c.stroke(); }
+  function stub(c, x, y, k) { k = k || 1; c.fillStyle = '#8a663d'; c.beginPath(); c.roundRect(x - 26 * k, y - 18 * k, 52 * k, 30 * k, 6); c.fill(); c.fillStyle = '#d9ba8a'; c.beginPath(); c.ellipse(x, y - 18 * k, 26 * k, 10 * k, 0, 0, 7); c.fill(); c.strokeStyle = KANT; c.lineWidth = 2.5; c.stroke(); c.strokeStyle = 'rgba(94,74,58,.4)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(x, y - 18 * k, 14 * k, 5 * k, 0, 0, 7); c.stroke(); }
+  /** En vaeltet stamme med et hul i enden, som en ting kan kigge ud af (pladsen 'stamme'). */
+  function stamme(c, st) {
+    var x = fx(st.x), y = fy(st.y), b = fs(st.b), h = fh(st.h);
+    c.fillStyle = 'rgba(94,74,58,.15)'; c.beginPath(); c.ellipse(x + b / 2, y + h, b * 0.55, h * 0.25, 0, 0, 7); c.fill();
+    rr(c, x + h * 0.4, y, b - h * 0.4, h, h / 2, '#8a663d', KANT, 3);
+    c.fillStyle = '#4a3a2c'; c.beginPath(); c.ellipse(x + h * 0.5, y + h / 2, h * 0.5, h * 0.48, 0, 0, 7); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke();
+    c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = 2; [0.35, 0.6, 0.85].forEach(function (t) { c.beginPath(); c.moveTo(x + b * t, y + 4); c.lineTo(x + b * t - 8, y + h - 4); c.stroke(); });
+  }
+  /** Et hus i byen, tegnet efter Find.STEDER.by.huse: vinduerne og doeren er pladser. */
+  function hus(c, h) {
+    var x = fx(h.x), y = fy(h.y), b = fs(h.b), hh = fh(h.h);
+    c.fillStyle = 'rgba(94,74,58,.15)'; c.beginPath(); c.ellipse(x + b / 2, y + hh + 4, b * 0.6, 8, 0, 0, 7); c.fill();
+    rr(c, x, y, b, hh, 5, h.farve, KANT, 3);
+    if (h.skorsten) { rr(c, x + b * 0.72, y - fh(34), fs(18), fh(40), 3, '#8a663d', KANT, 3); roeg(c, x + b * 0.72 + fs(9), y - fh(40), 0.8); }
+    c.fillStyle = h.tag; c.beginPath(); c.moveTo(x - 12, y + 2); c.lineTo(x + b / 2, y - hh * 0.42); c.lineTo(x + b + 12, y + 2); c.closePath(); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke();
+    F.husPladser(h).forEach(function (p) {
+      var k = p.klip, kx = fx(k.x), ky = fy(k.y), kb = fs(k.b), kh = fh(k.h);
+      if (p.type === 'vindue') { rr(c, kx, ky, kb, kh, 5, '#dcecf3', KANT, 3); rr(c, kx - 4, ky + kh, kb + 8, 6, 2, '#b18a56', KANT, 2); }
+      else { rr(c, kx, ky, kb, kh, [8, 8, 0, 0], '#4a3a2c', KANT, 3); c.fillStyle = GUL; c.beginPath(); c.arc(kx + kb * 0.8, ky + kh * 0.5, 3, 0, 7); c.fill(); }
+    });
+  }
+  function vindueskors(k) {
+    var kx = fx(k.x), ky = fy(k.y), kb = fs(k.b), kh = fh(k.h);
+    ctx.strokeStyle = KANT; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(kx + kb / 2, ky); ctx.lineTo(kx + kb / 2, ky + kh); ctx.moveTo(kx, ky + kh / 2); ctx.lineTo(kx + kb, ky + kh / 2); ctx.stroke();
+    ctx.strokeStyle = KANT; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(kx, ky, kb, kh, 5); ctx.stroke();
+  }
+  function bod(c, bo) {
+    var x = fx(bo.x), y = fy(bo.y), b = fs(bo.b), h = fh(30), tag = fh(22), top = y - fh(110);
+    rr(c, x - b / 2, y - h, b, h, 6, '#d9ba8a', KANT, 3);
+    c.strokeStyle = KANT; c.lineWidth = 3; c.beginPath(); c.moveTo(x - b / 2 + 4, top + tag); c.lineTo(x - b / 2 + 4, y - h); c.moveTo(x + b / 2 - 4, top + tag); c.lineTo(x + b / 2 - 4, y - h); c.stroke();
+    for (var i = 0; i < 6; i++) { c.fillStyle = i % 2 ? PAPIR : '#d95f45'; c.fillRect(x - b / 2 + i * b / 6, top, b / 6, tag); }
+    c.strokeStyle = KANT; c.lineWidth = 3; c.strokeRect(x - b / 2, top, b, tag);
+    c.fillStyle = '#d95f45'; for (var j = 0; j < 6; j++) { c.beginPath(); c.moveTo(x - b / 2 + j * b / 6, top + tag); c.lineTo(x - b / 2 + (j + 0.5) * b / 6, top + tag + 8); c.lineTo(x - b / 2 + (j + 1) * b / 6, top + tag); c.fill(); }
+  }
+  function trillebør(c, t) {
+    var x = fx(t.x), y = fy(t.y);
+    c.strokeStyle = KANT; c.lineWidth = 3; c.fillStyle = '#5f9fc9';
+    c.beginPath(); c.moveTo(x - 30, y - 22); c.lineTo(x + 26, y - 22); c.lineTo(x + 18, y); c.lineTo(x - 22, y); c.closePath(); c.fill(); c.stroke();
+    c.beginPath(); c.moveTo(x + 26, y - 22); c.lineTo(x + 52, y - 26); c.stroke();
+    c.fillStyle = '#4a4239'; c.beginPath(); c.arc(x - 20, y + 4, 9, 0, 7); c.fill();
+  }
+  function toerresnor(c, sn) {
+    var x1 = fx(sn.x1), y1 = fy(sn.y1), x2 = fx(sn.x2), y2 = fy(sn.y2);
+    c.strokeStyle = '#8a663d'; c.lineWidth = 4; c.beginPath(); c.moveTo(x1, y1 - 30); c.lineTo(x1, y1 + 14); c.moveTo(x2, y2 - 30); c.lineTo(x2, y2 + 14); c.stroke();
+    c.strokeStyle = KANT; c.lineWidth = 2; c.beginPath(); c.moveTo(x1, y1 - 28); c.quadraticCurveTo((x1 + x2) / 2, y1 - 16, x2, y2 - 28); c.stroke();
+    ['#d95f45', '#8fc7e8', '#f0c46a', '#9b7bd4'].forEach(function (f, i) { var t = 0.2 + i * 0.2, x = x1 + (x2 - x1) * t, yy = y1 - 28 + 12 * 4 * t * (1 - t); rr(c, x - 8, yy, 16, 18 + (i % 2) * 6, 3, f, KANT, 2); });
+  }
+  function brosten(c, B, yFra, yTil) {
+    var y0 = fy(yFra), y1 = fy(yTil);
+    c.fillStyle = '#e5d3ae'; c.fillRect(0, y0, B, y1 - y0);
+    c.strokeStyle = 'rgba(94,74,58,.16)'; c.lineWidth = 1.5;
+    var h = 20; for (var r = 0; r * 24 < y1 - y0 - h; r++) for (var x = (r % 2) * 21 - 10; x < B; x += 42) { c.beginPath(); c.roundRect(x, y0 + 4 + r * 24, 36, h, 6); c.stroke(); }
+  }
 
   function tegnEng(c, B, H) {
-    sky(c, B, H, '#8fc7e8', '#dcecf3');
+    var st = F.STEDER.eng; froe = 7;
+    sky(c, B, H, '#8fc7e8', '#dcecf3'); fugle(c, B, H);
     var hor = H * HORISONT;
     c.fillStyle = '#7fa955'; c.beginPath(); c.moveTo(0, hor - 30); c.quadraticCurveTo(B * 0.25, hor - 70, B * 0.5, hor - 40); c.quadraticCurveTo(B * 0.78, hor - 10, B, hor - 60); c.lineTo(B, H); c.lineTo(0, H); c.fill();
     for (var i = 0; i < 7; i++) billede(c, i % 3 === 1 ? '#gran' : '#trae', 40 + i * B * 0.135, hor - 62 - (i % 2) * 10, 96 + (i % 3) * 14);
     c.fillStyle = '#93bc63'; c.beginPath(); c.moveTo(0, hor + 10); c.quadraticCurveTo(B * 0.4, hor - 14, B * 0.7, hor + 8); c.quadraticCurveTo(B * 0.9, hor + 22, B, hor); c.lineTo(B, H); c.lineTo(0, H); c.fill();
     c.fillStyle = '#a9c97a'; c.beginPath(); c.moveTo(0, H * 0.7); c.quadraticCurveTo(B * 0.5, H * 0.62, B, H * 0.72); c.lineTo(B, H); c.lineTo(0, H); c.fill();
     c.strokeStyle = '#e5d3ae'; c.lineWidth = 44; c.lineCap = 'round'; c.beginPath(); c.moveTo(B * 0.05, H); c.quadraticCurveTo(B * 0.3, H * 0.7, B * 0.55, H * 0.62); c.quadraticCurveTo(B * 0.8, H * 0.55, B * 0.95, hor + 10); c.stroke();
-    // Soeen ligger, hvor feltet ikke lader ting ligge (zonerne i find.js)
-    c.fillStyle = '#8fc7e8'; c.beginPath(); c.ellipse(fx(790), fy(415), fs(160), fs(58), 0, 0, 7); c.fill(); c.strokeStyle = '#5f9fc9'; c.lineWidth = 4; c.stroke();
+    // Soeen ligger, hvor feltet ikke lader ting ligge (zonerne i find.js); baaden er en plads
+    c.fillStyle = '#8fc7e8'; c.beginPath(); c.ellipse(fx(st.soe.x), fy(st.soe.y), fs(st.soe.rx), fh(st.soe.ry), 0, 0, 7); c.fill(); c.strokeStyle = '#5f9fc9'; c.lineWidth = 4; c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 2; [[-60, -10], [20, 14], [70, -18]].forEach(function (p) { c.beginPath(); c.moveTo(fx(st.soe.x) + p[0], fy(st.soe.y) + p[1]); c.lineTo(fx(st.soe.x) + p[0] + 30, fy(st.soe.y) + p[1]); c.stroke(); });
+    baad(c, fx(st.baad.x), fy(st.baad.y), fs(1));
     billede(c, '#siv', fx(660), fy(380), fs(60)); billede(c, '#siv', fx(910), fy(400), fs(50));
     billede(c, '#hus', B * 0.88, hor - 34, 150);
-    c.strokeStyle = '#b18a56'; c.lineWidth = 5; for (var x = B * 0.55; x < B * 0.8; x += 30) { c.beginPath(); c.moveTo(x, hor + 14); c.lineTo(x, hor + 50); c.stroke(); }
-    c.beginPath(); c.moveTo(B * 0.55, hor + 30); c.lineTo(B * 0.79, hor + 30); c.stroke();
+    st.hoestakke.forEach(function (h) { hoestak(c, fx(h.x), fy(h.y), fs(h.r)); });
+    baenk(c, fx(st.baenk.x), fy(st.baenk.y), fs(1));
+    strø(c, 'eng', 46, 70, 590, 1);
   }
   function tegnSkov(c, B, H) {
-    sky(c, B, H, '#c9dfe9', '#eaf0d8');
+    var st = F.STEDER.skov; froe = 3;
+    sky(c, B, H, '#c9dfe9', '#eaf0d8'); fugle(c, B, H);
     var hor = H * HORISONT;
     c.fillStyle = '#5f8240'; c.beginPath(); c.moveTo(0, hor - 20); c.quadraticCurveTo(B * 0.3, hor - 80, B * 0.6, hor - 30); c.quadraticCurveTo(B * 0.85, hor - 5, B, hor - 50); c.lineTo(B, H); c.lineTo(0, H); c.fill();
     for (var i = 0; i < 10; i++) billede(c, i % 2 ? '#gran' : '#trae', 30 + i * B * 0.105, hor - 66 - (i % 3) * 12, 104 + (i % 2) * 24);
     c.fillStyle = '#7fa955'; c.beginPath(); c.moveTo(0, hor + 6); c.quadraticCurveTo(B * 0.5, hor - 16, B, hor + 4); c.lineTo(B, H); c.lineTo(0, H); c.fill();
-    // Moerkere pletter, stubbe, svampe og kastanjer paa skovbunden
+    // Moerkere pletter, stien, stubbe, den vaeltede stamme, svampe og kastanjer paa skovbunden
     c.fillStyle = 'rgba(95,130,64,.35)';
     [[0.15, 0.62, 140, 40], [0.55, 0.75, 180, 46], [0.85, 0.58, 120, 34], [0.35, 0.9, 160, 40]].forEach(function (p) { c.beginPath(); c.ellipse(B * p[0], H * p[1], p[2], p[3], 0, 0, 7); c.fill(); });
-    [[0.3, 0.55], [0.72, 0.85]].forEach(function (p) { var x = B * p[0], y = H * p[1]; c.fillStyle = '#8a663d'; c.beginPath(); c.roundRect(x - 26, y - 18, 52, 30, 6); c.fill(); c.fillStyle = '#d9ba8a'; c.beginPath(); c.ellipse(x, y - 18, 26, 10, 0, 0, 7); c.fill(); c.strokeStyle = KANT; c.lineWidth = 2.5; c.stroke(); });
     c.strokeStyle = '#e5d3ae'; c.lineWidth = 34; c.lineCap = 'round'; c.beginPath(); c.moveTo(B * 0.9, H); c.quadraticCurveTo(B * 0.6, H * 0.8, B * 0.5, H * 0.62); c.quadraticCurveTo(B * 0.35, hor + 40, B * 0.1, hor + 20); c.stroke();
+    st.stubbe.forEach(function (p) { stub(c, fx(p.x), fy(p.y), fs(1)); });
+    stamme(c, st.stamme);
+    [[60, 470], [620, 90], [800, 560], [980, 300]].forEach(function (p, i) { billede(c, i % 2 ? '#kastanje' : '#svamp', fx(p[0]), fy(p[1]), fs(30)); });
+    strø(c, 'skov', 40, 50, 590, 1);
   }
+  function tegnBy(c, B, H) {
+    var st = F.STEDER.by; froe = 5;
+    sky(c, B, H, '#8fc7e8', '#dcecf3'); fugle(c, B, H);
+    var hor = H * HORISONT;
+    c.fillStyle = '#93bc63'; c.beginPath(); c.moveTo(0, hor - 40); c.quadraticCurveTo(B * 0.3, hor - 75, B * 0.6, hor - 45); c.quadraticCurveTo(B * 0.85, hor - 20, B, hor - 60); c.lineTo(B, H); c.lineTo(0, H); c.fill();
+    [[0.06, 0], [0.45, 8], [0.62, -4], [0.98, 6]].forEach(function (p, i) { billede(c, i % 2 ? '#gran' : '#trae', B * p[0], hor - 70 + p[1], 110 + (i % 2) * 16); });
+    // Gaden af brosten mellem husene og haven forrest
+    brosten(c, B, 232, 402);
+    c.fillStyle = '#a9c97a'; c.beginPath(); c.moveTo(0, fy(402)); c.lineTo(B, fy(402)); c.lineTo(B, H); c.lineTo(0, H); c.fill();
+    c.strokeStyle = '#e5d3ae'; c.lineWidth = 36; c.lineCap = 'round'; c.beginPath(); c.moveTo(B * 0.48, H); c.quadraticCurveTo(B * 0.5, fy(480), B * 0.52, fy(402)); c.stroke();
+    // Husene bagest, fra venstre; roeg fra skorstenene, toejet paa snoren
+    st.huse.forEach(function (h) { hus(c, h); });
+    strø(c, 'by', 14, 212, 232, 0.9);
+    bod(c, st.bod); baenk(c, fx(st.baenk.x), fy(st.baenk.y), fs(1)); trillebør(c, st.trillebør); toerresnor(c, st.toerresnor);
+    [[40, 470], [560, 560], [975, 430]].forEach(function (p, i) { billede(c, i % 2 ? '#svamp' : '#kastanje', fx(p[0]), fy(p[1]), fs(26)); });
+    strø(c, 'by', 40, 410, 590, 1);
+  }
+  var SCENER = { eng: tegnEng, skov: tegnSkov, by: tegnBy };
   function tegnBaggrund() {
     var B = window.innerWidth, H = window.innerHeight;
     if (!bag || bag.b !== B || bag.h !== H || bag.sted !== sted) {
@@ -181,18 +298,33 @@
       bag = document.createElement('canvas');
       bag.width = Math.floor(B * dpr); bag.height = Math.floor(H * dpr); bag.b = B; bag.h = H; bag.sted = sted;
       var c = bag.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
-      (sted === 'skov' ? tegnSkov : tegnEng)(c, B, H);
+      (SCENER[sted] || tegnEng)(c, B, H);
     }
     ctx.drawImage(bag, 0, 0, B, H);
   }
   // Baggrunden tegnes igen, naar traeerne og huset er hentet
   ['#trae', '#gran', '#hus', '#siv', '#svamp', '#kastanje'].forEach(function (n) { billeder[n].addEventListener('load', function () { bag = null; }); });
 
-  /** Skjulet: et malet trae, gran eller loevtrae, med foden i skjulets midte. Tingene bag det tegnes lige foer det. */
-  function tegnSkjul(b, i) {
-    var x = fx(b.x), y = fy(b.y), r = fs(b.r);
-    ctx.fillStyle = 'rgba(94,74,58,.14)'; ctx.beginPath(); ctx.ellipse(x, y + r * 0.75, r * 1.1, r * 0.22, 0, 0, 7); ctx.fill();
-    if (!tegnB(i % 3 === 1 ? '#gran' : '#trae', x, y - r * 0.5, r * 2.6)) { ctx.fillStyle = '#5f8240'; ctx.beginPath(); ctx.arc(x, y - r * 0.3, r, 0, 7); ctx.fill(); }
+  /** Skjulet: et malet trae eller en gran med foden i (x, y), et stakit eller en broend tegnet i kode. Tingene bag det tegnes lige foer det. */
+  function tegnSkjul(sk) {
+    if (sk.type === 'hegn') {
+      var x0 = fx(sk.x), x1 = fx(sk.x + sk.b), y = fy(sk.y), h = fh(sk.h), bb = fs(9);
+      ctx.strokeStyle = '#b18a56'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x0, y - h * 0.7); ctx.lineTo(x1, y - h * 0.7); ctx.moveTo(x0, y - h * 0.3); ctx.lineTo(x1, y - h * 0.3); ctx.stroke();
+      for (var x = x0 + bb / 2; x < x1; x += fs(20)) { ctx.fillStyle = '#d9ba8a'; ctx.beginPath(); ctx.moveTo(x - bb / 2, y); ctx.lineTo(x - bb / 2, y - h * 0.85); ctx.lineTo(x, y - h); ctx.lineTo(x + bb / 2, y - h * 0.85); ctx.lineTo(x + bb / 2, y); ctx.closePath(); ctx.fill(); ctx.strokeStyle = KANT; ctx.lineWidth = 2; ctx.stroke(); }
+      return;
+    }
+    if (sk.type === 'broend') {
+      var bx = fx(sk.x), by = fy(sk.y), r = fs(sk.r);
+      ctx.fillStyle = 'rgba(94,74,58,.15)'; ctx.beginPath(); ctx.ellipse(bx, by + 4, r * 1.3, r * 0.3, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#b8b2a4'; ctx.beginPath(); ctx.roundRect(bx - r, by - r * 1.1, r * 2, r * 1.1, 6); ctx.fill(); ctx.strokeStyle = KANT; ctx.lineWidth = 3; ctx.stroke();
+      ctx.strokeStyle = 'rgba(94,74,58,.3)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(bx - r, by - r * 0.55); ctx.lineTo(bx + r, by - r * 0.55); ctx.moveTo(bx - r * 0.3, by - r * 1.1); ctx.lineTo(bx - r * 0.3, by - r * 0.55); ctx.moveTo(bx + r * 0.4, by - r * 0.55); ctx.lineTo(bx + r * 0.4, by); ctx.stroke();
+      ctx.strokeStyle = '#8a663d'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(bx - r * 0.75, by - r * 1.1); ctx.lineTo(bx - r * 0.75, by - r * 2.6); ctx.moveTo(bx + r * 0.75, by - r * 1.1); ctx.lineTo(bx + r * 0.75, by - r * 2.6); ctx.stroke();
+      ctx.fillStyle = '#d95f45'; ctx.beginPath(); ctx.moveTo(bx - r * 1.2, by - r * 2.5); ctx.lineTo(bx, by - r * 3.2); ctx.lineTo(bx + r * 1.2, by - r * 2.5); ctx.closePath(); ctx.fill(); ctx.strokeStyle = KANT; ctx.lineWidth = 3; ctx.stroke();
+      return;
+    }
+    var x = fx(sk.x), y = fy(sk.y), rr2 = fs(sk.r);
+    ctx.fillStyle = 'rgba(94,74,58,.14)'; ctx.beginPath(); ctx.ellipse(x, y + rr2 * 0.75, rr2 * 1.1, rr2 * 0.22, 0, 0, 7); ctx.fill();
+    if (!tegnB(SKJUL_BILLEDE[sk.type] || '#trae', x, y - rr2 * 0.5, rr2 * 2.6)) { ctx.fillStyle = '#5f8240'; ctx.beginPath(); ctx.arc(x, y - rr2 * 0.3, rr2, 0, 7); ctx.fill(); }
   }
 
   /* ---------- spillet ---------- */
@@ -285,12 +417,15 @@
   /* ---------- tegning ---------- */
 
   function tegnTing(t) {
-    var x = fx(t.x), y = fy(t.y), s = fs(t.str), v = vip[t.ord] || 0;
-    ctx.save(); ctx.translate(x, y);
+    var x = fx(t.x), y = fy(t.y), s = fs(t.str), v = vip[t.ord] || 0, k = t.klip;
+    ctx.save();
+    if (k) { ctx.beginPath(); ctx.rect(fx(k.x), fy(k.y), fs(k.b), fh(k.h)); ctx.clip(); }   // i et vindue, en doer eller hullet i stammen
+    ctx.translate(x, y + (k ? s * 0.12 : 0));
     if (v > 0) ctx.rotate(Math.sin(v * 40) * 0.12);
-    ctx.fillStyle = 'rgba(94,74,58,.12)'; ctx.beginPath(); ctx.ellipse(0, s * 0.44, s * 0.38, s * 0.08, 0, 0, 7); ctx.fill();
+    if (!k) { ctx.fillStyle = 'rgba(94,74,58,.12)'; ctx.beginPath(); ctx.ellipse(0, s * 0.44, s * 0.38, s * 0.08, 0, 0, 7); ctx.fill(); }
     if (!tegnB(t.ord, 0, 0, s, s)) { ctx.fillStyle = '#e7ddc8'; ctx.beginPath(); ctx.arc(0, 0, s * 0.4, 0, 7); ctx.fill(); }
     ctx.restore();
+    if (k && t.plads >= 0 && F.STEDER[sted].pladser[t.plads].type === 'vindue') vindueskors(k);
   }
   function ring(x, y, r, farve) {
     ctx.strokeStyle = farve; ctx.lineWidth = 7; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.stroke();
@@ -350,16 +485,22 @@
   }
   /** Alt paa jorden tegnes bagfra og frem: det, der staar laengst nede, er naermest. En ting bag et skjul tegnes lige foer skjulet. */
   var lag = null, lagFor = null;
+  function skjulFod(sk) { return sk.type === 'trae' || sk.type === 'gran' ? sk.y + sk.r * 0.75 : sk.y; }
   function tegnJorden() {
     var st = F.STEDER[sted];
     if (lagFor !== omgang) {
       lag = [];
-      st.buske.forEach(function (b, i) { lag.push({ y: b.y + b.r * 0.75, skjul: b, i: i }); });
-      omgang.ting.forEach(function (t) { lag.push({ y: t.bag ? st.buske[t.skjul].y + st.buske[t.skjul].r * 0.75 - 0.5 : t.y + t.str / 2, ting: t }); });
+      st.skjul.forEach(function (sk) { lag.push({ y: skjulFod(sk), skjul: sk }); });
+      omgang.ting.forEach(function (t) {
+        var y = t.y + t.str / 2;
+        if (t.bag) y = skjulFod(st.skjul[t.skjul]) - 0.5;          // lige foer skjulet
+        else if (t.paa >= 0) y = skjulFod(st.skjul[t.paa]) + 0.5;  // lige efter: oppe i traeet
+        lag.push({ y: y, ting: t });
+      });
       lag.sort(function (a, b) { return a.y - b.y; });
       lagFor = omgang;
     }
-    lag.forEach(function (l) { if (l.ting) tegnTing(l.ting); else tegnSkjul(l.skjul, l.i); });
+    lag.forEach(function (l) { if (l.ting) tegnTing(l.ting); else tegnSkjul(l.skjul); });
   }
   function tegnSpil() {
     var B = window.innerWidth, H = window.innerHeight;
@@ -385,13 +526,21 @@
   function visOverlay(html) { overlay.innerHTML = html; overlay.hidden = false; }
   function skjulOverlay() { overlay.hidden = true; }
 
-  /** Stedernes knapper: engen med buske, skoven med graner. Tegnet i kode. */
+  /** Stedernes knapper: engen med buske, skoven med graner, byen med huse. Tegnet i kode. */
   function tegnStedIkon(cv) {
     var w = cv.width, h = cv.height, c = cv.getContext('2d'), s = cv.dataset.sted;
     c.clearRect(0, 0, w, h);
     c.fillStyle = s === 'skov' ? '#c9dfe9' : '#8fc7e8'; c.beginPath(); c.roundRect(0, 0, w, h, 14); c.fill();
-    c.fillStyle = s === 'skov' ? '#5f8240' : '#93bc63'; c.beginPath(); c.roundRect(0, h * 0.55, w, h * 0.45, [0, 0, 14, 14]); c.fill();
+    c.fillStyle = s === 'skov' ? '#5f8240' : s === 'by' ? '#e5d3ae' : '#93bc63'; c.beginPath(); c.roundRect(0, h * 0.55, w, h * 0.45, [0, 0, 14, 14]); c.fill();
     if (s === 'skov') { c.fillStyle = '#4f6f36'; [0.2, 0.5, 0.8].forEach(function (a) { c.beginPath(); c.moveTo(w * a - 24, h * 0.62); c.lineTo(w * a, h * 0.12); c.lineTo(w * a + 24, h * 0.62); c.closePath(); c.fill(); }); }
+    else if (s === 'by') {
+      [[0.1, 0.3, '#f0c46a', '#d95f45'], [0.42, 0.22, '#f8f1e6', '#5f9fc9'], [0.72, 0.34, '#aed3e4', '#d95f45']].forEach(function (a) {
+        var x = w * a[0], y = h * a[1], b = w * 0.26, hh = h * 0.6 - y;
+        c.fillStyle = a[2]; c.fillRect(x, y, b, hh); c.strokeStyle = KANT; c.lineWidth = 2; c.strokeRect(x, y, b, hh);
+        c.fillStyle = a[3]; c.beginPath(); c.moveTo(x - 4, y); c.lineTo(x + b / 2, y - h * 0.16); c.lineTo(x + b + 4, y); c.closePath(); c.fill(); c.stroke();
+        c.fillStyle = '#dcecf3'; c.fillRect(x + b * 0.3, y + hh * 0.25, b * 0.4, hh * 0.3); c.strokeRect(x + b * 0.3, y + hh * 0.25, b * 0.4, hh * 0.3);
+      });
+    }
     else { c.fillStyle = '#5f8240'; c.beginPath(); c.arc(w * 0.28, h * 0.56, 24, 0, 7); c.arc(w * 0.7, h * 0.6, 19, 0, 7); c.fill(); c.fillStyle = GUL; c.beginPath(); c.arc(w * 0.82, h * 0.22, 14, 0, 7); c.fill(); }
   }
   function visMenu() {
@@ -439,7 +588,7 @@
   window.__debug = function () {
     return {
       tilstand: tilstand, sted: sted, svaerhed: svaerhed, spillere: spillere, lyd: lydTil, afspillet: afspillet,
-      ting: omgang ? omgang.ting.map(function (t) { return { ord: t.ord, x: Math.round(fx(t.x)), y: Math.round(fy(t.y)), str: Math.round(fs(t.str)), bag: t.bag }; }) : null,
+      ting: omgang ? omgang.ting.map(function (t) { return { ord: t.ord, x: Math.round(fx(t.x)), y: Math.round(fy(t.y)), str: Math.round(fs(t.str)), bag: t.bag, plads: t.plads, makker: t.makker }; }) : null,
       spil: omgang ? omgang.spillere.map(function (sp, s) {
         var q = sp.spoergsmaal[sp.i], r = skyRect(s);
         return { i: sp.i, antal: sp.spoergsmaal.length, faerdig: spil[s].faerdig, venter: +spil[s].venter.toFixed(2), sky: { x: Math.round(r.midt), y: Math.round(r.y + r.h / 2) },

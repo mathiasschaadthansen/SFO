@@ -1,7 +1,8 @@
 /**
  * Test af Vrimleskoven — koeres med `npm test`. Kraever ingen browser.
  * En robot spiller alle steder paa alle tre stjerner og tjekker, at tingene
- * ligger frit, at alt kan findes, og at kategorierne holder.
+ * ligger frit eller paa deres pladser, at alt kan findes, at lookalikes ligger
+ * taet paa, og at kategorierne holder.
  */
 'use strict';
 
@@ -52,35 +53,78 @@ const paaDisk = f => fs.existsSync(path.join(ROD, f));
   tjek('ingen ord er baade roede og gule', !kat.roede.ord.some(o => kat.gule.ord.includes(o)));
 }
 
+/* Lookalikes */
+{
+  const set = {};
+  const dobbelt = [].concat(...F.LIGNER).filter(o => set[o] ? true : (set[o] = 1, false));
+  tjek('ingen ting staar i to lookalike-grupper', dobbelt.length === 0, dobbelt.join(','));
+  const ukendte = [].concat(...F.LIGNER).filter(o => !F.ORD[o]);
+  tjek('alle lookalikes findes', ukendte.length === 0, ukendte.join(','));
+  tjek('alle grupper har mindst to', F.LIGNER.every(g => g.length >= 2));
+}
+
 /* Stederne */
 {
+  tjek('der er tre steder: eng, skov og by', F.STEDNAVNE.join(',') === 'eng,skov,by');
   Object.keys(F.STEDER).forEach(s => {
     const st = F.STEDER[s];
     const inden = st.zoner.every(z => z.x >= 0 && z.y >= 0 && z.x + z.b <= 1000 && z.y + z.h <= 600);
     tjek(s + ': zonerne ligger i feltet', inden);
     const areal = st.zoner.reduce((a, z) => a + z.b * z.h, 0);
     tjek(s + ': der er plads nok til 34 ting', areal > 34 * 44 * 44 * 3, Math.round(areal));
-    tjek(s + ': buskene ligger i feltet', st.buske.every(b => b.x > 0 && b.x < 1000 && b.y > 0 && b.y < 600));
+    tjek(s + ': skjulene ligger i feltet', st.skjul.every(b => b.x > 0 && b.x < 1000 && b.y > 0 && b.y <= 600));
+    tjek(s + ': der er mindst syv pladser', st.pladser.length >= 7, st.pladser.length + ' pladser');
+    const udenfor = st.pladser.filter(p => p.x < p.s / 2 || p.x > 1000 - p.s / 2 || p.y < p.s / 2 || p.y > 600 - p.s / 2);
+    tjek(s + ': pladserne ligger i feltet', udenfor.length === 0, udenfor.map(p => p.type).join(','));
+    const klipForkert = st.pladser.filter(p => p.klip && !(p.x >= p.klip.x && p.x <= p.klip.x + p.klip.b && p.y >= p.klip.y && p.y <= p.klip.y + p.klip.h));
+    tjek(s + ': pladser med klip ligger inden i deres klip', klipForkert.length === 0);
+    tjek(s + ': pladser bag eller paa et skjul peger paa et skjul, der findes', st.pladser.every(p => (p.bag === undefined || st.skjul[p.bag]) && (p.paa === undefined || st.skjul[p.paa])));
+    const tætte = [];
+    const fod = p => Math.min(p.s * F.PLADS_FAKTOR[0], p.klip ? p.klip.b : 999);
+    st.pladser.forEach((p, i) => st.pladser.forEach((q, j) => { if (j > i && Math.hypot(p.x - q.x, p.y - q.y) < (fod(p) + fod(q)) / 2 * 1.1) tætte.push(p.type + '/' + q.type); }));
+    tjek(s + ': to pladser ligger aldrig saa taet, at tingene overlapper', tætte.length === 0, tætte.join(' '));
   });
+  const by = F.STEDER.by;
+  tjek('byens huse har vinduer og en doer som pladser', by.huse.reduce((a, h) => a + h.vind + 1, 0) === by.pladser.filter(p => p.type === 'vindue' || p.type === 'doer').length);
+  tjek('husene i byen staar over gaden, ikke i zonerne', by.huse.every(h => by.zoner.every(z => h.y + h.h <= z.y)));
 }
 
 /* Robotten spiller alle steder paa alle tre stjerner, med én og to spillere */
 {
-  let problemer = [], bag = 0, alleTing = 0;
+  let problemer = [], bag = 0, paaPlads = 0, alleTing = 0, enkelt3 = 0, udenLookalike = 0;
   F.STEDNAVNE.forEach(sted => {
     for (let s = 0; s < 3; s++) for (let sp = 1; sp <= 2; sp++) for (let runde = 0; runde < 15; runde++) {
       const o = F.nyOmgang(sted, s, sp), navn = sted + '/' + (s + 1) + '*/' + sp;
       const st = F.STEDER[sted], str = F.STR[s];
       if (o.ting.length < F.ANTAL[s] - 2) problemer.push(navn + ': kun ' + o.ting.length + ' ting');
       if (new Set(o.ting.map(t => t.ord)).size !== o.ting.length) problemer.push(navn + ': samme ting to gange');
+      const brugtePladser = new Set();
       o.ting.forEach((t, i) => {
         alleTing++; if (t.bag) bag++;
-        if (!st.zoner.some(z => t.x >= z.x - 1 && t.x <= z.x + z.b + 1 && t.y >= z.y - 1 && t.y <= z.y + z.h + 1)) problemer.push(navn + ': ' + t.ord + ' uden for zonerne');
-        if (t.bag && !(t.skjul >= 0 && t.skjul < st.buske.length)) problemer.push(navn + ': ' + t.ord + ' bag et skjul, der ikke findes');
         if (t.x < t.str / 2 || t.x > 1000 - t.str / 2 || t.y < t.str / 2 || t.y > 600 - t.str / 2) problemer.push(navn + ': ' + t.ord + ' uden for feltet');
-        if (Math.abs(t.str - str * F.skala(t.y)) > 1) problemer.push(navn + ': ' + t.ord + ' har forkert dybde');
-        for (let j = i + 1; j < o.ting.length; j++) if (Math.hypot(t.x - o.ting[j].x, t.y - o.ting[j].y) < (t.str + o.ting[j].str) / 2 * 1.1) problemer.push(navn + ': ' + t.ord + ' oven i ' + o.ting[j].ord);
-        st.buske.forEach(b => { if (Math.hypot(t.x - b.x, t.y - b.y) < b.r * 0.9) problemer.push(navn + ': ' + t.ord + ' helt bag en busk'); });
+        if (t.bag && !(t.skjul >= 0 && t.skjul < st.skjul.length)) problemer.push(navn + ': ' + t.ord + ' bag et skjul, der ikke findes');
+        if (t.plads >= 0) {
+          // Paa en plads: praecis dér, én ting pr. plads, klippet som pladsen
+          paaPlads++;
+          const p = st.pladser[t.plads];
+          if (!p) problemer.push(navn + ': ' + t.ord + ' paa en plads, der ikke findes');
+          else {
+            if (brugtePladser.has(t.plads)) problemer.push(navn + ': to ting paa plads ' + t.plads); brugtePladser.add(t.plads);
+            if (t.x !== p.x || t.y !== p.y) problemer.push(navn + ': ' + t.ord + ' ligger ikke paa sin plads');
+            if (Math.abs(t.str - p.s * F.PLADS_FAKTOR[s]) > 1) problemer.push(navn + ': ' + t.ord + ' har forkert stoerrelse paa pladsen');
+            if ((p.klip || null) !== t.klip) problemer.push(navn + ': ' + t.ord + ' har ikke pladsens klip');
+            if ((p.bag !== undefined) !== t.bag || (p.bag !== undefined && t.skjul !== p.bag)) problemer.push(navn + ': ' + t.ord + ' ligger ikke bag pladsens skjul');
+            if ((p.paa !== undefined ? p.paa : -1) !== t.paa) problemer.push(navn + ': ' + t.ord + ' ligger ikke paa pladsens skjul');
+          }
+        } else {
+          // Loes: i zonerne, uden for det optagne, med dybde, og aldrig helt bag et skjul
+          if (!st.zoner.some(z => t.x >= z.x - 1 && t.x <= z.x + z.b + 1 && t.y >= z.y - 1 && t.y <= z.y + z.h + 1)) problemer.push(navn + ': ' + t.ord + ' uden for zonerne');
+          if (st.optaget.some(k => t.x > k.x && t.x < k.x + k.b && t.y > k.y && t.y < k.y + k.h)) problemer.push(navn + ': ' + t.ord + ' ligger paa noget optaget');
+          if (Math.abs(t.str - str * F.skala(t.y)) > 1) problemer.push(navn + ': ' + t.ord + ' har forkert dybde');
+          st.skjul.forEach(b => { if (F.skjulAfstand(b, t.x, t.y) < 0.93) problemer.push(navn + ': ' + t.ord + ' helt bag et skjul'); });
+          if (t.bag && (F.skjulAfstand(st.skjul[t.skjul], t.x, t.y) > 1.25 || t.klip)) problemer.push(navn + ': ' + t.ord + ' skulle vaere halvt bag et skjul');
+        }
+        for (let j = i + 1; j < o.ting.length; j++) if (Math.hypot(t.x - o.ting[j].x, t.y - o.ting[j].y) < (F.fod(t) + F.fod(o.ting[j])) / 2 * 1.1) problemer.push(navn + ': ' + t.ord + ' oven i ' + o.ting[j].ord);
       });
       const iBilledet = new Set(o.ting.map(t => t.ord));
       if (o.spillere.length !== sp) problemer.push(navn + ': ' + o.spillere.length + ' spillere');
@@ -92,6 +136,12 @@ const paaDisk = f => fs.existsSync(path.join(ROD, f));
             if (!iBilledet.has(q.ord)) problemer.push(navn + ': ' + q.ord + ' er ikke i billedet');
             enkelt.push(q.ord);
             if (F.tryk(o, p, 'xylofon') !== 'forkert') problemer.push(navn + ': forkert ting taeller');
+            if (s === 2) {
+              // Ved tre stjerner ligger en lookalike taet ved: tigeren ved katten
+              enkelt3++;
+              const t = o.ting.find(x => x.ord === q.ord), g = F.LIGNER_AF[q.ord] || [];
+              if (!o.ting.some(x => x !== t && g.includes(x.ord) && Math.hypot(x.x - t.x, x.y - t.y) <= F.NAER)) udenLookalike++;
+            }
           } else {
             if (s !== 2) problemer.push(navn + ': kategori ved ' + (s + 1) + ' stjerner');
             if (!F.KATEGORI_VED.includes(i)) problemer.push(navn + ': kategori paa plads ' + i);
@@ -120,10 +170,13 @@ const paaDisk = f => fs.existsSync(path.join(ROD, f));
     }
   });
   tjek('robotten kan spille alle steder paa alle stjerner: alt kan findes, intet ligger oven i hinanden', problemer.length === 0, problemer.slice(0, 5).join(' | '));
-  tjek('cirka hver tredje ting ligger halvt bag et skjul', bag / alleTing > 0.15 && bag / alleTing < 0.45, Math.round(bag / alleTing * 100) + ' %');
+  tjek('cirka hver fjerde ting ligger halvt bag et skjul', bag / alleTing > 0.15 && bag / alleTing < 0.45, Math.round(bag / alleTing * 100) + ' %');
+  tjek('cirka hver tredje ting sidder paa en plads: i et vindue, paa baenken, i et trae', paaPlads / alleTing > 0.2 && paaPlads / alleTing < 0.5, Math.round(paaPlads / alleTing * 100) + ' %');
+  tjek('ved tre stjerner ligger der en lookalike taet ved hver ting, der spoerges om', udenLookalike === 0, udenLookalike + ' af ' + enkelt3 + ' uden');
   // Dybden: tingene bagest er mindre end forrest, og de er fordelt over hele hoejden
-  const o0 = F.nyOmgang('eng', 0, 1), oev = o0.ting.filter(t => t.y < 230), ned = o0.ting.filter(t => t.y > 400);
-  tjek('der ligger ting baade bagest og forrest', oev.length >= 3 && ned.length >= 3, oev.length + ' bagest, ' + ned.length + ' forrest');
+  const loese = [].concat(...[0, 1, 2, 3, 4].map(() => F.nyOmgang('eng', 1, 1).ting.filter(t => t.plads < 0)));
+  const oev = loese.filter(t => t.y < 230), ned = loese.filter(t => t.y > 400);
+  tjek('der ligger ting baade bagest og forrest', oev.length >= 12 && ned.length >= 12, oev.length + ' bagest, ' + ned.length + ' forrest af ' + loese.length);
   tjek('tingene bagest er mindre end tingene forrest', Math.max(...oev.map(t => t.str)) < Math.min(...ned.map(t => t.str)));
   tjek('ukendt sted falder tilbage til det foerste', F.nyOmgang('maanen', 0, 1).sted === F.STEDNAVNE[0]);
 }

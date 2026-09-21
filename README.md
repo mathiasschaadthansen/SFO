@@ -96,7 +96,7 @@ games/rim/
   lyd/*.mp3             de ekstra ord og hulens fire sætninger; resten er Bogstavvejens klip
 test/rim.test.js        en robot spiller rim og klapper alle ord på alle tre stjerner
 games/find/
-  js/find.js            ordene, kategorierne, stederne og reglerne: hvor tingene lægges — ingen DOM
+  js/find.js            ordene, kategorierne, lookalikes, stederne med pladser og skjul, reglerne — ingen DOM
   js/game.js            engen og skoven, tingene, skyerne, menu, stemme
   lyd/*.mp3             "Kan du finde den?" og kategorierne; ordene lånes fra Bogstavvejen
 test/find.test.js       en robot spiller alle steder på alle tre stjerner og tjekker, at alt kan findes
@@ -644,13 +644,29 @@ Find det, stemmen siger, i et stort billede: "Her har du ordet kat. Kan du
 finde den?". Det er det klassiske finde-spil, og det bedste til to børn ved én
 iPad, fordi de leder i det samme billede og hjælper hinanden.
 
-**Billedet.** Stedet (engen, skoven) tegnes i kode: himmel, skovbryn, eng,
-sti, sø og hus. Tingene er Bogstavvejens malede ting plus kaninen og bjørnen,
-og de lægges som i en vrimlebog i `laegTing` i `find.js`: i løse rækker fra
-bagerst til forrest, små bagest og større forrest, aldrig oven i hinanden, og
-cirka hver tredje halvt bag et af stedets malede træer, men aldrig helt gemt.
-Alt på jorden tegnes bagfra og frem, så det nederste er nærmest. Ingen to
-omgange er ens. Én stjerne giver 18 store ting, to 26 mindre, tre 34 små.
+**Billedet.** Stedet (engen, skoven, byen) tegnes i kode: himmel, skovbryn,
+eng, sti, sø, huse, gade af brosten, og fyld og liv, der ikke er noget at
+finde — blomster, græs, sten, fugle i himlen, røg fra skorstenene og tøj på
+snoren. Tingene er Bogstavvejens malede ting plus kaninen og bjørnen, og de
+lægges som i en vrimlebog i `laegTing` i `find.js` tre slags steder:
+
+- **På en plads.** Hvert sted har faste pladser i `STEDER[...].pladser`: i
+  husenes vinduer og døre (klippet, så kun det, der er i åbningen, ses), på
+  boden, bænken og træstubbene, i båden og trillebøren, oppe i et træ, bag
+  hegnet og oppe af brønden, og i hullet i den væltede stamme. Hver omgang
+  bruger cirka en tredjedel af pladserne, tilfældigt valgt. Byens huse står i
+  `huse`, og `husPladser` regner vinduer og dør om til pladser, så reglerne og
+  skærmen er enige om, hvor de er.
+- **Halvt bag et skjul.** Cirka hver fjerde ting ligger på kanten af et malet
+  træ eller en gran, aldrig helt gemt. `daek` beskriver den ellipse, billedet
+  dækker, og `skjulAfstand` måler, hvor langt en ting er fra kanten.
+- **Løst** i rækker fra bagerst til forrest, små bagest og større forrest,
+  aldrig oven i hinanden og aldrig oven i det, der er optaget (sø, bod, bænk,
+  pindsvinet i hjørnet).
+
+Alt på jorden tegnes bagfra og frem, så det nederste er nærmest; en ting bag
+et hegn tegnes lige før hegnet, en ting oppe i et træ lige efter træet. Ingen
+to omgange er ens. Én stjerne giver 18 store ting, to 26 mindre, tre 34 små.
 
 **Legen.** Skyen øverst viser det, der skal findes, og et tryk på den gentager
 stemmen. Et tryk på den rigtige ting giver en ring i spillerens farve og "Du
@@ -660,7 +676,13 @@ længe, lyser et blødt skær omkring tingen. En omgang er seks spørgsmål, tal
 med cirkler under skyen. Med to spillere er der to skyer, rød og blå, med hver
 sit ord i det samme billede; finder man den andens ting, siges ordet bare.
 
-**Tre stjerner** skifter to af spørgsmålene til kategorier: "Find alle de
+**Tre stjerner** lægger desuden en lookalike tæt ved hver ting, der spørges
+om: tigeren ved katten, lastbilen ved bilen, ræven ved hunden, så man skal se
+ordentligt efter. Grupperne står i `LIGNER` i `find.js`; et ord står kun i én
+gruppe, og hver gruppe bruges højst til ét spørgsmål pr. omgang. Ligger den
+ting, der spørges om, i et vindue, får makkeren nabovinduet.
+
+**Tre stjerner** skifter også to af spørgsmålene til kategorier: "Find alle de
 røde", "Find alle, der kan flyve", "Find alle dyrene", "Find alt det, man kan
 spise" og "Find alt det, man kan køre i". Skyen viser en farveplet eller et
 lille tegn (vinge, pote, gaffel, hjul) og en prik pr. ting, der skal findes.
@@ -670,7 +692,9 @@ kategori har to til fire medlemmer i billedet, og at ingen af enkeltordene i
 samme omgang også er medlem af en kategori.
 
 Testen lader en robot spille alle steder på alle tre stjerner og tjekker, at
-alle ting ligger inden for stedets zoner, at ingen ligger oven i hinanden
-eller helt bag en busk, at hvert spørgsmål kan besvares med det, der er i
-billedet, at kategorierne har to til fire medlemmer, og at alle ord har
+løse ting ligger inden for stedets zoner og uden for det optagne, at ting på
+en plads ligger præcis dér med pladsens klip og skjul, at ingen ligger oven i
+hinanden eller helt bag et skjul, at hvert spørgsmål kan besvares med det, der
+er i billedet, at der ved tre stjerner ligger en lookalike tæt ved hvert
+enkeltord, at kategorierne har to til fire medlemmer, og at alle ord har
 billede og stemme.
