@@ -473,69 +473,71 @@
     var vinkel = Math.atan2(kigY, kigX);
 
     /* ---- krop ---- */
+    // Den malede klat (billeder/klat-<farve>.png) er kroppen med oerer, uden ansigt.
+    // Den er lidt hoejere end fysikkens halvcirkel, som oererne altid har vaeret;
+    // bredden er den samme, saa bolden rammer, hvor man ser den. Mangler billedet,
+    // tegnes klatten i kode som foer.
+    var b = klatBilleder[farve.fil], malet = !!(b && b.complete && b.naturalWidth);
     c.save();
     c.scale(sqx, sqy);
-
-    // Oerer bag kroppen
-    [-1, 1].forEach(function (d) {
-      c.fillStyle = farve.moerk;
-      c.beginPath();
-      c.ellipse(d * R * 0.5, -R * 0.92, R * 0.19, R * 0.3, d * 0.3, 0, Math.PI * 2);
-      c.fill();
-      c.fillStyle = farve.lak;
-      c.beginPath();
-      c.ellipse(d * R * 0.5, -R * 0.94, R * 0.12, R * 0.21, d * 0.3, 0, Math.PI * 2);
-      c.fill();
-    });
-
-    // Malet halvcirkel: lys foroven, dyb forneden
-    var maling = c.createRadialGradient(-side * R * 0.28, -R * 0.62, R * 0.06, 0, -R * 0.2, R * 1.25);
-    maling.addColorStop(0, farve.lys);
-    maling.addColorStop(0.42, farve.lak);
-    maling.addColorStop(1, farve.moerk);
-    c.beginPath();
-    c.arc(0, 0, R, Math.PI, 0);
-    c.closePath();
-    c.fillStyle = maling;
-    c.fill();
-    // Den malede overflade, klippet til halvcirklen, saa formen (og fysikken) er den samme. Mangler billedet, staar gradienten alene.
-    var b = klatBilleder[farve.fil];
-    if (b && b.complete && b.naturalWidth) {
-      c.save();
-      c.beginPath(); c.arc(0, 0, R, Math.PI, 0); c.closePath(); c.clip();
-      var bb = R * 2.16, bh = R * 1.3;
+    if (malet) {
+      var bb = R * 2.15, bh = R * 1.5;
       c.drawImage(b, -bb / 2, R * 0.04 - bh, bb, bh);
-      c.restore();
+    } else {
+      // Oerer bag kroppen
+      [-1, 1].forEach(function (d) {
+        c.fillStyle = farve.moerk;
+        c.beginPath();
+        c.ellipse(d * R * 0.5, -R * 0.92, R * 0.19, R * 0.3, d * 0.3, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = farve.lak;
+        c.beginPath();
+        c.ellipse(d * R * 0.5, -R * 0.94, R * 0.12, R * 0.21, d * 0.3, 0, Math.PI * 2);
+        c.fill();
+      });
+
+      // Malet halvcirkel: lys foroven, dyb forneden
+      var maling = c.createRadialGradient(-side * R * 0.28, -R * 0.62, R * 0.06, 0, -R * 0.2, R * 1.25);
+      maling.addColorStop(0, farve.lys);
+      maling.addColorStop(0.42, farve.lak);
+      maling.addColorStop(1, farve.moerk);
+      c.beginPath();
+      c.arc(0, 0, R, Math.PI, 0);
+      c.closePath();
+      c.fillStyle = maling;
+      c.fill();
+      c.strokeStyle = farve.moerk;
+      c.lineWidth = 3;
+      c.stroke();
     }
-    c.strokeStyle = farve.moerk;
-    c.globalAlpha = 0.55;
-    c.lineWidth = 2.5;
-    c.stroke();
-    c.globalAlpha = 1;
+    {
+      // Skygge langs jorden, saa den staar paa banen
+      c.save();
+      c.beginPath();
+      c.arc(0, 0, R, Math.PI, 0);
+      c.closePath();
+      c.clip();
+      var bund = c.createLinearGradient(0, -R * 0.35, 0, 0);
+      bund.addColorStop(0, 'rgba(74,58,44,0)');
+      bund.addColorStop(1, 'rgba(74,58,44,0.28)');
+      c.fillStyle = bund;
+      c.fillRect(-R, -R, R * 2, R);
+      c.restore();
 
-    // Skygge langs jorden, saa den staar paa banen
-    c.save();
-    c.beginPath();
-    c.arc(0, 0, R, Math.PI, 0);
-    c.closePath();
-    c.clip();
-    var bund = c.createLinearGradient(0, -R * 0.35, 0, 0);
-    bund.addColorStop(0, 'rgba(74,58,44,0)');
-    bund.addColorStop(1, 'rgba(74,58,44,0.28)');
-    c.fillStyle = bund;
-    c.fillRect(-R, -R, R * 2, R);
-    c.restore();
-
-    // Glans
-    c.fillStyle = 'rgba(255,255,255,0.26)';
-    c.beginPath();
-    c.ellipse(-side * R * 0.36, -R * 0.66, R * 0.2, R * 0.09, -side * 0.5, 0, Math.PI * 2);
-    c.fill();
+      if (!malet) {
+        // Glans
+        c.fillStyle = 'rgba(255,255,255,0.26)';
+        c.beginPath();
+        c.ellipse(-side * R * 0.36, -R * 0.66, R * 0.2, R * 0.09, -side * 0.5, 0, Math.PI * 2);
+        c.fill();
+      }
+    }
     c.restore();
 
     /* ---- ansigt ---- */
     // Ansigtet sidder paa den side klatten kigger, men holder sig inden for kroppen.
-    var øx = side * R * 0.36, øy = -R * 0.48;
+    // Paa den malede krop sidder ansigtet hoejere og lidt taettere paa midten
+    var øx = side * R * (malet ? 0.32 : 0.36), øy = -R * (malet ? 0.8 : 0.48);
 
     function oejne(rr, laag) {
       [-1, 1].forEach(function (d) {

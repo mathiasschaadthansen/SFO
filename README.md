@@ -187,13 +187,13 @@ reaktionstid og hoppelyst for 1, 2 og 3 stjerner. Kør `npm test` bagefter.
 Klatterne er tegnet i kode i `games/klatbold/js/game.js`. `FARVER` er de seks
 farver med en lys top, en grundfarve og en dyb bund, og `tegnKlatForm` tegner
 kroppen og de fem ansigter: glad, sej og sød vælger barnet selv, og jubel og
-sur kommer af sig selv, når der bliver scoret. Oven på halvcirklen lægges en
-malet akvarelkrop fra `billeder/`, én pr. farve, klippet til formen; ét
-billede er malet, de fem andre er farvet om i kode, og ansigtet er fjernet, så
-koden stadig tegner øjne, der følger bolden. Mangler billedet, står kodens
-gradient alene. Kroppen er stadig en halvcirkel med radius `klatRadius`,
-præcis som i fysikken — ændrer man tegningen, må den ikke blive større eller
-mindre end det, bolden rammer.
+sur kommer af sig selv, når der bliver scoret. Kroppen er en malet
+akvarelklat fra `billeder/`, én pr. farve, med ører og uden ansigt; ét billede
+er malet, de fem andre er farvet om i kode, og koden tegner ansigtet ovenpå,
+så øjnene stadig følger bolden. Mangler billedet, tegnes klatten i kode som
+før. Den malede krop er lige så bred som fysikkens halvcirkel med radius
+`klatRadius` og lidt højere, som ørerne altid har været — ændrer man
+tegningen, må den ikke blive bredere eller smallere end det, bolden rammer.
 
 ## Skrue på Boblehavet
 

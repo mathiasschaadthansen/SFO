@@ -13,11 +13,12 @@ Agreement. Der er ingen tredjepartsfigurer i den.
 Efterbehandling i kode (Pillow): den hvide baggrund er skaaret fra; det
 malede ansigt er daekket med et stykke af kroppen laengere nede, med bloed
 kant, saa spillet selv kan tegne de tre ansigter og oejne, der foelger bolden;
-oerer og skygge er klippet vaek; og de fem andre farver er lavet ved at flytte
+skyggen paa jorden er klippet vaek, oererne er med; og de fem andre farver er lavet ved at flytte
 kroppens roede toner til spillets farve, mens lys og moerke i penselstroegene
 er bevaret. Hver fil er 8-bit PNG med palet paa 7-10 KB.
 
-Skaermen laegger billedet oven paa den halvcirkel, koden tegner, klippet til
-formen, saa klattens form og fysik er uaendret. Mangler et billede, staar
-kodens gradient alene, og spillet virker alligevel. Nye billeder skal med i
+Skaermen tegner billedet som klattens krop, lige saa bred som fysikkens
+halvcirkel og lidt hoejere, som oererne altid har vaeret, saa bolden rammer,
+hvor man ser den. Mangler et billede, tegnes klatten i kode som foer, og
+spillet virker alligevel. Nye billeder skal med i
 `FILER` i `sw.js`.
