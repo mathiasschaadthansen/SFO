@@ -56,17 +56,19 @@
   }
   if ('speechSynthesis' in window) { findStemme(); window.speechSynthesis.onvoiceschanged = findStemme; }
 
-  var klipFindes = {};
-  ['lyd/', '../games/find/lyd/'].forEach(function (mappe) {
-    fetch(mappe + 'klip.json').then(function (r) { return r.ok ? r.json() : []; })
-      .then(function (liste) { liste.forEach(function (f) { klipFindes[mappe + f] = true; }); })
-      .catch(function () { /* ingen klip, enhedens stemme bruges */ });
-  });
+  /*
+   * Klippene hentes direkte. Spillene spoerger foerst lyd/klip.json, om et klip
+   * findes, men det maa bogen ikke: staar der en gammel klip.json i iPadens
+   * cache, tror bogen, at klippene mangler, og laeser hele bogen op med
+   * enhedens robotstemme — selv om filerne ligger lige ved siden af. Derfor
+   * proeves klippet altid, og enhedens stemme bruges kun, hvis det slaar fejl.
+   */
   var buffere = {}, aktivtKlip = null;
   function hentKlip(sti) {
     if (!buffere[sti]) {
       buffere[sti] = fetch(sti).then(function (r) { if (!r.ok) throw new Error(sti); return r.arrayBuffer(); })
-        .then(function (ab) { return new Promise(function (ok, nej) { lydKontekst().decodeAudioData(ab, ok, nej); }); });
+        .then(function (ab) { return new Promise(function (ok, nej) { lydKontekst().decodeAudioData(ab, ok, nej); }); })
+        .catch(function (fejl) { delete buffere[sti]; throw fejl; });   // glem fejlen, saa naeste tryk proever igen
     }
     return buffere[sti];
   }
@@ -77,7 +79,6 @@
   function afspil(stier, reserveTekst) {
     stopKlip();
     if (!lydTil) return;
-    if (stier.some(function (s) { return !klipFindes[s]; })) { sig(reserveTekst); return; }
     Promise.all(stier.map(hentKlip)).then(function (bufs) {
       var k = lydKontekst(), start = k.currentTime + 0.02;
       stopKlip();

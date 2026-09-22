@@ -134,6 +134,9 @@ const O = Bog.OPSLAG, W = Bog.BREDDE, H = Bog.HOEJDE;
   tjek('siden peger hjem paa forsiden (én mappe op)', game.includes("hjem.href = '../'"));
   tjek('bogen har ingen printknap i appen; PDF laves med vaerktoej/lav-bog-pdf.js', !game.includes('window.print') && !/data-handling="print"/.test(game) && /@page\{size:A4 landscape/.test(html) && fs.existsSync(path.join(ROD, 'vaerktoej', 'lav-bog-pdf.js')));
   tjek('bogen laeser hoejt med klip eller enhedens egen stemme', game.includes("'lyd/' + o.id + '.mp3'") && game.includes('localService'));
+  // En gammel klip.json i iPadens cache maa ikke kunne slaa oplaesningen fra: klippet proeves altid
+  const kode = game.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  tjek('bogen spoerger ikke en liste, om klippene findes', !/klipFindes|klip\.json/.test(kode));
   tjek('bogen bruger Vrimleskovens "du fandt den"', game.includes('../games/find/lyd/du_fandt_den.mp3') && fs.existsSync(path.join(ROD, 'games', 'find', 'lyd', 'du_fandt_den.mp3')));
   tjek('bogen gemmer intet i browseren', !/localStorage|sessionStorage|indexedDB|document\.cookie/.test(game));
   tjek('ingen netvaerkskald ud af huset', !/https?:\/\//.test(game + fs.readFileSync(path.join(BOG, 'js', 'scener.js'), 'utf8')));
