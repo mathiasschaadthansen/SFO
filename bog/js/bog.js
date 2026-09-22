@@ -20,7 +20,8 @@
     rasmus: 'Robotten Rasmus', milo: 'Rummusen Milo', gustav: 'Grisen Gustav'
   };
 
-  /* noegle: hvor skruenoeglen gemmer sig (x, y, stoerrelse, drejning). skade: hvor Sanne er, hvis hun er med. */
+  /* noegle: hvor skruenoeglen gemmer sig i det kodetegnede billede (x, y, stoerrelse, drejning). skade: hvor Sanne er, hvis hun er med.
+     malet: det malede billede af hele opslaget (billeder/opslag/) og noeglens plads i det; bruges, naar billedet er hentet. */
   var OPSLAG = [
     {
       id: 'noeddeskoven', sted: 'Nøddeskoven', spil: 'games/maskinen/', moeder: [],
@@ -31,7 +32,8 @@
       ],
       rim: ['Nøglen er væk, hvor kan den dog være?', 'Pelle går ud i verden. Der er meget at lære.'],
       besoeg: 'Besøg mig i Nøddeskoven.',
-      skade: { x: 480, y: 150, s: 110, flyver: true }, noegle: { x: 496, y: 92, s: 26, v: 0.4 }
+      skade: { x: 480, y: 150, s: 110, flyver: true }, noegle: { x: 496, y: 92, s: 26, v: 0.4 },
+      malet: { fil: 'billeder/opslag/noeddeskoven.jpg', noegle: { x: 370, y: 90, s: 60 } }
     },
     {
       id: 'susebanen', sted: 'Susebanen', spil: 'games/racer/', moeder: ['rikke'],
@@ -42,7 +44,8 @@
       ],
       rim: ['Rikke kører rundt om sø og skov,', 'så hurtigt, at man siger: hov!'],
       besoeg: 'Besøg mig på Susebanen.',
-      skade: null, noegle: { x: 525, y: 572, s: 26, v: -0.4 }
+      skade: null, noegle: { x: 525, y: 572, s: 26, v: -0.4 },
+      malet: { fil: 'billeder/opslag/susebanen.jpg', noegle: { x: 200, y: 625, s: 70 } }
     },
     {
       id: 'boldbanen', sted: 'Boldbanen', spil: 'games/klatbold/', moeder: ['klaus', 'klara'],
@@ -53,7 +56,8 @@
       ],
       rim: ['Bolden flyver op mod sky,', 'og Klaus råber: "Prøv på ny!"'],
       besoeg: 'Besøg mig på Boldbanen.',
-      skade: null, noegle: { x: 566, y: 536, s: 24, v: -0.4 }
+      skade: null, noegle: { x: 566, y: 536, s: 24, v: -0.4 },
+      malet: { fil: 'billeder/opslag/boldbanen.jpg', noegle: { x: 80, y: 590, s: 70 } }
     },
     {
       id: 'boblehavet', sted: 'Boblehavet', spil: 'games/bobler/', moeder: ['emil', 'ella'],
@@ -64,7 +68,8 @@
       ],
       rim: ['Bobler, bobler, op de går.', 'Pop dem én for én, så ser vi, hvad vi får.'],
       besoeg: 'Besøg os ved Boblehavet.',
-      skade: { x: 520, y: 110, s: 60, flyver: true }, noegle: { x: 528, y: 300, s: 22, v: 0.5 }
+      skade: { x: 520, y: 110, s: 60, flyver: true }, noegle: { x: 528, y: 300, s: 22, v: 0.5 },
+      malet: { fil: 'billeder/opslag/boblehavet.jpg', noegle: { x: 400, y: 260, s: 70 } }
     },
     {
       id: 'bogstavvejen', sted: 'Bogstavvejen', spil: 'games/bogstaver/', moeder: ['ulla'],
@@ -75,7 +80,8 @@
       ],
       rim: ['Ulla skriver N og P,', 'og pludselig kan Pelle se.'],
       besoeg: 'Besøg mig på Bogstavvejen.',
-      skade: { x: 470, y: 290, s: 110, flyver: false }, noegle: { x: 514, y: 158, s: 26, v: 0.5 }
+      skade: { x: 470, y: 290, s: 110, flyver: false }, noegle: { x: 514, y: 158, s: 26, v: 0.5 },
+      malet: { fil: 'billeder/opslag/bogstavvejen.jpg', noegle: { x: 500, y: 280, s: 60 } }
     },
     {
       id: 'rimhulen', sted: 'Rimhulen', spil: 'games/rim/', moeder: ['bo'],
@@ -86,7 +92,8 @@
       ],
       rim: ['Bo brummer rim i sin mørke hule,', 'mens skaden flyver med noget, den vil skjule.'],
       besoeg: 'Besøg mig i Rimhulen.',
-      skade: { x: 505, y: 260, s: 90, flyver: true }, noegle: { x: 517, y: 210, s: 24, v: 0.4 }
+      skade: { x: 505, y: 260, s: 90, flyver: true }, noegle: { x: 517, y: 210, s: 24, v: 0.4 },
+      malet: { fil: 'billeder/opslag/rimhulen.jpg', noegle: { x: 380, y: 184, s: 70 } }
     },
     {
       id: 'vrimleskoven', sted: 'Vrimleskoven', spil: 'games/find/', moeder: ['kaja'],
@@ -97,7 +104,8 @@
       ],
       rim: ['Vrimle, vrimle, kig engang,', 'hvor er skaden, sort og lang?'],
       besoeg: 'Besøg mig i Vrimleskoven.',
-      skade: { x: 520, y: 95, s: 60, flyver: true }, noegle: { x: 528, y: 62, s: 22, v: 0.4 }
+      skade: { x: 520, y: 95, s: 60, flyver: true }, noegle: { x: 528, y: 62, s: 22, v: 0.4 },
+      malet: { fil: 'billeder/opslag/vrimleskoven.jpg', noegle: { x: 48, y: 280, s: 60 } }
     },
     {
       id: 'tegnestuen', sted: 'Tegnestuen', spil: 'games/tegn/', moeder: ['rasmus'],
@@ -108,7 +116,8 @@
       ],
       rim: ['Rasmus tegner grå og lang,', 'nu leder alle på én gang.'],
       besoeg: 'Besøg mig i Tegnestuen.',
-      skade: null, noegle: { x: 552, y: 626, s: 26, v: -0.35 }
+      skade: null, noegle: { x: 552, y: 626, s: 26, v: -0.35 },
+      malet: { fil: 'billeder/opslag/tegnestuen.jpg', noegle: { x: 392, y: 98, s: 60 } }
     },
     {
       id: 'stjerneuret', sted: 'Stjerneuret', spil: 'games/klokken/', moeder: ['milo'],
@@ -119,7 +128,8 @@
       ],
       rim: ['Milo ser alt fra sin stjernenat,', 'han ved, hvor skaden har gemt sin skat.'],
       besoeg: 'Besøg mig ved Stjerneuret.',
-      skade: { x: 100, y: 494, s: 44, flyver: false }, noegle: { x: 119, y: 474, s: 16, v: 0.3 }
+      skade: { x: 100, y: 494, s: 44, flyver: false }, noegle: { x: 119, y: 474, s: 16, v: 0.3 },
+      malet: { fil: 'billeder/opslag/stjerneuret.jpg', noegle: { x: 462, y: 110, s: 60 } }
     },
     {
       id: 'skovkoekkenet', sted: 'Skovkøkkenet', spil: 'games/restaurant/', moeder: ['gustav'],
@@ -130,9 +140,10 @@
       ],
       rim: ['Nøglen er fundet, nu er der fest,', 'og pandekager smager allerbedst.'],
       besoeg: 'Besøg mig i Skovkøkkenet.',
-      skade: { x: 210, y: 222, s: 90, flyver: false }, noegle: { x: 245, y: 160, s: 24, v: 0.6 }
+      skade: { x: 210, y: 222, s: 90, flyver: false }, noegle: { x: 245, y: 160, s: 24, v: 0.6 },
+      malet: { fil: 'billeder/opslag/skovkoekkenet.jpg', noegle: { x: 200, y: 695, s: 70 } }
     }
   ];
 
-  rod.Bog = { TITEL: TITEL, NAVNE: NAVNE, OPSLAG: OPSLAG, BREDDE: 600, HOEJDE: 780 };
+  rod.Bog = { TITEL: TITEL, NAVNE: NAVNE, OPSLAG: OPSLAG, FORSIDE: 'billeder/opslag/hus.jpg', BREDDE: 600, HOEJDE: 780 };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);

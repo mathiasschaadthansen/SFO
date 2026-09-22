@@ -108,6 +108,8 @@ bog/
   js/scener.js          billedet til hvert opslag, tegnet i kode med spillenes malede figurer
   js/game.js            forsiden, bladring, oplæsning og find-nøglen; print kun til PDF-værktøjet
   billeder/skade.png    Skaden Sanne, bogens eget billede (se billeder/NOTICE.md)
+  billeder/opslag/*.jpg de ti malede opslag og forsiden fra Gemini, 600 x 780 (se NOTICE.md dér)
+  udkast/*.png          skærmklip af Gemini-udkastet, kun til at sammenligne med; ikke i appen
   lyd/klip.json         oplæsningsklip, når de er lavet; indtil da læser enhedens egen stemme
 test/bog.test.js        tegner alle ti opslag uden browser og tjekker tekst, navne, nøgle og filer
 test/restaurant.test.js en robot henter på gården, serverer og betaler en hel dag på alle tre stjerner
@@ -745,8 +747,11 @@ appen: PDF'en laves én gang med `vaerktoej/lav-bog-pdf.js` (kræver
 Playwright) og sendes til dem, der skal printe den. Den tegner alle sider i
 `#print`, et A4-ark på tværs pr. opslag, forsiden først.
 
-Billederne er tegnet i kode i `js/scener.js` i et felt på 600 x 780 og
-sat sammen af spillenes egne malede figurer (Pelle og skovens dyr fra
+Opslagene vises med de malede billeder i `bog/billeder/opslag/`: hele scenen
+malet i ét billede med Gemini Storybook, klippet ud af udkastet i `bog/udkast/`
+og beskåret til 600 x 780. Nøglens plads i hvert billede står i `js/bog.js`
+under `malet.noegle`. Mangler et billede, tegnes opslaget i kode i
+`js/scener.js` i det samme felt, sat sammen af spillenes egne malede figurer (Pelle og skovens dyr fra
 Nøddeskoven, husene fra Vrimleskoven, klatterne fra Boldbanen, Emil og Ella
 fra Boblehavet, gæsterne fra Skovkøkkenet, robotten fra Bogstavvejen, bilen og
 rummusen fra forsiden). Skaden er bogens egen (`bog/billeder/skade.png`,

@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v93';
+const VERSION = 'sfo-spil-v94';
 
 const FILER = [
   './',
@@ -26,6 +26,18 @@ const FILER = [
   'bog/js/game.js',
   'bog/billeder/skade.png',
   'bog/billeder/NOTICE.md',
+  'bog/billeder/opslag/noeddeskoven.jpg',
+  'bog/billeder/opslag/susebanen.jpg',
+  'bog/billeder/opslag/boldbanen.jpg',
+  'bog/billeder/opslag/boblehavet.jpg',
+  'bog/billeder/opslag/bogstavvejen.jpg',
+  'bog/billeder/opslag/rimhulen.jpg',
+  'bog/billeder/opslag/vrimleskoven.jpg',
+  'bog/billeder/opslag/tegnestuen.jpg',
+  'bog/billeder/opslag/stjerneuret.jpg',
+  'bog/billeder/opslag/skovkoekkenet.jpg',
+  'bog/billeder/opslag/hus.jpg',
+  'bog/billeder/opslag/NOTICE.md',
   'bog/lyd/klip.json',
   'games/racer/',
   'games/racer/index.html',

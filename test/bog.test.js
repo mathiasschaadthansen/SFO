@@ -57,6 +57,7 @@ const O = Bog.OPSLAG, W = Bog.BREDDE, H = Bog.HOEJDE;
 {
   const hentet = [];
   const stub = {
+    Bog: Bog,
     Image: function () { const i = { complete: true, naturalWidth: 100, naturalHeight: 120, addEventListener() {} }; Object.defineProperty(i, 'src', { set(v) { hentet.push(v); } }); return i; }
   };
   global.window = stub; global.Image = stub.Image;
@@ -93,7 +94,7 @@ const O = Bog.OPSLAG, W = Bog.BREDDE, H = Bog.HOEJDE;
   const fejlede = [], udenNoegle = [], udenPelle = [];
   O.forEach(o => {
     const c = laerred();
-    try { S.tegnOpslag(c, o); } catch (e) { fejlede.push(o.id + ': ' + e.message); return; }
+    try { S.tegnOpslag(c, o, { kode: true }); } catch (e) { fejlede.push(o.id + ': ' + e.message); return; }
     const ramt = c.kald.translate.some(p => Math.abs(p[0] - o.noegle.x) < 0.5 && Math.abs(p[1] - o.noegle.y) < 0.5);
     if (!ramt) udenNoegle.push(o.id);
     if (c.kald.drawImage.length < 2) udenPelle.push(o.id);
@@ -102,9 +103,26 @@ const O = Bog.OPSLAG, W = Bog.BREDDE, H = Bog.HOEJDE;
   tjek('noeglen tegnes praecis dér, hvor opslaget siger', udenNoegle.length === 0, udenNoegle.join());
   tjek('hver scene bruger spillenes malede billeder', udenPelle.length === 0, udenPelle.join());
   const f = laerred(); let forsideOk = true;
-  try { S.tegnForside(f); } catch (e) { forsideOk = false; }
+  try { S.tegnForside(f, { kode: true }); } catch (e) { forsideOk = false; }
   tjek('forsiden kan tegnes', forsideOk && f.kald.drawImage.length >= 2);
-  tjek('bogens tekst skrives af siden, ikke i billedet', O.every(o => { const c = laerred(); S.tegnOpslag(c, o); return !c.kald.text.some(t => t.length > 3); }));
+  tjek('bogens tekst skrives af siden, ikke i billedet', O.every(o => { const c = laerred(); S.tegnOpslag(c, o, { kode: true }); return !c.kald.text.some(t => t.length > 3); }));
+  // Det malede billede vises, naar det er hentet (stubbens billeder er altid "hentet"), og noeglen er dets
+  const m = laerred(); S.tegnOpslag(m, O[0]);
+  tjek('det malede opslag vises i stedet for koden, naar det er hentet', m.kald.drawImage.length === 1 && m.kald.translate.length === 0 && S.erMalet(O[0]) && S.noeglePlads(O[0]) === O[0].malet.noegle);
+}
+
+/* De malede opslag fra Gemini */
+{
+  const udenMalet = O.filter(o => !o.malet || !fs.existsSync(path.join(BOG, o.malet.fil))).map(o => o.id);
+  tjek('hvert opslag har et malet billede paa disken', udenMalet.length === 0, udenMalet.join());
+  const forStore = O.filter(o => o.malet && fs.existsSync(path.join(BOG, o.malet.fil)) && fs.statSync(path.join(BOG, o.malet.fil)).size > 130 * 1024).map(o => o.id);
+  tjek('ingen malet opslag fylder over 130 KB', forStore.length === 0, forStore.join());
+  const maal = O.every(o => { const b = fs.readFileSync(path.join(BOG, o.malet.fil)); let i = 2; while (i < b.length) { if (b[i] !== 0xff) return false; const mk = b[i + 1], len = b.readUInt16BE(i + 2); if (mk >= 0xc0 && mk <= 0xc3) return b.readUInt16BE(i + 5) === H && b.readUInt16BE(i + 7) === W; i += 2 + len; } return false; });
+  tjek('de malede opslag er 600 x 780 (samme felt som koden)', maal);
+  const noegleUde = O.filter(o => o.malet.noegle.x < 0 || o.malet.noegle.x > W || o.malet.noegle.y < 0 || o.malet.noegle.y > H || o.malet.noegle.s < 40).map(o => o.id);
+  tjek('noeglen i de malede billeder ligger inden for billedet og er til at ramme', noegleUde.length === 0, noegleUde.join());
+  tjek('forsiden har sit malede billede', fs.existsSync(path.join(BOG, Bog.FORSIDE)));
+  tjek('de malede opslag har NOTICE ved siden af', fs.existsSync(path.join(BOG, 'billeder', 'opslag', 'NOTICE.md')));
 }
 
 /* Skaermen, forsiden og service workeren */
@@ -123,7 +141,7 @@ const O = Bog.OPSLAG, W = Bog.BREDDE, H = Bog.HOEJDE;
   const klipMangler = klip.filter(k => !fs.existsSync(path.join(BOG, 'lyd', k)));
   tjek('alle klip i lyd/klip.json findes', Array.isArray(klip) && klipMangler.length === 0, klipMangler.join());
   const sw = fs.readFileSync(path.join(ROD, 'sw.js'), 'utf8');
-  const iFiler = ['bog/', 'bog/index.html', 'bog/js/bog.js', 'bog/js/scener.js', 'bog/js/game.js', 'bog/billeder/skade.png', 'bog/lyd/klip.json'].concat(klip.map(k => 'bog/lyd/' + k));
+  const iFiler = ['bog/', 'bog/index.html', 'bog/js/bog.js', 'bog/js/scener.js', 'bog/js/game.js', 'bog/billeder/skade.png', 'bog/lyd/klip.json', 'bog/' + Bog.FORSIDE].concat(klip.map(k => 'bog/lyd/' + k), O.map(o => 'bog/' + o.malet.fil));
   const udenFiler = iFiler.filter(f => !sw.includes("'" + f + "'"));
   tjek('bogens filer er med i service workerens FILER', udenFiler.length === 0, udenFiler.join());
   const games = fs.readFileSync(path.join(ROD, 'js', 'games.js'), 'utf8');

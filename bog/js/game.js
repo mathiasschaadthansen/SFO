@@ -4,7 +4,8 @@
  * Forsiden er bogens egen menu (overlayet): start, print og lyd. Naar bogen er
  * aaben, viser hvert opslag billedet til venstre og teksten til hoejre, og
  * stemmen laeser teksten hoejt, naar man blader. Paa hvert opslag gemmer
- * skruenoeglen sig i billedet; trykker man paa den, faar den en ring, og
+ * skruenoeglen sig i billedet (det malede fra Gemini, ellers det kodetegnede);
+ * trykker man paa den, faar den en ring, og
  * stemmen siger "Du fandt den" (klippet laanes fra Vrimleskoven).
  *
  * Der er ingen printknap i appen: PDF'en laves én gang med
@@ -108,7 +109,7 @@
     ctx.setTransform(b / W, 0, 0, h / H, 0, 0);
     ctx.clearRect(0, 0, W, H);
     S.tegnOpslag(ctx, o);
-    if (fundet[o.id]) ring(ctx, o.noegle);
+    if (fundet[o.id]) ring(ctx, S.noeglePlads(o));
   }
   function tegnPrikker() {
     prikker.innerHTML = OPSLAG.map(function (o, i) { return '<i class="' + (i === side ? 'her' : '') + '"></i>'; }).join('');
@@ -143,7 +144,7 @@
 
   /* Trykker man paa noeglen, faar den en ring, og stemmen siger, at man fandt den. */
   scene.addEventListener('pointerdown', function (e) {
-    var r = scene.getBoundingClientRect(), o = OPSLAG[side], n = o.noegle;
+    var r = scene.getBoundingClientRect(), o = OPSLAG[side], n = S.noeglePlads(o);
     var x = (e.clientX - r.left) / r.width * W, y = (e.clientY - r.top) / r.height * H;
     if (Math.hypot(x - n.x, y - n.y) > Math.max(n.s * 1.3, 42)) return;
     if (!fundet[o.id]) { fundet[o.id] = true; melodi([523, 659, 784, 1047], 110); }

@@ -109,7 +109,10 @@ Bogen er ikke et spil: den ligger forrest på forsiden, har ingen knap ind i
 spillene (kun linjen "Besøg mig på …"), og alle, Pelle møder, hedder noget i
 formen "Ræven Rikke". Klaus er rød og Klara blå. Den, Pelle møder på et
 opslag, skal være den figur, der faktisk er i spillet (Milo ved Stjerneuret,
-Gustav i Skovkøkkenet). Skaden Sanne er bogens egen figur. Der er ingen
+Gustav i Skovkøkkenet). Skaden Sanne er bogens egen figur. Opslagene er
+malet i ét billede pr. side med Gemini (`bog/billeder/opslag/`, 600 x 780,
+nøglens plads i `malet.noegle` i `bog.js`); koden i `scener.js` tegner kun,
+hvis et billede mangler. Der er ingen
 printknap i appen; PDF'en laves med `vaerktoej/lav-bog-pdf.js` og sendes til
 dem, der skal printe. Oplæsningsklippene laves med
 `vaerktoej/lav-lyd-elevenlabs.py --spil bog`, når ElevenLabs-kvoten er der.

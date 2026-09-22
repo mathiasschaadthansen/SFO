@@ -24,6 +24,8 @@
     robot: O + 'robot.png', hat: O + 'hat.png', and: O + 'and.png', bold: A + 'bold.png', bil: A + 'bil.png', rummus: A + 'rummus.png', hus: A + 'hus.png',
     skade: 'billeder/skade.png'
   };
+  // De malede opslag (Gemini, se billeder/opslag/NOTICE.md) hentes sammen med figurerne
+  if (window.Bog) { window.Bog.OPSLAG.forEach(function (o) { if (o.malet) BILLEDER['malet-' + o.id] = o.malet.fil; }); if (window.Bog.FORSIDE) BILLEDER['malet-forside'] = window.Bog.FORSIDE; }
   var billeder = {};
   function hentAlle(naarKlar) {
     var mangler = Object.keys(BILLEDER).length;
@@ -330,15 +332,22 @@
     }
   };
 
-  /** Tegn et opslag i (c) i felt 600 x 780. Noeglen laegges sidst, medmindre scenen selv har lagt den (bag hegnet). */
-  function tegnOpslag(c, o) {
+  /** Er opslagets malede billede hentet, saa det er det, der vises? */
+  function erMalet(o) { return !!(o.malet && klar('malet-' + o.id)); }
+  /** Noeglens plads i det billede, der faktisk vises: det malede eller det kodetegnede. */
+  function noeglePlads(o) { return erMalet(o) ? o.malet.noegle : o.noegle; }
+  /** Tegn et opslag i (c) i felt 600 x 780: det malede billede, hvis det er hentet, ellers scenen i kode.
+      valg.kode tvinger koden (testen). I koden laegges noeglen sidst, medmindre scenen selv har lagt den (bag hegnet). */
+  function tegnOpslag(c, o, valg) {
+    if (erMalet(o) && !(valg && valg.kode)) { c.drawImage(billeder['malet-' + o.id], 0, 0, 600, 780); return; }
     froe = 3 + o.id.length;
     o.noegleTegnet = false;
     (SCENER[o.id] || function () {})(c, 600, 780, o);
     if (!o.noegleTegnet) noegle(c, o.noegle.x, o.noegle.y, o.noegle.s, o.noegle.v);
   }
-  /** Forsiden: Pelle stor, skaden i hjoernet, titlen skrives af siden. */
-  function tegnForside(c) {
+  /** Forsiden: det malede billede af Pelle ved sit hus, ellers Pelle stor med skaden i hjoernet. Titlen skrives af siden. */
+  function tegnForside(c, valg) {
+    if (klar('malet-forside') && !(valg && valg.kode)) { c.drawImage(billeder['malet-forside'], 0, 0, 600, 780); return; }
     froe = 11;
     himmel(c, 600, 780, '#8fc7e8', '#dcecf3', 400); sky(c, 90, 90, 1.1); sky(c, 400, 60, 0.8);
     bakke(c, 600, 480, '#93bc63'); tegn(c, 'trae', 80, 490, 180, { bund: true }); tegn(c, 'gran', 520, 470, 150, { bund: true });
@@ -347,5 +356,5 @@
     tegn(c, 'skade', 500, 300, 120, { drej: -0.25 });
   }
 
-  window.Scener = { BILLEDER: BILLEDER, hentAlle: hentAlle, tegnOpslag: tegnOpslag, tegnForside: tegnForside, noegle: noegle, klar: klar };
+  window.Scener = { BILLEDER: BILLEDER, hentAlle: hentAlle, tegnOpslag: tegnOpslag, tegnForside: tegnForside, noegle: noegle, klar: klar, erMalet: erMalet, noeglePlads: noeglePlads };
 })();
