@@ -72,13 +72,14 @@
     2: { tegn: '2', streger: [sammen(cirkel(50, 32, 22, -160, 50), [[25, 90], [75, 90]])] },
     3: { tegn: '3', streger: [sammen(cirkel(50, 30, 20, -150, 90), cirkel(50, 70, 20, -90, 150))] },
     4: { tegn: '4', streger: [streg([60, 10], [22, 65], [82, 65]), streg([60, 10], [60, 90])] },
-    5: { tegn: '5', streger: [streg([72, 10], [30, 10], [28, 48]), sammen([[28, 48], [42, 42]], cirkel(48, 66, 24, -80, 160))] },
-    6: { tegn: '6', streger: [sammen([[70, 10], [40, 38]], cirkel(50, 66, 24, -170, 190))] },
+    5: { tegn: '5', streger: [sammen([[30, 10], [28, 48], [42, 42]], cirkel(48, 66, 24, -80, 160)), streg([30, 10], [72, 10])] },   // ned og mave, saa hatten fra venstre mod hoejre
+    6: { tegn: '6', streger: [sammen([[70, 10], [58, 18], [46, 30], [36, 42], [29, 54]], cirkel(50, 66, 24, -150, -500))] },   // ned ad venstre side og rundt mod uret
     7: { tegn: '7', streger: [streg([25, 10], [75, 10], [42, 90])] },
-    8: { tegn: '8', streger: [sammen(cirkel(50, 30, 20, -60, -420), cirkel(50, 70, 22, -120, 240))] },
+    8: { tegn: '8', streger: [sammen(cirkel(50, 30, 20, -45, -270), cirkel(50, 70, 22, -90, 270), cirkel(50, 30, 20, 90, -45))] },   // et S fra oeverst til hoejre, og op igen paa den anden side
     9: { tegn: '9', streger: [sammen(cirkel(50, 34, 24, 0, -360), [[74, 34], [58, 90]])] },
 
     // Smaa bogstaver. Prikker og ringe er smaa cirkler: dem "tegner" man med et tryk.
+    // n, m og r skrives som i grundskrift: ned ad stammen, tilbage op ad den samme streg og over buen — i én streg.
     a: { tegn: 'a', streger: [cirkel(48, 62, 18, -30, -330), streg([66, 45], [66, 80])] },
     b: { tegn: 'b', streger: [streg([30, 12], [30, 80]), sammen([[30, 50]], cirkel(48, 62, 18, -150, 150))] },
     c: { tegn: 'c', streger: [cirkel(50, 62, 18, -45, -315)] },
@@ -91,12 +92,12 @@
     j: { tegn: 'j', streger: [sammen([[56, 45], [56, 86]], cirkel(44, 86, 12, 0, 180)), cirkel(56, 30, 3, -90, 270)] },
     k: { tegn: 'k', streger: [streg([32, 12], [32, 80]), streg([62, 45], [34, 66]), streg([42, 60], [64, 80])] },
     l: { tegn: 'l', streger: [streg([50, 12], [50, 80])] },
-    m: { tegn: 'm', streger: [streg([24, 80], [24, 45]), sammen([[24, 58]], cirkel(37, 58, 13, -180, 0), [[50, 80]]), sammen([[50, 58]], cirkel(63, 58, 13, -180, 0), [[76, 80]])] },
-    n: { tegn: 'n', streger: [streg([32, 80], [32, 45]), sammen([[32, 62]], cirkel(50, 62, 18, -180, 0), [[68, 80]])] },
+    m: { tegn: 'm', streger: [sammen([[24, 45], [24, 80], [24, 58]], bue(37, 58, 13, 13, -180, 0), [[50, 80], [50, 58]], bue(63, 58, 13, 13, -180, 0), [[76, 80]])] },
+    n: { tegn: 'n', streger: [sammen([[32, 45], [32, 80], [32, 58]], bue(50, 58, 18, 13, -180, 0), [[68, 80]])] },
     o: { tegn: 'o', streger: [cirkel(50, 62, 18, -90, -450)] },
     p: { tegn: 'p', streger: [streg([32, 45], [32, 98]), sammen([[32, 50]], cirkel(50, 62, 18, -150, 150))] },
     q: { tegn: 'q', streger: [cirkel(50, 62, 18, -30, -330), streg([68, 45], [68, 98])] },
-    r: { tegn: 'r', streger: [streg([36, 80], [36, 45]), sammen([[36, 62]], cirkel(52, 62, 16, -180, -60))] },
+    r: { tegn: 'r', streger: [sammen([[36, 45], [36, 80], [36, 58]], bue(52, 58, 16, 13, -180, -60))] },
     s: { tegn: 's', streger: [sammen(cirkel(50, 54, 9, -40, -270), cirkel(50, 72, 9, -90, 150))] },
     t: { tegn: 't', streger: [sammen([[46, 20], [46, 70]], cirkel(56, 70, 10, 180, 90)), streg([34, 45], [60, 45])] },
     u: { tegn: 'u', streger: [sammen([[32, 45], [32, 64]], cirkel(50, 64, 18, 180, 0)), streg([68, 45], [68, 80])] },
