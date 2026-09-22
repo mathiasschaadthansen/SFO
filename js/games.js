@@ -11,6 +11,17 @@
  */
 window.SPIL = [
   {
+    id: 'bog',
+    navn: 'Bogen om Nøddeskoven',
+    tekst: 'Læs, hør og find Pelles skruenøgle. Kan printes.',
+    sti: 'bog/',
+    farve: '#ead9c0',
+    art: '<div class="art">' +
+         '<img src="bog/billeder/skade.png" alt="" style="left:64px;top:0;width:46px">' +
+         '<img src="assets/malet/pindsvin.png" alt="" style="left:4px;top:26px;width:70px">' +
+         '</div>'
+  },
+  {
     id: 'racer',
     navn: 'Susebanen',
     tekst: 'Hold fingeren i siden for at styre. 1 eller 2 spillere.',

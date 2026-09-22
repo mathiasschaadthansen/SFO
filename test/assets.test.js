@@ -55,7 +55,9 @@ tjek('service workeren falder tilbage til index.html paa en mappe-adresse',
   /mode === 'navigate'/.test(sw) && /index\.html'/.test(sw));
 const stier = [...fs.readFileSync(path.join(ROD, 'js', 'games.js'), 'utf8')
   .matchAll(/sti:\s*'([^']+)'/g)].map(m => m[1]);
-tjek('forsiden linker til alle ti spil', stier.length === 10, stier.length + ' stier');
+const spilStier = stier.filter(s2 => s2.startsWith('games/'));
+tjek('forsiden linker til alle ti spil', spilStier.length === 10, spilStier.length + ' stier');
+tjek('forsiden linker til bogen', stier.includes('bog/'));
 const udenIndex = stier.filter(s2 => !sw.includes("'" + s2 + "index.html'"));
 tjek('hvert spil forsiden linker til har sin index.html i FILER', udenIndex.length === 0, udenIndex.join());
 

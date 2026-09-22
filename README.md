@@ -103,6 +103,13 @@ games/find/
   billeder/*.png        byens malede stykker: tre huse på bakken, boden, brønden og bænken
   lyd/*.mp3             "Kan du finde den?" og kategorierne; ordene lånes fra Bogstavvejen
 test/find.test.js       en robot spiller alle steder på alle tre stjerner og tjekker, at alt kan findes
+bog/
+  js/bog.js             de ti opslag: tekst, rim, hvem Pelle møder, hvor nøglen og skaden er — ingen DOM
+  js/scener.js          billedet til hvert opslag, tegnet i kode med spillenes malede figurer
+  js/game.js            forsiden, bladring, oplæsning, find-nøglen og print
+  billeder/skade.png    Skaden Sanne, bogens eget billede (se billeder/NOTICE.md)
+  lyd/klip.json         oplæsningsklip, når de er lavet; indtil da læser enhedens egen stemme
+test/bog.test.js        tegner alle ti opslag uden browser og tjekker tekst, navne, nøgle og filer
 test/restaurant.test.js en robot henter på gården, serverer og betaler en hel dag på alle tre stjerner
 ```
 
@@ -712,3 +719,40 @@ hinanden eller helt bag et skjul, at hvert spørgsmål kan besvares med det, der
 er i billedet, at der ved tre stjerner ligger en lookalike tæt ved hvert
 enkeltord, at kategorierne har to til fire medlemmer, og at alle ord har
 billede og stemme.
+
+## Bogen om Nøddeskoven (mappen `bog`)
+
+En lille billedbog, der binder spillene sammen: Pelle Pindsvin har tabt sin
+skruenøgle, Skaden Sanne har taget den, og Pelle leder efter den hos alle
+spillenes figurer. Bogen ligger forrest på forsiden og har ti opslag i
+historiens rækkefølge: Nøddeskoven, Susebanen, Boldbanen, Boblehavet,
+Bogstavvejen, Rimhulen, Vrimleskoven, Tegnestuen, Stjerneuret og til sidst
+Skovkøkkenet, hvor alle vennerne mødes, og nøglen kommer hjem.
+
+Hvert opslag har billedet til venstre og teksten til højre: tre små stykker,
+et rim i en boks, og linjen "Besøg mig på …", som fortæller, hvor figuren bor.
+Der er ingen knap ind i spillet; bogen er en bog. På hvert opslag gemmer
+nøglen sig et sted i billedet, og trykker barnet på den, får den en gul ring,
+og stemmen siger "Du fandt den" (klippet lånes fra Vrimleskoven). Bogen
+husker ikke noget mellem to læsninger.
+
+Teksten læses højt, når man blader, og igen med højttaleren i hjørnet.
+Klip til opslagene ligger i `bog/lyd/` og står i `lyd/klip.json`
+(`lyd/<opslagets id>.mp3`); mangler et klip, læser enhedens egen danske
+stemme. Printknappen på forsiden tegner alle sider i `#print` og åbner
+enhedens printdialog: et A4-ark på tværs pr. opslag, forsiden først.
+
+Billederne er tegnet i kode i `js/scener.js` i et felt på 600 x 780 og
+sat sammen af spillenes egne malede figurer (Pelle og skovens dyr fra
+Nøddeskoven, husene fra Vrimleskoven, klatterne fra Boldbanen, Emil og Ella
+fra Boblehavet, gæsterne fra Skovkøkkenet, robotten fra Bogstavvejen, bilen og
+rummusen fra forsiden). Skaden er bogens egen (`bog/billeder/skade.png`,
+malet i Canva, se NOTICE). Nøglen tegnes i kode, så den er den samme på
+alle opslag, med træskaft som Pelles. Nøglens og skadens pladser står i
+`js/bog.js` i de samme enheder.
+
+Testen (`test/bog.test.js`) tegner alle ti opslag i et lærred uden browser
+og tjekker, at nøglen tegnes præcis dér, hvor opslaget siger, at alle lånte
+billeder findes, at hvert opslags sted hedder det samme som spillet, at den,
+Pelle møder, nævnes i teksten, at Klaus er rød og Klara blå, og at bogens
+filer er med i service workeren og forrest på forsiden.

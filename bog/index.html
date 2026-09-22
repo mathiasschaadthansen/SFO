@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Bogen om Nøddeskoven</title>
+<meta name="theme-color" content="#e5d3ae">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="../icons/icon-192.png">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{
+    margin:0;height:100%;overflow:hidden;
+    background:#e5d3ae;color:#5e4a3a;
+    font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,sans-serif;
+    -webkit-user-select:none;user-select:none;
+    overscroll-behavior:none;touch-action:none;
+  }
+
+  /* ---------- opslaget: billedet til venstre, teksten til hoejre ---------- */
+  #bog{position:absolute;inset:0;background:#f8f1e6;display:flex}
+  #bog[hidden]{display:none}
+  #scene{display:block;flex:0 0 auto;height:100%;width:calc(100vh * 600 / 780);touch-action:none}
+  #side{
+    position:relative;flex:1 1 auto;min-width:0;height:100%;
+    padding:8.4vh 3.8vh 2.6vh 4.6vh;
+    background:#f8f1e6;display:flex;flex-direction:column;
+  }
+  #side:before{content:"";position:absolute;left:0;top:0;width:3.4vh;height:100%;pointer-events:none;
+    background:linear-gradient(90deg,rgba(94,74,58,.32),rgba(94,74,58,.16) 30%,rgba(94,74,58,0))}
+  .tekst{font-size:2.7vh;line-height:1.4;font-weight:600;color:#6b5545}
+  .tekst p{margin:0 0 1.5vh}
+  .rim{margin-top:auto;padding:1.6vh 2.1vh;background:#efe3d0;border-radius:2.3vh;font-size:2.5vh;line-height:1.38;font-style:italic;font-weight:600;color:#7d6553;box-shadow:inset 0 3px 0 rgba(255,255,255,.85)}
+  .besoeg{margin-top:1.6vh;font-size:2.2vh;color:#8a7360;font-weight:600;text-align:center;opacity:.9}
+  .find{margin-top:.6vh;font-size:2vh;color:#8a7360;font-weight:600;opacity:.75;text-align:center}
+  .find.fundet{color:#5f8240;opacity:1}
+  .prikker{position:absolute;top:3.4vh;left:0;right:0;display:flex;justify-content:center;gap:1.1vh;pointer-events:none}
+  .prikker i{width:1.8vh;height:1.8vh;border-radius:50%;border:2px solid #5e4a3a;background:rgba(248,241,230,.75)}
+  .prikker i.her{background:#f0c46a}
+
+  /* Bladre- og hoer-knapperne: samme kort som i menuerne */
+  .knap{
+    font:inherit;font-weight:800;font-size:22px;
+    padding:15px 20px;
+    background:#efe3d0;color:#6b5545;
+    border:0;border-radius:22px;
+    box-shadow:0 6px 0 rgba(107,85,68,.18),0 10px 18px rgba(107,85,68,.18),inset 0 3px 0 rgba(255,255,255,.85);
+    cursor:pointer;text-decoration:none;display:block;
+    transition:transform .08s,box-shadow .08s;
+  }
+  .knap:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(107,85,68,.18),0 4px 10px rgba(107,85,68,.16),inset 0 2px 0 rgba(255,255,255,.7)}
+  .knap:focus-visible{outline:4px solid #9bbb90;outline-offset:4px}
+  .knap.ikon{display:flex;align-items:center;justify-content:center;padding:10px 14px}
+  .knap.ikon svg{display:block}
+  .knap.lille{font-size:17px;padding:10px 14px;box-shadow:0 4px 0 rgba(107,85,68,.14);opacity:.8}
+  /* Bladre-knapperne staar i en raekke nederst paa siden, saa de aldrig ligger over teksten */
+  .blade{display:flex;justify-content:space-between;align-items:center;margin-top:1.8vh;padding-right:max(0px,env(safe-area-inset-right))}
+  .blad{width:9.6vh;height:9.6vh;padding:0;border-radius:3vh}
+  .blad svg{width:5.4vh;height:5.4vh}
+  .blad[hidden]{display:none;visibility:hidden}
+  #tilbage{opacity:.85}
+  #hoer{position:absolute;z-index:5;right:max(3vh,env(safe-area-inset-right));top:max(1.8vh,env(safe-area-inset-top));width:7.4vh;height:7.4vh;border-radius:2.3vh}
+  #hoer svg{width:4.2vh;height:4.2vh}
+
+  /* ---------- forsiden (bogens egen menu) ---------- */
+  #overlay{
+    position:absolute;inset:0;z-index:10;
+    display:flex;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;
+    background:rgba(229,211,174,.9);
+    padding:20px;
+  }
+  #overlay[hidden]{display:none}
+  .kort{
+    width:min(640px,100%);
+    display:flex;flex-direction:column;gap:12px;
+    background:#f8f1e6;color:#6b5545;
+    border:0;border-radius:34px;
+    box-shadow:0 16px 34px rgba(107,85,68,.24),inset 0 3px 0 rgba(255,255,255,.9);
+    padding:22px 26px 26px;
+    text-align:center;margin:auto;flex:0 0 auto;
+  }
+  .kort h2{margin:0;font-size:34px;font-weight:800;color:#7d6553}
+  .kort .under{margin:-6px 0 0;font-size:17px;font-weight:600;opacity:.75}
+  .forside{display:flex;gap:18px;align-items:center}
+  .forside canvas{width:190px;height:247px;border-radius:18px;box-shadow:0 6px 0 rgba(107,85,68,.18),0 10px 18px rgba(107,85,68,.18);flex:0 0 auto}
+  .forside .valg{flex:1 1 auto;display:flex;flex-direction:column;gap:10px;min-width:0}
+  .raekke{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
+  .raekke.bund{justify-content:center;margin:6px 0 0}
+  .knap.groen{background:#8fae86;color:#f8f1e6;box-shadow:0 6px 0 rgba(95,127,88,.4),0 10px 18px rgba(107,85,68,.2),inset 0 3px 0 rgba(255,255,255,.4)}
+  .knap.groen:active{box-shadow:0 2px 0 rgba(95,127,88,.4),0 4px 10px rgba(107,85,68,.16)}
+  .knap.start{display:flex;align-items:center;justify-content:center;padding:12px 16px;min-height:88px}
+  .knap.start svg{display:block;height:64px;width:auto}
+  .knap.print{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 16px;font-size:19px}
+  .knap.print svg{display:block;height:40px;width:auto}
+
+  @media (max-height:520px){
+    #overlay{padding:8px 66px}
+    .kort{padding:12px 16px;gap:7px;border-radius:22px}
+    .kort h2{font-size:22px}
+    .forside canvas{width:120px;height:156px}
+    .knap.start{min-height:0;padding:8px 12px}.knap.start svg{height:44px}
+    .knap.print{padding:8px 12px;font-size:16px}.knap.print svg{height:30px}
+  }
+
+  /* ---------- print: et opslag pr. A4-ark paa tvaers ---------- */
+  #print{display:none}
+  @media print{
+    @page{size:A4 landscape;margin:0}
+    html,body{height:auto;overflow:visible;background:#fff}
+    #bog,#overlay,#hjem,#spilmenu,#vend{display:none !important}
+    #print{display:block}
+    .ark{position:relative;width:297mm;height:210mm;overflow:hidden;background:#f8f1e6;page-break-after:always;break-after:page}
+    .ark canvas{position:absolute;left:0;top:0;height:210mm;width:calc(210mm * 600 / 780)}
+    .ark .side{position:absolute;right:0;top:0;bottom:0;left:calc(210mm * 600 / 780);padding:16mm 12mm 14mm 14mm;display:flex;flex-direction:column}
+    .ark .tekst{font-size:14.5pt;line-height:1.4;font-weight:600;color:#6b5545}
+    .ark .tekst p{margin:0 0 5mm}
+    .ark .rim{margin-top:auto;padding:5mm 6mm;background:#efe3d0;border-radius:6mm;font-size:12.5pt;line-height:1.38;font-style:italic;font-weight:600;color:#7d6553}
+    .ark .besoeg{margin-top:5mm;font-size:11pt;color:#8a7360;font-weight:600;text-align:center}
+    .ark .find{margin-top:2mm;font-size:10pt;color:#8a7360;font-weight:600;text-align:center;opacity:.8}
+    .ark .sidetal{position:absolute;bottom:5mm;right:8mm;font-size:10pt;color:#8a7360}
+    .ark.forside .side{justify-content:center;align-items:center;text-align:center}
+    .ark.forside h1{margin:0;font-size:34pt;font-weight:800;color:#7d6553}
+    .ark.forside .under{margin:8mm 0 0;font-size:14pt;font-weight:600;color:#8a7360}
+  }
+</style>
+</head>
+<body>
+
+<div id="bog" hidden>
+  <canvas id="scene"></canvas>
+  <div id="side">
+    <div class="tekst" id="tekst"></div>
+    <div class="rim" id="rim"></div>
+    <div class="besoeg" id="besoeg"></div>
+    <div class="find" id="find"></div>
+    <div class="blade">
+      <button class="knap ikon blad" id="tilbage" type="button" aria-label="Forrige side"></button>
+      <button class="knap ikon blad" id="frem" type="button" aria-label="Næste side"></button>
+    </div>
+  </div>
+  <div class="prikker" id="prikker"></div>
+  <button class="knap ikon blad" id="hoer" type="button" aria-label="Læs højt"></button>
+</div>
+<div id="overlay" hidden></div>
+<div id="print"></div>
+
+<script src="../js/skal.js"></script>
+<script src="../js/menu.js"></script>
+<script src="js/bog.js"></script>
+<script src="js/scener.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

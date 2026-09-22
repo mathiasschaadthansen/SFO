@@ -33,7 +33,10 @@ steder på alle tre stjerner og tjekker, at tingene ligger frit og inden for
 stedet eller præcis på deres plads (vindue, bænk, båd, træ), at ingen er helt
 gemt bag et skjul, at hvert spørgsmål kan besvares med det, der er i billedet,
 at der ved tre stjerner ligger en lookalike tæt ved hver ting, der spørges om,
-og at kategorierne har to til fire medlemmer.
+og at kategorierne har to til fire medlemmer. Bog-testen tegner alle ti opslag i
+Bogen om Nøddeskoven i et lærred uden browser og tjekker, at nøglen tegnes
+præcis dér, hvor opslaget siger, at alle lånte billeder findes, at stederne
+hedder det samme som spillene, og at bogens filer er i service workeren.
 
 **Stemme.** Bogstavvejen (og Rimhulen, som låner dens ordklip) bruger rigtige
 klip med en dansk stemme fra ElevenLabs (Camilla) til bogstavnavne, tal, ord og
@@ -100,6 +103,13 @@ spillet. Koden er ikke doebt om: modulerne hedder stadig `Klatbold`, `Bobler`,
 | Tegnestuen | `games/tegn/` | `test/tegn.test.js` |
 | Rimhulen | `games/rim/` | `test/rim.test.js` |
 | Vrimleskoven | `games/find/` | `test/find.test.js` |
+| Bogen om Nøddeskoven | `bog/` | `test/bog.test.js` |
+
+Bogen er ikke et spil: den ligger forrest på forsiden, har ingen knap ind i
+spillene (kun linjen "Besøg mig på …"), og alle, Pelle møder, hedder noget i
+formen "Ræven Rikke". Klaus er rød og Klara blå. Den, Pelle møder på et
+opslag, skal være den figur, der faktisk er i spillet (Milo ved Stjerneuret,
+Gustav i Skovkøkkenet). Skaden Sanne er bogens egen figur.
 
 Navnet står tre steder pr. spil: `<title>` i `index.html`, `<h2>` i `visMenu`
 og `navn` i `js/games.js`. App-ikonet er pindsvinet Pelle, den samme figur som
@@ -195,6 +205,9 @@ skal den samme prompt bruges igen — prompten står i
   indtalt inde i den sætning. Nye sætninger, der bruger et ordklip, skal
   bygges, så rammen passer: "Her har du ordet kat. Hvad rimer på det?" —
   aldrig "Hvad rimer på" + ordklip. Rimhulen faldt i den fælde i v80.
+- **Skallen tror, den ligger to mapper nede.** `js/skal.js` sætter hjem-knappen
+  til `../../`, fordi spillene ligger i `games/<navn>/`. Bogen ligger i `bog/`
+  og retter selv linket til `../` i sin `game.js`.
 - **Service worker.** Nye filer skal tilføjes til `FILER` i `sw.js`, og
   `VERSION` skal tælles op. Ellers henter iPad'en den gamle version.
 - **Offline skal testes med serveren slukket.** Playwrights `setOffline(true)`
