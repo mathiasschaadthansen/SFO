@@ -59,6 +59,7 @@ games/bobler/
   js/physics.js         bobler, snor, specials og de tolv baner — ingen DOM
   js/input.js           multi-touch med tre knapper pr. spiller
   js/game.js            menu, tegning, lyd
+  billeder/*.png        de malede figurer på stranden; ét billede pr. figur
 
 test/racer.test.js      kører 3 omgange på hver bane uden browser
 test/klatbold.test.js   mål, overligger, hop, AI og en hel kamp mellem to AI'er
@@ -257,8 +258,12 @@ færdigt af en finger, der følger stregen.
 
 ## Sprites
 
-Biler, klatter, figurer og raketten er sprites fra Kenney (CC0), se
-`assets/kenney/NOTICE.md`. Hvert spil har stadig sin tegning i kode som reserve,
+Biler, figurer og raketten er sprites fra Kenney (CC0), se
+`assets/kenney/NOTICE.md`. Boldbanens klatter er malede, se
+`games/klatbold/billeder/`, og Boblehavets figurer skiftes til malede én ad
+gangen: dem, der står i `MALEDE` i `games/bobler/js/game.js`, tegnes fra ét
+malet billede med gang, svimmelhed og jubel lavet i kode, resten er stadig
+Kenney. Hvert spil har stadig sin tegning i kode som reserve,
 så intet venter på et billede. Farver, der ikke findes i pakken, laves med
 `Sprites.tint()`, der bytter farvetone og beholder lys og skygge. Nye sprites
 skal med i `FILER` i `sw.js`; testen `test/assets.test.js` brokker sig ellers.

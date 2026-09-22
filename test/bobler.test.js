@@ -224,5 +224,23 @@ Bobler.saetSvaerhed(0);
   Bobler.saetSvaerhed(0);
 }
 
+/* De malede figurer: dem, skaermen lister, findes, er smaa, er i FILER og har NOTICE */
+{
+  const fs = require('fs');
+  const mappe = path.join(__dirname, '..', 'games', 'bobler', 'billeder');
+  const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
+  const game = fs.readFileSync(path.join(__dirname, '..', 'games', 'bobler', 'js', 'game.js'), 'utf8');
+  const m = game.match(/var MALEDE = \[([^\]]*)\]/);
+  const malede = m ? m[1].split(',').map(x => x.trim().replace(/'/g, '')).filter(Boolean) : [];
+  tjek('skaermen lister mindst én malet figur', malede.length >= 1, malede.join(','));
+  const mangler = malede.filter(f => !fs.existsSync(path.join(mappe, f + '.png')));
+  tjek('hver malet figur har et billede', mangler.length === 0, mangler.join(','));
+  const store = malede.filter(f => fs.existsSync(path.join(mappe, f + '.png')) && fs.statSync(path.join(mappe, f + '.png')).size > 40 * 1024);
+  tjek('ingen af dem fylder over 40 KB', store.length === 0, store.join(','));
+  const ikkeICache = malede.filter(f => !sw.includes("'games/bobler/billeder/" + f + ".png'"));
+  tjek('alle malede figurer er med i FILER', ikkeICache.length === 0, ikkeICache.join(','));
+  tjek('billeder/ har en NOTICE.md', fs.existsSync(path.join(mappe, 'NOTICE.md')));
+}
+
 console.log(fejl ? '\n' + fejl + ' test(s) fejlede.' : '\nAlle tests bestaaet.');
 process.exit(fejl ? 1 : 0);

@@ -34,8 +34,12 @@
     { lak: '#e08a52', navn: 'Orange' }
   ];
   var FIGURER = ['dreng', 'pige'];          // sprites fra Kenneys Platformer Characters
+  // De malede figurer i billeder/ (akvarel, samme stil som resten af spillene). En figur, der
+  // staar her, tegnes malet; gang, svimmel og jubel laves i kode paa det ene billede. De andre
+  // bruger Kenneys sprites som foer. Mangler et billede, falder figuren tilbage til Kenney.
+  var MALEDE = ['dreng'];
   // Alle poser hentes med det samme, saa de er klar foer foerste bane
-  var ALLE_SPRITES = [];
+  var ALLE_SPRITES = MALEDE.map(function (f) { return 'billeder/' + f + '.png'; });
   ['dreng', 'pige'].forEach(function (f) { ['idle', 'walk1', 'walk2', 'hurt', 'cheer1', 'cheer2'].forEach(function (p) { ALLE_SPRITES.push('../../assets/kenney/' + f + '_' + p + '.png'); }); });
   Sprites.forhent(ALLE_SPRITES);
   var HATTE = ['kasket', 'hjelm', 'sloejfe']; // kodetegningens hatte, bruges kun som reserve
@@ -422,20 +426,31 @@
   /** Sprite-udgaven: figur fra Kenney med pose efter hvad der sker. Returnerer false hvis ikke hentet. */
   function tegnFigurSprite(c, farve, figur, kigX, gang, svimmel, jubler) {
     var R = INDSTIL.spillerRadius;
-    var pose = svimmel > 0 ? 'hurt' : (jubler ? (Math.floor(tid * 6) % 2 ? 'cheer1' : 'cheer2') : (gang ? (Math.floor(gang / 14) % 2 ? 'walk1' : 'walk2') : 'idle'));
-    var img = Sprites.hent('../../assets/kenney/' + figur + '_' + pose + '.png');
-    if (Sprites.venter(img)) return true;     // paa vej: tegn ingenting, saa den gamle figur ikke blinker frem
-    if (!Sprites.klar(img)) return false;     // fejlet: brug kodetegningen
-    var h = R * 2.7, w = h * 80 / 110;
+    var img, h, w, dy = 0, vip = 0;
+    var malet = MALEDE.indexOf(figur) >= 0 ? Sprites.hent('billeder/' + figur + '.png') : null;
+    if (malet && Sprites.venter(malet)) return true;
+    if (malet && Sprites.klar(malet)) {
+      // Den malede figur: ét billede, som gaar ved at vippe og hoppe lidt, og jubler ved at hoppe hoejt
+      img = malet; h = R * 3.4; w = h * img.naturalWidth / img.naturalHeight;
+      if (jubler) { dy = -Math.abs(Math.sin(tid * 8)) * 10; }
+      else if (gang) { dy = -Math.abs(Math.sin(gang * 0.22)) * 3; vip = Math.sin(gang * 0.22) * 0.05; }
+    } else {
+      var pose = svimmel > 0 ? 'hurt' : (jubler ? (Math.floor(tid * 6) % 2 ? 'cheer1' : 'cheer2') : (gang ? (Math.floor(gang / 14) % 2 ? 'walk1' : 'walk2') : 'idle'));
+      img = Sprites.hent('../../assets/kenney/' + figur + '_' + pose + '.png');
+      if (Sprites.venter(img)) return true;     // paa vej: tegn ingenting, saa den gamle figur ikke blinker frem
+      if (!Sprites.klar(img)) return false;     // fejlet: brug kodetegningen
+      h = R * 2.7; w = h * 80 / 110;
+    }
     // Farvet maatte under figuren, saa man ved hvilken der er ens
     c.fillStyle = farve.lak;
     c.globalAlpha = 0.55;
-    c.beginPath(); c.ellipse(0, R - 2, w * 0.6, 7, 0, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.ellipse(0, R - 2, Math.max(w * 0.6, R * 0.9), 7, 0, 0, Math.PI * 2); c.fill();
     c.globalAlpha = 1;
     c.save();
     if (kigX < 0) c.scale(-1, 1);
     if (svimmel > 0) c.rotate(Math.sin(tid * 12) * 0.08);
-    c.drawImage(img, -w / 2, R - h, w, h);
+    else if (vip) { c.translate(0, R); c.rotate(vip); c.translate(0, -R); }
+    c.drawImage(img, -w / 2, R - h + dy, w, h);
     c.restore();
     if (svimmel > 0) {
       c.fillStyle = '#f0c46a';
