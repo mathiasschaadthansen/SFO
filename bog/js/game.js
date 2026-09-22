@@ -191,21 +191,23 @@
   /* ---------- print: kun til vaerktoej/lav-bog-pdf.js ---------- */
 
   var printEl = document.getElementById('print');
-  function ark(klasse, indhold) {
+  /* Et malet opslag er selv 600 x 780, saa dets ark tegnes 1:1; kodetegnede sider faar dobbelt oploesning */
+  function ark(klasse, indhold, malet) {
+    var k = malet ? 1 : 2;
     var d = document.createElement('div'); d.className = 'ark ' + klasse;
-    var cv = document.createElement('canvas'); cv.width = W * 2; cv.height = H * 2; d.appendChild(cv);
+    var cv = document.createElement('canvas'); cv.width = W * k; cv.height = H * k; d.appendChild(cv);
     d.insertAdjacentHTML('beforeend', indhold);
     printEl.appendChild(d);
-    var c = cv.getContext('2d'); c.setTransform(2, 0, 0, 2, 0, 0);
+    var c = cv.getContext('2d'); c.setTransform(k, 0, 0, k, 0, 0);
     return c;
   }
   function byggePrint() {
     printEl.innerHTML = '';
-    S.tegnForside(ark('forside', '<div class="side"><h1>' + B.TITEL + '</h1><p class="under">Pelle Pindsvin leder efter sin skruenøgle. Kan du finde den på hver side, før han gør?</p></div>'));
+    S.tegnForside(ark('forside', '<div class="side"><h1>' + B.TITEL + '</h1><p class="under">Pelle Pindsvin leder efter sin skruenøgle. Kan du finde den på hver side, før han gør?</p></div>', S.klar('malet-forside')));
     OPSLAG.forEach(function (o, i) {
       var c = ark('opslag', '<div class="side"><div class="tekst">' + o.tekst.map(function (t) { return '<p>' + t + '</p>'; }).join('') + '</div>' +
         '<div class="rim">' + o.rim.join('<br>') + '</div><div class="besoeg">' + o.besoeg + '</div>' +
-        '<div class="find">Kan du finde Pelles skruenøgle?</div><div class="sidetal">' + (i + 1) + '</div></div>');
+        '<div class="find">Kan du finde Pelles skruenøgle?</div><div class="sidetal">' + (i + 1) + '</div></div>', S.erMalet(o));
       S.tegnOpslag(c, o);
     });
   }
