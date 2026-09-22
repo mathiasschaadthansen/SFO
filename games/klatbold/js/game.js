@@ -27,13 +27,17 @@
   // Grundfarven (lak) bruges ogsaa paa knappen og maalcirklerne, saa barnet
   // kan se hvilken klat der er dets.
   var FARVER = [
-    { navn: 'Rød',   lys: '#f6a68d', lak: '#e4644a', moerk: '#a83a24' },
-    { navn: 'Blå',   lys: '#9ad2f0', lak: '#3f9ad6', moerk: '#23648f' },
-    { navn: 'Grøn',  lys: '#c3e08e', lak: '#7ab648', moerk: '#4a7a2c' },
-    { navn: 'Gul',   lys: '#ffe2a0', lak: '#f2c14e', moerk: '#c48f24' },
-    { navn: 'Lilla', lys: '#d3bff2', lak: '#9b7bd4', moerk: '#654a9c' },
-    { navn: 'Pink',  lys: '#fbc9dc', lak: '#ef94b8', moerk: '#c25f88' }
+    { navn: 'Rød',   fil: 'roed',  lys: '#f6a68d', lak: '#e4644a', moerk: '#a83a24' },
+    { navn: 'Blå',   fil: 'blaa',  lys: '#9ad2f0', lak: '#3f9ad6', moerk: '#23648f' },
+    { navn: 'Grøn',  fil: 'groen', lys: '#c3e08e', lak: '#7ab648', moerk: '#4a7a2c' },
+    { navn: 'Gul',   fil: 'gul',   lys: '#ffe2a0', lak: '#f2c14e', moerk: '#c48f24' },
+    { navn: 'Lilla', fil: 'lilla', lys: '#d3bff2', lak: '#9b7bd4', moerk: '#654a9c' },
+    { navn: 'Pink',  fil: 'pink',  lys: '#fbc9dc', lak: '#ef94b8', moerk: '#c25f88' }
   ];
+  // Klattens malede krop (billeder/klat-<farve>.png): akvarel uden ansigt, én pr. farve,
+  // lagt oven paa den halvcirkel koden tegner. Ansigt, oerer og hop er stadig kode.
+  var klatBilleder = {};
+  FARVER.forEach(function (f) { var i = new Image(); i.src = 'billeder/klat-' + f.fil + '.png'; klatBilleder[f.fil] = i; });
   var FJAES = ['glad', 'sej', 'soed'];
 
   // Malet palet til banen. Samme toner som i Maskinen, saa spillene ligner hinanden.
@@ -494,9 +498,20 @@
     c.closePath();
     c.fillStyle = maling;
     c.fill();
+    // Den malede overflade, klippet til halvcirklen, saa formen (og fysikken) er den samme. Mangler billedet, staar gradienten alene.
+    var b = klatBilleder[farve.fil];
+    if (b && b.complete && b.naturalWidth) {
+      c.save();
+      c.beginPath(); c.arc(0, 0, R, Math.PI, 0); c.closePath(); c.clip();
+      var bb = R * 2.16, bh = R * 1.3;
+      c.drawImage(b, -bb / 2, R * 0.04 - bh, bb, bh);
+      c.restore();
+    }
     c.strokeStyle = farve.moerk;
-    c.lineWidth = 3;
+    c.globalAlpha = 0.55;
+    c.lineWidth = 2.5;
     c.stroke();
+    c.globalAlpha = 1;
 
     // Skygge langs jorden, saa den staar paa banen
     c.save();

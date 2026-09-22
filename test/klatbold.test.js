@@ -187,5 +187,22 @@ Klatbold.saetSvaerhed(0);
   Klatbold.saetSvaerhed(0);
 }
 
+/* Klattens malede krop: seks farver, smaa, i FILER, med NOTICE */
+{
+  const fs = require('fs');
+  const mappe = path.join(__dirname, '..', 'games', 'klatbold', 'billeder');
+  const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
+  const game = fs.readFileSync(path.join(__dirname, '..', 'games', 'klatbold', 'js', 'game.js'), 'utf8');
+  const farver = ['roed', 'blaa', 'groen', 'gul', 'lilla', 'pink'];
+  const png = fs.readdirSync(mappe).filter(f => f.endsWith('.png')).sort();
+  tjek('der er en malet krop til hver af de seks farver', png.join(',') === farver.map(f => 'klat-' + f + '.png').sort().join(','), png.join(','));
+  const store = png.filter(f => fs.statSync(path.join(mappe, f)).size > 40 * 1024);
+  tjek('ingen af dem fylder over 40 KB', store.length === 0, store.join(','));
+  const ikkeICache = png.filter(f => !sw.includes("'games/klatbold/billeder/" + f + "'"));
+  tjek('alle er med i service workerens FILER', ikkeICache.length === 0, ikkeICache.join(','));
+  tjek('billeder/ har en NOTICE.md', fs.existsSync(path.join(mappe, 'NOTICE.md')));
+  tjek('skaermen kender alle seks filnavne', farver.every(f => game.includes("fil: '" + f + "'")) && game.includes("'billeder/klat-'"));
+}
+
 console.log(fejl ? '\n' + fejl + ' test(s) fejlede.' : '\nAlle tests bestaaet.');
 process.exit(fejl ? 1 : 0);

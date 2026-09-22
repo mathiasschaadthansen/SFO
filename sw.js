@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v86';
+const VERSION = 'sfo-spil-v87';
 
 const FILER = [
   './',
@@ -37,6 +37,12 @@ const FILER = [
   'games/klatbold/js/physics.js',
   'games/klatbold/js/input.js',
   'games/klatbold/js/game.js',
+  'games/klatbold/billeder/klat-roed.png',
+  'games/klatbold/billeder/klat-blaa.png',
+  'games/klatbold/billeder/klat-groen.png',
+  'games/klatbold/billeder/klat-gul.png',
+  'games/klatbold/billeder/klat-lilla.png',
+  'games/klatbold/billeder/klat-pink.png',
   'games/bobler/',
   'games/bobler/index.html',
   'games/bobler/js/physics.js',

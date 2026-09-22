@@ -53,6 +53,7 @@ games/klatbold/
   js/physics.js         bold, klatter, mål og AI — ingen DOM
   js/input.js           multi-touch med tre knapper pr. spiller
   js/game.js            menu, tegning, lyd
+  billeder/klat-*.png   klattens malede krop i de seks farver, uden ansigt
 
 games/bobler/
   js/physics.js         bobler, snor, specials og de tolv baner — ingen DOM
@@ -186,9 +187,13 @@ reaktionstid og hoppelyst for 1, 2 og 3 stjerner. Kør `npm test` bagefter.
 Klatterne er tegnet i kode i `games/klatbold/js/game.js`. `FARVER` er de seks
 farver med en lys top, en grundfarve og en dyb bund, og `tegnKlatForm` tegner
 kroppen og de fem ansigter: glad, sej og sød vælger barnet selv, og jubel og
-sur kommer af sig selv, når der bliver scoret. Kroppen er stadig en halvcirkel
-med radius `klatRadius`, præcis som i fysikken — ændrer man tegningen, må den
-ikke blive større eller mindre end det, bolden rammer.
+sur kommer af sig selv, når der bliver scoret. Oven på halvcirklen lægges en
+malet akvarelkrop fra `billeder/`, én pr. farve, klippet til formen; ét
+billede er malet, de fem andre er farvet om i kode, og ansigtet er fjernet, så
+koden stadig tegner øjne, der følger bolden. Mangler billedet, står kodens
+gradient alene. Kroppen er stadig en halvcirkel med radius `klatRadius`,
+præcis som i fysikken — ændrer man tegningen, må den ikke blive større eller
+mindre end det, bolden rammer.
 
 ## Skrue på Boblehavet
 

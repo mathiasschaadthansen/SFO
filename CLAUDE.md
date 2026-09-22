@@ -133,6 +133,10 @@ Rimhulen og Vrimleskoven genbruger Bogstavvejens billeder og ordklip fra
 `../bogstaver/`; Rimhulen har kun sine elleve ekstra rimord selv, og
 Vrimleskoven har byens seks malede stykker i `games/find/billeder/` (husene
 forrest i byen er tegnet i kode, fordi tingene skal kunne sidde i vinduerne).
+Boldbanens klatter har en malet krop i `games/klatbold/billeder/`: ét
+Canva-billede, farvet om i kode til de seks farver, med ansigtet fjernet, så
+koden tegner ansigt og øjne. Canvas AI-tilladelse er cirka 200 billeder om
+måneden og bliver brugt op; farv hellere om i kode end at bede om et nyt.
 Noto Emoji bruges stadig, hvor et barn skal kunne genkende en ting med det
 samme: kortene i Stjerneuret, de sidste syv ting i Bogstavvejen (sol,
 sommerfugl, ur, vandmelon, vante, vulkan, yoyo) og de få rekvisitter i
