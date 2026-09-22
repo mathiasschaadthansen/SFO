@@ -110,7 +110,7 @@ bog/
   billeder/skade.png    Skaden Sanne, bogens eget billede (se billeder/NOTICE.md)
   billeder/opslag/*.jpg de ti malede opslag og forsiden fra Gemini, 600 x 780 (se NOTICE.md dér)
   udkast/*.png          skærmklip af Gemini-udkastet, kun til at sammenligne med; ikke i appen
-  lyd/klip.json         oplæsningsklip, når de er lavet; indtil da læser enhedens egen stemme
+  lyd/*.mp3             oplæsningen, ét klip pr. opslag (se lyd/NOTICE.md)
 test/bog.test.js        tegner alle ti opslag uden browser og tjekker tekst, navne, nøgle og filer
 test/restaurant.test.js en robot henter på gården, serverer og betaler en hel dag på alle tre stjerner
 ```
@@ -739,9 +739,11 @@ og stemmen siger "Du fandt den" (klippet lånes fra Vrimleskoven). Bogen
 husker ikke noget mellem to læsninger.
 
 Teksten læses højt, når man blader, og igen med højttaleren i hjørnet.
-Klip til opslagene ligger i `bog/lyd/` og står i `lyd/klip.json`
-(`lyd/<opslagets id>.mp3`); mangler et klip, læser enhedens egen danske
-stemme. Klippene laves med `vaerktoej/lav-lyd-elevenlabs.py --spil bog`
+Klippene ligger i `bog/lyd/` som `<opslagets id>.mp3` og står i
+`lyd/klip.json`. De er læst op af Gemini ud fra bogens egen tekst, hele siden
+med rimet i ét stykke, og lavet om til MP3 i mono, 22 kHz — Ogg, som de kom
+i, kan ikke afspilles på ældre iPads. Mangler et klip, læser enhedens egen
+danske stemme i stedet. Klippene laves med `vaerktoej/lav-lyd-elevenlabs.py --spil bog`
 (ét klip pr. opslag, teksten og rimet i én omgang). Der er ingen printknap i
 appen: PDF'en laves én gang med `vaerktoej/lav-bog-pdf.js` (kræver
 Playwright) og sendes til dem, der skal printe den. Den tegner alle sider i

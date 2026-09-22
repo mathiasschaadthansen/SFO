@@ -114,8 +114,10 @@ malet i ét billede pr. side med Gemini (`bog/billeder/opslag/`, 600 x 780,
 nøglens plads i `malet.noegle` i `bog.js`); koden i `scener.js` tegner kun,
 hvis et billede mangler. Der er ingen
 printknap i appen; PDF'en laves med `vaerktoej/lav-bog-pdf.js` og sendes til
-dem, der skal printe. Oplæsningsklippene laves med
-`vaerktoej/lav-lyd-elevenlabs.py --spil bog`, når ElevenLabs-kvoten er der.
+dem, der skal printe. Oplæsningen er ti klip i `bog/lyd/`, ét pr. opslag,
+læst af Gemini ud fra bogens egen tekst; de er MP3, fordi Ogg ikke kan
+afspilles på ældre iPads. Skal bogen en dag læses af Camilla som spillene,
+laves klippene med `vaerktoej/lav-lyd-elevenlabs.py --spil bog`.
 
 Navnet står tre steder pr. spil: `<title>` i `index.html`, `<h2>` i `visMenu`
 og `navn` i `js/games.js`. App-ikonet er pindsvinet Pelle, den samme figur som

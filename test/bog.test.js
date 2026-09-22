@@ -140,6 +140,13 @@ const O = Bog.OPSLAG, W = Bog.BREDDE, H = Bog.HOEJDE;
   const klip = JSON.parse(fs.readFileSync(path.join(BOG, 'lyd', 'klip.json'), 'utf8'));
   const klipMangler = klip.filter(k => !fs.existsSync(path.join(BOG, 'lyd', k)));
   tjek('alle klip i lyd/klip.json findes', Array.isArray(klip) && klipMangler.length === 0, klipMangler.join());
+  // Hvert opslag laeses hoejt af sit eget klip; navnet er opslagets id, saa game.js finder det
+  const udenKlip = O.filter(o => !klip.includes(o.id + '.mp3')).map(o => o.id);
+  tjek('hvert opslag har sit oplaesningsklip', udenKlip.length === 0, udenKlip.join());
+  const forTunge = klip.filter(k => fs.statSync(path.join(BOG, 'lyd', k)).size > 200 * 1024);
+  tjek('ingen klip fylder over 200 KB', forTunge.length === 0, forTunge.join());
+  // Ogg kan ikke afspilles paa aeldre iPads; klippene skal vaere MP3
+  tjek('oplaesningen har NOTICE ved siden af', fs.existsSync(path.join(BOG, 'lyd', 'NOTICE.md')));
   const sw = fs.readFileSync(path.join(ROD, 'sw.js'), 'utf8');
   const iFiler = ['bog/', 'bog/index.html', 'bog/js/bog.js', 'bog/js/scener.js', 'bog/js/game.js', 'bog/billeder/skade.png', 'bog/lyd/klip.json', 'bog/' + Bog.FORSIDE].concat(klip.map(k => 'bog/lyd/' + k), O.map(o => 'bog/' + o.malet.fil));
   const udenFiler = iFiler.filter(f => !sw.includes("'" + f + "'"));
