@@ -12,7 +12,11 @@ Boldbane-testen tjekker mål, overligger, hop og at AI'en kan nå bolden.
 Boblehav-testen lader en robot spille alle tolv baner igennem på alle tre
 sværhedsgrader, så ingen bane kan blive umulig. Bogstavvejs-testen tjekker, at alle
 68 tegn kan tegnes færdige af en finger, der følger stregen, også en skæv og en
-hurtig finger, og at alle ord i Ord-legen kan tegnes og er indtalt. Skovkøkken-testen lader en robot hente på gården, servere og betale en hel
+hurtig finger, og at alle ord i Ord-legen kan tegnes og er indtalt. Den holder
+også skrivemåden efter dansk grundskrift: lodrette streger nedad, vandrette fra
+venstre mod højre, runde former mod uret, maver ud fra en stamme med uret, og
+små bogstaver med stamme og bue (b, h, n, m, r, p, a, d, g, q, u) i én streg,
+hvor man går tilbage op ad stammen. Ret ikke et tegn uden at kende reglen. Skovkøkken-testen lader en robot hente på gården, servere og betale en hel
 dag og tjekker, at alle bestillinger kan laves med det, der står på hylden, at
 alle ingredienser har en kilde, og at alle regninger kan betales med pungens
 mønter. Den tjekker også, at hver ret, ingrediens og gæst har en malet tegning,

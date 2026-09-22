@@ -64,7 +64,7 @@ games/bobler/
 test/racer.test.js      kører 3 omgange på hver bane uden browser
 test/klatbold.test.js   mål, overligger, hop, AI og en hel kamp mellem to AI'er
 games/bogstaver/
-  js/glyffer.js         A-Å og 0-9 som streger i skriveretning — ingen DOM
+  js/glyffer.js         A-Å og 0-9 som streger i skriveretning efter dansk grundskrift — ingen DOM
   js/spor.js            følger fingeren langs stregerne — ingen DOM
   js/ting.js            ting pr. bogstav til "hvad starter med" og til Ord
   billeder/*.png        tingenes malede billeder, kvadratiske (se billeder/NOTICE.md)

@@ -75,6 +75,32 @@ function foelg(glyf, tolerance, afvig) {
   tjek('en finger 6 enheder ved siden af tegner stadig alle tegn med bred tolerance', skaeve.length === 0, 'ikke faerdige: ' + skaeve);
 }
 
+/* Skrivemaaden foelger dansk grundskrift. Reglerne tjekkes paa selve stregerne, saa de ikke skrider igen. */
+{
+  const G = Glyffer.GLYFFER;
+  const foerste = n => G[n].streger[0], sidste = n => G[n].streger[G[n].streger.length - 1];
+  const nedad = s => s[s.length - 1][1] > s[0][1] + 20 && Math.abs(s[s.length - 1][0] - s[0][0]) < 6;
+  const modHoejre = s => s[s.length - 1][0] > s[0][0] + 20 && Math.abs(s[s.length - 1][1] - s[0][1]) < 6;
+  /* Hvilken vej en bue drejer: summen af krydsproduktet mellem stykkerne (y peger nedad, saa positivt = med uret) */
+  const drej = s => { let d = 0; for (let i = 0; i < s.length - 2; i++) { const ax = s[i + 1][0] - s[i][0], ay = s[i + 1][1] - s[i][1], bx = s[i + 2][0] - s[i + 1][0], by = s[i + 2][1] - s[i + 1][1]; d += ax * by - ay * bx; } return d; };
+  const medUret = s => drej(s) > 0, modUret = s => drej(s) < 0;
+  /* Stammen er stregens foerste stykke ned, og for grundskriftens smaa bogstaver gaar man tilbage op ad den */
+  const nedOgOp = n => { const s = foerste(n); let bund = 0; for (let i = 1; i < s.length; i++) if (s[i][1] > s[bund][1]) bund = i; return bund > 0 && bund < s.length - 1 && s[bund][1] > s[0][1] + 20 && s[bund + 1][1] < s[bund][1] && Math.abs(s[bund + 1][0] - s[bund][0]) < 3; };
+
+  const stammeNed = ['B', 'D', 'E', 'F', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'R', 'T', 'AE', 'i', 'l', 'b', 'h', 'k', 'p', 'n', 'm', 'r', '1'];
+  const forkertStamme = stammeNed.filter(n => { const s = n === 'T' ? G[n].streger[1] : (n === '1' ? foerste(n).slice(1) : foerste(n)); return !(s[0][1] < s[Math.min(s.length - 1, 40)][1]); });
+  tjek('lodrette stammer skrives oppefra og ned', forkertStamme.length === 0, forkertStamme.join());
+  tjek('vandrette streger skrives fra venstre mod hoejre (E, F, T, H, A, 5, 7, t, f)',
+    modHoejre(G.E.streger[1]) && modHoejre(G.E.streger[2]) && modHoejre(G.F.streger[1]) && modHoejre(G.T.streger[0]) && modHoejre(G.H.streger[2]) && modHoejre(G.A.streger[2]) && modHoejre(sidste('5')) && modHoejre(foerste('7').slice(0, 2)) && modHoejre(sidste('t')) && modHoejre(sidste('f')));
+  tjek('A, Æ og Å begynder i toppen med to streger ned', [['A', 0], ['A', 1], ['AE', 0], ['AA', 0], ['AA', 1]].every(([n, i]) => G[n].streger[i][0][1] < G[n].streger[i][1][1] - 40));
+  tjek('runde former gaar mod uret: o O 0 c C a d g q e G Q ae aa', ['o', 'O', '0', 'c', 'C', 'a', 'd', 'g', 'q', 'e', 'G', 'Q', 'ae', 'aa'].every(n => modUret(foerste(n).slice(0, 25))));
+  tjek('maver ud fra en stamme gaar med uret: b p B D P R 2 3', ['b', 'p'].every(n => medUret(foerste(n).slice(-25))) && ['B', 'D', 'P', 'R'].every(n => medUret(G[n].streger[1].slice(0, 25))) && ['2', '3'].every(n => medUret(foerste(n).slice(0, 15))));
+  tjek('5: ned og mave foerst, hatten til sidst; 6 rundt mod uret; 8 begynder oeverst til hoejre og gaar til venstre',
+    nedad(foerste('5').slice(0, 2)) && G['5'].streger.length === 2 && modUret(foerste('6').slice(-30)) && foerste('8')[0][0] > 55 && foerste('8')[3][0] < foerste('8')[0][0]);
+  tjek('b, h, n, m, r, p, k-stammen: ned ad stammen og tilbage op i samme streg', ['b', 'h', 'n', 'm', 'r', 'p'].every(nedOgOp), ['b', 'h', 'n', 'm', 'r', 'p'].filter(n => !nedOgOp(n)).join());
+  tjek('a, d, g, q, u er én streg: rundt eller ned, og saa stammen', ['a', 'd', 'g', 'q', 'u'].every(n => G[n].streger.length === 1) && ['a', 'd', 'q'].every(n => nedad(foerste(n).slice(-2))));
+}
+
 /* Fingeren skal starte ved startprikken, og fremskridt bevares naar man slipper */
 {
   const spor = new Spor(Glyffer.GLYFFER.L, 8);
