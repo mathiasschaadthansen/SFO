@@ -31,7 +31,7 @@
       ],
       rim: ['Nøglen er væk, hvor kan den dog være?', 'Pelle går ud i verden. Der er meget at lære.'],
       besoeg: 'Besøg mig i Nøddeskoven.',
-      skade: { x: 470, y: 150, s: 110, flyver: true }, noegle: { x: 421, y: 165, s: 26, v: 0.5 }
+      skade: { x: 480, y: 150, s: 110, flyver: true }, noegle: { x: 496, y: 92, s: 26, v: 0.4 }
     },
     {
       id: 'susebanen', sted: 'Susebanen', spil: 'games/racer/', moeder: ['rikke'],
@@ -42,7 +42,7 @@
       ],
       rim: ['Rikke kører rundt om sø og skov,', 'så hurtigt, at man siger: hov!'],
       besoeg: 'Besøg mig på Susebanen.',
-      skade: null, noegle: { x: 518, y: 562, s: 26, v: -0.4 }
+      skade: null, noegle: { x: 525, y: 572, s: 26, v: -0.4 }
     },
     {
       id: 'boldbanen', sted: 'Boldbanen', spil: 'games/klatbold/', moeder: ['klaus', 'klara'],
@@ -53,7 +53,7 @@
       ],
       rim: ['Bolden flyver op mod sky,', 'og Klaus råber: "Prøv på ny!"'],
       besoeg: 'Besøg mig på Boldbanen.',
-      skade: null, noegle: { x: 44, y: 580, s: 24, v: 0.4 }
+      skade: null, noegle: { x: 566, y: 536, s: 24, v: -0.4 }
     },
     {
       id: 'boblehavet', sted: 'Boblehavet', spil: 'games/bobler/', moeder: ['emil', 'ella'],
@@ -64,7 +64,7 @@
       ],
       rim: ['Bobler, bobler, op de går.', 'Pop dem én for én, så ser vi, hvad vi får.'],
       besoeg: 'Besøg os ved Boblehavet.',
-      skade: { x: 520, y: 120, s: 60, flyver: true }, noegle: { x: 528, y: 300, s: 22, v: 0.5 }
+      skade: { x: 520, y: 110, s: 60, flyver: true }, noegle: { x: 528, y: 300, s: 22, v: 0.5 }
     },
     {
       id: 'bogstavvejen', sted: 'Bogstavvejen', spil: 'games/bogstaver/', moeder: ['ulla'],
@@ -75,7 +75,7 @@
       ],
       rim: ['Ulla skriver N og P,', 'og pludselig kan Pelle se.'],
       besoeg: 'Besøg mig på Bogstavvejen.',
-      skade: { x: 470, y: 262, s: 120, flyver: false }, noegle: { x: 418, y: 262, s: 26, v: 0.5 }
+      skade: { x: 470, y: 290, s: 110, flyver: false }, noegle: { x: 514, y: 158, s: 26, v: 0.5 }
     },
     {
       id: 'rimhulen', sted: 'Rimhulen', spil: 'games/rim/', moeder: ['bo'],
@@ -86,7 +86,7 @@
       ],
       rim: ['Bo brummer rim i sin mørke hule,', 'mens skaden flyver med noget, den vil skjule.'],
       besoeg: 'Besøg mig i Rimhulen.',
-      skade: { x: 500, y: 190, s: 90, flyver: true }, noegle: { x: 236, y: 668, s: 26, v: 1.2 }
+      skade: { x: 505, y: 260, s: 90, flyver: true }, noegle: { x: 517, y: 210, s: 24, v: 0.4 }
     },
     {
       id: 'vrimleskoven', sted: 'Vrimleskoven', spil: 'games/find/', moeder: ['kaja'],
@@ -97,7 +97,7 @@
       ],
       rim: ['Vrimle, vrimle, kig engang,', 'hvor er skaden, sort og lang?'],
       besoeg: 'Besøg mig i Vrimleskoven.',
-      skade: { x: 300, y: 470, s: 70, flyver: false }, noegle: { x: 462, y: 640, s: 24, v: 0.2 }
+      skade: { x: 520, y: 95, s: 60, flyver: true }, noegle: { x: 528, y: 62, s: 22, v: 0.4 }
     },
     {
       id: 'tegnestuen', sted: 'Tegnestuen', spil: 'games/tegn/', moeder: ['rasmus'],
@@ -108,7 +108,7 @@
       ],
       rim: ['Rasmus tegner grå og lang,', 'nu leder alle på én gang.'],
       besoeg: 'Besøg mig i Tegnestuen.',
-      skade: null, noegle: { x: 548, y: 618, s: 26, v: -0.35 }
+      skade: null, noegle: { x: 552, y: 626, s: 26, v: -0.35 }
     },
     {
       id: 'stjerneuret', sted: 'Stjerneuret', spil: 'games/klokken/', moeder: ['milo'],
@@ -119,7 +119,7 @@
       ],
       rim: ['Milo ser alt fra sin stjernenat,', 'han ved, hvor skaden har gemt sin skat.'],
       besoeg: 'Besøg mig ved Stjerneuret.',
-      skade: null, noegle: { x: 92, y: 528, s: 16, v: 0.3 }
+      skade: { x: 100, y: 494, s: 44, flyver: false }, noegle: { x: 119, y: 474, s: 16, v: 0.3 }
     },
     {
       id: 'skovkoekkenet', sted: 'Skovkøkkenet', spil: 'games/restaurant/', moeder: ['gustav'],
@@ -130,7 +130,7 @@
       ],
       rim: ['Nøglen er fundet, nu er der fest,', 'og pandekager smager allerbedst.'],
       besoeg: 'Besøg mig i Skovkøkkenet.',
-      skade: { x: 300, y: 92, s: 100, flyver: false }, noegle: { x: 254, y: 100, s: 24, v: 0.6 }
+      skade: { x: 210, y: 222, s: 90, flyver: false }, noegle: { x: 245, y: 160, s: 24, v: 0.6 }
     }
   ];
 

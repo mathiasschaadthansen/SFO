@@ -72,26 +72,47 @@
   function bakke(c, W, y, farve, a, b) { c.fillStyle = farve; c.beginPath(); c.moveTo(0, y + (a || 0)); c.quadraticCurveTo(W * 0.3, y - 30, W * 0.6, y); c.quadraticCurveTo(W * 0.85, y + 18, W, y + (b || -20)); c.lineTo(W, 900); c.lineTo(0, 900); c.fill(); }
   function skygge(c, x, y, b) { c.fillStyle = 'rgba(94,74,58,.14)'; c.beginPath(); c.ellipse(x, y, b, b * 0.16, 0, 0, 7); c.fill(); }
 
-  /** Pelles skruenoegle: traeskaft og graat hoved med gab, som den han holder. */
+  /** Pelles skruenoegle: lige traeskaft med runde ender og et graat gaffelhoved med gab, som den han holder. s er laengden. */
   function noegle(c, x, y, s, v) {
     c.save(); c.translate(x, y); c.rotate(v || 0);
-    c.lineJoin = 'round';
-    rr(c, -s * 0.13, -s * 0.15, s * 0.26, s * 1.05, s * 0.08, '#b18a56', '#8a663d', 2);
-    c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(-s * 0.08, -s * 0.1, s * 0.07, s * 0.9);
-    c.fillStyle = '#b9bcbf'; c.strokeStyle = '#6d7276'; c.lineWidth = 2;
-    c.beginPath(); c.arc(0, -s * 0.35, s * 0.36, 0.55, Math.PI * 2 - 0.55); c.closePath(); c.fill(); c.stroke();
-    c.fillStyle = '#f0e9db'; c.beginPath(); c.moveTo(s * 0.02, -s * 0.35); c.lineTo(s * 0.5, -s * 0.62); c.lineTo(s * 0.5, -s * 0.08); c.closePath(); c.fill();
-    c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.arc(-s * 0.12, -s * 0.45, s * 0.12, 0, 7); c.fill();
+    c.lineJoin = 'round'; c.lineCap = 'round';
+    var R = s * 0.2, cy = -s * 0.3, w = R * 0.7, d = R * 1.05, a = Math.asin(w / 2 / R);
+    // skaftet: brunt trae med en lys kant, som Pelles
+    c.strokeStyle = '#6a4a2c'; c.lineWidth = s * 0.2; c.beginPath(); c.moveTo(0, cy); c.lineTo(0, s * 0.5); c.stroke();
+    c.strokeStyle = '#a5683a'; c.lineWidth = s * 0.15; c.stroke();
+    c.strokeStyle = 'rgba(255,225,190,.45)'; c.lineWidth = s * 0.035; c.beginPath(); c.moveTo(-s * 0.03, cy + R * 0.6); c.lineTo(-s * 0.03, s * 0.44); c.stroke();
+    // hovedet: en cirkel med et gab oeverst, drejet lidt som paa Pelles
+    c.save(); c.translate(0, cy); c.rotate(-0.35);
+    var g = c.createLinearGradient(-R, -R, R, R); g.addColorStop(0, '#e9e6df'); g.addColorStop(0.5, '#b6b9bd'); g.addColorStop(1, '#7d8286');
+    c.fillStyle = g; c.strokeStyle = '#4f5559'; c.lineWidth = Math.max(1.5, s * 0.03);
+    c.beginPath(); c.arc(0, 0, R, -Math.PI / 2 + a, -Math.PI / 2 - a + Math.PI * 2); c.lineTo(-w / 2, -R + d); c.lineTo(w / 2, -R + d); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.4)'; c.beginPath(); c.arc(-R * 0.3, R * 0.25, R * 0.28, 0, 7); c.fill();
+    c.restore();
     c.restore();
   }
-  /** Skaden med noeglen i naebbet. Naebbet sidder oeverst til hoejre i billedet. */
+  /** Skaden. Sidder hun (flyver: false), staar foedderne i y; flyver hun, er (x, y) midten, og hun haelder fremad. Naebbet er oeverst til hoejre. */
   function skade(c, o) {
     if (!o.skade) return;
-    var s = o.skade, sp = !!s.spejl;
-    c.save(); c.translate(s.x, s.y);
-    if (s.flyver) { c.rotate(-0.25); }
-    tegn(c, 'skade', 0, 0, s.s, { spejl: sp });
+    var s = o.skade;
+    c.save();
+    if (s.flyver) { c.translate(s.x, s.y); c.rotate(-0.5); tegn(c, 'skade', 0, 0, s.s); }
+    else { skygge(c, s.x, s.y, s.s * 0.4); tegn(c, 'skade', s.x, s.y, s.s, { bund: true }); }
     c.restore();
+  }
+  /** En bakke med akvarelvask, saa jorden ikke er en flad farve. */
+  function jord(c, W, y, farve, a, b) {
+    bakke(c, W, y, farve, a, b);
+    c.save(); c.beginPath(); c.moveTo(0, y + (a || 0)); c.quadraticCurveTo(W * 0.3, y - 30, W * 0.6, y); c.quadraticCurveTo(W * 0.85, y + 18, W, y + (b || -20)); c.lineTo(W, 900); c.lineTo(0, 900); c.clip();
+    for (var i = 0; i < 9; i++) { c.fillStyle = tone(farve, i % 2 ? 0.9 : 1.25, 0.14); c.beginPath(); c.ellipse(rnd() * W, y + rnd() * 300, 90 + rnd() * 160, 18 + rnd() * 40, (rnd() - 0.5) * 0.4, 0, 7); c.fill(); }
+    c.restore();
+  }
+  /** En figur, der staar paa jorden: skygge foerst, saa billedet med foedderne i y. */
+  function staar(c, n, x, y, s, valg) { skygge(c, x, y - 2, s * 0.42); tegn(c, n, x, y, s, Object.assign({ bund: true }, valg || {})); }
+  function vindue(c, x, y, b, h) {
+    rr(c, x, y, b, h, 6, '#c9e0ea', '#8a663d', 4);
+    c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.moveTo(x + 6, y + h - 6); c.lineTo(x + b * 0.5, y + 6); c.lineTo(x + b * 0.7, y + 6); c.lineTo(x + 6, y + h * 0.75); c.fill();
+    c.strokeStyle = '#8a663d'; c.lineWidth = 4; c.beginPath(); c.moveTo(x + b / 2, y); c.lineTo(x + b / 2, y + h); c.moveTo(x, y + h / 2); c.lineTo(x + b, y + h / 2); c.stroke();
+    rr(c, x - 8, y + h - 2, b + 16, 10, 3, '#d9ba8a', '#8a663d', 2);
   }
   /** Ansigtet paa en malet klat: samme plads som i Boldbanen (R = kroppens halve bredde / 2.15). */
   function klatAnsigt(c, x, y, R, side, glad) {
@@ -126,174 +147,185 @@
   /* ---------------- de ti opslag ---------------- */
   var SCENER = {
     noeddeskoven: function (c, W, H, o) {
-      himmel(c, W, H, '#c9dfe9', '#eaf0d8'); sky(c, 90, 90, 1.1); sky(c, 380, 60, 0.8); fugl(c, 250, 130, 10); fugl(c, 280, 118, 8);
-      bakke(c, W, H * 0.62, '#93bc63');
-      tegn(c, 'trae', 95, H * 0.62, 190, { bund: true }); tegn(c, 'gran', 300, H * 0.58, 150, { bund: true }); tegn(c, 'trae', 540, H * 0.6, 170, { bund: true });
-      bakke(c, W, H * 0.78, '#a9c97a', 0, 10);
-      rr(c, 180, H * 0.66, 300, 34, 14, '#b18a56'); c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = 2; c.beginPath(); c.moveTo(200, H * 0.66 + 12); c.lineTo(460, H * 0.66 + 12); c.moveTo(215, H * 0.66 + 24); c.lineTo(445, H * 0.66 + 24); c.stroke();
-      tegn(c, 'klokke', 330, H * 0.66 + 2, 54, { bund: true });
-      c.setLineDash([4, 6]); c.strokeStyle = 'rgba(94,74,58,.4)'; c.lineWidth = 2; c.beginPath(); c.arc(240, H * 0.42, 34, 0, 7); c.stroke(); c.beginPath(); c.arc(400, H * 0.36, 30, 0, 7); c.stroke(); c.setLineDash([]);
-      tegn(c, 'aeble', 240, H * 0.25, 40);
-      strø(c, 26, 0, W, H * 0.8, H * 0.98, 1); tegn(c, 'svamp', 370, H * 0.9, 36, { bund: true }); tegn(c, 'kastanje', 120, H * 0.94, 30, { bund: true });
-      tegn(c, 'pindsvin', 130, H * 0.97, 250, { bund: true });
-      taleboble(c, 205, H * 0.4, '?');
+      himmel(c, W, H, '#bcd8ea', '#eef2e0', 420); sky(c, 70, 100, 1.1); sky(c, 300, 60, 0.8); fugl(c, 210, 150, 9); fugl(c, 245, 138, 7);
+      jord(c, W, 330, '#93bc63');
+      staar(c, 'trae', 80, 340, 190); staar(c, 'gran', 320, 322, 140); staar(c, 'trae', 545, 335, 160);
+      jord(c, W, 470, '#a9c97a', 0, 10);
+      // Pelles vaerkstedsbord af en stamme, med klokken og et aeble paa
+      skygge(c, 300, 604, 150); rr(c, 170, 560, 260, 40, 16, '#b18a56', '#8a663d', 3); c.strokeStyle = 'rgba(94,74,58,.3)'; c.lineWidth = 2; c.beginPath(); c.moveTo(190, 574); c.lineTo(410, 574); c.moveTo(200, 588); c.lineTo(400, 588); c.stroke();
+      tegn(c, 'klokke', 340, 562, 60, { bund: true }); tegn(c, 'aeble', 260, 562, 42, { bund: true });
+      strø(c, 22, 0, W, 500, 760, 1); staar(c, 'svamp', 470, 700, 46); staar(c, 'kastanje', 520, 690, 34); staar(c, 'lygte', 560, 585, 46);
+      staar(c, 'pindsvin', 150, 762, 250);
       skade(c, o);
     },
     susebanen: function (c, W, H, o) {
-      himmel(c, W, H, '#8fc7e8', '#dcecf3'); sky(c, 120, 70, 1); sky(c, 420, 110, 0.8); fugl(c, 300, 60, 9);
-      bakke(c, W, H * 0.4, '#93bc63');
-      tegn(c, 'trae', 60, H * 0.42, 130, { bund: true }); tegn(c, 'gran', 560, H * 0.4, 120, { bund: true });
-      // banen: en sloejfe af sand
-      c.strokeStyle = '#e5d3ae'; c.lineWidth = 78; c.lineCap = 'round'; c.lineJoin = 'round';
-      c.beginPath(); c.moveTo(80, 720); c.quadraticCurveTo(60, 480, 220, 440); c.quadraticCurveTo(420, 400, 470, 540); c.quadraticCurveTo(520, 690, 330, 700); c.quadraticCurveTo(160, 710, 80, 720); c.stroke();
-      c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 3; c.setLineDash([16, 14]); c.beginPath(); c.moveTo(80, 720); c.quadraticCurveTo(60, 480, 220, 440); c.quadraticCurveTo(420, 400, 470, 540); c.quadraticCurveTo(520, 690, 330, 700); c.stroke(); c.setLineDash([]);
-      // daekstablen ved svinget
-      [0, 1, 2].forEach(function (i) { c.fillStyle = '#4a4239'; c.beginPath(); c.ellipse(520, 600 - i * 22, 34, 14, 0, 0, 7); c.fill(); c.fillStyle = '#6b6259'; c.beginPath(); c.ellipse(520, 600 - i * 22 - 4, 34, 14, 0, 0, 7); c.fill(); c.fillStyle = '#e5d3ae'; c.beginPath(); c.ellipse(520, 596 - i * 22, 14, 6, 0, 0, 7); c.fill(); });
-      // stoevskyer bag bilen
-      c.fillStyle = 'rgba(229,211,174,.8)'; [[300, 690, 14], [270, 700, 10], [245, 705, 7]].forEach(function (p) { c.beginPath(); c.arc(p[0], p[1], p[2], 0, 7); c.fill(); });
-      tegn(c, 'bil', 380, 690, 120, { bund: true, drej: -0.15 });
-      tegn(c, 'raev', 250, 600, 120, { bund: true });
-      tegn(c, 'pindsvin', 130, 560, 150, { bund: true });
-      strø(c, 24, 0, W, 430, 780, 0.9);
+      himmel(c, W, H, '#8fc7e8', '#e4eef2', 380); sky(c, 100, 80, 1); sky(c, 420, 120, 0.8); fugl(c, 300, 60, 9);
+      jord(c, W, 330, '#93bc63');
+      staar(c, 'trae', 60, 340, 130); staar(c, 'gran', 560, 330, 120); staar(c, 'siv', 300, 345, 60);
+      // banen: en sloejfe af sand med hvid midterstribe, som i spillet, set lidt ovenfra
+      function sloejfe() { c.beginPath(); c.moveTo(250, 720); c.quadraticCurveTo(230, 470, 380, 440); c.quadraticCurveTo(560, 420, 560, 560); c.quadraticCurveTo(560, 700, 420, 720); c.quadraticCurveTo(320, 730, 250, 720); c.closePath(); }
+      c.strokeStyle = '#d9ba8a'; c.lineWidth = 84; c.lineJoin = 'round'; sloejfe(); c.stroke(); c.strokeStyle = '#e5d3ae'; c.lineWidth = 72; sloejfe(); c.stroke();
+      c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 3; c.setLineDash([16, 14]); sloejfe(); c.stroke(); c.setLineDash([]);
+      // daekstablen ved svinget, hvor noeglen ligger
+      skygge(c, 525, 612, 46); [0, 1, 2].forEach(function (i) { var y = 605 - i * 20; c.fillStyle = '#3e3733'; c.beginPath(); c.ellipse(525, y, 34, 13, 0, 0, 7); c.fill(); c.fillStyle = '#5a524b'; c.beginPath(); c.ellipse(525, y - 5, 34, 13, 0, 0, 7); c.fill(); c.fillStyle = '#e5d3ae'; c.beginPath(); c.ellipse(525, y - 5, 13, 5, 0, 0, 7); c.fill(); });
+      // bilen paa banen med stoev bag sig
+      c.fillStyle = 'rgba(217,186,138,.8)'; [[318, 706, 13], [292, 712, 9], [270, 716, 6]].forEach(function (p) { c.beginPath(); c.arc(p[0], p[1], p[2], 0, 7); c.fill(); });
+      skygge(c, 395, 712, 50); tegn(c, 'bil', 395, 715, 118, { bund: true, drej: -0.2 });
+      strø(c, 14, 0, 220, 380, 760, 0.9); strø(c, 8, 250, W, 380, 430, 0.9);
+      staar(c, 'raev', 175, 690, 130);
+      staar(c, 'pindsvin', 90, 740, 190);
     },
     boldbanen: function (c, W, H, o) {
-      himmel(c, W, H, '#8fc7e8', '#dcecf3'); c.fillStyle = 'rgba(240,196,106,.9)'; c.beginPath(); c.arc(80, 90, 40, 0, 7); c.fill(); sky(c, 180, 120, 0.9); sky(c, 420, 70, 1);
-      bakke(c, W, H * 0.72, '#a9c97a'); c.fillStyle = '#93bc63'; c.fillRect(0, H * 0.78, W, H);
-      c.strokeStyle = '#7fa955'; c.lineWidth = 2; for (var x = 20; x < W; x += 26) { c.beginPath(); c.moveTo(x, H * 0.78); c.lineTo(x + 4, H * 0.78 - 10); c.stroke(); }
-      c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 3; c.beginPath(); c.moveTo(W / 2, H * 0.8); c.lineTo(W / 2, H * 0.96); c.stroke();
-      maal(c, 8, H * 0.78, 120, 1); maal(c, W - 8, H * 0.78, 120, -1);
-      klat(c, 'klatRoed', 200, H * 0.78, 104, 1, true); klat(c, 'klatBlaa', 380, H * 0.78, 92, -1, true);
-      tegn(c, 'pindsvin', 80, H * 0.96, 170, { bund: true });
-      tegn(c, 'bold', 540, H * 0.3, 60);
-      c.setLineDash([6, 8]); c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = 2; c.beginPath(); c.moveTo(200, H * 0.66); c.quadraticCurveTo(380, H * 0.05, 540, H * 0.3); c.stroke(); c.setLineDash([]);
+      himmel(c, W, H, '#8fc7e8', '#e4eef2', 420); c.fillStyle = '#f0c46a'; c.beginPath(); c.arc(90, 100, 42, 0, 7); c.fill(); c.fillStyle = 'rgba(240,196,106,.35)'; c.beginPath(); c.arc(90, 100, 60, 0, 7); c.fill();
+      sky(c, 200, 150, 0.9); sky(c, 400, 80, 1);
+      jord(c, W, 400, '#93bc63');
+      staar(c, 'trae', 40, 410, 120); staar(c, 'gran', 570, 400, 110);
+      // banen: klippet graes med striber, midterlinje og straffesparksfelter
+      c.fillStyle = '#a9c97a'; c.fillRect(0, 520, W, H); c.fillStyle = 'rgba(255,255,255,.08)'; for (var y = 520; y < H; y += 60) c.fillRect(0, y, W, 30);
+      c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = 4; c.beginPath(); c.moveTo(W / 2, 520); c.lineTo(W / 2, H); c.moveTo(0, 520); c.lineTo(W, 520); c.stroke(); c.beginPath(); c.arc(W / 2, 660, 60, 0, 7); c.stroke();
+      maal(c, 8, 640, 130, 1); maal(c, W - 8, 640, 130, -1);
+      // bolden hoejt oppe med tre fartstreger bag sig
+      c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = 3; c.lineCap = 'round'; [[470, 250], [455, 270], [445, 292]].forEach(function (p, i) { c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(p[0] - 30 + i * 4, p[1] + 24); c.stroke(); });
+      tegn(c, 'bold', 520, 230, 66);
+      skygge(c, 330, 640, 50); klat(c, 'klatRoed', 330, 640, 104, 1, true);
+      skygge(c, 470, 660, 44); klat(c, 'klatBlaa', 470, 660, 92, -1, true);
+      // Pelle er maalmand foran maalet til venstre
+      staar(c, 'pindsvin', 120, 740, 190);
     },
     boblehavet: function (c, W, H, o) {
-      var g = c.createLinearGradient(0, 0, 0, H * 0.7); g.addColorStop(0, '#6a5a8c'); g.addColorStop(0.5, '#d98a72'); g.addColorStop(1, '#f0c46a'); c.fillStyle = g; c.fillRect(0, 0, W, H);
-      c.fillStyle = 'rgba(240,196,106,.9)'; c.beginPath(); c.arc(430, H * 0.64, 60, 0, 7); c.fill();
-      c.fillStyle = '#5f9fc9'; c.fillRect(0, H * 0.66, W, H * 0.12);
-      c.fillStyle = 'rgba(174,211,228,.7)'; for (var i = 0; i < 12; i++) { c.beginPath(); c.ellipse(20 + i * W / 11 + (i % 2) * 20, H * 0.7 + (i % 3) * 14, 22, 5, 0, 0, 7); c.fill(); }
-      c.fillStyle = '#e5d3ae'; c.fillRect(0, H * 0.78, W, H * 0.22);
-      c.fillStyle = 'rgba(94,74,58,.08)'; for (var k = 0; k < 60; k++) { c.beginPath(); c.arc(rnd() * W, H * 0.8 + rnd() * H * 0.19, 1.5, 0, 7); c.fill(); }
-      [[120, 430, 46, '#7ab648'], [270, 300, 38, '#3f9ad6'], [372, 470, 30, '#f2c14e'], [210, 530, 22, '#ef94b8'], [528, 300, 40, '#9b7bd4']].forEach(function (b) { boble(c, b[0], b[1], b[2], b[3]); });
-      c.fillStyle = '#d95f45'; c.beginPath(); c.roundRect(262, 288, 16, 22, 4); c.fill(); c.fillStyle = PAPIR; c.fillRect(262, 288, 16, 5);
-      c.fillStyle = '#f3e9d8'; c.beginPath(); c.moveTo(106, 438); c.quadraticCurveTo(120, 410, 134, 438); c.closePath(); c.fill(); c.strokeStyle = '#b18a56'; c.lineWidth = 1.5; c.stroke();
-      c.strokeStyle = PAPIR; c.lineWidth = 3; c.lineCap = 'round'; for (var a = 0; a < 8; a++) { var v = a * Math.PI / 4; c.beginPath(); c.moveTo(372 + Math.cos(v) * 36, 470 + Math.sin(v) * 36); c.lineTo(372 + Math.cos(v) * 46, 470 + Math.sin(v) * 46); c.stroke(); }
-      tegn(c, 'dreng', 330, H * 0.95, 78, { bund: true }); tegn(c, 'pige', 420, H * 0.94, 92, { bund: true });
-      tegn(c, 'pindsvin', 140, H * 0.99, 190, { bund: true });
+      var g = c.createLinearGradient(0, 0, 0, 520); g.addColorStop(0, '#5f5a8c'); g.addColorStop(0.5, '#d98a72'); g.addColorStop(1, '#f0c46a'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+      c.fillStyle = 'rgba(255,255,255,.35)'; [[80, 380, 60, 8], [470, 420, 80, 9], [220, 450, 50, 6]].forEach(function (p) { c.beginPath(); c.ellipse(p[0], p[1], p[2], p[3], 0, 0, 7); c.fill(); });
+      // solen halvt i havet, havet med boelger, stranden med sand
+      c.fillStyle = '#f7d27a'; c.beginPath(); c.arc(400, 520, 70, Math.PI, 0); c.fill();
+      var hav = c.createLinearGradient(0, 520, 0, 620); hav.addColorStop(0, '#7fb6d6'); hav.addColorStop(1, '#4f8fb8'); c.fillStyle = hav; c.fillRect(0, 520, W, 110);
+      c.fillStyle = 'rgba(255,255,255,.5)'; for (var i = 0; i < 14; i++) { c.beginPath(); c.ellipse(20 + i * 46 + (i % 2) * 14, 540 + (i % 3) * 22, 20, 4, 0, 0, 7); c.fill(); }
+      c.fillStyle = '#e5d3ae'; c.beginPath(); c.moveTo(0, 630); c.quadraticCurveTo(300, 610, W, 632); c.lineTo(W, H); c.lineTo(0, H); c.fill();
+      c.fillStyle = 'rgba(255,255,255,.7)'; c.beginPath(); c.moveTo(0, 630); c.quadraticCurveTo(300, 610, W, 632); c.quadraticCurveTo(300, 618, 0, 636); c.fill();
+      c.fillStyle = 'rgba(94,74,58,.1)'; for (var k = 0; k < 70; k++) { c.beginPath(); c.arc(rnd() * W, 640 + rnd() * 140, 1.5, 0, 7); c.fill(); }
+      // boblerne stiger op af vandet; en skal, en sok, og noeglen i den sidste helt derude
+      [[110, 400, 46, '#7ab648'], [250, 290, 40, '#3f9ad6'], [340, 450, 30, '#f2c14e'], [190, 530, 20, '#ef94b8'], [528, 300, 40, '#9b7bd4'], [470, 480, 16, '#8fc7e8']].forEach(function (b) { boble(c, b[0], b[1], b[2], b[3]); });
+      c.fillStyle = '#f3e9d8'; c.beginPath(); c.moveTo(94, 408); c.quadraticCurveTo(110, 376, 126, 408); c.closePath(); c.fill(); c.strokeStyle = '#b18a56'; c.lineWidth = 1.5; c.stroke(); c.beginPath(); c.moveTo(110, 380); c.lineTo(104, 404); c.moveTo(110, 380); c.lineTo(116, 404); c.stroke();
+      c.fillStyle = '#d95f45'; c.beginPath(); c.roundRect(240, 276, 18, 26, 5); c.fill(); c.fillStyle = PAPIR; c.fillRect(240, 276, 18, 6);
+      c.strokeStyle = PAPIR; c.lineWidth = 3; c.lineCap = 'round'; for (var a = 0; a < 8; a++) { var v = a * Math.PI / 4; c.beginPath(); c.moveTo(340 + Math.cos(v) * 36, 450 + Math.sin(v) * 36); c.lineTo(340 + Math.cos(v) * 46, 450 + Math.sin(v) * 46); c.stroke(); }
+      staar(c, 'dreng', 360, 740, 84); staar(c, 'pige', 460, 745, 100);
+      staar(c, 'pindsvin', 150, 760, 210);
       skade(c, o);
     },
     bogstavvejen: function (c, W, H, o) {
-      himmel(c, W, H, '#8fc7e8', '#dcecf3'); sky(c, 110, 80, 1); sky(c, 400, 60, 0.7);
-      bakke(c, W, H * 0.4, '#93bc63'); tegn(c, 'trae', 70, H * 0.42, 140, { bund: true }); tegn(c, 'gran', 380, H * 0.38, 120, { bund: true });
-      // vejen af sand med bogstaverne skrevet i det
-      c.fillStyle = '#e5d3ae'; c.beginPath(); c.moveTo(0, H * 0.62); c.quadraticCurveTo(W * 0.5, H * 0.56, W, H * 0.6); c.lineTo(W, H); c.lineTo(0, H); c.fill();
-      c.strokeStyle = '#b18a56'; c.lineWidth = 7; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath(); c.moveTo(250, 720); c.lineTo(250, 630); c.lineTo(320, 720); c.lineTo(320, 630); c.stroke();
-      skilt(c, 120, 400, 'N', '#d9ba8a'); skilt(c, 300, 380, 'P', '#aed3e4'); skilt(c, 470, 400, 'S', '#f0c46a');
-      tegn(c, 'ugle', 430, 700, 120, { bund: true });
-      c.strokeStyle = '#8a663d'; c.lineWidth = 4; c.beginPath(); c.moveTo(395, 640); c.quadraticCurveTo(360, 610, 340, 640); c.stroke(); c.fillStyle = '#f3e9d8'; c.beginPath(); c.ellipse(348, 626, 14, 6, -0.6, 0, 7); c.fill();
-      tegn(c, 'pindsvin', 130, 740, 170, { bund: true });
-      strø(c, 14, 0, W, H * 0.44, H * 0.6, 0.9);
+      himmel(c, W, H, '#8fc7e8', '#e4eef2', 380); sky(c, 90, 90, 1); sky(c, 380, 60, 0.7);
+      jord(c, W, 330, '#93bc63'); staar(c, 'trae', 70, 345, 140); staar(c, 'gran', 560, 330, 120);
+      // vejen af sand, hvor Ulla skriver bogstaverne
+      c.fillStyle = '#e5d3ae'; c.beginPath(); c.moveTo(0, 470); c.quadraticCurveTo(300, 440, W, 470); c.lineTo(W, H); c.lineTo(0, H); c.fill();
+      c.fillStyle = 'rgba(94,74,58,.08)'; for (var k = 0; k < 80; k++) { c.beginPath(); c.arc(rnd() * W, 480 + rnd() * 300, 1.5, 0, 7); c.fill(); }
+      c.strokeStyle = '#b18a56'; c.lineWidth = 8; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath(); c.moveTo(260, 740); c.lineTo(260, 650); c.lineTo(330, 740); c.lineTo(330, 650); c.stroke();
+      c.strokeStyle = 'rgba(177,138,86,.5)'; c.beginPath(); c.moveTo(400, 740); c.lineTo(400, 660); c.quadraticCurveTo(470, 660, 440, 700); c.lineTo(400, 700); c.stroke();
+      // skiltene langs vejen; skaden sidder paa det sidste
+      skilt(c, 110, 460, 'N', '#d9ba8a'); skilt(c, 300, 445, 'P', '#aed3e4'); skilt(c, 470, 460, 'S', '#f0c46a');
+      strø(c, 12, 0, W, 350, 440, 0.9);
+      // Ulla med fjeren
+      staar(c, 'ugle', 450, 740, 130);
+      c.strokeStyle = '#8a663d'; c.lineWidth = 4; c.lineCap = 'round'; c.beginPath(); c.moveTo(398, 690); c.quadraticCurveTo(370, 660, 350, 690); c.stroke(); c.fillStyle = '#f3e9d8'; c.beginPath(); c.ellipse(358, 674, 16, 7, -0.7, 0, 7); c.fill(); c.strokeStyle = '#b18a56'; c.lineWidth = 1; c.beginPath(); c.moveTo(346, 686); c.lineTo(370, 662); c.stroke();
+      staar(c, 'pindsvin', 130, 760, 200);
       skade(c, o);
     },
     rimhulen: function (c, W, H, o) {
-      // hulen: moerkt loft og vaegge, lys ved udgangen til hoejre
-      c.fillStyle = '#4a3a2c'; c.fillRect(0, 0, W, H);
-      var g = c.createRadialGradient(560, 200, 20, 560, 200, 420); g.addColorStop(0, '#dcecf3'); g.addColorStop(0.35, '#93bc63'); g.addColorStop(0.5, 'rgba(74,58,44,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H);
-      c.fillStyle = '#5e4a3a'; c.beginPath(); c.moveTo(0, 0); c.lineTo(W, 0); c.lineTo(W, 60); c.quadraticCurveTo(480, 120, 470, 200); c.quadraticCurveTo(460, 330, W, 360); c.lineTo(W, H); c.lineTo(0, H); c.closePath(); c.fill();
-      c.fillStyle = '#6b5545'; c.beginPath(); c.moveTo(0, 0); c.lineTo(W, 0); c.lineTo(W, 40); c.quadraticCurveTo(300, 90, 0, 60); c.fill();
-      // baal og lyset fra det
-      var b = c.createRadialGradient(180, 600, 10, 180, 600, 260); b.addColorStop(0, 'rgba(240,196,106,.55)'); b.addColorStop(1, 'rgba(240,196,106,0)'); c.fillStyle = b; c.fillRect(0, 300, W, 480);
-      c.fillStyle = '#8a663d'; [[-30, 0.4], [30, -0.4]].forEach(function (p) { c.save(); c.translate(180, 640); c.rotate(p[1]); c.fillRect(p[0] - 30, -6, 60, 12); c.restore(); });
-      c.fillStyle = '#e08a52'; c.beginPath(); c.moveTo(150, 632); c.quadraticCurveTo(160, 580, 180, 560); c.quadraticCurveTo(200, 590, 210, 632); c.fill(); c.fillStyle = GUL; c.beginPath(); c.moveTo(166, 632); c.quadraticCurveTo(175, 600, 182, 588); c.quadraticCurveTo(190, 604, 196, 632); c.fill();
-      c.fillStyle = '#6b5545'; c.fillRect(0, 660, W, H);
-      // rimkortene paa gulvet
-      [[240, 690, 'kat'], [330, 700, 'hat']].forEach(function (k) { rr(c, k[0] - 30, k[1] - 38, 60, 76, 8, PAPIR, KANT, 2); tegn(c, k[2], k[0], k[1] - 2, 42); });
-      tegn(c, 'bjoern', 420, 700, 190, { bund: true });
-      tegn(c, 'pindsvin', 100, 730, 150, { bund: true });
+      // hulen set indefra: klippevaegge, en aabning til hoejre ud til dagen, hvor laden ligger
+      himmel(c, W, H, '#8fc7e8', '#e4eef2', 300); jord(c, W, 300, '#93bc63');
+      // laden ude paa marken
+      rr(c, 470, 250, 90, 70, 4, '#c8624a', KANT, 2); c.fillStyle = '#8a663d'; c.beginPath(); c.moveTo(462, 252); c.lineTo(515, 212); c.lineTo(568, 252); c.closePath(); c.fill(); rr(c, 500, 280, 30, 40, 3, '#5e4a3a');
+      vask(c, [[0, 0], [W, 0], [W, 70], [470, 110], [410, 230], [420, 360], [470, 450], [W, 480], [W, H], [0, H]], '#6b5545');
+      vask(c, [[0, 0], [W, 0], [W, 50], [430, 40], [300, 100], [120, 60], [0, 90]], '#5e4a3a');
+      vask(c, [[0, 200], [60, 180], [110, 300], [40, 420], [0, 400]], '#5e4a3a');
+      c.fillStyle = '#4a3a2c'; c.fillRect(0, 660, W, H); c.fillStyle = 'rgba(255,255,255,.05)'; for (var i = 0; i < 40; i++) { c.beginPath(); c.ellipse(rnd() * W, 660 + rnd() * 120, 10 + rnd() * 30, 3 + rnd() * 4, 0, 0, 7); c.fill(); }
+      // baalet og dets lys
+      var b = c.createRadialGradient(200, 640, 10, 200, 640, 280); b.addColorStop(0, 'rgba(240,196,106,.5)'); b.addColorStop(1, 'rgba(240,196,106,0)'); c.fillStyle = b; c.fillRect(0, 300, W, 480);
+      c.fillStyle = '#8a663d'; [[-1, 0.35], [1, -0.35]].forEach(function (p) { c.save(); c.translate(200, 660); c.rotate(p[1]); c.beginPath(); c.roundRect(-36, -7, 72, 14, 6); c.fill(); c.restore(); });
+      c.fillStyle = '#e08a52'; c.beginPath(); c.moveTo(168, 654); c.quadraticCurveTo(178, 590, 200, 570); c.quadraticCurveTo(222, 600, 232, 654); c.fill(); c.fillStyle = GUL; c.beginPath(); c.moveTo(184, 654); c.quadraticCurveTo(192, 616, 200, 600); c.quadraticCurveTo(210, 620, 216, 654); c.fill();
+      // rimkortene paa gulvet, som i spillet
+      [[290, 700, 'kat'], [370, 712, 'hat']].forEach(function (k) { c.save(); c.translate(k[0], k[1]); c.rotate((k[0] - 330) / 600); rr(c, -30, -38, 60, 76, 8, PAPIR, KANT, 2); tegn(c, k[2], 0, -2, 42); c.restore(); });
+      staar(c, 'bjoern', 470, 735, 200);
+      staar(c, 'pindsvin', 100, 760, 180);
       skade(c, o);
     },
     vrimleskoven: function (c, W, H, o) {
-      himmel(c, W, H, '#8fc7e8', '#dcecf3'); sky(c, 120, 60, 0.9); fugl(c, 300, 80, 9);
-      bakke(c, W, H * 0.36, '#93bc63');
-      tegn(c, 'hus1', 120, H * 0.36, 130, { bund: true }); tegn(c, 'hus3', 300, H * 0.35, 130, { bund: true }); tegn(c, 'hus2', 490, H * 0.36, 130, { bund: true });
-      tegn(c, 'trae', 30, H * 0.4, 110, { bund: true }); tegn(c, 'gran', 570, H * 0.37, 100, { bund: true });
-      c.fillStyle = '#e5d3ae'; c.fillRect(0, H * 0.42, W, H * 0.16); c.strokeStyle = 'rgba(94,74,58,.16)'; c.lineWidth = 1.5; for (var r = 0; r < 4; r++) for (var x = (r % 2) * 21 - 10; x < W; x += 42) { c.beginPath(); c.roundRect(x, H * 0.42 + 4 + r * 24, 36, 20, 6); c.stroke(); }
-      c.fillStyle = '#a9c97a'; c.fillRect(0, H * 0.58, W, H);
-      tegn(c, 'bod', 110, H * 0.57, 150, { bund: true }); tegn(c, 'broend', 330, H * 0.56, 70, { bund: true }); tegn(c, 'baenk', 500, H * 0.56, 100, { bund: true });
-      // toerresnoren, som skaden sidder paa
-      c.strokeStyle = '#8a663d'; c.lineWidth = 4; c.beginPath(); c.moveTo(210, 500); c.lineTo(210, 420); c.moveTo(390, 500); c.lineTo(390, 420); c.stroke(); c.strokeStyle = KANT; c.lineWidth = 2; c.beginPath(); c.moveTo(210, 424); c.quadraticCurveTo(300, 440, 390, 424); c.stroke();
-      ['#d95f45', '#8fc7e8', '#f0c46a'].forEach(function (f, i) { rr(c, 232 + i * 38, 428 + (i % 2) * 4, 16, 20, 3, f, KANT, 2); });
-      // stakittet med noeglen bag
-      var x0 = 400, x1 = 560, y = 660, h = 40;
-      c.strokeStyle = '#b18a56'; c.lineWidth = 4; c.beginPath(); c.moveTo(x0, y - h * 0.7); c.lineTo(x1, y - h * 0.7); c.moveTo(x0, y - h * 0.3); c.lineTo(x1, y - h * 0.3); c.stroke();
-      noegle(c, o.noegle.x, o.noegle.y, o.noegle.s, o.noegle.v); o.noegleTegnet = true;
+      himmel(c, W, H, '#8fc7e8', '#e4eef2', 300); sky(c, 100, 60, 0.9); fugl(c, 300, 90, 9);
+      jord(c, W, 280, '#93bc63');
+      staar(c, 'trae', 40, 300, 110); staar(c, 'hus1', 130, 290, 130); staar(c, 'hus3', 300, 282, 130); staar(c, 'hus2', 480, 288, 130); staar(c, 'gran', 575, 292, 100);
+      // brostensvejen og pladsen med boden, broenden og baenken
+      c.fillStyle = '#e5d3ae'; c.fillRect(0, 330, W, 120); c.strokeStyle = 'rgba(94,74,58,.16)'; c.lineWidth = 1.5; for (var r = 0; r < 5; r++) for (var x = (r % 2) * 21 - 10; x < W; x += 42) { c.beginPath(); c.roundRect(x, 334 + r * 24, 36, 20, 6); c.stroke(); }
+      jord(c, W, 450, '#a9c97a', 0, 0);
+      staar(c, 'bod', 110, 450, 160); staar(c, 'broend', 330, 452, 84); staar(c, 'baenk', 500, 450, 110);
+      // tingene ligger i vinduer, paa baenken og bag hegnet, som i spillet
+      tegn(c, 'kat', 486, 226, 30); tegn(c, 'bold', 512, 428, 30); tegn(c, 'and', 372, 440, 34); tegn(c, 'hat', 150, 370, 34);
+      // toerresnoren, hvor skaden sad: nu er der kun en fjer
+      c.strokeStyle = '#8a663d'; c.lineWidth = 5; c.lineCap = 'round'; c.beginPath(); c.moveTo(200, 590); c.lineTo(200, 490); c.moveTo(400, 590); c.lineTo(400, 490); c.stroke(); c.strokeStyle = KANT; c.lineWidth = 2; c.beginPath(); c.moveTo(200, 494); c.quadraticCurveTo(300, 512, 400, 494); c.stroke();
+      ['#d95f45', '#8fc7e8', '#f0c46a'].forEach(function (f, i) { rr(c, 236 + i * 44, 500 + (i % 2) * 4, 18, 24, 4, f, KANT, 2); });
+      c.save(); c.translate(300, 560); c.rotate(0.5); c.fillStyle = KANT; c.beginPath(); c.ellipse(0, 0, 5, 18, 0, 0, 7); c.fill(); c.strokeStyle = PAPIR; c.lineWidth = 1; c.beginPath(); c.moveTo(0, -16); c.lineTo(0, 14); c.stroke(); c.restore();
+      // stakittet med hunden bag
+      tegn(c, 'hund', 480, 610, 44);
+      var x0 = 410, x1 = 560, y = 660, h = 44; c.strokeStyle = '#b18a56'; c.lineWidth = 4; c.beginPath(); c.moveTo(x0, y - h * 0.7); c.lineTo(x1, y - h * 0.7); c.moveTo(x0, y - h * 0.3); c.lineTo(x1, y - h * 0.3); c.stroke();
       for (var px = x0 + 5; px < x1; px += 20) { c.fillStyle = '#d9ba8a'; c.beginPath(); c.moveTo(px - 5, y); c.lineTo(px - 5, y - h * 0.85); c.lineTo(px, y - h); c.lineTo(px + 5, y - h * 0.85); c.lineTo(px + 5, y); c.closePath(); c.fill(); c.strokeStyle = tone('#d9ba8a', 0.65, 0.6); c.lineWidth = 2; c.stroke(); }
-      // ting overalt, som i spillet
-      tegn(c, 'kat', 150, 560, 40); tegn(c, 'and', 260, 590, 36); tegn(c, 'hund', 470, 600, 40); tegn(c, 'tiger', 60, 610, 40); tegn(c, 'bold', 560, 590, 34); tegn(c, 'hat', 330, 640, 36); tegn(c, 'ugle', 40, 700, 44, { bund: true });
-      c.fillStyle = KANT; c.beginPath(); c.ellipse(300, 560, 4, 12, 0.6, 0, 7); c.fill();  // fjeren, der er tilbage
-      strø(c, 24, 0, W, 600, 780, 0.9);
-      tegn(c, 'kanin', 240, 760, 110, { bund: true });
-      tegn(c, 'pindsvin', 110, 775, 150, { bund: true });
+      strø(c, 20, 0, W, 600, 770, 0.9);
+      staar(c, 'kanin', 270, 745, 120);
+      staar(c, 'pindsvin', 110, 765, 180);
       skade(c, o);
     },
     tegnestuen: function (c, W, H, o) {
-      c.fillStyle = '#f3e9d8'; c.fillRect(0, 0, W, H); c.fillStyle = '#d9ba8a'; c.fillRect(0, H * 0.7, W, H);
-      c.strokeStyle = 'rgba(94,74,58,.2)'; c.lineWidth = 2; for (var y = H * 0.7 + 20; y < H; y += 26) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
-      rr(c, 60, 80, 130, 160, 8, '#aed3e4', KANT, 3); c.strokeStyle = KANT; c.lineWidth = 2; c.beginPath(); c.moveTo(125, 80); c.lineTo(125, 240); c.moveTo(60, 160); c.lineTo(190, 160); c.stroke();
-      // staffeliet med plakaten
-      c.strokeStyle = '#8a663d'; c.lineWidth = 8; c.lineCap = 'round'; c.beginPath(); c.moveTo(330, 700); c.lineTo(380, 200); c.moveTo(500, 700); c.lineTo(450, 200); c.moveTo(415, 700); c.lineTo(415, 520); c.stroke();
-      rr(c, 300, 230, 230, 290, 6, PAPIR, KANT, 3);
-      noegle(c, 415, 380, 110, 0.5);
-      c.fillStyle = KANT; c.font = '800 30px ui-rounded, system-ui, sans-serif'; c.textAlign = 'center'; c.fillText('?', 500, 490);
-      // malerboetter, den ene med noeglen i
-      [[120, 690, '#d95f45'], [190, 700, '#5f9fc9'], [548, 690, '#7ab648']].forEach(function (b) { rr(c, b[0] - 26, b[1] - 50, 52, 50, 6, '#b8b2a4', KANT, 2.5); c.fillStyle = b[2]; c.beginPath(); c.ellipse(b[0], b[1] - 50, 26, 8, 0, 0, 7); c.fill(); });
-      tegn(c, 'robot', 250, 700, 130, { bund: true });
-      c.strokeStyle = '#8a663d'; c.lineWidth = 5; c.beginPath(); c.moveTo(300, 560); c.lineTo(330, 500); c.stroke(); c.fillStyle = '#d95f45'; c.beginPath(); c.ellipse(334, 494, 8, 12, 0.5, 0, 7); c.fill();
-      tegn(c, 'pindsvin', 100, 620, 150, { bund: true });
+      // vaerkstedet: lys vaeg, vindue med udsigt, plankegulv
+      c.fillStyle = '#f3e9d8'; c.fillRect(0, 0, W, H); c.fillStyle = 'rgba(94,74,58,.05)'; for (var i = 0; i < 14; i++) { c.beginPath(); c.ellipse(rnd() * W, rnd() * 540, 60 + rnd() * 120, 20 + rnd() * 50, 0, 0, 7); c.fill(); }
+      c.save(); c.beginPath(); c.rect(60, 90, 150, 170); c.clip(); himmel(c, W, H, '#8fc7e8', '#e4eef2', 300); jord(c, W, 200, '#93bc63'); tegn(c, 'trae', 100, 205, 90, { bund: true }); c.restore(); vindue(c, 60, 90, 150, 170);
+      vask(c, [[0, 545], [W, 545], [W, H], [0, H]], '#d9ba8a'); c.strokeStyle = 'rgba(94,74,58,.22)'; c.lineWidth = 2; for (var y = 575; y < H; y += 32) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+      // staffeliet med plakaten af noeglen
+      skygge(c, 415, 700, 110);
+      c.strokeStyle = '#8a663d'; c.lineWidth = 9; c.lineCap = 'round'; c.beginPath(); c.moveTo(335, 700); c.lineTo(385, 190); c.moveTo(495, 700); c.lineTo(445, 190); c.moveTo(415, 700); c.lineTo(415, 520); c.moveTo(330, 505); c.lineTo(500, 505); c.stroke();
+      rr(c, 300, 225, 230, 285, 4, PAPIR, KANT, 3); c.fillStyle = 'rgba(94,74,58,.08)'; c.fillRect(300, 500, 230, 10);
+      noegle(c, 415, 350, 150, 0.45);
+      c.strokeStyle = '#d95f45'; c.lineWidth = 3; c.lineCap = 'round'; c.beginPath(); c.arc(415, 360, 95, 0, 7); c.stroke();
+      // malerboetter paa gulvet; i den groenne staar noeglen
+      [[110, 700, '#d95f45'], [180, 712, '#5f9fc9'], [548, 700, '#7ab648']].forEach(function (b) { skygge(c, b[0], b[1] + 2, 30); rr(c, b[0] - 26, b[1] - 50, 52, 50, 6, '#b8b2a4', KANT, 2.5); c.fillStyle = b[2]; c.beginPath(); c.ellipse(b[0], b[1] - 50, 26, 8, 0, 0, 7); c.fill(); });
+      // penslen laener sig op ad staffeliet
+      c.strokeStyle = '#8a663d'; c.lineWidth = 6; c.beginPath(); c.moveTo(318, 700); c.lineTo(345, 600); c.stroke(); c.fillStyle = '#5f9fc9'; c.beginPath(); c.ellipse(348, 592, 8, 14, 0.27, 0, 7); c.fill();
+      staar(c, 'robot', 250, 720, 130);
+      staar(c, 'pindsvin', 100, 640, 170);
     },
     stjerneuret: function (c, W, H, o) {
-      var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2a2f5a'); g.addColorStop(0.7, '#4a4a7a'); g.addColorStop(1, '#5e6a78'); c.fillStyle = g; c.fillRect(0, 0, W, H);
-      for (var i = 0; i < 60; i++) { c.fillStyle = 'rgba(255,255,255,' + (0.4 + rnd() * 0.6) + ')'; c.beginPath(); c.arc(rnd() * W, rnd() * H * 0.6, 1 + rnd() * 1.5, 0, 7); c.fill(); }
-      stjerne(c, 90, 90, 12); stjerne(c, 520, 60, 9); stjerne(c, 470, 400, 8);
+      var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#22284f'); g.addColorStop(0.65, '#3f4573'); g.addColorStop(1, '#5a5f80'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+      for (var i = 0; i < 70; i++) { c.fillStyle = 'rgba(255,255,255,' + (0.35 + rnd() * 0.65) + ')'; c.beginPath(); c.arc(rnd() * W, rnd() * 560, 0.8 + rnd() * 1.6, 0, 7); c.fill(); }
+      stjerne(c, 70, 110, 11); stjerne(c, 540, 70, 8); stjerne(c, 500, 430, 7); stjerne(c, 150, 420, 6);
       // det store ur med viserne paa syv
+      c.fillStyle = 'rgba(240,196,106,.18)'; c.beginPath(); c.arc(300, 250, 150, 0, 7); c.fill();
       c.fillStyle = '#f3e9d8'; c.beginPath(); c.arc(300, 250, 120, 0, 7); c.fill(); c.strokeStyle = GUL; c.lineWidth = 8; c.stroke();
       for (var t = 0; t < 12; t++) { var v = t * Math.PI / 6; c.fillStyle = KANT; c.beginPath(); c.arc(300 + Math.cos(v) * 100, 250 + Math.sin(v) * 100, t % 3 === 0 ? 6 : 3.5, 0, 7); c.fill(); }
-      c.strokeStyle = KANT; c.lineWidth = 8; c.lineCap = 'round'; c.beginPath(); c.moveTo(300, 250); c.lineTo(300 + Math.cos(Math.PI * 7 / 6 - Math.PI / 2) * 60, 250 + Math.sin(Math.PI * 7 / 6 - Math.PI / 2) * 60); c.stroke(); c.lineWidth = 5; c.beginPath(); c.moveTo(300, 250); c.lineTo(300, 160); c.stroke();
-      // planeter
+      c.strokeStyle = KANT; c.lineWidth = 8; c.lineCap = 'round'; c.beginPath(); c.moveTo(300, 250); c.lineTo(300 + Math.cos(Math.PI * 7 / 6 - Math.PI / 2) * 60, 250 + Math.sin(Math.PI * 7 / 6 - Math.PI / 2) * 60); c.stroke(); c.lineWidth = 5; c.beginPath(); c.moveTo(300, 250); c.lineTo(300, 160); c.stroke(); c.fillStyle = KANT; c.beginPath(); c.arc(300, 250, 8, 0, 7); c.fill();
+      // planeter og Milo, der svaever
       c.fillStyle = '#e08a52'; c.beginPath(); c.arc(520, 200, 28, 0, 7); c.fill(); c.strokeStyle = '#f0c46a'; c.lineWidth = 4; c.beginPath(); c.ellipse(520, 200, 44, 10, -0.3, 0, 7); c.stroke();
-      c.fillStyle = '#5f9fc9'; c.beginPath(); c.arc(80, 300, 22, 0, 7); c.fill();
-      tegn(c, 'rummus', 470, 330, 120);
-      // jorden: bakke, trae, Pelle sover, et lille hus langt vaek
-      bakke(c, W, H * 0.7, '#3f5a3a');
-      c.fillStyle = '#4f6f46'; c.beginPath(); c.moveTo(0, H * 0.72); c.quadraticCurveTo(80, H * 0.66, 160, H * 0.71); c.lineTo(160, H); c.lineTo(0, H); c.fill();
-      rr(c, 70, 530, 44, 34, 4, '#e5d3ae', KANT, 2); c.fillStyle = '#d95f45'; c.beginPath(); c.moveTo(64, 532); c.lineTo(92, 508); c.lineTo(120, 532); c.closePath(); c.fill(); c.strokeStyle = KANT; c.lineWidth = 2; c.stroke(); rr(c, 100, 508, 8, 16, 1, '#8a663d', KANT, 1.5);
-      c.fillStyle = GUL; c.fillRect(82, 542, 8, 8); c.fillRect(96, 542, 8, 8);
-      tegn(c, 'trae', 440, H * 0.76, 170, { bund: true });
-      tegn(c, 'pindsvin', 330, H * 0.9, 150, { bund: true, drej: -0.35 });
-      c.fillStyle = PAPIR; c.font = '800 26px ui-rounded, system-ui, sans-serif'; c.textAlign = 'center'; c.fillText('z', 420, 560); c.font = '800 34px ui-rounded, system-ui, sans-serif'; c.fillText('z', 445, 530);
+      c.fillStyle = '#5f9fc9'; c.beginPath(); c.arc(70, 300, 22, 0, 7); c.fill(); c.fillStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.arc(62, 292, 8, 0, 7); c.fill();
+      tegn(c, 'rummus', 480, 380, 120);
+      // jorden: moerke bakker, et lille hus langt vaek (Skovkoekkenet, hvor skaden sidder), traeet Pelle sover under
+      jord(c, W, 560, '#3a5236'); c.fillStyle = '#44603f'; c.beginPath(); c.moveTo(0, 600); c.quadraticCurveTo(120, 560, 260, 610); c.lineTo(260, H); c.lineTo(0, H); c.fill();
+      tegn(c, 'hus', 100, 565, 90, { bund: true }); c.fillStyle = 'rgba(240,196,106,.9)'; c.fillRect(84, 545, 8, 9); c.fillRect(110, 545, 8, 9);
+      staar(c, 'trae', 430, 610, 180);
+      skygge(c, 320, 700, 90); tegn(c, 'pindsvin', 330, 700, 160, { bund: true, drej: -0.22 });
+      c.fillStyle = 'rgba(248,241,230,.85)'; c.textAlign = 'center'; [[400, 560, 22], [418, 530, 28], [440, 495, 34]].forEach(function (z) { c.font = '800 ' + z[2] + 'px ui-rounded, system-ui, sans-serif'; c.fillText('z', z[0], z[1]); });
+      skade(c, o);
     },
     skovkoekkenet: function (c, W, H, o) {
-      // koekkenet: vaeg, vindue med morgenlys, taget oeverst med skaden
-      c.fillStyle = '#f3e9d8'; c.fillRect(0, 0, W, H);
-      c.fillStyle = '#e5d3ae'; c.fillRect(0, 0, W, 150); c.strokeStyle = '#b18a56'; c.lineWidth = 6; for (var x = 0; x <= W; x += 100) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x + 50, 150); c.stroke(); }
-      c.fillStyle = '#8a663d'; c.fillRect(0, 145, W, 16);
-      rr(c, 380, 200, 160, 130, 8, '#8fc7e8', KANT, 3); c.strokeStyle = KANT; c.lineWidth = 2; c.beginPath(); c.moveTo(460, 200); c.lineTo(460, 330); c.moveTo(380, 265); c.lineTo(540, 265); c.stroke(); c.fillStyle = GUL; c.beginPath(); c.arc(420, 240, 18, 0, 7); c.fill();
-      // Gustav bag komfuret: kun hovedet og skuldrene stikker op over pladen, panden damper
-      tegn(c, 'gris', 115, 440, 130, { bund: true });
-      rr(c, 30, 400, 170, 90, 10, '#b8b2a4', KANT, 3); rr(c, 30, 396, 170, 14, 6, '#d9ba8a', KANT, 2);
-      c.fillStyle = '#4a4239'; c.beginPath(); c.ellipse(120, 403, 34, 9, 0, 0, 7); c.fill(); c.strokeStyle = '#4a4239'; c.lineWidth = 5; c.lineCap = 'round'; c.beginPath(); c.moveTo(152, 401); c.lineTo(184, 392); c.stroke();
-      c.fillStyle = GUL; c.beginPath(); c.ellipse(120, 401, 22, 5, 0, 0, 7); c.fill();
-      rr(c, 60, 430, 50, 44, 6, '#8a8377', KANT, 2); c.fillStyle = '#e08a52'; c.fillRect(66, 448, 38, 14);
-      c.fillStyle = 'rgba(255,255,255,.75)'; [[112, 380, 7], [120, 364, 9], [110, 344, 11]].forEach(function (p) { c.beginPath(); c.arc(p[0], p[1], p[2], 0, 7); c.fill(); });
-      // bordet med pandekager og gaesterne rundt om
-      c.fillStyle = '#d9ba8a'; c.beginPath(); c.ellipse(340, 560, 230, 70, 0, 0, 7); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke();
-      c.fillStyle = '#b18a56'; [150, 530].forEach(function (bx) { c.fillRect(bx, 600, 14, 120); });
-      tegn(c, 'pandekager', 340, 560, 90);
-      tegn(c, 'raev', 250, 520, 70, { bund: true }); tegn(c, 'ugle', 420, 520, 56, { bund: true }); tegn(c, 'bjoern', 500, 530, 76, { bund: true });
-      klat(c, 'klatRoed', 200, 560, 56, 1, false); klat(c, 'klatBlaa', 480, 560, 52, -1, true);
-      tegn(c, 'dreng', 300, 640, 44, { bund: true }); tegn(c, 'pige', 400, 640, 50, { bund: true }); tegn(c, 'kanin', 340, 630, 52, { bund: true });
-      tegn(c, 'robot', 560, 640, 60, { bund: true }); tegn(c, 'rummus', 560, 330, 60);
-      tegn(c, 'pindsvin', 200, 770, 170, { bund: true });
+      // morgen uden for Skovkoekkenet: huset, boden med Gustav og pandekagerne, det lange bord med alle vennerne
+      himmel(c, W, H, '#f7dcc0', '#c9e0ea', 380); c.fillStyle = '#f7d27a'; c.beginPath(); c.arc(520, 120, 40, 0, 7); c.fill(); c.fillStyle = 'rgba(247,210,122,.3)'; c.beginPath(); c.arc(520, 120, 60, 0, 7); c.fill();
+      sky(c, 80, 90, 0.9); fugl(c, 300, 130, 8);
+      jord(c, W, 400, '#93bc63'); staar(c, 'gran', 40, 410, 110);
+      staar(c, 'hus', 190, 450, 250);
+      jord(c, W, 520, '#a9c97a', 0, 0);
+      staar(c, 'bod', 460, 610, 190); tegn(c, 'gris', 462, 548, 74); tegn(c, 'pandekager', 470, 592, 56);
+      // det lange bord
+      skygge(c, 260, 690, 200); c.fillStyle = '#b18a56'; [80, 400].forEach(function (bx) { c.fillRect(bx, 640, 14, 90); }); rr(c, 40, 615, 420, 30, 8, '#d9ba8a', '#8a663d', 3);
+      tegn(c, 'pandekager', 250, 612, 56); tegn(c, 'pandekager', 120, 612, 44); tegn(c, 'aeble', 360, 612, 30);
+      // vennerne bag bordet ...
+      staar(c, 'raev', 90, 620, 90); staar(c, 'ugle', 180, 618, 66); staar(c, 'bjoern', 300, 622, 110); skygge(c, 400, 620, 30); klat(c, 'klatRoed', 400, 620, 62, 1, true);
+      // ... og foran det
+      staar(c, 'dreng', 330, 740, 62); staar(c, 'pige', 400, 742, 72); staar(c, 'kanin', 250, 745, 84); skygge(c, 520, 735, 28); klat(c, 'klatBlaa', 520, 735, 58, -1, true); staar(c, 'robot', 575, 748, 72);
+      tegn(c, 'rummus', 545, 300, 80); c.fillStyle = 'rgba(255,255,255,.6)'; [[590, 250], [510, 250], [560, 360]].forEach(function (p) { stjerne(c, p[0], p[1], 5, 'rgba(255,255,255,.7)'); });
+      staar(c, 'pindsvin', 110, 775, 190);
       skade(c, o);
     }
   };
