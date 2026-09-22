@@ -37,7 +37,7 @@
   // De malede figurer i billeder/ (akvarel, samme stil som resten af spillene). En figur, der
   // staar her, tegnes malet; gang, svimmel og jubel laves i kode paa det ene billede. De andre
   // bruger Kenneys sprites som foer. Mangler et billede, falder figuren tilbage til Kenney.
-  var MALEDE = ['dreng'];
+  var MALEDE = ['dreng', 'pige'];
   // Alle poser hentes med det samme, saa de er klar foer foerste bane
   var ALLE_SPRITES = MALEDE.map(function (f) { return 'billeder/' + f + '.png'; });
   ['dreng', 'pige'].forEach(function (f) { ['idle', 'walk1', 'walk2', 'hurt', 'cheer1', 'cheer2'].forEach(function (p) { ALLE_SPRITES.push('../../assets/kenney/' + f + '_' + p + '.png'); }); });
