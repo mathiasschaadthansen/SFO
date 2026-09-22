@@ -10,9 +10,11 @@ aldrig med navnet paa en kunstner, en bog eller et spil). Canva giver den
 bruger, der laver et billede, ret til at bruge det, se Canvas Content License
 Agreement. Der er ingen tredjepartsfigurer i dem.
 
-Efterbehandling: den hvide baggrund er skaaret fra i kode, billedet er
+Efterbehandling: den hvide baggrund er skaaret fra i kode, en lille
+signatur, generatoren havde sat ved skoen, er fjernet, billedet er
 beskaaret til figuren, skaleret til 320 px paa den lange led og gemt som
-8-bit PNG med palet (Pillow).
+8-bit PNG med palet (Pillow). Drengen er den af de fire kandidater, som
+projektets ejer valgte.
 
 Der er ét billede pr. figur. Gang, svimmelhed og jubel laves i kode paa det
 ene billede (vip, hop, stjerner). Farven, barnet vaelger, er stadig maatten
