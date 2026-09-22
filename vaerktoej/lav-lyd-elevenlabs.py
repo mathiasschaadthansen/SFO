@@ -20,14 +20,15 @@ Valg:
     --alle           lav ogsaa klip der findes i forvejen
     --registrer      lav ikke noget, men skriv klip.json og sw.js ud fra de mp3-filer der ligger i lyd/
                      (bruges naar klippene er lavet et andet sted, fx i en Claude-chat med ElevenLabs)
-    --spil <navn>    bogstaver (standard), restaurant, klokken eller maskinen
+    --spil <navn>    bogstaver (standard), restaurant, klokken, maskinen eller bog (Bogen om Noeddeskoven, bog/lyd/)
     --proev          vis hvad der ville blive lavet, uden at kalde ElevenLabs
 """
 import json, os, re, sys, time, urllib.parse, urllib.request, urllib.error
 
 ROD = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-SPIL = sys.argv[sys.argv.index('--spil') + 1] if '--spil' in sys.argv else 'bogstaver'   # bogstaver | restaurant | klokken | maskinen
-UD = os.path.join(ROD, 'games', SPIL, 'lyd')
+SPIL = sys.argv[sys.argv.index('--spil') + 1] if '--spil' in sys.argv else 'bogstaver'   # bogstaver | restaurant | klokken | maskinen | bog
+MAPPE = 'bog' if SPIL == 'bog' else 'games/' + SPIL      # bogen ligger ikke under games/
+UD = os.path.join(ROD, MAPPE, 'lyd')
 API = 'https://api.elevenlabs.io/v1'
 
 # Bogstavernes navne som de siges. Ret her hvis et navn udtales forkert.
@@ -110,7 +111,26 @@ def maskinen():
             ('del_kanon.mp3', 'Kanonen skyder kuglen af sted!'), ('del_tragt.mp3', 'Tragten fanger kuglen.')]
 
 
+def bog():
+    """Bogen om Noeddeskoven: ét klip pr. opslag, teksten og rimet i én omgang, laest fra bog.js.
+    Bogstavnavne skrives, som de siges (æn, pe, æs), og "..." bliver til en laengere pause."""
+    import subprocess
+    kode = ("const { Bog } = require(%r);"
+            "console.log(JSON.stringify(Bog.OPSLAG.map(o => [o.id + '.mp3', o.tekst.join(' ') + ' … ' + o.rim.join(' ')])));"
+            ) % os.path.join(ROD, 'bog', 'js', 'bog.js')
+    ret = [('...', '…'), ('N som i nøgle', 'Æn som i nøgle'), ('et stort N', 'et stort æn'), ('P som i Pelle', 'Pe som i Pelle'),
+           ('S som i …', 'Æs som i …'), ('Ulla skriver N og P,', 'Ulla skriver æn og pe,')]
+    ud = []
+    for fil, tekst in json.loads(subprocess.check_output(['node', '-e', kode])):
+        for a, b in ret:
+            tekst = tekst.replace(a, b)
+        ud.append((fil, tekst))
+    return ud
+
+
 def opgaver(kun):
+    if SPIL == 'bog':
+        return bog()
     if SPIL == 'maskinen':
         return maskinen()
     if SPIL == 'restaurant':
@@ -202,9 +222,9 @@ def registrer():
     json.dump(klip, open(os.path.join(UD, 'klip.json'), 'w'), indent=0)
     p = os.path.join(ROD, 'sw.js')
     s = open(p, encoding='utf-8').read()
-    s = re.sub(r"  'games/%s/lyd/[^']+\.mp3',\n" % SPIL, '', s)
-    linjer = ''.join("  'games/%s/lyd/%s',\n" % (SPIL, f) for f in klip)
-    s = s.replace("  'games/%s/lyd/klip.json',\n" % SPIL, "  'games/%s/lyd/klip.json',\n" % SPIL + linjer)
+    s = re.sub(r"  '%s/lyd/[^']+\.mp3',\n" % MAPPE, '', s)
+    linjer = ''.join("  '%s/lyd/%s',\n" % (MAPPE, f) for f in klip)
+    s = s.replace("  '%s/lyd/klip.json',\n" % MAPPE, "  '%s/lyd/klip.json',\n" % MAPPE + linjer)
     open(p, 'w', encoding='utf-8').write(s)
     forventet = set(f for f, _ in opgaver(None))
     mangler = sorted(forventet - set(klip))

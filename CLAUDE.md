@@ -109,7 +109,10 @@ Bogen er ikke et spil: den ligger forrest på forsiden, har ingen knap ind i
 spillene (kun linjen "Besøg mig på …"), og alle, Pelle møder, hedder noget i
 formen "Ræven Rikke". Klaus er rød og Klara blå. Den, Pelle møder på et
 opslag, skal være den figur, der faktisk er i spillet (Milo ved Stjerneuret,
-Gustav i Skovkøkkenet). Skaden Sanne er bogens egen figur.
+Gustav i Skovkøkkenet). Skaden Sanne er bogens egen figur. Der er ingen
+printknap i appen; PDF'en laves med `vaerktoej/lav-bog-pdf.js` og sendes til
+dem, der skal printe. Oplæsningsklippene laves med
+`vaerktoej/lav-lyd-elevenlabs.py --spil bog`, når ElevenLabs-kvoten er der.
 
 Navnet står tre steder pr. spil: `<title>` i `index.html`, `<h2>` i `visMenu`
 og `navn` i `js/games.js`. App-ikonet er pindsvinet Pelle, den samme figur som

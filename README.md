@@ -106,7 +106,7 @@ test/find.test.js       en robot spiller alle steder på alle tre stjerner og tj
 bog/
   js/bog.js             de ti opslag: tekst, rim, hvem Pelle møder, hvor nøglen og skaden er — ingen DOM
   js/scener.js          billedet til hvert opslag, tegnet i kode med spillenes malede figurer
-  js/game.js            forsiden, bladring, oplæsning, find-nøglen og print
+  js/game.js            forsiden, bladring, oplæsning og find-nøglen; print kun til PDF-værktøjet
   billeder/skade.png    Skaden Sanne, bogens eget billede (se billeder/NOTICE.md)
   lyd/klip.json         oplæsningsklip, når de er lavet; indtil da læser enhedens egen stemme
 test/bog.test.js        tegner alle ti opslag uden browser og tjekker tekst, navne, nøgle og filer
@@ -739,8 +739,11 @@ husker ikke noget mellem to læsninger.
 Teksten læses højt, når man blader, og igen med højttaleren i hjørnet.
 Klip til opslagene ligger i `bog/lyd/` og står i `lyd/klip.json`
 (`lyd/<opslagets id>.mp3`); mangler et klip, læser enhedens egen danske
-stemme. Printknappen på forsiden tegner alle sider i `#print` og åbner
-enhedens printdialog: et A4-ark på tværs pr. opslag, forsiden først.
+stemme. Klippene laves med `vaerktoej/lav-lyd-elevenlabs.py --spil bog`
+(ét klip pr. opslag, teksten og rimet i én omgang). Der er ingen printknap i
+appen: PDF'en laves én gang med `vaerktoej/lav-bog-pdf.js` (kræver
+Playwright) og sendes til dem, der skal printe den. Den tegner alle sider i
+`#print`, et A4-ark på tværs pr. opslag, forsiden først.
 
 Billederne er tegnet i kode i `js/scener.js` i et felt på 600 x 780 og
 sat sammen af spillenes egne malede figurer (Pelle og skovens dyr fra

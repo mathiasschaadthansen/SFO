@@ -114,7 +114,7 @@ const O = Bog.OPSLAG, W = Bog.BREDDE, H = Bog.HOEJDE;
   tjek('siden hedder det samme som bogen', html.includes('<title>' + Bog.TITEL + '</title>'));
   tjek('siden har skallen med hjem-knappen og bogens egen menu', html.includes('js/skal.js') && game.includes('Skal.menuKnap('));
   tjek('siden peger hjem paa forsiden (én mappe op)', game.includes("hjem.href = '../'"));
-  tjek('bogen kan printes som A4 paa tvaers', /@page\{size:A4 landscape/.test(html) && game.includes('window.print()'));
+  tjek('bogen har ingen printknap i appen; PDF laves med vaerktoej/lav-bog-pdf.js', !game.includes('window.print') && !/data-handling="print"/.test(game) && /@page\{size:A4 landscape/.test(html) && fs.existsSync(path.join(ROD, 'vaerktoej', 'lav-bog-pdf.js')));
   tjek('bogen laeser hoejt med klip eller enhedens egen stemme', game.includes("'lyd/' + o.id + '.mp3'") && game.includes('localService'));
   tjek('bogen bruger Vrimleskovens "du fandt den"', game.includes('../games/find/lyd/du_fandt_den.mp3') && fs.existsSync(path.join(ROD, 'games', 'find', 'lyd', 'du_fandt_den.mp3')));
   tjek('bogen gemmer intet i browseren', !/localStorage|sessionStorage|indexedDB|document\.cookie/.test(game));

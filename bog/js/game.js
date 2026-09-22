@@ -7,9 +7,10 @@
  * skruenoeglen sig i billedet; trykker man paa den, faar den en ring, og
  * stemmen siger "Du fandt den" (klippet laanes fra Vrimleskoven).
  *
- * Print: alle sider tegnes i #print, ét ark A4 paa tvaers pr. opslag, og
- * window.print() aabner enhedens egen printdialog. Ingen netvaerk, ingen
- * lagring: bogen husker ikke, hvor man kom til.
+ * Der er ingen printknap i appen: PDF'en laves én gang med
+ * vaerktoej/lav-bog-pdf.js (byggePrint tegner alle sider i #print, ét ark A4
+ * paa tvaers pr. opslag). Ingen netvaerk, ingen lagring: bogen husker ikke,
+ * hvor man kom til.
  */
 (function () {
   'use strict';
@@ -162,14 +163,6 @@
     c.clearRect(0, 0, W, H);
     S.tegnForside(c);
   }
-  function printIkon() {
-    return '<svg viewBox="0 0 56 56" aria-hidden="true">' +
-      '<rect x="14" y="6" width="28" height="18" rx="3" fill="#f8f1e6" stroke="#6b5545" stroke-width="3"/>' +
-      '<rect x="6" y="20" width="44" height="22" rx="6" fill="#aed3e4" stroke="#6b5545" stroke-width="3"/>' +
-      '<rect x="14" y="32" width="28" height="18" rx="3" fill="#f8f1e6" stroke="#6b5545" stroke-width="3"/>' +
-      '<path d="M20 39h16M20 45h10" fill="none" stroke="#6b5545" stroke-width="2.5" stroke-linecap="round"/>' +
-      '<circle cx="42" cy="27" r="2.5" fill="#6b5545"/></svg>';
-  }
   function visMenu() {
     stopKlip();
     bog.hidden = true;
@@ -180,7 +173,6 @@
       '<div class="forside"><canvas width="600" height="780" aria-hidden="true"></canvas>' +
       '<div class="valg">' +
       '<button class="knap groen start" data-handling="start" aria-label="Læs bogen">' + window.Menu.start() + '</button>' +
-      '<button class="knap print" data-handling="print" aria-label="Print bogen">' + printIkon() + 'Print bogen</button>' +
       window.Menu.lydRaekke(lydTil) +
       '</div></div></div>';
     overlay.hidden = false;
@@ -191,12 +183,11 @@
     var k = e.target.closest('[data-handling]'); if (!k) return;
     var h = k.getAttribute('data-handling');
     if (h === 'start') { tone(660, 0.12); overlay.hidden = true; bog.hidden = false; visSide(0); }
-    else if (h === 'print') { tone(520, 0.12); printBog(); }
     else if (h === 'lyd') { lydTil = !lydTil; if (!lydTil) stopKlip(); k.innerHTML = window.Menu.lyd(lydTil); }
   });
   window.Skal.menuKnap(visMenu);
 
-  /* ---------- print ---------- */
+  /* ---------- print: kun til vaerktoej/lav-bog-pdf.js ---------- */
 
   var printEl = document.getElementById('print');
   function ark(klasse, indhold) {
@@ -217,11 +208,6 @@
       S.tegnOpslag(c, o);
     });
   }
-  function printBog() {
-    byggePrint();
-    setTimeout(function () { try { window.print(); } catch (e) { /* ingen print paa denne enhed */ } }, 50);
-  }
-  window.addEventListener('afterprint', function () { printEl.innerHTML = ''; });
 
   /* ---------- start ---------- */
 
