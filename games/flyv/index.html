@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Himmelvejen</title>
+<meta name="theme-color" content="#8fc7e8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="../../icons/icon-192.png">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{
+    margin:0;height:100%;overflow:hidden;
+    background:#cfe3ec;color:#5e4a3a;
+    font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,sans-serif;
+    -webkit-user-select:none;user-select:none;
+    overscroll-behavior:none;touch-action:none;
+  }
+  #verden,#hud{display:block;position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+
+  #overlay{
+    position:absolute;inset:0;z-index:10;
+    display:flex;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;
+    background:rgba(229,211,174,.9);
+    padding:20px;
+  }
+  #overlay[hidden]{display:none}
+
+  .kort{
+    width:min(460px,100%);
+    display:flex;flex-direction:column;gap:12px;
+    background:#f8f1e6;color:#6b5545;
+    border:0;border-radius:34px;
+    box-shadow:0 16px 34px rgba(107,85,68,.24),inset 0 3px 0 rgba(255,255,255,.9);
+    padding:26px;
+    text-align:center;
+  }
+  /* Overlayet ruller selv, og kortet centreres med margin:auto, saa det aldrig ender uden for skaermen paa iOS. */
+  .kort{margin:auto;flex:0 0 auto}
+  .kort h2{margin:0;font-size:34px;font-weight:800;color:#7d6553}
+  .raekke{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
+  .raekke.bund{justify-content:center;margin:6px 0 0}
+
+  .knap{
+    font:inherit;font-weight:800;font-size:22px;
+    padding:15px 20px;
+    background:#efe3d0;color:#6b5545;
+    border:0;border-radius:22px;
+    box-shadow:0 6px 0 rgba(107,85,68,.18),0 10px 18px rgba(107,85,68,.18),inset 0 3px 0 rgba(255,255,255,.85);
+    cursor:pointer;text-decoration:none;display:block;
+    transition:transform .08s,box-shadow .08s;
+  }
+  .knap:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(107,85,68,.18),0 4px 10px rgba(107,85,68,.16),inset 0 2px 0 rgba(255,255,255,.7)}
+  .knap:focus-visible{outline:4px solid #9bbb90;outline-offset:4px}
+  .knap.gul{background:#f3c3a4}
+  .knap.smal{flex:1 1 auto;font-size:17px;padding:11px 14px}
+  .knap.smal.valgt{background:#aed3e4;color:#5a6f7a}
+  .knap.lille{font-size:17px;padding:10px 14px;box-shadow:0 4px 0 rgba(107,85,68,.14);opacity:.8}
+  .knap.ikon{display:flex;align-items:center;justify-content:center;padding:10px 14px}
+  .knap.ikon svg{display:block}
+
+  .raekke.start{margin-bottom:0}
+  canvas.eksempel{width:100%;max-width:330px;height:auto;aspect-ratio:2/1;align-self:center;border-radius:18px}
+  canvas.ordene{width:100%;max-width:400px;height:auto;aspect-ratio:4/1;align-self:center}
+  .kort p{margin:0;font-size:18px;font-weight:700}
+
+  /* Lave skaerme (telefon paa siden): alt skal kunne ses uden at rulle */
+  @media (max-height:520px){
+    #overlay{padding:8px 66px}
+    .kort{padding:12px 16px;gap:7px;width:min(780px,100%);border-radius:22px}
+    .kort h2{font-size:22px}
+    .knap{font-size:17px;padding:9px 14px;border-radius:16px}
+    .knap.smal{padding:7px 10px}
+    .knap.lille{padding:6px 12px}
+    .raekke{margin-bottom:0}
+    canvas.ordene{max-width:300px}
+    canvas.eksempel{display:none}
+  }
+
+  @media (prefers-reduced-motion:reduce){.knap{transition:none}}
+</style>
+</head>
+<body>
+
+<canvas id="verden"></canvas>
+<canvas id="hud"></canvas>
+<div id="overlay" hidden></div>
+
+<script src="../../js/skal.js"></script>
+<script src="../../js/menu.js"></script>
+<script src="js/oe.js"></script>
+<script src="js/flyvning.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v97';
+const VERSION = 'sfo-spil-v98';
 
 const FILER = [
   './',
@@ -345,6 +345,11 @@ const FILER = [
   'games/rim/lyd/ord_sky.mp3',
   'games/rim/lyd/ord_stol.mp3',
   'games/rim/lyd/ord_vand.mp3',
+  'games/flyv/',
+  'games/flyv/index.html',
+  'games/flyv/js/oe.js',
+  'games/flyv/js/flyvning.js',
+  'games/flyv/js/game.js',
   'games/find/',
   'games/find/index.html',
   'games/find/js/find.js',

@@ -19,6 +19,10 @@ Spillene indtil nu:
   bogstav med billedet af tingen ved siden af. Tal vises også som æbler, der
   tælles. På 3 stjerner siger skyen bogstavet i stedet for at vise det. Navnene
   siges med iPad'ens indbyggede danske stemme, hvis der er en.
+- **Himmelvejen** (mappen `flyv`): flyv med Skaden Sanne og brevene over hele
+  øen i 3D. Stemmen siger, hvilket sted brevet skal til, og hvor modtageren
+  sidder: oven på taget, inde i hulen, mellem de to skilte. Undervejs under
+  broen og til sidst rundt om det store træ.
 
 ## Kom i gang
 
@@ -103,6 +107,11 @@ games/find/
   billeder/*.png        byens malede stykker: tre huse på bakken, boden, brønden og bænken
   lyd/*.mp3             "Kan du finde den?" og kategorierne; ordene lånes fra Bogstavvejen
 test/find.test.js       en robot spiller alle steder på alle tre stjerner og tjekker, at alt kan findes
+games/flyv/
+  js/oe.js              øen: landskab, steder, flod, bro, træet, pynten, dyrene og brevene — ingen DOM
+  js/flyvning.js        Sannes flyvning, brevene, broen og rundt om træet — ingen DOM
+  js/game.js            3D-tegningen (WebGL 1, ingen biblioteker), kortet, ordene, menu, stemme
+test/flyv.test.js       en robot flyver alle breve ud på alle tre stjerner, med tryk og ved at flyve selv
 bog/
   js/bog.js             de ti opslag: tekst, rim, hvem Pelle møder, hvor nøglen og skaden er — ingen DOM
   js/scener.js          billedet til hvert opslag, tegnet i kode med spillenes malede figurer
@@ -721,6 +730,51 @@ hinanden eller helt bag et skjul, at hvert spørgsmål kan besvares med det, der
 er i billedet, at der ved tre stjerner ligger en lookalike tæt ved hvert
 enkeltord, at kategorierne har to til fire medlemmer, og at alle ord har
 billede og stemme.
+
+## Himmelvejen (mappen `flyv`)
+
+Skaden Sanne flyver breve ud på Nøddeskovens ø, og øen er den samme som i
+bogen: Nøddeskoven i midten og de ni andre steder i en ring omkring den, med
+spillenes egne figurer. Spillet øver to ting: **stedsans** (hvor på øen ligger
+Vrimleskoven?) og **ord for placering** (oven på, inde i, mellem, under, rundt
+om).
+
+**Brevene.** Stemmen siger, hvem brevet er til, og hvor de sidder: "Det skal
+til kaninen i Vrimleskoven. Kaninen sidder oven på taget." På stedet sidder
+tre ens dyr, og kun ét sidder dér, hvor stemmen siger. Barnet trykker på det
+dyr, det mener, og Sanne flyver selv derhen, for det er valget, der skal
+læres, ikke at ramme med fuglen. Et forkert dyr siger selv, hvor det sidder:
+"Nej, jeg sidder mellem de to huse. Brevet skal til kaninen oven på taget."
+Ingen straf. Fire breve: kaninen oven på taget, bjørnen inde i hulen, uglen
+mellem de to skilte og til sidst rundt om det store træ hjemme hos Pelle, hvor
+et tryk på træet også sender Sanne rundt. Undervejs spørger stemmen, om hun
+kan flyve under broen over floden. De fem ord står som billeder foroven og
+bliver gyldne, når de er klaret. Brevene og dyrenes pladser står i `oe.js`.
+
+**Stjernerne** er hjælpen til at finde vej: én stjerne giver en pil og et
+kort, hvor målet lyser, og Sanne dykker selv under broen; to stjerner kun
+kortet; tre stjerner ingen hjælp. Pilen peger aldrig på det rigtige dyr.
+
+**Styring.** Man peger med fingeren derhen, hvor Sanne skal flyve: til siden
+drejer hun, op og ned stiger og dykker hun. Slipper man, flyver hun selv
+vandret over landskabet og daler ned mod dyrene, når hun leder. Ude over havet
+drejer hun selv hjem; der er ingen mur og ingen måde at styrte på.
+
+**3D.** En lille WebGL 1-tegner i `game.js` uden biblioteker, så det virker på
+gamle iPads: landskabet er én form i appens palet med akvarelvask og
+papirkorn, broen, målene og tårnet er kasser, og Sanne er bygget af simple
+former med vinger, der slår. Figurerne er de malede billeder fra de andre spil,
+sat op som udklip, der vender mod kameraet. Der er ingen nye billedfiler.
+Bliver det for tungt, går tegningen selv ned i opløsning.
+
+**Stemmen** er enhedens egen danske stemme (kun en lokal) indtil videre. Skal
+Camilla indtale brevene, er sætningerne dem i `BUD` i `oe.js`.
+
+Testen tjekker øen, floden og pladsen under broen, at hvert sted har tre ens
+dyr, hvor præcis ét sidder dér, hvor brevet siger, at den, der sidder mellem,
+faktisk sidder mellem, set forfra, og lader en robot flyve alle breve ud på
+alle tre stjerner, både ved at trykke (også på et forkert dyr først) og ved
+selv at flyve, under broen og rundt om træet.
 
 ## Bogen om Nøddeskoven (mappen `bog`)
 

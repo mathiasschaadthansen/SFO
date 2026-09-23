@@ -153,5 +153,15 @@ window.SPIL = [
     art: '<div class="art">' +
          '<img src="assets/malet/hus.png" alt="" style="left:8px;top:14px;width:98px">' +
          '</div>'
+  },
+  {
+    id: 'flyv',
+    navn: 'Himmelvejen',
+    tekst: 'Flyv med Sanne og brevene over øen. Find den, der sidder oven på, inde i eller mellem.',
+    farve: '#d4e6ef',
+    sti: 'games/flyv/',
+    art: '<div class="art">' +
+         '<img src="bog/billeder/skade.png" alt="" style="left:18px;top:6px;width:84px">' +
+         '</div>'
   }
 ];

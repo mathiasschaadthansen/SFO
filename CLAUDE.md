@@ -41,6 +41,11 @@ og at kategorierne har to til fire medlemmer. Bog-testen tegner alle ti opslag i
 Bogen om Nøddeskoven i et lærred uden browser og tjekker, at nøglen tegnes
 præcis dér, hvor opslaget siger, at alle lånte billeder findes, at stederne
 hedder det samme som spillene, og at bogens filer er i service workeren.
+Himmelvejen-testen lader en robot flyve alle fire breve ud på alle tre
+stjerner, både ved at trykke på dyrene (også et forkert først) og ved selv at
+flyve, under broen og rundt om træet. Den tjekker, at hvert sted har tre ens
+dyr, og at præcis ét sidder dér, hvor brevet siger, at der er plads under
+broen, og at Sanne altid drejer hjem ude over havet.
 
 **Stemme.** Bogstavvejen (og Rimhulen, som låner dens ordklip) bruger rigtige
 klip med en dansk stemme fra ElevenLabs (Camilla) til bogstavnavne, tal, ord og
@@ -107,6 +112,7 @@ spillet. Koden er ikke doebt om: modulerne hedder stadig `Klatbold`, `Bobler`,
 | Tegnestuen | `games/tegn/` | `test/tegn.test.js` |
 | Rimhulen | `games/rim/` | `test/rim.test.js` |
 | Vrimleskoven | `games/find/` | `test/find.test.js` |
+| Himmelvejen | `games/flyv/` | `test/flyv.test.js` |
 | Bogen om Nøddeskoven | `bog/` | `test/bog.test.js` |
 
 Bogen er ikke et spil: den ligger forrest på forsiden, har ingen knap ind i
@@ -217,6 +223,10 @@ skal den samme prompt bruges igen — prompten står i
   indtalt inde i den sætning. Nye sætninger, der bruger et ordklip, skal
   bygges, så rammen passer: "Her har du ordet kat. Hvad rimer på det?" —
   aldrig "Hvad rimer på" + ordklip. Rimhulen faldt i den fælde i v80.
+- **Himmelvejens teksturer skal være 2^n.** WebGL 1 laver kun mipmaps på
+  billeder med sider som 256 og 512; andre bliver sorte på iPad. `lavTekstur`
+  skalerer derfor alt op, og billedets rigtige forhold gemmes i `forhold`.
+  Himmelvejen har ingen egne billeder, men låner de malede fra de andre spil.
 - **Skallen tror, den ligger to mapper nede.** `js/skal.js` sætter hjem-knappen
   til `../../`, fordi spillene ligger i `games/<navn>/`. Bogen ligger i `bog/`
   og retter selv linket til `../` i sin `game.js`.
