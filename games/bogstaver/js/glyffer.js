@@ -6,8 +6,13 @@
  * skriver dem efter dansk grundskrift: lodrette streger nedad, vandrette fra
  * venstre mod hoejre, runde former mod uret (o, c, a, 0), maver ud fra en
  * stamme med uret (b, p, B, D, P, R, 2, 3), og de smaa bogstaver med stamme
- * og bue i én streg, hvor man gaar tilbage op ad stammen. Kun V, W, U og
- * midten af M gaar opad, som alle skriver dem. Testen holder reglerne.
+ * og bue i én streg, hvor man gaar tilbage op ad stammen. De store bogstaver
+ * foelger skriveretningsplakaterne fra skolen: A og Å to streger ned fra
+ * toppen og tvaerstregen til sidst (paa Å kommer ringen, med uret, foer
+ * tvaerstregen), M og N stammen ned og saa resten i én streg (N slutter op ad
+ * hoejre stamme), P og R stammen ned og saa bugen, og R's ben i samme streg
+ * som bugen, T stammen foerst og taget bagefter. Kun V, W, U, midten af M og
+ * sidste stykke af N gaar opad. Testen holder reglerne.
  * Buer laves med bue(), saa der ikke skal skrives 30 punkter i haanden.
  *
  * Store bogstaver, smaa bogstaver og tal. De smaa staar paa en grundlinje
@@ -52,14 +57,14 @@
     J: { tegn: 'J', streger: [sammen([[65, 10], [65, 70]], cirkel(45, 70, 20, 0, 180))] },
     K: { tegn: 'K', streger: [streg([25, 10], [25, 90]), streg([75, 10], [25, 55]), streg([38, 50], [75, 90])] },
     L: { tegn: 'L', streger: [streg([25, 10], [25, 90], [75, 90])] },
-    M: { tegn: 'M', streger: [streg([20, 10], [20, 90]), streg([20, 10], [50, 60], [80, 10]), streg([80, 10], [80, 90])] },
-    N: { tegn: 'N', streger: [streg([25, 10], [25, 90]), streg([25, 10], [75, 90]), streg([75, 10], [75, 90])] },
+    M: { tegn: 'M', streger: [streg([20, 10], [20, 90]), streg([20, 10], [50, 60], [80, 10], [80, 90])] },
+    N: { tegn: 'N', streger: [streg([25, 10], [25, 90]), streg([25, 10], [75, 90], [75, 10])] },
     O: { tegn: 'O', streger: [cirkel(50, 50, 40, -90, -450)] },
     P: { tegn: 'P', streger: [streg([25, 10], [25, 90]), sammen([[25, 10], [55, 10]], P, [[25, 54]])] },
     Q: { tegn: 'Q', streger: [cirkel(50, 50, 40, -90, -450), streg([60, 65], [84, 92])] },
-    R: { tegn: 'R', streger: [streg([25, 10], [25, 90]), sammen([[25, 10], [55, 10]], P, [[25, 54]]), streg([45, 54], [75, 90])] },
+    R: { tegn: 'R', streger: [streg([25, 10], [25, 90]), sammen([[25, 10], [55, 10]], P, [[40, 54], [75, 90]])] },
     S: { tegn: 'S', streger: [sammen(cirkel(50, 30, 20, -40, -270), cirkel(50, 70, 20, -90, 150))] },
-    T: { tegn: 'T', streger: [streg([20, 10], [80, 10]), streg([50, 10], [50, 90])] },
+    T: { tegn: 'T', streger: [streg([50, 10], [50, 90]), streg([20, 10], [80, 10])] },
     U: { tegn: 'U', streger: [sammen([[25, 10], [25, 60]], cirkel(50, 60, 25, 180, 0), [[75, 10]])] },
     V: { tegn: 'V', streger: [streg([20, 10], [50, 90], [80, 10])] },
     W: { tegn: 'W', streger: [streg([15, 10], [33, 90], [50, 30], [67, 90], [85, 10])] },
@@ -68,7 +73,7 @@
     Z: { tegn: 'Z', streger: [streg([25, 10], [75, 10], [25, 90], [75, 90])] },
     AE: { tegn: 'Æ', streger: [streg([42, 10], [12, 90]), streg([42, 10], [42, 90]), streg([42, 10], [84, 10]), streg([24, 58], [42, 58], [74, 58]), streg([42, 90], [84, 90])] },
     OE: { tegn: 'Ø', streger: [cirkel(50, 50, 40, -90, -450), streg([76, 14], [24, 86])] },
-    AA: { tegn: 'Å', streger: [streg([50, 30], [20, 92]), streg([50, 30], [80, 92]), streg([33, 70], [67, 70]), cirkel(50, 13, 8, -90, -450)] },
+    AA: { tegn: 'Å', streger: [streg([50, 30], [20, 92]), streg([50, 30], [80, 92]), cirkel(50, 13, 8, -90, 270), streg([33, 70], [67, 70])] },
 
     0: { tegn: '0', streger: [bue(50, 50, 28, 40, -90, -450)] },
     1: { tegn: '1', streger: [streg([35, 30], [52, 10], [52, 90])] },

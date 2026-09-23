@@ -88,13 +88,21 @@ function foelg(glyf, tolerance, afvig) {
   const nedOgOp = n => { const s = foerste(n); let bund = 0; for (let i = 1; i < s.length; i++) if (s[i][1] > s[bund][1]) bund = i; return bund > 0 && bund < s.length - 1 && s[bund][1] > s[0][1] + 20 && s[bund + 1][1] < s[bund][1] && Math.abs(s[bund + 1][0] - s[bund][0]) < 3; };
 
   const stammeNed = ['B', 'D', 'E', 'F', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'R', 'T', 'AE', 'i', 'l', 'b', 'h', 'k', 'p', 'n', 'm', 'r', '1'];
-  const forkertStamme = stammeNed.filter(n => { const s = n === 'T' ? G[n].streger[1] : (n === '1' ? foerste(n).slice(1) : foerste(n)); return !(s[0][1] < s[Math.min(s.length - 1, 40)][1]); });
+  const forkertStamme = stammeNed.filter(n => { const s = (n === '1' ? foerste(n).slice(1) : foerste(n)); return !(s[0][1] < s[Math.min(s.length - 1, 40)][1]); });
   tjek('lodrette stammer skrives oppefra og ned', forkertStamme.length === 0, forkertStamme.join());
   tjek('vandrette streger skrives fra venstre mod hoejre (E, F, T, H, A, 5, 7, t, f)',
-    modHoejre(G.E.streger[1]) && modHoejre(G.E.streger[2]) && modHoejre(G.F.streger[1]) && modHoejre(G.T.streger[0]) && modHoejre(G.H.streger[2]) && modHoejre(G.A.streger[2]) && modHoejre(sidste('5')) && modHoejre(foerste('7').slice(0, 2)) && modHoejre(sidste('t')) && modHoejre(sidste('f')));
+    modHoejre(G.E.streger[1]) && modHoejre(G.E.streger[2]) && modHoejre(G.F.streger[1]) && modHoejre(G.T.streger[1]) && modHoejre(G.H.streger[2]) && modHoejre(G.A.streger[2]) && modHoejre(sidste('5')) && modHoejre(foerste('7').slice(0, 2)) && modHoejre(sidste('t')) && modHoejre(sidste('f')));
   tjek('A, Æ og Å begynder i toppen med to streger ned', [['A', 0], ['A', 1], ['AE', 0], ['AA', 0], ['AA', 1]].every(([n, i]) => G[n].streger[i][0][1] < G[n].streger[i][1][1] - 40));
+  /* Skriveretningsplakaterne: tallene og pilene paa de store bogstaver */
+  const slutY = s => s[s.length - 1][1];
+  tjek('M: stammen ned, saa skraat ned, op og ned ad hoejre stamme i én streg', G.M.streger.length === 2 && G.M.streger[1].length === 4 && slutY(G.M.streger[1]) > 85 && G.M.streger[1][0][1] < 15);
+  tjek('N: stammen ned, saa skraat ned og op ad hoejre stamme i én streg', G.N.streger.length === 2 && G.N.streger[1][1][1] > 85 && slutY(G.N.streger[1]) < 15);
+  tjek('P og R: stammen ned, saa bugen; R\'s ben i samme streg som bugen', G.P.streger.length === 2 && G.R.streger.length === 2 && slutY(G.R.streger[1]) > 85);
+  tjek('T: stammen foerst, saa taget', nedad(G.T.streger[0]) && modHoejre(G.T.streger[1]));
+  tjek('Æ: skraat ned, stammen, og saa de tre vandrette', G.AE.streger.length === 5 && nedad(G.AE.streger[1]) && [2, 3, 4].every(i => modHoejre(G.AE.streger[i])));
+  tjek('Å: to streger ned, ringen med uret, tvaerstregen til sidst', G.AA.streger.length === 4 && medUret(G.AA.streger[2]) && modHoejre(G.AA.streger[3]));
   tjek('runde former gaar mod uret: o O 0 c C a d g q e G Q ae aa', ['o', 'O', '0', 'c', 'C', 'a', 'd', 'g', 'q', 'e', 'G', 'Q', 'ae', 'aa'].every(n => modUret(foerste(n).slice(0, 25))));
-  tjek('maver ud fra en stamme gaar med uret: b p B D P R 2 3', ['b', 'p'].every(n => medUret(foerste(n).slice(-25))) && ['B', 'D', 'P', 'R'].every(n => medUret(G[n].streger[1].slice(0, 25))) && ['2', '3'].every(n => medUret(foerste(n).slice(0, 15))));
+  tjek('maver ud fra en stamme gaar med uret: b p B D P R 2 3', ['b', 'p'].every(n => medUret(foerste(n).slice(-25))) && ['B', 'D', 'P', 'R'].every(n => medUret(G[n].streger[1].slice(0, 21))) && ['2', '3'].every(n => medUret(foerste(n).slice(0, 15))));
   tjek('5: ned og mave foerst, hatten til sidst; 6 rundt mod uret; 8 begynder oeverst til hoejre og gaar til venstre',
     nedad(foerste('5').slice(0, 2)) && G['5'].streger.length === 2 && modUret(foerste('6').slice(-30)) && foerste('8')[0][0] > 55 && foerste('8')[3][0] < foerste('8')[0][0]);
   tjek('b, h, n, m, r, p, k-stammen: ned ad stammen og tilbage op i samme streg', ['b', 'h', 'n', 'm', 'r', 'p'].every(nedOgOp), ['b', 'h', 'n', 'm', 'r', 'p'].filter(n => !nedOgOp(n)).join());
