@@ -772,8 +772,10 @@
   }
   /* Hvor boblen skal staa: lige over Pelle, men aldrig oven paa et bed, redskaberne eller uret.
      Rammer den noget, rykker den til siden, saa langt halen stadig kan pege paa Pelle. */
-  function placerBoble(px, by, b, h, W) {
-    var forhindringer = H.bede.map(bedKasse).filter(Boolean);
+  var bobleSted = null;
+  function placerBoble(ph, b, h, W, noegle, ik) {
+    var px = ph.x, by = ph.y - h - 12, luft = 10;   // lidt luft, saa kameraets vuggen ikke skubber boblen ind over et bed
+    var forhindringer = H.bede.map(bedKasse).filter(Boolean).map(function (k) { return { x0: k.x0 - luft, y0: k.y0 - luft, x1: k.x1 + luft, y1: k.y1 + luft }; });
     knapper.forEach(function (k) { forhindringer.push({ x0: k.x - k.r, y0: k.y - k.r, x1: k.x + k.r, y1: k.y + k.r }); });
     if (uret) forhindringer.push({ x0: uret.x - uret.r, y0: uret.y - uret.r, x1: uret.x + uret.r, y1: uret.y + uret.r });
     function overlap(x) {
@@ -791,7 +793,21 @@
         if (o < mindst) { mindst = o; bedst = x; }
       });
     }
-    return bedst;
+    if (mindst === 0 && by > 0) return { noegle: noegle, dx: bedst - px };
+    /* Ingen fri plads over Pelle (fx en telefon paa siden): boblen staar fast oppe mod himlen, ved siden af uret.
+       Helst til hoejre med et lille billede af Pelle, ellers uden billedet, ellers til venstre, og kun til sidst under uret. */
+    var portraet = ik + 8, uretV = uret ? uret.x - uret.r - 8 : W, uretH = uret ? uret.x + uret.r + 8 : 0, venstre = 84;
+    var muligheder = [
+      { x: W - b - portraet - 12, b: b + portraet, portraet: true },
+      { x: W - b - 12, b: b, portraet: false },
+      { x: venstre, b: b + portraet, portraet: true },
+      { x: venstre, b: b, portraet: false }
+    ];
+    for (var i = 0; i < muligheder.length; i++) {
+      var m = muligheder[i], fri = m.x >= uretH || m.x + m.b <= uretV;
+      if (fri && m.x >= venstre - 1 && m.x + m.b <= W - 8) return { noegle: noegle, fast: true, x: m.x, y: 12, portraet: m.portraet };
+    }
+    return { noegle: noegle, fast: true, x: W - b - portraet - 12, y: uret ? uret.y + uret.r + 8 : 12, portraet: true };
   }
   function tegnHud() {
     var W = hud.width / hudSkala, Hh = hud.height / hudSkala, aar = H.aar, skift = H.skift;
@@ -799,7 +815,7 @@
     hx.clearRect(0, 0, W, Hh);
     knapper = []; uret = null; boble = null;
     if (tilstand !== 'have') return;
-    var smal = W < 700;
+    var smal = W < 700 || Hh < 500;   // en telefon paa siden er bred, men lav
     /* Aarstidsuret: fire farvede felter og en viser. Tryk, og det bliver naeste aarstid. */
     var ur = smal ? 34 : 44, ux = W / 2, uy = 16 + ur;
     uret = { x: ux, y: uy, r: ur + 8 };
@@ -832,23 +848,36 @@
     }
     /* Pelles boble: det, han oensker sig, med én prik for hver, der skal taelles. Fyldte prikker er dem, han har faaet.
        Med én stjerne staar tingene der i stedet for prikker, og de faar et flueben, naar de er kommet. Om vinteren sover han. */
-    var ph = skaerm([H.pelle.x, 5.9 + H.pelleDy, H.pelle.z]), oenske = H.oenske;
+    var ph = skaerm([H.pelle.x, 5.9, H.pelle.z]), oenske = H.oenske;   // boblen foelger ikke Pelles hop
     if (ph && (oenske || aar === 'vinter') && !skift) {
       /* Delene staar ved siden af hinanden, saa boblen kun er én raekke hoej og holder sig nede ved Pelle */
       var ik = smal ? 38 : 48, prik = smal ? 8 : 10, pad = 10, gab = 18, dele = oenske ? oenske.dele : [];
       var delB = dele.map(function (d) { return H.niveau === 1 && d.afgr ? d.antal * ik * 0.86 : ik + 8 + d.antal * (prik * 2 + 5); });
       var bredde = aar === 'vinter' ? (smal ? 64 : 78) : pad * 2 + delB.reduce(function (a, b) { return a + b; }, 0) + gab * (dele.length - 1);
       var hoej = aar === 'vinter' ? bredde : pad * 2 + ik;
-      var by = ph.y - hoej - 12, bx = placerBoble(ph.x, by, bredde, hoej, W);
+      /* Pladsen vaelges én gang pr. oenske og skaermstoerrelse, saa boblen aldrig hopper frem og tilbage */
+      var noegle = [W, Hh, bredde, hoej, spillere].join(':');
+      if (!bobleSted || bobleSted.noegle !== noegle) bobleSted = placerBoble(ph, bredde, hoej, W, noegle, ik);
+      var fast = !!bobleSted.fast, portraet = fast && bobleSted.portraet ? ik : 0;
+      if (portraet) bredde += portraet + 8;
+      var bx = fast ? bobleSted.x : klem(ph.x + bobleSted.dx, 8, W - bredde - 8), by = fast ? bobleSted.y : ph.y - hoej - 12;
       boble = { x: bx, y: by, b: bredde, h: hoej };
-      var halen = klem(ph.x, bx + 20, bx + bredde - 20);
       hx.save(); hx.shadowColor = 'rgba(107,85,68,.22)'; hx.shadowOffsetY = 4; hx.shadowBlur = 8;
       hx.fillStyle = '#f8f1e6'; rr(hx, bx, by, bredde, hoej, 18); hx.fill();
-      hx.beginPath(); hx.moveTo(halen - 9, by + hoej - 1); hx.lineTo(ph.x, by + hoej + 11); hx.lineTo(halen + 9, by + hoej - 1); hx.fill(); hx.restore();
+      if (!fast) {   // halen peger ned paa Pelle
+        var halen = klem(ph.x, bx + 20, bx + bredde - 20);
+        hx.beginPath(); hx.moveTo(halen - 9, by + hoej - 1); hx.lineTo(ph.x, by + hoej + 11); hx.lineTo(halen + 9, by + hoej - 1); hx.fill();
+      }
+      hx.restore();
+      if (portraet && billede.pindsvin) {   // oppe ved himlen viser et lille billede af Pelle, hvem der oensker sig noget
+        var pb = billede.pindsvin, ph2 = ik * 1.05, pw = ph2 * (forhold.pindsvin || 1);
+        hx.drawImage(pb, bx + pad + (ik - pw) / 2, by + (hoej - ph2) / 2, pw, ph2);
+        bx += portraet + 8;
+      }
       if (aar === 'vinter') {
-        var zz = Math.sin(tid * 2) * 3;
-        hx.strokeStyle = '#6b5545'; hx.lineWidth = Math.max(2.5, bredde * 0.05); hx.lineCap = 'round'; hx.lineJoin = 'round';
-        tegnZ(bx + bredde * 0.32, by + bredde * 0.68 + zz, bredde * 0.14); tegnZ(bx + bredde * 0.5, by + bredde * 0.5 - zz, bredde * 0.18); tegnZ(bx + bredde * 0.7, by + bredde * 0.3 + zz, bredde * 0.24);
+        var zz = Math.sin(tid * 2) * 3, vb = hoej;   // vinterboblen er kvadratisk; portraettet staar foran den i hjoernet
+        hx.strokeStyle = '#6b5545'; hx.lineWidth = Math.max(2.5, vb * 0.05); hx.lineCap = 'round'; hx.lineJoin = 'round';
+        tegnZ(bx + vb * 0.32, by + vb * 0.68 + zz, vb * 0.14); tegnZ(bx + vb * 0.5, by + vb * 0.5 - zz, vb * 0.18); tegnZ(bx + vb * 0.7, by + vb * 0.3 + zz, vb * 0.24);
       } else dele.forEach(function (d, i) {
         var cy = by + pad + ik / 2, x = bx + pad;
         for (var f = 0; f < i; f++) x += delB[f] + gab;
@@ -1024,7 +1053,7 @@
       startLyd(); LYDE.saa();
       spillere = +knap.dataset.spillere || 1; valg = ['froe', 'froe']; partikler = []; froeFlyv = [];
       skjulOverlay();
-      H.nulstil(svaerhed + 1, spillere);   // foerste saetning siges i selve trykket, ellers er iOS stum
+      H.nulstil(svaerhed + 1, spillere); bobleSted = null;   // foerste saetning siges i selve trykket, ellers er iOS stum
       synkDyr();
       tilstand = 'have';
     }
