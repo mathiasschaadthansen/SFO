@@ -36,10 +36,15 @@ Valg:
                      men husker, hvor langt de naaede, hvis de bliver afbrudt)
     --kun <tekst>    lav kun saetninger, der indeholder teksten (fx --kun gulerød)
     --proev          vis, hvad der ville blive lavet, uden at kalde Gemini
+    --pr-kald <n>    saetninger i ét kald (standard 12); de deles op ved pauserne bagefter
     --registrer      lav ikke noget, men skriv klip.json og sw.js ud fra filerne
 
-Gratisnoeglen giver cirka ét klip i minuttet; vaerktoejet venter selv, saa et helt spil
-tager et par timer. Med betaling slaaet til paa noeglen i AI Studio gaar det hurtigt.
+Gemini giver kun 100 kald om dagen til gemini-3.8-flash-tts, ogsaa med betaling (uden
+betaling 10). Derfor laeses op til 12 saetninger i ét kald, med en lang pause efter hver
+linje, og optagelsen deles op ved pauserne. Gaar det ikke op (for faa eller for mange
+stykker, eller laengderne passer ikke til teksterne), deles bundtet i to og proeves igen,
+ned til én saetning ad gangen. Er dagens kald brugt, stopper vaerktoejet, og naeste dag
+fortsaetter det, hvor det slap.
 """
 import base64, hashlib, io, json, os, re, subprocess, sys, time, urllib.error, urllib.request, wave, array
 
@@ -94,10 +99,10 @@ def filnavn(tekst):
     return '%s_%s.mp3' % (t, hashlib.sha1(tekst.encode('utf-8')).hexdigest()[:6])
 
 
-def kald(tekst):
-    """Én saetning til Gemini. Svarer med (pcm, samplerate) eller rejser en fejl."""
+def kald(tekst, note=None):
+    """Tekst til Gemini. Svarer med (pcm, samplerate) eller rejser en fejl."""
     url = 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent' % MODEL
-    krop = {'contents': [{'parts': [{'text': NOTE + tekst}]}],
+    krop = {'contents': [{'parts': [{'text': (note or NOTE) + tekst}]}],
             'generationConfig': {'responseModalities': ['AUDIO'],
                                  'speechConfig': {'voiceConfig': {'prebuiltVoiceConfig': {'voiceName': STEMME}}}}}
     hoved = {'Content-Type': 'application/json'}
@@ -156,6 +161,21 @@ class Stop(Exception):
     """Gemini har sagt stop laenge; koer igen senere."""
 
 
+def vent_paa_gemini(krop, ventet):
+    """Et 429-svar. Graensen pr. minut: vent og proev igen. Graensen pr. dag (100 kald til
+    gemini-3.8-flash-tts, ogsaa med betaling): stop, og koer igen i morgen."""
+    if 'PerDay' in krop and re.search(r'"retryDelay":\s*"(\d{4,})', krop):
+        raise Stop()
+    m = re.search(r'"retryDelay":\s*"(\d+)', krop)
+    pause = min(int(m.group(1)) + 2 if m else 30, 120)
+    if ventet > 1800:
+        raise Stop()
+    print('        venter %d s paa Gemini ...' % pause)
+    time.sleep(pause)
+    return pause
+
+
+
 def lav_et(tekst, sti):
     """Lav ét klip og gem det som MP3 i sti. Venter selv, naar Gemini beder om det. Svarer med sekunderne."""
     forventet = 1.0 + len(tekst) * 0.085   # saa laenge taler hun cirka; meget laengere betyder, at noten kom med
@@ -174,19 +194,112 @@ def lav_et(tekst, sti):
             krop = e.read().decode('utf-8', 'replace')
             if e.code != 429:
                 raise ValueError('HTTP %d: %s' % (e.code, krop[:300]))
-            # Gratisnoeglen giver kun faa klip og siger selv, hvor laenge der skal ventes.
-            m = re.search(r'"retryDelay":\s*"(\d+)', krop)
-            pause = int(m.group(1)) + 2 if m else 30
-            pause = min(pause, 120)   # Gemini har bedt om 14 timer, og saa virkede det igen efter et minut
-            if ventet > 1800:
-                raise Stop()
-            print('        venter %d s paa Gemini ...' % pause)
-            time.sleep(pause); ventet += pause
+            ventet += vent_paa_gemini(krop, ventet)
         except (ValueError, KeyError, IndexError) as e:
             forsoeg += 1
             if forsoeg == 3:
                 raise ValueError(str(e))
             time.sleep(1)
+
+
+PR_KALD = int(arg('--pr-kald', '12'))   # saetninger i ét kald; Gemini giver kun 100 kald om dagen
+NOTE_FLERE = NOTE.replace("\n\n### TRANSCRIPT", " Read every line of the transcript as its own separate utterance, "
+                          "and leave a long pause of about two seconds of silence after every line.\n\n### TRANSCRIPT")
+
+
+def stilhed(a, sr):
+    """Lydstyrken i blokke af 20 ms for samples i a."""
+    blok = int(sr * 0.02)
+    return blok, [(sum(x * x for x in a[i:i + blok]) / max(1, len(a[i:i + blok]))) ** 0.5 for i in range(0, len(a), blok)]
+
+
+def del_op(pcm, sr, tekster):
+    """Del en lang optagelse op ved de lange pauser, i praecis ét stykke pr. tekst.
+    Svarer med en liste af PCM-stykker, eller None, hvis det ikke gaar op."""
+    a = array.array('h', pcm)
+    if sys.byteorder == 'big':
+        a.byteswap()
+    blok, rms = stilhed(a, sr)
+    if not rms or max(rms) < 50:
+        return None
+    tale = [r > max(rms) * 0.03 for r in rms]
+    # Pauserne: raekker af stille blokke mellem tale, som (start, laengde)
+    pauser, i = [], 0
+    while i < len(tale):
+        if not tale[i]:
+            j = i
+            while j < len(tale) and not tale[j]:
+                j += 1
+            if i > 0 and j < len(tale):
+                pauser.append((i, j - i))
+            i = j
+        else:
+            i += 1
+    n = len(tekster)
+    if len(pauser) < n - 1:
+        return None
+    # De n-1 laengste pauser er skellene mellem linjerne; de skal vaere tydeligt laengere end resten
+    laengst = sorted(pauser, key=lambda p: -p[1])
+    skel = sorted(laengst[:n - 1])
+    if n > 1:
+        kortest_skel = laengst[n - 2][1]
+        naeste = laengst[n - 1][1] if len(laengst) >= n else 0
+        if kortest_skel * 0.02 < 1.0 or naeste > kortest_skel * 0.75:
+            return None
+    graenser = [0] + [(p[0] + p[1] // 2) * blok for p in skel] + [len(a)]
+    stykker = [a[graenser[k]:graenser[k + 1]] for k in range(n)]
+    # Laengderne skal passe nogenlunde til teksterne, ellers er noget blevet byttet om eller sprunget over
+    forhold = []
+    for st, t in zip(stykker, tekster):
+        sek = sum(1 for r in stilhed(st, sr)[1] if r > max(rms) * 0.03) * 0.02
+        forhold.append(sek / (0.6 + len(t) * 0.06))
+    if max(forhold) > 2.2 * min(forhold):   # i den rigtige raekkefoelge ligger de inden for 1,5 af hinanden
+        return None
+    if sys.byteorder == 'big':
+        for st in stykker:
+            st.byteswap()
+    return [st.tobytes() for st in stykker]
+
+
+def lav_flere(opgaver, ventet=0):
+    """Lav flere klip i ét kald: opgaver er (tekst, sti). Gaar opdelingen ikke op, deles
+    opgaverne i to og proeves igen, ned til ét ad gangen. Svarer med (lavet, fejl)."""
+    if len(opgaver) == 1:
+        t, sti = opgaver[0]
+        try:
+            return [(t, sti, lav_et(t, sti))], []
+        except ValueError as e:
+            return [], [(t, sti, str(e))]
+    tekster = [t for t, _ in opgaver]
+    while True:
+        try:
+            pcm, sr = kald('\n\n'.join(tekster), NOTE_FLERE)
+            break
+        except urllib.error.HTTPError as e:
+            krop = e.read().decode('utf-8', 'replace')
+            if e.code != 429:
+                return [], [(t, sti, 'HTTP %d: %s' % (e.code, krop[:200])) for t, sti in opgaver]
+            ventet += vent_paa_gemini(krop, ventet)
+        except (ValueError, KeyError, IndexError) as e:
+            pcm = None
+            break
+    stykker = del_op(pcm, sr, tekster) if pcm else None
+    if stykker is None:
+        halv = len(opgaver) // 2
+        print('        %d linjer i ét kald gik ikke op; proever %d og %d' % (len(opgaver), halv, len(opgaver) - halv))
+        a1, f1 = lav_flere(opgaver[:halv])
+        a2, f2 = lav_flere(opgaver[halv:])
+        return a1 + a2, f1 + f2
+    lavet, fejl = [], []
+    for (t, sti), st in zip(opgaver, stykker):
+        try:
+            lydd, sek = klargoer(st, sr)
+            with open(sti, 'wb') as f:
+                f.write(mp3(lydd, sr))
+            lavet.append((t, sti, sek))
+        except ValueError as e:
+            fejl.append((t, sti, str(e)))
+    return lavet, fejl
 
 
 def laes_klip():
@@ -239,17 +352,17 @@ def lav():
             print('  %-44s %s' % (filnavn(t), t))
         return
     lavet, fejl = 0, []
-    for nr, t in enumerate(opgaver, 1):
+    for k in range(0, len(opgaver), PR_KALD):
+        bundt = [(t, os.path.join(UD, filnavn(t))) for t in opgaver[k:k + PR_KALD]]
         try:
-            sek = lav_et(t, os.path.join(UD, filnavn(t)))
-            lavet += 1
-            print('  %3d/%d %4.1f s  %s' % (nr, len(opgaver), sek, t))
+            ok, f = lav_flere(bundt)
         except Stop:
-            print('Gemini har sagt stop i en halv time (429). Koer igen senere; de klip, der er lavet, bliver liggende.')
+            print('Gemini har brugt dagens kald (100 om dagen for denne model). Koer igen i morgen; de klip, der er lavet, bliver liggende.')
             break
-        except ValueError as e:
-            fejl.append((t, str(e)))
-        time.sleep(0.3)
+        for t, sti, sek in ok:
+            lavet += 1
+            print('  %3d/%d %4.1f s  %s' % (lavet, len(opgaver), sek, t))
+        fejl += [(t, e) for t, sti, e in f]
     antal = registrer(liste)
     print('%d klip lavet, %d i klip.json.' % (lavet, antal))
     for t, f in fejl:
@@ -324,20 +437,21 @@ def lav_faste():
             print('  %-24s %s' % (f, t))
         return
     fandtes = set(os.listdir(UD)) if os.path.isdir(UD) else set()
-    fejl = []
-    for nr, (f, t) in enumerate(opgaver, 1):
+    fejl, nr = [], 0
+    for k in range(0, len(opgaver), PR_KALD):
+        bundt = opgaver[k:k + PR_KALD]
         try:
-            sek = lav_et(t, os.path.join(UD, f))
-            lavet.add(f)
-            if not kun:
-                json.dump(sorted(lavet), open(husk, 'w'))
-            print('  %3d/%d %4.1f s  %-22s %s' % (nr, len(opgaver), sek, f, t))
+            ok, fl = lav_flere([(t, os.path.join(UD, f)) for f, t in bundt])
         except Stop:
-            print('Gemini har sagt stop i en halv time (429). Koer igen senere; den fortsaetter, hvor den slap.')
+            print('Gemini har brugt dagens kald (100 om dagen for denne model). Koer igen i morgen; den fortsaetter, hvor den slap.')
             return
-        except ValueError as e:
-            fejl.append((f, str(e)))
-        time.sleep(0.3)
+        for t, sti, sek in ok:
+            nr += 1
+            lavet.add(os.path.basename(sti))
+            print('  %3d/%d %4.1f s  %-22s %s' % (nr, len(opgaver), sek, os.path.basename(sti), t))
+        if not kun:
+            json.dump(sorted(lavet), open(husk, 'w'))
+        fejl += [(os.path.basename(sti), e) for t, sti, e in fl]
     nye = sorted(f for f, t in liste if f not in fandtes and os.path.exists(os.path.join(UD, f)))
     if nye and os.path.exists(os.path.join(UD, 'klip.json')):
         # Nye filer skal i klip.json og i FILER i sw.js; de gamle ligger der allerede
