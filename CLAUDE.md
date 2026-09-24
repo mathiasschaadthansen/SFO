@@ -84,10 +84,14 @@ To slags spil:
 Stilen skal stå som "DIRECTOR'S NOTES" før teksten; skrives den som "Læs
 varmt: …", læser stemmen også beskrivelsen op. Nøglen ligger som
 API-credential til `generativelanguage.googleapis.com` med headeren
-`x-goog-api-key`, aldrig i repoet. Den har betaling slået til: uden betaling
-giver den kun cirka 10 klip om dagen, med betaling cirka 10 i minuttet, som
-værktøjet selv venter på. Hele appen er cirka 25 minutters tale og koster få
-kroner at lave om.
+`x-goog-api-key`, aldrig i repoet. Den har betaling slået til (Tier 1), men
+`gemini-3.8-flash-tts` giver stadig kun 10 kald i minuttet og 100 om dagen
+(uden betaling 10 om dagen). Derfor læser værktøjet op til 12 sætninger i ét
+kald og deler optagelsen op ved pauserne. Er dagens kald brugt, stopper det og
+fortsætter næste dag, hvor det slap. Kør kun ét spil ad gangen: flere kørsler
+samtidig deler de 10 i minuttet. Hele appen er cirka 25 minutters tale og
+koster få kroner at lave om. Skift ikke model for enkelte klip: Kore lyder
+forskelligt i hver model.
 
 ## Rammer der ikke skal brydes
 
