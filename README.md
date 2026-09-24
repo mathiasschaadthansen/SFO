@@ -23,6 +23,10 @@ Spillene indtil nu:
   øen i 3D. Stemmen siger, hvilket sted brevet skal til, og hvor modtageren
   sidder: oven på taget, inde i hulen, mellem de to skilte. Undervejs under
   broen og til sidst rundt om det store træ.
+- **Årstidshaven** (mappen `have`): Pelle ønsker sig noget fra haven, fx tre
+  tomater eller noget rødt. Find bedet med det rigtige skilt, så, vand og høst,
+  og tæl med, når det lander hos Pelle. Hold kaninen og fuglen væk, og drej
+  årstidsuret fra forår til vinter. I 3D som Himmelvejen.
 
 ## Kom i gang
 
@@ -112,6 +116,10 @@ games/flyv/
   js/flyvning.js        Sannes flyvning, brevene, broen og rundt om træet — ingen DOM
   js/game.js            3D-tegningen (WebGL 1, ingen biblioteker), kortet, ordene, menu, stemme
 test/flyv.test.js       en robot flyver alle breve ud på alle tre stjerner, med tryk og ved at flyve selv
+games/have/
+  js/haven.js           bedene, Pelles ønsker, ordene, vejret, årstiderne, kaninen og fuglen — ingen DOM
+  js/game.js            3D-tegningen (samme tegner som Himmelvejen), boblen, redskaberne, årstidsuret, menu, stemme
+test/have.test.js       en robot opfylder Pelles ønsker på alle tre stjerner og med to spillere
 bog/
   js/bog.js             de ti opslag: tekst, rim, hvem Pelle møder, hvor nøglen og skaden er — ingen DOM
   js/scener.js          billedet til hvert opslag, tegnet i kode med spillenes malede figurer
@@ -775,6 +783,52 @@ dyr, hvor præcis ét sidder dér, hvor brevet siger, at den, der sidder mellem,
 faktisk sidder mellem, set forfra, og lader en robot flyve alle breve ud på
 alle tre stjerner, både ved at trykke (også på et forkert dyr først) og ved
 selv at flyve, under broen og rundt om træet.
+
+## Årstidshaven (mappen `have`)
+
+Pelles egen have: otte bede i to rækker, et hegn, æbletræet, huset og kurven.
+Hvert bed har et skilt med det, der gror dér: gulerod, tomat, jordbær,
+salat, agurk og peberfrugt, og guleroden og salaten har to bede hver.
+
+**Pelles ønsker driver spillet.** Stemmen siger fx "Pelle ønsker sig tre
+tomater. Kan I finde bedet med skiltet?", og skiltet ved det rigtige bed
+vipper. Barnet sår med frøposen, vander tre gange (frø, spire, plante,
+grøntsag, og stemmen siger, hvad planten er blevet til) og høster med kurven.
+Et bed giver én til tre, og stemmen siger, hvor mange der blev høstet. Det,
+Pelle ønsker sig, flyver hen til ham, og stemmen tæller med: "en, to, tre".
+Resten kommer i kurven. Hvert tredje ønske er en kategori: noget rødt, noget
+grønt, noget, der gror nede i jorden, og så spørger stemmen "Hvad er rødt i
+haven?". Guleroden gror nede i jorden, så kun toppen stikker op.
+
+**Stjernerne** er, hvor meget der skal tælles: én stjerne 1-3 med billeder i
+boblen, der får et flueben, når de er kommet; to stjerner 2-5 med prikker, der
+bliver fyldt; tre stjerner to ting på én gang, fx to gulerødder og én agurk.
+Et tryk på boblen siger ønsket igen.
+
+**Dyrene** vil også have noget. Kaninen hopper hen og gnasker i et bed med
+blade, og fuglen kommer, hvis frø venter for længe på vand. Et tryk, så går
+de. Når de når at spise, går planten kun ét trin tilbage. Ingen straf.
+
+**Årstidsuret** foroven skifter årstid ved et tryk. Forår: regnbyger vander
+bedene. Sommer: en plante, der mangler vand, hænger, og en dråbe hopper over
+den. Efterår: planterne giver nye frø til frøposen, æblerne kan plukkes med
+kurven, og egernet hopper i træet. Vinter: sneen dækker det, der ikke blev
+høstet, og Pelle sover (zzz tegnet med streger i boblen).
+
+**To spillere** har hver sin række redskaber i hvert sit hjørne og deler
+haven; Pelle står da i midten. Et tryk i venstre halvdel bruger den venstre
+spillers redskab.
+
+**3D** med samme WebGL 1-tegner som Himmelvejen. Alle figurer er lånt fra de
+andre spil (Nøddeskoven, Bogstavvejen, Skovkøkkenet og forsiden); der er
+ingen nye billedfiler. **Stemmen** er enhedens egen danske stemme (kun en
+lokal) indtil Camilla har indtalt sætningerne i `haven.js`.
+
+Testen lader en robot opfylde ni ønsker på hver stjerne og fire med to
+spillere, og tjekker, at stemmen tæller med, at ønskerne har den rette
+størrelse, at planten vokser ét trin pr. vand, at kaninen og fuglen kommer og
+kan jages væk, sommerens tørke, regnen, efterårets frø, æblerne og vinteren,
+og at ordene er rigtige (én tomat, ét jordbær, tre gulerødder).
 
 ## Bogen om Nøddeskoven (mappen `bog`)
 

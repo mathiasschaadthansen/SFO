@@ -541,7 +541,7 @@
     g.gain.setValueAtTime(st || 0.1, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + l);
     o.connect(g); g.connect(lyd.destination); o.start(t0); o.stop(t0 + l + 0.05);
   }
-  function melodi(toner, mellem) { toner.forEach(function (f, i) { tone(f, 0.22, 0.09, i * mellem); }); }
+  function melodi(toner, mellem) { toner.forEach(function (f, i) { tone(f, 0.22, 0.09, i * mellem / 1000); }); }   // mellem i millisekunder
   var LYDE = {
     valgt: function () { tone(784, 0.12, 0.06); },
     forkert: function () { tone(330, 0.2, 0.07); },

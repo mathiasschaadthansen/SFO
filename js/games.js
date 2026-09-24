@@ -163,5 +163,16 @@ window.SPIL = [
     art: '<div class="art">' +
          '<img src="bog/billeder/skade.png" alt="" style="left:18px;top:6px;width:84px">' +
          '</div>'
+  },
+  {
+    id: 'have',
+    navn: 'Årstidshaven',
+    tekst: 'Så, vand og høst det, Pelle ønsker sig, og tæl med. Hold kaninen væk. 1 eller 2 spillere.',
+    farve: '#dfe9c8',
+    sti: 'games/have/',
+    art: '<div class="art">' +
+         '<img src="games/restaurant/billeder/tomat.png" alt="" style="left:6px;top:44px;width:50px">' +
+         '<img src="games/bogstaver/billeder/gulerod.png" alt="" style="left:58px;top:10px;width:58px">' +
+         '</div>'
   }
 ];
