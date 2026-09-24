@@ -352,6 +352,7 @@ const FILER = [
   'games/flyv/js/flyvning.js',
   'games/flyv/js/game.js',
   'games/flyv/lyd/klip.json',
+  'games/flyv/lyd/sanne_vil_du_flyve_med_et_982c83.mp3',
   'games/have/',
   'games/have/index.html',
   'games/have/js/haven.js',
