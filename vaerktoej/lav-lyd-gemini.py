@@ -177,6 +177,7 @@ def lav_et(tekst, sti):
             # Gratisnoeglen giver kun faa klip og siger selv, hvor laenge der skal ventes.
             m = re.search(r'"retryDelay":\s*"(\d+)', krop)
             pause = int(m.group(1)) + 2 if m else 30
+            pause = min(pause, 120)   # Gemini har bedt om 14 timer, og saa virkede det igen efter et minut
             if ventet > 1800:
                 raise Stop()
             print('        venter %d s paa Gemini ...' % pause)
