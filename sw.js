@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v100';
+const VERSION = 'sfo-spil-v101';
 
 const FILER = [
   './',
@@ -17,6 +17,7 @@ const FILER = [
   'js/sprites.js',
   'js/skal.js',
   'js/menu.js',
+  'js/stemme.js',
   'icons/icon-192.png',
   'icons/icon-512.png',
   'bog/',
@@ -350,10 +351,17 @@ const FILER = [
   'games/flyv/js/oe.js',
   'games/flyv/js/flyvning.js',
   'games/flyv/js/game.js',
+  'games/flyv/lyd/klip.json',
   'games/have/',
   'games/have/index.html',
   'games/have/js/haven.js',
   'games/have/js/game.js',
+  'games/have/lyd/klip.json',
+  'games/have/lyd/det_er_foraar_nu_kan_vi_d6d82c.mp3',
+  'games/have/lyd/det_er_sommer_husk_at_vande_4d6e3b.mp3',
+  'games/have/lyd/og_saa_tre_tomater_7ba5f1.mp3',
+  'games/have/lyd/pelle_oensker_sig_tre_tomater_211685.mp3',
+  'games/have/lyd/tak_jeg_mangler_tre_tomater_mere_e025ea.mp3',
   'games/find/',
   'games/find/index.html',
   'games/find/js/find.js',

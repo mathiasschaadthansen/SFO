@@ -46,6 +46,7 @@ index.html              menuen — bygges ud fra js/games.js
 js/games.js             spil-registret. Tilføj et spil = én blok her
 js/sprites.js           fælles indlæsning og omfarvning af sprites
 js/menu.js              fælles menuikoner: stjerner, spillere, start, igen, tilbage
+js/stemme.js            fælles stemme til spil, der taler i hele sætninger: klip fra lyd/klip.json, ellers enhedens stemme
 assets/kenney/          sprites fra Kenney (CC0): biler, klatter, figurer, raket
 sw.js                   offline-cache. Nye filer skal tilføjes til FILER
 manifest.webmanifest    gør siden til en app på hjemmeskærmen
@@ -81,6 +82,7 @@ games/bogstaver/
   lyd/klip.json         rigtige optagelser, hvis der er nogen (se lyd/NOTICE.md)
 vaerktoej/lav-lyd.py    pakker optagelser som MP3 og skriver klip.json
 vaerktoej/lav-lyd-elevenlabs.py  laver klippene med ElevenLabs, én gang, med din egen nøgle
+vaerktoej/lav-lyd-gemini.py      laver Himmelvejens og Årstidshavens klip med Gemini (Kore), ét pr. sætning
 vaerktoej/optag.html    optagerside: siger man de 146 ord ind, får man WAV-filer med rigtige navne
 
 games/restaurant/
@@ -115,10 +117,12 @@ games/flyv/
   js/oe.js              øen: landskab, steder, flod, bro, træet, pynten, dyrene og brevene — ingen DOM
   js/flyvning.js        Sannes flyvning, brevene, broen og rundt om træet — ingen DOM
   js/game.js            3D-tegningen (WebGL 1, ingen biblioteker), kortet, ordene, menu, stemme
+  lyd/*.mp3             ét klip pr. sætning (Gemini, Kore); lyd/klip.json siger, hvilken fil der er hvilken sætning
 test/flyv.test.js       en robot flyver alle breve ud på alle tre stjerner, med tryk og ved at flyve selv
 games/have/
   js/haven.js           bedene, Pelles ønsker, ordene, vejret, årstiderne, kaninen og fuglen — ingen DOM
   js/game.js            3D-tegningen (samme tegner som Himmelvejen), boblen, redskaberne, årstidsuret, menu, stemme
+  lyd/*.mp3             ét klip pr. sætning (Gemini, Kore); lyd/klip.json siger, hvilken fil der er hvilken sætning
 test/have.test.js       en robot opfylder Pelles ønsker på alle tre stjerner og med to spillere
 bog/
   js/bog.js             de ti opslag: tekst, rim, hvem Pelle møder, hvor nøglen og skaden er — ingen DOM
@@ -775,8 +779,10 @@ former med vinger, der slår. Figurerne er de malede billeder fra de andre spil,
 sat op som udklip, der vender mod kameraet. Der er ingen nye billedfiler.
 Bliver det for tungt, går tegningen selv ned i opløsning.
 
-**Stemmen** er enhedens egen danske stemme (kun en lokal) indtil videre. Skal
-Camilla indtale brevene, er sætningerne dem i `BUD` i `oe.js`.
+**Stemmen** er klip med Gemini (stemmen Kore), ét pr. sætning i `lyd/`, lavet
+med `vaerktoej/lav-lyd-gemini.py --spil flyv` ud fra `Oe.saetninger()`. Et
+forkert dyrs svar er to klip i træk: "Nej, jeg sidder mellem de to huse." og
+brevets "Brevet skal til kaninen oven på taget.".
 
 Testen tjekker øen, floden og pladsen under broen, at hvert sted har tre ens
 dyr, hvor præcis ét sidder dér, hvor brevet siger, at den, der sidder mellem,
@@ -821,8 +827,11 @@ spillers redskab.
 
 **3D** med samme WebGL 1-tegner som Himmelvejen. Alle figurer er lånt fra de
 andre spil (Nøddeskoven, Bogstavvejen, Skovkøkkenet og forsiden); der er
-ingen nye billedfiler. **Stemmen** er enhedens egen danske stemme (kun en
-lokal) indtil Camilla har indtalt sætningerne i `haven.js`.
+ingen nye billedfiler. **Stemmen** er klip med Gemini (stemmen Kore), ét pr.
+sætning, lavet med `vaerktoej/lav-lyd-gemini.py --spil have` ud fra
+`Haven.saetninger()`. Ønsker og tællinger er hele sætninger for hver
+mulighed ("Pelle ønsker sig tre tomater.", "Og så én agurk.", "To!"), og
+`js/stemme.js` sætter dem sammen.
 
 Testen lader en robot opfylde ni ønsker på hver stjerne og fire med to
 spillere, og tjekker, at stemmen tæller med, at ønskerne har den rette

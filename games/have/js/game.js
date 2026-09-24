@@ -477,22 +477,9 @@
     aar: function () { melodi([392, 523, 659], 140); }
   };
 
-  /* Stemmen: enhedens egen danske stemme, og kun en, der ligger paa enheden, saa intet gaar
-     over nettet. Naar Camillas klip er lavet, afspilles de i stedet. */
-  var stemme = null;
-  function findStemme() {
-    try { stemme = window.speechSynthesis.getVoices().filter(function (s) { return /^da/i.test(s.lang) && s.localService; })[0] || null; } catch (e) { stemme = null; }
-  }
-  if (window.speechSynthesis) { findStemme(); window.speechSynthesis.onvoiceschanged = findStemme; }
-  function tal(tekst, afbryd) {
-    if (!lydTil || !window.speechSynthesis || !stemme) return;
-    try {
-      if (afbryd) window.speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(tekst); u.voice = stemme; u.lang = stemme.lang; u.rate = 0.9; u.pitch = 1.05;
-      window.speechSynthesis.speak(u);
-    } catch (e) { /* stemmen er pynt */ }
-  }
-  function tie() { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* intet */ } }
+  /* Stemmen: klippene i lyd/ (Gemini, stemmen Kore), ellers enhedens egen danske stemme. Se js/stemme.js. */
+  var stemme = Stemme.ny({ mappe: 'lyd/', kontekst: function () { return lyd; }, til: function () { return lydTil; }, rate: 0.9 });
+  function tie() { stemme.tie(); }
 
   /* ---------- tilstanden ---------- */
   var tilstand = 'menu', tid = 0, spillere = 1, svaerhed = 0;
@@ -510,8 +497,8 @@
   }
   /* Haven selv: ønsker, vejr og dyr. Den siger til, naar der skal tales, spilles en lyd eller drysses noget. */
   var H = Hv.ny({
-    sig: function (t) { tal(t, true); },
-    sigKoe: function (t) { tal(t, false); },   // taellingen og tak siges efter hinanden, ikke oven i hinanden
+    sig: function (t) { stemme.sig(t); },
+    sigKoe: function (t) { stemme.koe(t); },   // taellingen og tak siges efter hinanden, ikke oven i hinanden
     lyd: function (n, x) { if (LYDE[n]) LYDE[n](x); },
     gnist: gnister,
     vand: function (bd, kraft) {
@@ -1033,7 +1020,7 @@
     function s(p) { return skaerm(p); }
     return {
       tilstand: tilstand, aar: H.aar, skift: !!H.skift, regn: !!H.regn, kurv: H.kurv.length, sagt: H.sagt, niveau: H.niveau, spillere: spillere,
-      stemme: stemme ? stemme.name : null, billeder: Object.keys(tekstur).length,
+      stemme: stemme.stemme(), klip: stemme.antalKlip(), billeder: Object.keys(tekstur).length,
       bede: H.bede.map(function (bd) { var q = s([bd.x, BED_H, bd.z]); return { afgr: bd.afgr, fase: bd.fase, vaekst: +bd.vaekst.toFixed(2), antal: bd.antal, toerst: !!bd.toerst, sx: q && q.x, sy: q && q.y }; }),
       knapper: knapper.map(function (k) { return { x: k.x, y: k.y, spiller: k.spiller, hvad: k.hvad }; }), ur: uret, boble: boble,
       oenske: H.oenske ? H.oenske.dele.map(function (d) { return { afgr: d.afgr, kat: d.kat, antal: d.antal, faaet: d.faaet }; }) : null,

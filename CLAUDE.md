@@ -54,7 +54,7 @@ broen, og at Sanne altid drejer hjem ude over havet.
 og med to spillere og tjekker, at stemmen tæller med, at hver afgrøde og
 kategori har et bed, at planten vokser ét trin pr. vand, at kaninen og fuglen
 kan jages væk og kun sætter planten ét trin tilbage, og at vinteren, tørken og
-efterårets frø virker.
+efterårets frø virker, og at alt, haven kan sige, er indtalt.
 
 **Stemme.** Bogstavvejen (og Rimhulen, som låner dens ordklip) bruger rigtige
 klip med en dansk stemme fra ElevenLabs (Camilla) til bogstavnavne, tal, ord og
@@ -64,6 +64,21 @@ siger enhedens egen talesyntese det i stedet, og kun stemmer med `localService`
 bruges, så der aldrig går noget over nettet. Klip laves én gang med
 `vaerktoej/lav-lyd-elevenlabs.py` eller lægges ind med `--registrer`. Piper blev
 prøvet og forkastet på udtalen.
+
+Himmelvejen og Årstidshaven taler i hele sætninger og bruger i stedet Gemini
+(`gemini-3.8-flash-tts`, stemmen Kore), lavet med
+`vaerktoej/lav-lyd-gemini.py --spil have|flyv`. Hver sætning er ét klip, og
+`lyd/klip.json` er `{ sætning: fil }`. `js/stemme.js` deler en replik i
+sætninger og spiller den længste række, der har ét klip, så en sammensat
+replik ("Pelle ønsker sig to gulerødder. Og så én agurk.") er flere klip i
+træk. Sætningerne står i spillets kode (`Haven.saetninger()`,
+`Oe.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
+Ændrer du en sætning, så kør værktøjet igen. Byg nye replikker af hele
+sætninger, aldrig et klip midt i en sætning. Stilen skal stå som "DIRECTOR'S
+NOTES" før teksten; skrives den som "Læs varmt: …", læser stemmen også
+beskrivelsen op. Gratisnøglen har en grænse pr. minut, som værktøjet venter
+på. Nøglen ligger som API-credential til `generativelanguage.googleapis.com`
+med headeren `x-goog-api-key`, aldrig i repoet. Et spil har kun én stemme.
 
 ## Rammer der ikke skal brydes
 

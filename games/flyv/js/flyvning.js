@@ -37,6 +37,7 @@
     /* Hvor lang tid en saetning tager. Stemmen melder selv, naar den er faerdig, hvis den kan. */
     function snak(t) { F.taleSlut = F.spilTid + 1.2 + t.length * 0.072; sig(t); }
     F.taleFaerdig = function () { F.taleSlut = Math.min(F.taleSlut, F.spilTid + 0.2); };
+    F.taleVarer = function (sek) { F.taleSlut = Math.max(F.taleSlut, F.spilTid + sek); };   // et indtalt klip varer, saa laenge det varer
 
     F.detteBud = function () { return F.bud && F.bud.nr < BUD.length ? BUD[F.bud.nr] : null; };
     F.baererBrev = function () { var f = F.bud && F.bud.fase; return !!F.detteBud() && (f === 'afsted' || f === 'finde' || f === 'rundt'); };

@@ -221,12 +221,25 @@
   var ORDENE = ['ovenpaa', 'indei', 'mellem', 'under', 'rundtom'];
   var STEDNAVN = { noeddeskoven: 'Nøddeskoven', vrimleskoven: 'Vrimleskoven', rimhulen: 'Rimhulen', bogstavvejen: 'Bogstavvejen' };
 
+  /* Alle saetninger, stemmen kan sige, hver som ét klip. Et forkert dyrs svar er to af dem:
+     "Nej, jeg sidder mellem de to huse." og brevets "Brevet skal til ...". Bruges af
+     vaerktoej/lav-lyd-gemini.py og testen; js/stemme.js saetter klippene sammen. */
+  function saetninger() {
+    var ud = [];
+    function laeg(t) { if (t && ud.indexOf(t) < 0) ud.push(t); }
+    BUD.forEach(function (b) { laeg(b.start); laeg(b.spoerg); laeg(b.mangler); laeg(b.tak); });
+    laeg(BRO_SPOERG); laeg(BRO_ROS);
+    var dyr = lavSteder().dyr;
+    Object.keys(dyr).forEach(function (st) { dyr[st].forEach(function (m) { if (m.hvor) laeg('Nej, jeg sidder ' + m.hvor + '.'); }); });
+    return ud;
+  }
+
   var Oe = {
     sub: sub, dot: dot, cross: cross, norm: norm, mix: mix, klem: klem, jaevn: jaevn, vinkelForskel: vinkelForskel,
     tilfaeldig: tilfaeldig, stoej: stoej, hex: hex, blend: blend, P: P,
     OE_R: OE_R, RUNDT: RUNDT, STED: STED, ALLE: ALLE, FLOD: FLOD, TRAE: TRAE, BRO: BRO, BAKKE: BAKKE, START: START,
     flodAfstand: flodAfstand, hoejde: hoejde, jordFarve: jordFarve, krydsHoejde: krydsHoejde, lokalt: lokalt, lokaleKoord: lokaleKoord,
-    lavSteder: lavSteder, BUD: BUD, BRO_SPOERG: BRO_SPOERG, BRO_ROS: BRO_ROS, ORDENE: ORDENE, STEDNAVN: STEDNAVN
+    lavSteder: lavSteder, saetninger: saetninger, BUD: BUD, BRO_SPOERG: BRO_SPOERG, BRO_ROS: BRO_ROS, ORDENE: ORDENE, STEDNAVN: STEDNAVN
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = { Oe: Oe };
   else rod.FlyvOe = Oe;
