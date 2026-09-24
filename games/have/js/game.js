@@ -783,6 +783,29 @@
     }
     hx.restore();
   }
+  /* Hvor boblen skal staa: lige over Pelle, men aldrig oven paa et bed, redskaberne eller uret.
+     Rammer den noget, rykker den til siden, saa langt halen stadig kan pege paa Pelle. */
+  function placerBoble(px, by, b, h, W) {
+    var forhindringer = H.bede.map(bedKasse).filter(Boolean);
+    knapper.forEach(function (k) { forhindringer.push({ x0: k.x - k.r, y0: k.y - k.r, x1: k.x + k.r, y1: k.y + k.r }); });
+    if (uret) forhindringer.push({ x0: uret.x - uret.r, y0: uret.y - uret.r, x1: uret.x + uret.r, y1: uret.y + uret.r });
+    function overlap(x) {
+      var sum = 0;
+      forhindringer.forEach(function (o) {
+        var dx = Math.min(x + b, o.x1) - Math.max(x, o.x0), dy = Math.min(by + h + 12, o.y1) - Math.max(by, o.y0);
+        if (dx > 0 && dy > 0) sum += dx * dy;
+      });
+      return sum;
+    }
+    var bedst = klem(px - b / 2, 8, W - b - 8), mindst = overlap(bedst);
+    for (var skub = 20; mindst > 0 && skub <= b / 2 - 10; skub += 20) {
+      [-skub, skub].forEach(function (d) {
+        var x = klem(px - b / 2 + d, 8, W - b - 8), o = overlap(x);
+        if (o < mindst) { mindst = o; bedst = x; }
+      });
+    }
+    return bedst;
+  }
   function tegnHud() {
     var W = hud.width / hudSkala, Hh = hud.height / hudSkala, aar = H.aar, skift = H.skift;
     hx.setTransform(hudSkala, 0, 0, hudSkala, 0, 0);
@@ -822,24 +845,27 @@
     }
     /* Pelles boble: det, han oensker sig, med én prik for hver, der skal taelles. Fyldte prikker er dem, han har faaet.
        Med én stjerne staar tingene der i stedet for prikker, og de faar et flueben, naar de er kommet. Om vinteren sover han. */
-    var ph = skaerm([H.pelle.x, 6.6 + H.pelleDy, H.pelle.z]), oenske = H.oenske;
+    var ph = skaerm([H.pelle.x, 5.9 + H.pelleDy, H.pelle.z]), oenske = H.oenske;
     if (ph && (oenske || aar === 'vinter') && !skift) {
-      var ik = smal ? 38 : 48, prik = smal ? 8 : 10, pad = 10, rH = ik + 6, dele = oenske ? oenske.dele : [];
-      var bredde = aar === 'vinter' ? (smal ? 64 : 78) : pad * 2 + Math.max.apply(null, dele.map(function (d) {
-        return H.niveau === 1 && d.afgr ? d.antal * ik * 0.86 : ik + 8 + d.antal * (prik * 2 + 5);
-      }));
-      var hoej = aar === 'vinter' ? bredde : pad * 2 + dele.length * rH - 6;
-      var bx = klem(ph.x - bredde / 2, 8, W - bredde - 8), by = ph.y - hoej - 14;
+      /* Delene staar ved siden af hinanden, saa boblen kun er én raekke hoej og holder sig nede ved Pelle */
+      var ik = smal ? 38 : 48, prik = smal ? 8 : 10, pad = 10, gab = 18, dele = oenske ? oenske.dele : [];
+      var delB = dele.map(function (d) { return H.niveau === 1 && d.afgr ? d.antal * ik * 0.86 : ik + 8 + d.antal * (prik * 2 + 5); });
+      var bredde = aar === 'vinter' ? (smal ? 64 : 78) : pad * 2 + delB.reduce(function (a, b) { return a + b; }, 0) + gab * (dele.length - 1);
+      var hoej = aar === 'vinter' ? bredde : pad * 2 + ik;
+      var by = ph.y - hoej - 12, bx = placerBoble(ph.x, by, bredde, hoej, W);
       boble = { x: bx, y: by, b: bredde, h: hoej };
+      var halen = klem(ph.x, bx + 20, bx + bredde - 20);
       hx.save(); hx.shadowColor = 'rgba(107,85,68,.22)'; hx.shadowOffsetY = 4; hx.shadowBlur = 8;
       hx.fillStyle = '#f8f1e6'; rr(hx, bx, by, bredde, hoej, 18); hx.fill();
-      hx.beginPath(); hx.moveTo(ph.x - 9, by + hoej - 1); hx.lineTo(ph.x, by + hoej + 13); hx.lineTo(ph.x + 9, by + hoej - 1); hx.fill(); hx.restore();
+      hx.beginPath(); hx.moveTo(halen - 9, by + hoej - 1); hx.lineTo(ph.x, by + hoej + 11); hx.lineTo(halen + 9, by + hoej - 1); hx.fill(); hx.restore();
       if (aar === 'vinter') {
         var zz = Math.sin(tid * 2) * 3;
         hx.strokeStyle = '#6b5545'; hx.lineWidth = Math.max(2.5, bredde * 0.05); hx.lineCap = 'round'; hx.lineJoin = 'round';
         tegnZ(bx + bredde * 0.32, by + bredde * 0.68 + zz, bredde * 0.14); tegnZ(bx + bredde * 0.5, by + bredde * 0.5 - zz, bredde * 0.18); tegnZ(bx + bredde * 0.7, by + bredde * 0.3 + zz, bredde * 0.24);
       } else dele.forEach(function (d, i) {
-        var cy = by + pad + i * rH + ik / 2, x = bx + pad;
+        var cy = by + pad + ik / 2, x = bx + pad;
+        for (var f = 0; f < i; f++) x += delB[f] + gab;
+        if (i > 0) { hx.strokeStyle = 'rgba(94,74,58,.25)'; hx.lineWidth = 2; hx.beginPath(); hx.moveTo(x - gab / 2, by + pad + 4); hx.lineTo(x - gab / 2, by + hoej - pad - 4); hx.stroke(); }
         if (H.niveau === 1 && d.afgr) {
           for (var k = 0; k < d.antal; k++) {
             var ix = x + k * ik * 0.86, bi = billede[d.afgr], s = ik * 0.9;
@@ -911,6 +937,22 @@
     if (!c || !t) return false;
     return Math.hypot(x - c.x, y - c.y) < Math.max(55, Math.abs(c.y - t.y) * 1.6);
   }
+  /* Hvor et bed ligger paa skaermen: rammen, planterne over det og skiltet. Boblen maa ikke dække det. */
+  function bedKasse(bd) {
+    var hb = BED_B / 2 + 0.8, hd = BED_D / 2 + 0.8, xs = [], ys = [];
+    [[-hb, BED_H, -hd], [hb, BED_H, -hd], [hb, BED_H, hd], [-hb, BED_H, hd], [-hb, 4.5, 0], [hb, 4.5, 0], [-BED_B / 2 + 0.7, 4, BED_D / 2]].forEach(function (k) {
+      var q = skaerm([bd.x + k[0], k[1], bd.z + k[2]]); if (q) { xs.push(q.x); ys.push(q.y); }
+    });
+    if (!xs.length) return null;
+    return { x0: Math.min.apply(null, xs), y0: Math.min.apply(null, ys), x1: Math.max.apply(null, xs), y1: Math.max.apply(null, ys) };
+  }
+  function pelleKasse() {
+    if (!dyr.pelle) return null;
+    var h = dyr.pelle.h, b = dyr.pelle.b || h, t = skaerm([H.pelle.x, dyr.pelle.y + h + H.pelleDy, H.pelle.z]), f = skaerm([H.pelle.x, dyr.pelle.y + H.pelleDy, H.pelle.z]);
+    var v = skaerm([H.pelle.x - b / 2, dyr.pelle.y, H.pelle.z]), hj = skaerm([H.pelle.x + b / 2, dyr.pelle.y, H.pelle.z]);
+    if (!t || !f || !v || !hj) return null;
+    return { x0: v.x, y0: t.y, x1: hj.x, y1: f.y };
+  }
   function aebleVed(x, y) {
     if (H.aar !== 'efteraar' || !dyr.aebler) return null;
     var bedst = null, bd0 = 60;
@@ -924,12 +966,13 @@
       if (Math.hypot(x - k.x, y - k.y) < k.r) { valg[k.spiller] = k.hvad; LYDE.vaelg(); return; }
     }
     if (uret && Math.hypot(x - uret.x, y - uret.y) < uret.r) { H.naesteAar(); return; }
-    if (boble && x > boble.x - 10 && x < boble.x + boble.b + 10 && y > boble.y - 10 && y < boble.y + boble.h + 20) { H.sigOenske(); return; }
     if (H.aar !== 'vinter' && dyrVed(dyr.kanin, x, y) && H.jagKanin()) return;
     if (dyrVed(dyr.fugl, x, y) && H.jagFugl()) return;
     var spiller = spillere === 2 && x > window.innerWidth / 2 ? 1 : 0;
     var bd = bedVed(x, y);
     if (bd) { H.arbejd(bd, valg[spiller]); return; }
+    /* Boblen kommer efter bedene: et tryk paa et bed er altid havearbejde, ogsaa hvis boblen staar taet paa */
+    if (boble && x > boble.x - 10 && x < boble.x + boble.b + 10 && y > boble.y - 10 && y < boble.y + boble.h + 20) { H.sigOenske(); return; }
     var a = aebleVed(x, y);
     if (a) H.aeble(a, valg[spiller]);
   }
@@ -1035,7 +1078,8 @@
       tilstand: tilstand, aar: H.aar, skift: !!H.skift, regn: !!H.regn, kurv: H.kurv.length, sagt: H.sagt, niveau: H.niveau, spillere: spillere,
       stemme: stemme ? stemme.name : null, billeder: Object.keys(tekstur).length,
       bede: H.bede.map(function (bd) { var q = s([bd.x, BED_H, bd.z]); return { afgr: bd.afgr, fase: bd.fase, vaekst: +bd.vaekst.toFixed(2), antal: bd.antal, toerst: !!bd.toerst, sx: q && q.x, sy: q && q.y }; }),
-      knapper: knapper.map(function (k) { return { x: k.x, y: k.y, spiller: k.spiller, hvad: k.hvad }; }), ur: uret, boble: boble,
+      knapper: knapper.map(function (k) { return { x: k.x, y: k.y, r: k.r, spiller: k.spiller, hvad: k.hvad }; }), ur: uret, boble: boble,
+      bedKasser: H.bede.map(bedKasse), pelle: pelleKasse(),
       oenske: H.oenske ? H.oenske.dele.map(function (d) { return { afgr: d.afgr, kat: d.kat, antal: d.antal, faaet: d.faaet }; }) : null,
       pelleFaaet: H.pelleFaaet.length, oenskerFaaet: H.oenskerFaaet,
       kanin: { fase: H.kanin.fase, s: dyr.kanin ? s([dyr.kanin.x, dyr.kanin.y + dyr.kanin.dy + dyr.kanin.h * 0.5, dyr.kanin.z]) : null },
