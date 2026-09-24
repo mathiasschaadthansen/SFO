@@ -56,29 +56,38 @@ kategori har et bed, at planten vokser ét trin pr. vand, at kaninen og fuglen
 kan jages væk og kun sætter planten ét trin tilbage, og at vinteren, tørken og
 efterårets frø virker, og at alt, haven kan sige, er indtalt.
 
-**Stemme.** Bogstavvejen (og Rimhulen, som låner dens ordklip) bruger rigtige
-klip med en dansk stemme fra ElevenLabs (Camilla) til bogstavnavne, tal, ord og
-spørgsmål. Klippene ligger som små
-MP3-filer i `games/bogstaver/lyd/` og står i `lyd/klip.json`. Mangler et klip,
-siger enhedens egen talesyntese det i stedet, og kun stemmer med `localService`
-bruges, så der aldrig går noget over nettet. Klip laves én gang med
-`vaerktoej/lav-lyd-elevenlabs.py` eller lægges ind med `--registrer`. Piper blev
-prøvet og forkastet på udtalen.
+**Stemme.** Hele appen taler med den samme stemme: Google Gemini
+(`gemini-3.8-flash-tts`, stemmen Kore). Klippene er små MP3-filer i hvert spils
+`lyd/` (bogen i `bog/lyd/`) og laves én gang med
+`vaerktoej/lav-lyd-gemini.py --spil <mappe>`. Mangler et klip, siger enhedens
+egen talesyntese det i stedet, og kun stemmer med `localService` bruges, så der
+aldrig går noget over nettet. Camilla fra ElevenLabs var stemmen før september
+2026; Piper blev prøvet og forkastet på udtalen.
 
-Himmelvejen og Årstidshaven taler i hele sætninger og bruger i stedet Gemini
-(`gemini-3.8-flash-tts`, stemmen Kore), lavet med
-`vaerktoej/lav-lyd-gemini.py --spil have|flyv`. Hver sætning er ét klip, og
-`lyd/klip.json` er `{ sætning: fil }`. `js/stemme.js` deler en replik i
-sætninger og spiller den længste række, der har ét klip, så en sammensat
-replik ("Pelle ønsker sig to gulerødder. Og så én agurk.") er flere klip i
-træk. Sætningerne står i spillets kode (`Haven.saetninger()`,
-`Oe.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
-Ændrer du en sætning, så kør værktøjet igen. Byg nye replikker af hele
-sætninger, aldrig et klip midt i en sætning. Stilen skal stå som "DIRECTOR'S
-NOTES" før teksten; skrives den som "Læs varmt: …", læser stemmen også
-beskrivelsen op. Gratisnøglen har en grænse pr. minut, som værktøjet venter
-på. Nøglen ligger som API-credential til `generativelanguage.googleapis.com`
-med headeren `x-goog-api-key`, aldrig i repoet. Et spil har kun én stemme.
+To slags spil:
+
+- **Faste filnavne** (Bogstavvejen, Rimhulen, Vrimleskoven, Skovkøkkenet,
+  Stjerneuret, Nøddeskoven, bogen): `lyd/klip.json` er en liste over filerne,
+  og listen over, hvad hver fil siger, står i `lav-lyd-elevenlabs.py`
+  (`ting()`, `restaurant()`, `klokken()` …), som Gemini-værktøjet også bruger.
+  Bogstaver og tal indtales rene ("A.", "Tre."), og ordene i rammen "Her har
+  du ordet kat.".
+- **Hele sætninger** (Himmelvejen, Årstidshaven): hver sætning er ét klip, og
+  `lyd/klip.json` er `{ sætning: fil }`. `js/stemme.js` deler en replik i
+  sætninger og spiller den længste række, der har ét klip, så en sammensat
+  replik ("Pelle ønsker sig to gulerødder. Og så én agurk.") er flere klip i
+  træk. Sætningerne står i spillets kode (`Haven.saetninger()`,
+  `Oe.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
+  Ændrer du en sætning, så kør værktøjet igen. Byg nye replikker af hele
+  sætninger, aldrig et klip midt i en sætning.
+
+Stilen skal stå som "DIRECTOR'S NOTES" før teksten; skrives den som "Læs
+varmt: …", læser stemmen også beskrivelsen op. Nøglen ligger som
+API-credential til `generativelanguage.googleapis.com` med headeren
+`x-goog-api-key`, aldrig i repoet. Den har betaling slået til: uden betaling
+giver den kun cirka 10 klip om dagen, med betaling cirka 10 i minuttet, som
+værktøjet selv venter på. Hele appen er cirka 25 minutters tale og koster få
+kroner at lave om.
 
 ## Rammer der ikke skal brydes
 
@@ -150,9 +159,9 @@ nøglens plads i `malet.noegle` i `bog.js`); koden i `scener.js` tegner kun,
 hvis et billede mangler. Der er ingen
 printknap i appen; PDF'en laves med `vaerktoej/lav-bog-pdf.js` og sendes til
 dem, der skal printe. Oplæsningen er ti klip i `bog/lyd/`, ét pr. opslag,
-læst af Gemini ud fra bogens egen tekst; de er MP3, fordi Ogg ikke kan
-afspilles på ældre iPads. Skal bogen en dag læses af Camilla som spillene,
-laves klippene med `vaerktoej/lav-lyd-elevenlabs.py --spil bog`.
+læst af Gemini (Kore) ud fra bogens egen tekst; de er MP3, fordi Ogg ikke kan
+afspilles på ældre iPads. Oplæsningen er Kore, som resten af appen, lavet med
+`vaerktoej/lav-lyd-gemini.py --spil bog`.
 
 Navnet står tre steder pr. spil: `<title>` i `index.html`, `<h2>` i `visMenu`
 og `navn` i `js/games.js`. App-ikonet er pindsvinet Pelle, den samme figur som
@@ -244,7 +253,7 @@ skal den samme prompt bruges igen — prompten står i
   ører. Læg tegningen midt i et kvadratisk lærred, i stedet for at ændre
   `tegnBillede`. Testen fanger det.
 - **Ordklippene siger "Her har du ordet kat" med vilje.** Et enkelt kort ord
-  alene bliver udtalt forkert af stemmen (ski blev til "skie"), så ordene er
+  alene blev udtalt forkert af Camilla (ski blev til "skie"), så ordene er
   indtalt inde i den sætning. Nye sætninger, der bruger et ordklip, skal
   bygges, så rammen passer: "Her har du ordet kat. Hvad rimer på det?" —
   aldrig "Hvad rimer på" + ordklip. Rimhulen faldt i den fælde i v80.

@@ -5,9 +5,16 @@ Klippene laegges i games/<spil>/lyd/, lyd/klip.json skrives som
 { "saetning": "fil.mp3" }, og sw.js faar filerne ind i FILER. Spillet kalder
 aldrig Gemini; js/stemme.js spiller bare filerne.
 
-Bruges til de spil, der taler i hele saetninger: Årstidshaven (have) og
-Himmelvejen (flyv). Saetningerne laeses fra spillets egen kode
-(Haven.saetninger() og Oe.saetninger()), saa listen kun findes ét sted.
+Bruges til alle spillets stemmer, paa to maader:
+
+* have og flyv taler i hele saetninger. Saetningerne laeses fra spillets egen kode
+  (Haven.saetninger() og Oe.saetninger()), filnavnene laves af saetningen, og
+  lyd/klip.json skrives som { "saetning": "fil.mp3" }.
+* bogstaver, restaurant, klokken, maskinen, find, rim og bog har faste filnavne
+  (bogstav_A.mp3, bestil_b1a.mp3 ...), som spillene allerede kender. Her laves
+  klippene om i de samme filer, og listen over dem er den samme som i
+  lav-lyd-elevenlabs.py. Bogstaver og tal siges rene ("A.", "Tre."), og ordene
+  i rammen "Her har du ordet kat.", fordi et kort ord alene bliver udtalt forkert.
 
 Foerste gang:
     pip install lameenc                 (MP3-koderen)
@@ -22,10 +29,11 @@ Koer igen, naar en saetning er aendret: kun de nye laves, og klip til
 saetninger, spillet ikke laengere siger, slettes.
 
 Valg:
-    --spil have|flyv
+    --spil have|flyv|bogstaver|restaurant|klokken|maskinen|find|rim|bog
     --stemme <navn>  Kore (standard). Andre: Aoede, Zephyr, Sulafat, Achernar ...
     --model <navn>   gemini-3.8-flash-tts (standard)
-    --alle           lav ogsaa klip, der findes i forvejen
+    --alle           lav ogsaa klip, der findes i forvejen (de faste spil laver altid alle,
+                     men husker, hvor langt de naaede, hvis de bliver afbrudt)
     --kun <tekst>    lav kun saetninger, der indeholder teksten (fx --kun gulerød)
     --proev          vis, hvad der ville blive lavet, uden at kalde Gemini
     --registrer      lav ikke noget, men skriv klip.json og sw.js ud fra filerne
@@ -42,20 +50,29 @@ def arg(navn, standard=None):
     return sys.argv[sys.argv.index(navn) + 1] if navn in sys.argv else standard
 
 
+SAETNINGSSPIL = ('have', 'flyv')
+FASTE_SPIL = ('bogstaver', 'restaurant', 'klokken', 'maskinen', 'find', 'rim', 'bog')
 SPIL = arg('--spil', 'have')
-if SPIL not in ('have', 'flyv'):
-    raise SystemExit('--spil skal vaere have eller flyv')
-MAPPE = 'games/' + SPIL
+if SPIL not in SAETNINGSSPIL + FASTE_SPIL:
+    raise SystemExit('--spil skal vaere en af: ' + ', '.join(SAETNINGSSPIL + FASTE_SPIL))
+MAPPE = 'bog' if SPIL == 'bog' else 'games/' + SPIL
 UD = os.path.join(ROD, MAPPE, 'lyd')
 MODEL = arg('--model', 'gemini-3.8-flash-tts')
 STEMME = arg('--stemme', 'Kore')
 
 # Stilen ligger i en note foran selve teksten. Skrives den som "Laes varmt: <tekst>", laeser
 # stemmen ogsaa beskrivelsen hoejt, og et separat felt til stilen tager modellen ikke imod.
-NOTE = ("### DIRECTOR'S NOTES\n"
-        "Voice: warm, calm, friendly female preschool teacher speaking to a six-year-old. "
-        "Clear and slightly slow. Standard Danish pronunciation, no dialect.\n\n"
-        "### TRANSCRIPT\n")
+STIL = ("Voice: warm, calm, friendly female preschool teacher speaking to a six-year-old. "
+        "Clear and slightly slow. Standard Danish pronunciation, no dialect.")
+if SPIL == 'bogstaver':
+    STIL += (" Single letters are said with their Danish alphabet names, the way Danish children learn the alphabet in school "
+             "(A is \"a\", F is \"æf\", H is \"hå\", J is \"jåd\", K is \"kå\", Q is \"ku\", R is \"ær\", W is \"dobbelt-ve\", Z is \"sæt\"). "
+             "Numbers are said as plain Danish number words.")
+if SPIL == 'bog':
+    STIL = ("Voice: warm, calm, friendly female storyteller reading a Danish picture book aloud to six-year-olds. "
+            "Unhurried, with natural pauses between sentences and a little extra warmth in the rhymes. "
+            "Standard Danish pronunciation, no dialect.")
+NOTE = "### DIRECTOR'S NOTES\n" + STIL + "\n\n### TRANSCRIPT\n"
 
 
 def saetninger():
@@ -135,6 +152,42 @@ def mp3(pcm, sr):
     return k.encode(ud.tobytes()) + k.flush()
 
 
+class Stop(Exception):
+    """Gemini har sagt stop laenge; koer igen senere."""
+
+
+def lav_et(tekst, sti):
+    """Lav ét klip og gem det som MP3 i sti. Venter selv, naar Gemini beder om det. Svarer med sekunderne."""
+    forventet = 1.0 + len(tekst) * 0.085   # saa laenge taler hun cirka; meget laengere betyder, at noten kom med
+    forsoeg, ventet = 0, 0
+    while True:
+        try:
+            pcm, sr = kald(tekst)
+            lydd, sek = klargoer(pcm, sr)
+            if sek > forventet * 2.2 + 1.5:
+                raise ValueError('%.1f s er for langt til teksten; noten blev nok laest op' % sek)
+            data = mp3(lydd, sr)
+            with open(sti, 'wb') as f:
+                f.write(data)
+            return sek
+        except urllib.error.HTTPError as e:
+            krop = e.read().decode('utf-8', 'replace')
+            if e.code != 429:
+                raise ValueError('HTTP %d: %s' % (e.code, krop[:300]))
+            # Gratisnoeglen giver kun faa klip og siger selv, hvor laenge der skal ventes.
+            m = re.search(r'"retryDelay":\s*"(\d+)', krop)
+            pause = int(m.group(1)) + 2 if m else 30
+            if ventet > 1800:
+                raise Stop()
+            print('        venter %d s paa Gemini ...' % pause)
+            time.sleep(pause); ventet += pause
+        except (ValueError, KeyError, IndexError) as e:
+            forsoeg += 1
+            if forsoeg == 3:
+                raise ValueError(str(e))
+            time.sleep(1)
+
+
 def laes_klip():
     sti = os.path.join(UD, 'klip.json')
     if os.path.exists(sti):
@@ -186,43 +239,16 @@ def lav():
         return
     lavet, fejl = 0, []
     for nr, t in enumerate(opgaver, 1):
-        forventet = 1.0 + len(t) * 0.085   # saa laenge taler hun cirka; meget laengere betyder, at noten kom med
-        forsoeg, ventet = 0, 0
-        while forsoeg < 3:
-            try:
-                pcm, sr = kald(t)
-                lydd, sek = klargoer(pcm, sr)
-                if sek > forventet * 2.2 + 1.5:
-                    raise ValueError('%.1f s er for langt til saetningen; noten blev nok laest op' % sek)
-                with open(os.path.join(UD, filnavn(t)), 'wb') as f:
-                    f.write(mp3(lydd, sr))
-                lavet += 1
-                print('  %3d/%d %4.1f s  %s' % (nr, len(opgaver), sek, t))
-                break
-            except urllib.error.HTTPError as e:
-                krop = e.read().decode('utf-8', 'replace')
-                if e.code == 429:
-                    # Gratisnoeglen giver cirka ét klip i minuttet og siger selv, hvor laenge der skal ventes.
-                    # Kommer der slet ikke noget igennem i en halv time, er dagens kvote brugt: stop.
-                    pause = 30
-                    m = re.search(r'"retryDelay":\s*"(\d+)', krop)
-                    if m:
-                        pause = int(m.group(1)) + 2
-                    if ventet > 1800:
-                        print('Gemini har sagt stop i en halv time (429). Koer igen senere; de klip, der er lavet, bliver liggende.')
-                        registrer(liste)
-                        return
-                    print('        venter %d s paa Gemini ...' % pause)
-                    time.sleep(pause); ventet += pause
-                    continue
-                fejl.append((t, 'HTTP %d: %s' % (e.code, krop[:300])))
-                break
-            except (ValueError, KeyError, IndexError) as e:
-                forsoeg += 1
-                if forsoeg == 3:
-                    fejl.append((t, str(e)))
-                time.sleep(1)
-        time.sleep(0.5)
+        try:
+            sek = lav_et(t, os.path.join(UD, filnavn(t)))
+            lavet += 1
+            print('  %3d/%d %4.1f s  %s' % (nr, len(opgaver), sek, t))
+        except Stop:
+            print('Gemini har sagt stop i en halv time (429). Koer igen senere; de klip, der er lavet, bliver liggende.')
+            break
+        except ValueError as e:
+            fejl.append((t, str(e)))
+        time.sleep(0.3)
     antal = registrer(liste)
     print('%d klip lavet, %d i klip.json.' % (lavet, antal))
     for t, f in fejl:
@@ -230,8 +256,110 @@ def lav():
     print('Husk: npm test, tael VERSION op i sw.js, commit.')
 
 
+
+def el():
+    """lav-lyd-elevenlabs.py har listerne over de faste spils klip; de bruges herfra, saa de kun findes ét sted."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('lav_lyd_elevenlabs', os.path.join(ROD, 'vaerktoej', 'lav-lyd-elevenlabs.py'))
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def node_json(kode):
+    return json.loads(subprocess.check_output(['node', '-e', kode]))
+
+
+BOGSTAV = {'AE': 'Æ', 'OE': 'Ø', 'AA': 'Å'}
+TALORD = ['Nul', 'En', 'To', 'Tre', 'Fire', 'Fem', 'Seks', 'Syv', 'Otte', 'Ni']
+
+
+def faste_klip():
+    """(fil, tekst) for hvert klip i de faste spil. Filnavnene er dem, spillene allerede bruger."""
+    E = el()
+    if SPIL == 'bogstaver':
+        ud = [('bogstav_%s.mp3' % n, BOGSTAV.get(n, n) + '.') for n in E.NAVNE]                    # rent bogstav
+        ud += [('tal_%d.mp3' % i, t + '.') for i, t in enumerate(TALORD)]                             # rent tal
+        ud += [('ord_%s.mp3' % fil, 'Her har du ordet %s.' % ord) for ord, fil in E.ting()]          # ordet i sin ramme
+        ud += [('plus.mp3', 'Plus.'), ('minus.mp3', 'Minus.'), ('er_lig_med.mp3', 'Er lig med.')]
+        ud += [('spoerg_%s.mp3' % n, 'Hvad starter med %s?' % BOGSTAV.get(n, n)) for n in E.NAVNE]
+        return ud
+    if SPIL == 'restaurant':
+        return E.restaurant()
+    if SPIL == 'klokken':
+        return E.klokken()
+    if SPIL == 'maskinen':
+        return E.maskinen()
+    if SPIL == 'bog':
+        return E.bog()
+    if SPIL == 'find':
+        d = node_json("const { Find } = require(%r); const ud = [];"
+                      "Object.keys(Find.KLIP).forEach(k => ud.push(Find.KLIP[k]));"
+                      "Object.keys(Find.KATEGORIER).forEach(k => ud.push([Find.KATEGORIER[k].klip, Find.KATEGORIER[k].tekst]));"
+                      "console.log(JSON.stringify(ud));" % os.path.join(ROD, 'games', 'find', 'js', 'find.js'))
+        return [(f.replace('lyd/', ''), t) for f, t in d]
+    if SPIL == 'rim':
+        d = node_json("const { Rim } = require(%r); const ud = [];"
+                      "Object.keys(Rim.KLIP).forEach(k => ud.push(Rim.KLIP[k]));"
+                      "Rim.ALLE.forEach(o => { if (o.klip.indexOf('lyd/') === 0) ud.push([o.klip, Rim.ORDET + o.ord + '.']); });"
+                      "console.log(JSON.stringify(ud));" % os.path.join(ROD, 'games', 'rim', 'js', 'rim.js'))
+        return [(f.replace('lyd/', ''), t) for f, t in d]
+    raise SystemExit('Ukendt spil')
+
+
+def lav_faste():
+    """Lav de faste spils klip om i de samme filer. Husker, hvor langt den naaede, hvis den bliver afbrudt."""
+    import tempfile
+    liste = faste_klip()
+    kun = arg('--kun')
+    if kun:
+        liste = [(f, t) for f, t in liste if kun in t or kun in f]
+    husk = os.path.join(tempfile.gettempdir(), 'lav-lyd-gemini-%s.json' % SPIL)
+    lavet = set(json.load(open(husk))) if os.path.exists(husk) and not kun else set()
+    opgaver = [(f, t) for f, t in liste if f not in lavet]
+    print('%s: %d klip, %d skal laves (%d tegn). Model %s, stemmen %s.' % (SPIL, len(liste), len(opgaver), sum(len(t) for f, t in opgaver), MODEL, STEMME))
+    if '--proev' in sys.argv:
+        for f, t in opgaver:
+            print('  %-24s %s' % (f, t))
+        return
+    fandtes = set(os.listdir(UD)) if os.path.isdir(UD) else set()
+    fejl = []
+    for nr, (f, t) in enumerate(opgaver, 1):
+        try:
+            sek = lav_et(t, os.path.join(UD, f))
+            lavet.add(f)
+            if not kun:
+                json.dump(sorted(lavet), open(husk, 'w'))
+            print('  %3d/%d %4.1f s  %-22s %s' % (nr, len(opgaver), sek, f, t))
+        except Stop:
+            print('Gemini har sagt stop i en halv time (429). Koer igen senere; den fortsaetter, hvor den slap.')
+            return
+        except ValueError as e:
+            fejl.append((f, str(e)))
+        time.sleep(0.3)
+    nye = sorted(f for f, t in liste if f not in fandtes and os.path.exists(os.path.join(UD, f)))
+    if nye and os.path.exists(os.path.join(UD, 'klip.json')):
+        # Nye filer skal i klip.json og i FILER i sw.js; de gamle ligger der allerede
+        klip = sorted(x for x in os.listdir(UD) if x.endswith('.mp3'))
+        json.dump(klip, open(os.path.join(UD, 'klip.json'), 'w'), indent=0)
+        p = os.path.join(ROD, 'sw.js')
+        s = open(p, encoding='utf-8').read()
+        anker = "  '%s/lyd/klip.json',\n" % MAPPE
+        s = s.replace(anker, anker + ''.join("  '%s/lyd/%s',\n" % (MAPPE, x) for x in nye))
+        open(p, 'w', encoding='utf-8').write(s)
+        print('%d nye klip lagt i klip.json og sw.js: %s' % (len(nye), ', '.join(nye)))
+    if not fejl and not kun and os.path.exists(husk):
+        os.remove(husk)
+    print('%d klip lavet i %s.' % (len(opgaver) - len(fejl), MAPPE + '/lyd'))
+    for f, e in fejl:
+        print('  FEJL %s: %s' % (f, e))
+    print('Husk: npm test, tael VERSION op i sw.js, commit.')
+
+
 if __name__ == '__main__':
-    if '--registrer' in sys.argv:
+    if SPIL in FASTE_SPIL:
+        lav_faste()
+    elif '--registrer' in sys.argv:
         print('%d klip i klip.json og sw.js.' % registrer())
     else:
         lav()

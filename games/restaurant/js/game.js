@@ -174,7 +174,7 @@
   }
 
   /**
-   * Talklip fra bogstavspillet (Camilla): "to", "plus", "er lig med". De ligger i
+   * Talklip fra bogstavspillet (Kore): "to", "plus", "er lig med". De ligger i
    * games/bogstaver/lyd/ og er med i offline-cachen. Findes de, siges regnestykket
    * med dem; ellers siger enhedens stemme det.
    */

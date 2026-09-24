@@ -12,5 +12,4 @@ sætningerne fra spillets kode, laver kun dem, der mangler, klipper stilhed af
 enderne, udjævner lydstyrken og gemmer MP3, mono, 48 kbit/s. Filnavnene er
 en del af sætningen og et stykke af en hash, så de aldrig støder sammen.
 
-Stemmen er en anden end Camillas fra ElevenLabs, som Bogstavvejen og Rimhulen
-bruger. Et spil har altid kun én stemme.
+Hele appen taler med den samme stemme, Kore.

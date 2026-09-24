@@ -11,4 +11,4 @@ billede, ret til at bruge det.
 billede, der ikke er kvadratisk, bliver trukket skaevt. Testen fanger det.
 
 Ordklippene til de tolv ekstra ord og hulens fire saetninger ligger i
-`../lyd/` og er indtalt med Camilla fra ElevenLabs, som alle andre klip.
+`../lyd/` og er indtalt med Gemini (stemmen Kore), som alle andre klip.
