@@ -136,6 +136,24 @@ def klargoer(pcm, sr):
         raise ValueError('tavst klip')
     graense = max(rms) * 0.03
     tale = [i for i, r in enumerate(rms) if r > graense]
+    # En kort, loesreven lyd efter en lang pause (et klik eller et halvt ord) skaeres vaek. M og W fik saadan en hale.
+    while len(tale) > 1:
+        stykker, s0 = [], tale[0]
+        for a, b in zip(tale, tale[1:]):
+            if b - a > 1:
+                stykker.append((s0, a)); s0 = b
+        stykker.append((s0, tale[-1]))
+        if len(stykker) < 2:
+            break
+        (a0, a1), (b0, b1) = stykker[-2], stykker[-1]
+        if (b1 - b0 + 1) * 0.02 < 0.4 and (b0 - a1) * 0.02 > 0.6:
+            tale = [i for i in tale if i <= a1]
+            continue
+        (a0, a1), (b0, b1) = stykker[0], stykker[1]
+        if (a1 - a0 + 1) * 0.02 < 0.4 and (b0 - a1) * 0.02 > 0.6:
+            tale = [i for i in tale if i >= b0]
+            continue
+        break
     start = max(0, tale[0] * blok - int(sr * 0.05))
     slut = min(len(a), (tale[-1] + 1) * blok + int(sr * 0.12))
     a = a[start:slut]
