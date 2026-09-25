@@ -139,9 +139,9 @@ def klargoer(pcm, sr):
     # En kort, loesreven lyd efter en lang pause (et klik eller et halvt ord) skaeres vaek. M og W fik saadan en hale.
     while len(tale) > 1:
         stykker, s0 = [], tale[0]
-        for a, b in zip(tale, tale[1:]):
-            if b - a > 1:
-                stykker.append((s0, a)); s0 = b
+        for i0, i1 in zip(tale, tale[1:]):
+            if i1 - i0 > 1:
+                stykker.append((s0, i0)); s0 = i1
         stykker.append((s0, tale[-1]))
         if len(stykker) < 2:
             break
