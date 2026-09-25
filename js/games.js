@@ -174,5 +174,15 @@ window.SPIL = [
          '<img src="games/restaurant/billeder/tomat.png" alt="" style="left:6px;top:44px;width:50px">' +
          '<img src="games/bogstaver/billeder/gulerod.png" alt="" style="left:58px;top:10px;width:58px">' +
          '</div>'
+  },
+  {
+    id: 'baever',
+    navn: 'Bæverdammen',
+    tekst: 'Skub stammerne til side, så Bodils lyse stamme kan glide ud til dæmningen. 1 eller 2 spillere.',
+    farve: '#d3e5ec',
+    sti: 'games/baever/',
+    art: '<div class="art">' +
+         '<img src="games/baever/billeder/bodil.png" alt="" style="left:40px;top:0;width:70px">' +
+         '</div>'
   }
 ];

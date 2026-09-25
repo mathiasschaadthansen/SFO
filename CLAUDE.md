@@ -55,6 +55,10 @@ og med to spillere og tjekker, at stemmen tæller med, at hver afgrøde og
 kategori har et bed, at planten vokser ét trin pr. vand, at kaninen og fuglen
 kan jages væk og kun sætter planten ét trin tilbage, og at vinteren, tørken og
 efterårets frø virker, og at alt, haven kan sige, er indtalt.
+Bæverdammen-testen løser alle 36 baner og kræver præcis det antal træk, der
+står ved dem, og som passer til stjernerne, lader en robot rode rundt og så
+følge hjælpen hele vejen ud, og tjekker, at alt, der siges, er indtalt.
+Banerne laves med `vaerktoej/lav-baever-baner.js`; ret ikke en bane i hånden.
 
 **Stemme.** Hele appen taler med den samme stemme: Google Gemini
 (`gemini-3.8-flash-tts`, stemmen Kore). Klippene er små MP3-filer i hvert spils
@@ -72,12 +76,12 @@ To slags spil:
   (`ting()`, `restaurant()`, `klokken()` …), som Gemini-værktøjet også bruger.
   Bogstaver og tal indtales rene ("A.", "Tre."), og ordene i rammen "Her har
   du ordet kat.".
-- **Hele sætninger** (Himmelvejen, Årstidshaven): hver sætning er ét klip, og
+- **Hele sætninger** (Himmelvejen, Årstidshaven, Bæverdammen): hver sætning er ét klip, og
   `lyd/klip.json` er `{ sætning: fil }`. `js/stemme.js` deler en replik i
   sætninger og spiller den længste række, der har ét klip, så en sammensat
   replik ("Pelle ønsker sig to gulerødder. Og så én agurk.") er flere klip i
   træk. Sætningerne står i spillets kode (`Haven.saetninger()`,
-  `Oe.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
+  `Oe.saetninger()`, `Daemning.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
   Ændrer du en sætning, så kør værktøjet igen. Byg nye replikker af hele
   sætninger, aldrig et klip midt i en sætning.
 
@@ -151,6 +155,7 @@ spillet. Koden er ikke doebt om: modulerne hedder stadig `Klatbold`, `Bobler`,
 | Vrimleskoven | `games/find/` | `test/find.test.js` |
 | Himmelvejen | `games/flyv/` | `test/flyv.test.js` |
 | Årstidshaven | `games/have/` | `test/have.test.js` |
+| Bæverdammen | `games/baever/` | `test/baever.test.js` |
 | Bogen om Nøddeskoven | `bog/` | `test/bog.test.js` |
 
 Bogen er ikke et spil: den ligger forrest på forsiden, har ingen knap ind i
@@ -201,7 +206,8 @@ Vrimleskoven har byens seks malede stykker i `games/find/billeder/` (husene
 forrest i byen er tegnet i kode, fordi tingene skal kunne sidde i vinduerne).
 Boldbanens klatter har en malet krop i `games/klatbold/billeder/`: ét
 Canva-billede, farvet om i kode til de seks farver, med ansigtet fjernet, så
-koden tegner ansigt og øjne. Boblehavets figurer ligger i
+koden tegner ansigt og øjne. Bæveren Bodil ligger i `games/baever/billeder/`; stammerne og pladsen er
+tegnet i kode. Boblehavets figurer ligger i
 `games/bobler/billeder/`, ét malet billede pr. figur, og `MALEDE` i spillets
 `game.js` siger, hvilke der er malet; resten er Kenney-sprites endnu.
 Canvas AI-tilladelse er cirka 200 billeder om

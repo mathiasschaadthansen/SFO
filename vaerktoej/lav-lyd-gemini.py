@@ -55,7 +55,7 @@ def arg(navn, standard=None):
     return sys.argv[sys.argv.index(navn) + 1] if navn in sys.argv else standard
 
 
-SAETNINGSSPIL = ('have', 'flyv')
+SAETNINGSSPIL = ('have', 'flyv', 'baever')
 FASTE_SPIL = ('bogstaver', 'restaurant', 'klokken', 'maskinen', 'find', 'rim', 'bog')
 SPIL = arg('--spil', 'have')
 if SPIL not in SAETNINGSSPIL + FASTE_SPIL:
@@ -84,6 +84,8 @@ def saetninger():
     """Saetningerne fra spillets egen kode, via node."""
     if SPIL == 'have':
         kode = "const { Haven } = require(%r); console.log(JSON.stringify(Haven.saetninger()));" % os.path.join(ROD, 'games', 'have', 'js', 'haven.js')
+    elif SPIL == 'baever':
+        kode = "const { Daemning } = require(%r); console.log(JSON.stringify(Daemning.saetninger()));" % os.path.join(ROD, 'games', 'baever', 'js', 'daemning.js')
     else:
         kode = "const { Oe } = require(%r); console.log(JSON.stringify(Oe.saetninger()));" % os.path.join(ROD, 'games', 'flyv', 'js', 'oe.js')
     return json.loads(subprocess.check_output(['node', '-e', kode]))
