@@ -122,9 +122,10 @@ const paaDisk = f => fs.existsSync(path.join(ROD, f));
           if (st.optaget.some(k => t.x > k.x && t.x < k.x + k.b && t.y > k.y && t.y < k.y + k.h)) problemer.push(navn + ': ' + t.ord + ' ligger paa noget optaget');
           if (Math.abs(t.str - str * F.skala(t.y)) > 1) problemer.push(navn + ': ' + t.ord + ' har forkert dybde');
           st.skjul.forEach(b => { if (F.skjulAfstand(b, t.x, t.y) < 0.93) problemer.push(navn + ': ' + t.ord + ' helt bag et skjul'); });
+          st.skjul.forEach(b => { if (F.bagStamme(b, t.x, t.y)) problemer.push(navn + ': ' + t.ord + ' bag en stamme'); });
           if (t.bag && (F.skjulAfstand(st.skjul[t.skjul], t.x, t.y) > 1.25 || t.klip)) problemer.push(navn + ': ' + t.ord + ' skulle vaere halvt bag et skjul');
         }
-        for (let j = i + 1; j < o.ting.length; j++) if (Math.hypot(t.x - o.ting[j].x, t.y - o.ting[j].y) < (F.fod(t) + F.fod(o.ting[j])) / 2 * 1.1) problemer.push(navn + ': ' + t.ord + ' oven i ' + o.ting[j].ord);
+        for (let j = i + 1; j < o.ting.length; j++) if (F.afstand(t.x, t.y, o.ting[j].x, o.ting[j].y) < (F.fod(t) + F.fod(o.ting[j])) / 2 * 1.1) problemer.push(navn + ': ' + t.ord + ' oven i ' + o.ting[j].ord);
       });
       const iBilledet = new Set(o.ting.map(t => t.ord));
       if (o.spillere.length !== sp) problemer.push(navn + ': ' + o.spillere.length + ' spillere');
@@ -179,6 +180,56 @@ const paaDisk = f => fs.existsSync(path.join(ROD, f));
   tjek('der ligger ting baade bagest og forrest', oev.length >= 12 && ned.length >= 12, oev.length + ' bagest, ' + ned.length + ' forrest af ' + loese.length);
   tjek('tingene bagest er mindre end tingene forrest', Math.max(...oev.map(t => t.str)) < Math.min(...ned.map(t => t.str)));
   tjek('ukendt sted falder tilbage til det foerste', F.nyOmgang('maanen', 0, 1).sted === F.STEDNAVNE[0]);
+}
+
+/* Fingeren: alt, der kan ses, kan trykkes paa, og trykket rammer det, man ser oeverst */
+{
+  // Feltet paa en iPad (1024 x 768) og en stor iPad (1180 x 820), som i game.js
+  const proj = (B, H) => ({ fx: X => X / 1000 * B, fy: Y => H * 0.4 + Y / 600 * H * 0.6, fs: S => S / 1000 * B, fh: S => S / 600 * H * 0.6 });
+  const skaerme = [proj(1024, 768), proj(1180, 820)];
+  tjek('LODRET passer til en iPad paa tvaers', Math.abs(F.LODRET - 768 / 1024) < 0.01);
+  let problemer = [], smaa = 0, alle = 0, andel = 0;
+  F.STEDNAVNE.forEach(sted => {
+    for (let s = 0; s < 3; s++) for (let runde = 0; runde < 12; runde++) {
+      const o = F.nyOmgang(sted, s, 1), navn = sted + '/' + (s + 1) + '*';
+      skaerme.forEach(p => {
+        o.ting.forEach(t => {
+          // Proev fingeren i et gitter over tingen: hvor stor en del af den, der rammer den
+          const r = p.fs(t.str) * 0.46, cx = p.fx(t.x), cy = p.fy(t.y) + (t.klip ? p.fs(t.str) * 0.12 : 0);
+          let ser = 0, rammer = 0;
+          for (let gx = -1; gx <= 1; gx += 0.2) for (let gy = -1; gy <= 1; gy += 0.2) {
+            const x = cx + gx * r, y = cy + gy * r;
+            if (!F.serTing(t, x, y, p)) continue;
+            ser++;
+            const hit = F.rammer(o, sted, x, y, p);
+            if (hit === t) rammer++;
+          }
+          alle++;
+          const a = ser ? rammer / ser : 0; andel += a;
+          if (a < 0.4) { smaa++; if (a < 0.2) problemer.push(navn + ': ' + t.ord + ' kan kun rammes paa ' + Math.round(a * 100) + ' %'); }
+        });
+      });
+      // Midt i et tomt stykke jord rammes intet
+      const p = skaerme[0];
+      for (let n = 0; n < 40; n++) {
+        const X = Math.random() * 1000, Y = Math.random() * 600, x = p.fx(X), y = p.fy(Y);
+        const hit = F.rammer(o, sted, x, y, p);
+        if (hit && Math.hypot(x - p.fx(hit.x), y - p.fy(hit.y)) > p.fs(hit.str) * 0.62) problemer.push(navn + ': et tryk langt fra ' + hit.ord + ' ramte den');
+      }
+    }
+  });
+  tjek('hver ting kan rammes paa mindst en femtedel af det, man ser af den', problemer.length === 0, problemer.slice(0, 5).join(' | '));
+  tjek('naesten alle ting kan rammes paa det meste af sig selv', smaa / alle < 0.03, smaa + ' af ' + alle + ' under 40 %, gennemsnit ' + Math.round(andel / alle * 100) + ' %');
+
+  // Et lille, fast eksempel: katten staar lige bag hunden. Trykket paa hundens midte giver hunden,
+  // trykket paa kattens synlige top giver katten, ikke hunden, som den gamle maade gjorde
+  const p = skaerme[0], st = F.STEDER.eng;
+  const kat = { ord: 'kat', x: 500, y: 300, str: 80, plads: -1, klip: null, bag: false, skjul: -1, paa: -1 };
+  const hund = { ord: 'hund', x: 500, y: 340, str: 80, plads: -1, klip: null, bag: false, skjul: -1, paa: -1 };
+  const o = { ting: [kat, hund], spillere: [] };
+  tjek('hunden foran rammes paa sin midte', F.rammer(o, 'eng', p.fx(500), p.fy(340), p) === hund);
+  tjek('katten bagved rammes paa det, der stikker op', F.rammer(o, 'eng', p.fx(500), p.fy(300) - p.fs(80) * 0.4, p) === kat);
+  tjek('lagene tegnes i samme raekkefoelge, som trykket bruger', F.lagOrden(o, 'eng').filter(l => l.ting).map(l => l.ting.ord).join(',') === 'kat,hund' && st.skjul.length > 0);
 }
 
 /* De malede stykker i byen */
