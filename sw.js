@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v103';
+const VERSION = 'sfo-spil-v104';
 
 const FILER = [
   './',
@@ -17,6 +17,7 @@ const FILER = [
   'js/sprites.js',
   'js/skal.js',
   'js/menu.js',
+  'js/stemme.js',
   'icons/icon-192.png',
   'icons/icon-512.png',
   'bog/',
@@ -618,7 +619,21 @@ const FILER = [
   'assets/kenney/pige_idle.png',
   'assets/kenney/pige_walk1.png',
   'assets/kenney/pige_walk2.png',
-  'assets/kenney/raket.png'
+  'assets/kenney/raket.png',
+  'games/baever/',
+  'games/baever/index.html',
+  'games/baever/js/daemning.js',
+  'games/baever/js/game.js',
+  'games/baever/lyd/klip.json',
+  'games/baever/lyd/bodil_skal_bruge_den_lyse_stamme_c7ec20.mp3',
+  'games/baever/lyd/daemningen_er_faerdig_tak_for_hjaelp_30354c.mp3',
+  'games/baever/lyd/du_er_faerdig_nu_venter_vi_ef0dd9.mp3',
+  'games/baever/lyd/flot_bodil_har_faaet_sin_stamme_3f1b55.mp3',
+  'games/baever/lyd/proev_at_skubbe_den_stamme_der_7ab81f.mp3',
+  'games/baever/lyd/saadan_den_kan_bodil_bruge_9783e0.mp3',
+  'games/baever/lyd/stammen_kan_kun_glide_den_vej_4cd70d.mp3',
+  'games/baever/lyd/tak_nu_bliver_daemningen_stoerre_c7c47f.mp3',
+  'games/baever/billeder/bodil.png'
 ];
 
 /*

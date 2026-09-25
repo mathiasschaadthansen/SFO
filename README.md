@@ -28,6 +28,10 @@ Spillene indtil nu:
   og tæl med, når det lander hos Pelle. Hold kaninen og fuglen væk, og drej
   årstidsuret fra forår til vinter. I 3D som Himmelvejen.
 
+- **Bæverdammen** (mappen `baever`): et skydepuslespil på 6 x 6 felter. Skub
+  stammerne til side, så Bæveren Bodils lyse stamme kan glide ud til
+  dæmningen. 36 baner på tre stjerner, 1 eller 2 spillere.
+
 ## Kom i gang
 
 ```bash
@@ -119,6 +123,12 @@ test/flyv.test.js       en robot flyver alle breve ud på alle tre stjerner, med
 games/have/
   js/haven.js           bedene, Pelles ønsker, ordene, vejret, årstiderne, kaninen og fuglen — ingen DOM
   js/game.js            3D-tegningen (samme tegner som Himmelvejen), boblen, redskaberne, årstidsuret, menu, stemme
+games/baever/
+  js/daemning.js        pladsen, stammerne, banerne, løseren, hjælpen og det, der siges — ingen DOM
+  js/game.js            pladsen og vandet tegnet i kode, træk med fingrene, Bodil, dæmningen, menu, stemme
+  billeder/bodil.png    Bæveren Bodil, malet med Canva (se billeder/NOTICE.md)
+  lyd/*.mp3             ét klip pr. sætning (Gemini, Kore); lyd/klip.json siger, hvilken fil der er hvilken sætning
+test/baever.test.js     løser alle baner, lader en robot rode rundt og følge hjælpen ud, tjekker stemme og filer
 test/have.test.js       en robot opfylder Pelles ønsker på alle tre stjerner og med to spillere
 bog/
   js/bog.js             de ti opslag: tekst, rim, hvem Pelle møder, hvor nøglen og skaden er — ingen DOM
@@ -829,6 +839,45 @@ spillere, og tjekker, at stemmen tæller med, at ønskerne har den rette
 størrelse, at planten vokser ét trin pr. vand, at kaninen og fuglen kommer og
 kan jages væk, sommerens tørke, regnen, efterårets frø, æblerne og vinteren,
 og at ordene er rigtige (én tomat, ét jordbær, tre gulerødder).
+
+## Bæverdammen (mappen `baever`)
+
+Et skydepuslespil i samme ånd som de kendte med biler, men med vores egne baner
+og vores egen verden: Bæveren Bodil bygger en dæmning og skal bruge den lyse
+birkestamme med bladet. Den ligger på en plads på 6 x 6 felter set oppefra,
+spærret af brune stammer på to og tre felter, og skal ud gennem åbningen i
+højre side, hvor Bodil sidder i vandet.
+
+**Stammerne** trækkes med fingeren. En stamme kan kun glide den vej, den
+ligger, og kun så langt, der er plads; trækker man på tværs, rokker den, og
+stemmen siger én gang imellem "Stammen kan kun glide den vej, den ligger."
+Hver finger følges for sig, så to børn kan flytte hver sin stamme. Når den
+lyse stamme når åbningen, glider den ud i vandet og flyver op på dæmningen.
+Fem stammer, så er dæmningen færdig.
+
+**Stjernerne** er, hvor mange træk en bane kræver: én stjerne 2-4, to
+stjerner 5-8 og tre stjerner 9-14. Der er tolv baner pr. stjerne, fundet af
+`vaerktoej/lav-baever-baner.js`: det lægger tilfældige stammer, finder alle
+stillinger, de kan skubbes til, og hvor langt hver er fra at være løst, og
+vælger en med det rigtige antal træk. En runde er fem baner, nemmeste først.
+Der er ingen tæller, intet ur og ingen game over. Sidder man fast (14 sekunder
+uden et træk, eller mange træk), lyser den stamme, der skal flyttes nu, med en
+gul pil; løseren i `daemning.js` finder den korteste vej fra den stilling,
+barnet står i.
+
+**To spillere** har hver sin plads, og den højre er spejlet, så begge
+åbninger vender ind mod vandet i midten. Bodil bygger én dæmning af begges
+stammer; de to får forskellige baner fra den samme stjerne.
+
+**Grafikken** er tegnet i kode (stammer med bark og årringe, bredden med
+sten, vandet) på nær Bodil, der er malet med Canva. **Stemmen** er otte
+sætninger med Gemini (Kore), én fil pr. sætning, ud fra `Daemning.saetninger()`;
+`js/stemme.js` spiller dem.
+
+Testen løser alle 36 baner og kræver præcis det antal træk, der står ved dem,
+lader en robot spille hver bane igennem, lader en anden robot rode rundt med
+tilfældige træk og så følge hjælpen hele vejen ud, og tjekker runderne,
+stemmen, billedet og filerne i service workeren.
 
 ## Bogen om Nøddeskoven (mappen `bog`)
 
