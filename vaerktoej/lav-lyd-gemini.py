@@ -136,20 +136,11 @@ def klargoer(pcm, sr):
         raise ValueError('tavst klip')
     graense = max(rms) * 0.03
     tale = [i for i, r in enumerate(rms) if r > graense]
-    # En kort, loesreven lyd til sidst efter en lang pause (et klik eller en vejrtraekning) skaeres vaek. M og W fik saadan en hale.
-    while len(tale) > 1:
-        stykker, s0 = [], tale[0]
-        for i0, i1 in zip(tale, tale[1:]):
-            if i1 - i0 > 1:
-                stykker.append((s0, i0)); s0 = i1
-        stykker.append((s0, tale[-1]))
-        if len(stykker) < 2:
-            break
-        (a0, a1), (b0, b1) = stykker[-2], stykker[-1]
-        if (b1 - b0 + 1) * 0.02 < 0.4 and (b0 - a1) * 0.02 > 0.6:
-            tale = [i for i in tale if i <= a1]
-            continue
-        break   # i starten skaeres aldrig: "Ja!" og "Tak!" er korte og efterfulgt af en pause
+    # Der skaeres aldrig ord vaek: en kort lyd efter en lang pause kan vaere et rigtigt ord ("Klap ... det!").
+    # Et klip med en lang pause (over 0,6 s) meldes i stedet, saa det kan lyttes igennem og laves om.
+    huller = [b - a for a, b in zip(tale, tale[1:]) if b - a > 30]
+    if huller:
+        print('        OBS: lang pause i klippet (%.1f s); lyt efter, om det skal laves om' % (max(huller) * 0.02))
     start = max(0, tale[0] * blok - int(sr * 0.05))
     slut = min(len(a), (tale[-1] + 1) * blok + int(sr * 0.12))
     a = a[start:slut]
@@ -399,6 +390,8 @@ def node_json(kode):
 
 
 BOGSTAV = {'AE': 'Æ', 'OE': 'Ø', 'AA': 'Å'}
+# Bogstaver, som stemmen siger forkert, skrives, som de udtales. "F." blev til "fem".
+UDTALE = {'F': 'Æf'}
 TALORD = ['Nul', 'En', 'To', 'Tre', 'Fire', 'Fem', 'Seks', 'Syv', 'Otte', 'Ni']
 
 
@@ -406,7 +399,7 @@ def faste_klip():
     """(fil, tekst) for hvert klip i de faste spil. Filnavnene er dem, spillene allerede bruger."""
     E = el()
     if SPIL == 'bogstaver':
-        ud = [('bogstav_%s.mp3' % n, BOGSTAV.get(n, n) + '.') for n in E.NAVNE]                    # rent bogstav
+        ud = [('bogstav_%s.mp3' % n, UDTALE.get(n, BOGSTAV.get(n, n)) + '.') for n in E.NAVNE]    # rent bogstav
         ud += [('tal_%d.mp3' % i, t + '.') for i, t in enumerate(TALORD)]                             # rent tal
         ud += [('ord_%s.mp3' % fil, 'Her har du ordet %s.' % ord) for ord, fil in E.ting()]          # ordet i sin ramme
         ud += [('plus.mp3', 'Plus.'), ('minus.mp3', 'Minus.'), ('er_lig_med.mp3', 'Er lig med.')]
