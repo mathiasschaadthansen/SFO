@@ -94,22 +94,42 @@
     return pl;
   }
 
+  /* Paa skaermen er feltet trykket sammen paa hoejden: 600 enheder hoejt bliver 0,6 af skaermhoejden,
+     1000 enheder bredt hele bredden. Paa en iPad (4:3) er en enhed lodret derfor 0,75 af en vandret.
+     Afstande maales, som de ser ud dér, saa tingene ikke staar oven i hinanden. */
+  var LODRET = 0.75;
+
   /**
    * Skjulene: hvad tingene kan gemme sig halvt bag. Traeer og graner tegnes
    * som malede billeder med foden i (x, y); hegn og broend tegnes i kode. daek() giver
    * den ellipse, billedet daekker, saa en ting kan laegges paa kanten af den.
+   * Traeerne er maalt paa de malede billeder (games/maskinen/billeder/), der tegnes
+   * 2,6 r brede i skaermens maal; hoejden regnes om til feltets med LODRET.
    */
   function daek(sk) {
-    if (sk.type === 'gran') return { x: sk.x, y: sk.y - sk.r * 0.1, rx: sk.r * 1.05, ry: sk.r * 1.15 };
+    if (sk.type === 'gran') return { x: sk.x, y: sk.y - sk.r * 0.45 / LODRET, rx: sk.r * 1.05, ry: sk.r * 1.2 / LODRET };
     if (sk.type === 'hegn') return { x: sk.x + sk.b / 2, y: sk.y - sk.h * 0.35, rx: sk.b / 2, ry: sk.h * 0.5 };
     if (sk.type === 'broend') return { x: sk.x, y: sk.y - sk.r * 0.5, rx: sk.r, ry: sk.r * 0.6 };
-    return { x: sk.x, y: sk.y - sk.r * 0.8, rx: sk.r * 1.2, ry: sk.r * 1.05 };     // loevtrae: kronen
+    return { x: sk.x, y: sk.y - sk.r * 1.03 / LODRET, rx: sk.r * 1.25, ry: sk.r * 0.87 / LODRET };     // loevtrae: kronen
   }
-  /** Hvor langt (x, y) er fra skjulets midte, maalt saa 1 er kanten af det, skjulet daekker. */
+  /**
+   * Hvor langt (x, y) er fra skjulets midte, maalt saa 1 er kanten af det, skjulet daekker.
+   * a og b er afstanden vandret og lodret i forhold til rx og ry. Kronerne er flade forneden,
+   * saa under midten er formen en firkant med runde hjoerner, ikke en ellipse.
+   */
+  function form(sk, a, b) {
+    if (b > 0 && (sk.type === 'trae' || sk.type === 'gran')) return Math.pow(a * a * a * a + b * b * b * b, 0.25);
+    return Math.hypot(a, b);
+  }
   function skjulAfstand(sk, x, y) {
     var d = daek(sk);
-    return Math.hypot((x - d.x) / d.rx, (y - d.y) / d.ry);
+    return form(sk, Math.abs(x - d.x) / d.rx, (y - d.y) / d.ry);
   }
+  /** Staar (x, y) bag stammen: under kronen, lige bag traeet? Saa kan man ikke se tingen. */
+  function bagStamme(sk, x, y) {
+    return (sk.type === 'trae' || sk.type === 'gran') && Math.abs(x - sk.x) < sk.r * 0.45 && y > daek(sk).y && y < skjulFod(sk);
+  }
+
 
   /**
    * Stederne. zoner: hvor loese ting maa ligge. optaget: kasser, loese ting
@@ -204,6 +224,9 @@
    * ordet, tingen skal ligge taet ved (dens lookalike), hvis det er lagt.
    */
   var DYBDE = [0.78, 1.18];        // stoerrelse bagest og forrest i forhold til str
+  function afstand(ax, ay, bx, by) { return Math.hypot(ax - bx, (ay - by) * LODRET); }
+  /** Hvor lang en enhed i retningen v er paa skaermen: 1 vandret, LODRET lodret. */
+  function retning(v) { return Math.hypot(Math.cos(v), Math.sin(v) * LODRET); }
   function skala(y) { return DYBDE[0] + (DYBDE[1] - DYBDE[0]) * Math.max(0, Math.min(1, y / 600)); }
 
   function laegTing(sted, navne, svaerhed) {
@@ -224,10 +247,10 @@
         if (!st.zoner.some(function (z) { return iZone(z, x, y); })) return false;
         if (st.optaget.some(function (k) { return iKasse(k, x, y, s); })) return false;
         // Skjulet daekker ud til 1,0; under 0,95 er tingen helt vaek
-        for (var j = 0; j < st.skjul.length; j++) if (skjulAfstand(st.skjul[j], x, y) < 0.95) return false;
+        for (var j = 0; j < st.skjul.length; j++) if (skjulAfstand(st.skjul[j], x, y) < 0.95 || bagStamme(st.skjul[j], Math.round(x), Math.round(y))) return false;
       }
       var f = klip ? Math.min(s, klip.b) : s;
-      for (var i = 0; i < ud.length; i++) if (Math.hypot(ud[i].x - x, ud[i].y - y) < (fod(ud[i]) + f) / 2 * 1.15) return false;
+      for (var i = 0; i < ud.length; i++) if (afstand(ud[i].x, ud[i].y, x, y) < (fod(ud[i]) + f) / 2 * 1.15) return false;
       return true;
     }
     function tagPlads(i) {
@@ -242,7 +265,7 @@
     /** Er der plads til en makker i ringen om (x, y)? */
     function pladsTilMakker(x, y, s) {
       for (var f = 0; f < 30; f++) {
-        var v = Math.random() * Math.PI * 2, d = (s + str * skala(y)) / 2 * (1.2 + Math.random() * 0.5);
+        var v = Math.random() * Math.PI * 2, d = (s + str * skala(y)) / 2 * (1.2 + Math.random() * 0.5) / retning(v);
         var mx = x + Math.cos(v) * d, my = y + Math.sin(v) * d;
         if (fri(mx, my, str * skala(my))) return true;
       }
@@ -250,13 +273,15 @@
     }
     function laegFrit(i, raekke, rh, medMakker) {
       var x, y, s, bag = false, skjul = -1, forsoeg = 0;
-      while (forsoeg++ < 160) {
+      while (forsoeg++ < 260) {
         if (i % 3 === 0 && traeer.length && forsoeg < 60) {
           skjul = traeer[Math.floor(Math.random() * traeer.length)];
-          var d = daek(st.skjul[skjul]), v = Math.random() * Math.PI * 2, k = 1.0 + Math.random() * 0.2;
+          // Bag kronens top og sider, ikke forneden, hvor stammen og den flade bund er
+          var d = daek(st.skjul[skjul]), v = -Math.PI / 2 + (Math.random() - 0.5) * 1.2 * Math.PI, k = 0.95 + Math.random() * 0.12;
           x = d.x + Math.cos(v) * d.rx * k; y = d.y + Math.sin(v) * d.ry * k; bag = true;
         } else {
-          y = top + (raekke + 0.15 + Math.random() * 0.7) * rh;
+          // Foerst i sin egen raekke; er der fyldt, hvor som helst fra bagerst til forrest
+          y = forsoeg < 140 ? top + (raekke + 0.15 + Math.random() * 0.7) * rh : top + Math.random() * (bund - top);
           x = 20 + Math.random() * 960; bag = false; skjul = -1;
         }
         s = str * skala(y);
@@ -269,7 +294,7 @@
       var naere = bland(ledige.filter(function (i) { return Math.hypot(st.pladser[i].x - m.x, st.pladser[i].y - m.y) < NAER; }));
       for (var i = 0; i < naere.length; i++) { var t = laegPaaPlads(naere[i]); if (t) return t; }
       for (var forsoeg = 0; forsoeg < 200; forsoeg++) {
-        var s0 = str * skala(m.y), v = Math.random() * Math.PI * 2, d = (fod(m) + s0) / 2 * (1.2 + Math.random() * 0.5);
+        var s0 = str * skala(m.y), v = Math.random() * Math.PI * 2, d = (fod(m) + s0) / 2 * (1.2 + Math.random() * 0.5) / retning(v);
         var x = m.x + Math.cos(v) * d, y = m.y + Math.sin(v) * d, s = str * skala(y);
         if (Math.hypot(x - m.x, y - m.y) < NAER && fri(x, y, s)) return { x: Math.round(x), y: Math.round(y), str: Math.round(s), plads: -1, klip: null, bag: false, skjul: -1, paa: -1 };
       }
@@ -304,6 +329,51 @@
    * Ved tre stjerner sikres, at to kategorier pr. spiller har 2-4 medlemmer
    * i billedet, og at hvert enkeltord har en lookalike taet paa sig.
    */
+  /* ---------- lagene og trykket ----------
+     Alt paa jorden tegnes bagfra og frem: det, der staar laengst nede, er naermest. En ting bag et skjul
+     tegnes lige foer skjulet, en ting oppe i et trae lige efter. Trykket bruger den samme raekkefoelge. */
+  function skjulFod(sk) { return sk.type === 'trae' || sk.type === 'gran' ? sk.y + sk.r * 0.75 : sk.y; }
+  function lagOrden(omgang, sted) {
+    var st = STEDER[sted], lag = [];
+    st.skjul.forEach(function (sk) { lag.push({ y: skjulFod(sk), skjul: sk }); });
+    omgang.ting.forEach(function (t) {
+      var y = t.y + t.str / 2;
+      if (t.bag) y = skjulFod(st.skjul[t.skjul]) - 0.5;
+      else if (t.paa >= 0) y = skjulFod(st.skjul[t.paa]) + 0.5;
+      lag.push({ y: y, ting: t });
+    });
+    return lag.sort(function (a, b) { return a.y - b.y; });
+  }
+  /** Kan man se tingen dér, hvor fingeren er? p er feltet paa skaermen: { fx, fy, fs, fh }. */
+  function serTing(t, x, y, p) {
+    var s = p.fs(t.str), cx = p.fx(t.x), cy = p.fy(t.y) + (t.klip ? s * 0.12 : 0);
+    if (Math.hypot(x - cx, y - cy) > s * 0.46) return false;
+    var k = t.klip;
+    return !k || (x >= p.fx(k.x) && x <= p.fx(k.x + k.b) && y >= p.fy(k.y) && y <= p.fy(k.y) + p.fh(k.h));
+  }
+  function daekkerSkjul(sk, x, y, p) {
+    var d = daek(sk);
+    return form(sk, Math.abs(x - p.fx(d.x)) / p.fs(d.rx), (y - p.fy(d.y)) / p.fh(d.ry)) < 1;
+  }
+  /**
+   * Hvad rammer et tryk? Det, man ser oeverst dér, hvor fingeren er. Staar et skjul foran, eller rammer
+   * fingeren ved siden af, vaelges den ting, hvis midte er naermest, hvis den er taet nok. Den rigtige ting
+   * foretraekkes aldrig; det er barnet, der skal finde den.
+   */
+  function rammer(omgang, sted, x, y, p) {
+    var lag = lagOrden(omgang, sted);
+    for (var i = lag.length - 1; i >= 0; i--) {
+      if (lag[i].ting) { if (serTing(lag[i].ting, x, y, p)) return lag[i].ting; }
+      else if (daekkerSkjul(lag[i].skjul, x, y, p)) break;
+    }
+    var bedst = null, bd = 0.62;
+    omgang.ting.forEach(function (t) {
+      var d = Math.hypot(x - p.fx(t.x), y - p.fy(t.y)) / p.fs(t.str);
+      if (d < bd) { bd = d; bedst = t; }
+    });
+    return bedst;
+  }
+
   function nyOmgang(sted, svaerhed, spillere) {
     svaerhed = Math.max(0, Math.min(2, svaerhed | 0));
     spillere = spillere === 2 ? 2 : 1;
@@ -410,8 +480,9 @@
 
   rod.Find = {
     ORD: ORD, ALLE: ALLE, KLIP: KLIP, ORDET: ORDET, KATEGORIER: KATEGORIER, LIGNER: LIGNER, LIGNER_AF: LIGNER_AF, NAER: NAER,
-    STEDER: STEDER, STEDNAVNE: STEDNAVNE, husPladser: husPladser, daek: daek, skjulAfstand: skjulAfstand, fod: fod,
+    STEDER: STEDER, STEDNAVNE: STEDNAVNE, husPladser: husPladser, daek: daek, skjulAfstand: skjulAfstand, bagStamme: bagStamme, fod: fod,
     STR: STR, PLADS_FAKTOR: PLADS_FAKTOR, ANTAL: ANTAL, OMGANG: OMGANG, KATEGORI_VED: KATEGORI_VED, DYBDE: DYBDE, skala: skala,
-    nyOmgang: nyOmgang, tryk: tryk, naeste: naeste, laegTing: laegTing
+    nyOmgang: nyOmgang, tryk: tryk, naeste: naeste, laegTing: laegTing,
+    LODRET: LODRET, afstand: afstand, skjulFod: skjulFod, lagOrden: lagOrden, serTing: serTing, daekkerSkjul: daekkerSkjul, rammer: rammer
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);

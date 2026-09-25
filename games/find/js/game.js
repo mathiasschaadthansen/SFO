@@ -438,18 +438,9 @@
     else afspil([F.KATEGORIER[q.kategori].klip], F.KATEGORIER[q.kategori].tekst, fra);
   }
 
-  function tingVed(x, y) {
-    // Forreste foerst: de, der ikke ligger bag en busk, og saa de andre
-    var t = omgang.ting, ud = null;
-    for (var pas = 0; pas < 2 && !ud; pas++) {
-      for (var i = t.length - 1; i >= 0; i--) {
-        if ((pas === 0) === !!t[i].bag) continue;
-        var s = fs(t[i].str);
-        if (Math.hypot(x - fx(t[i].x), y - fy(t[i].y)) < s * 0.62) { ud = t[i]; break; }
-      }
-    }
-    return ud;
-  }
+  /* Trykket rammer det, man ser oeverst; se Find.rammer */
+  var PROJ = { fx: function (X) { return fx(X); }, fy: function (Y) { return fy(Y); }, fs: function (S) { return fs(S); }, fh: function (S) { return fh(S); } };
+  function tingVed(x, y) { return F.rammer(omgang, sted, x, y, PROJ); }
 
   function spilTryk(x, y) {
     for (var s = 0; s < spillere; s++) {
@@ -572,21 +563,8 @@
   }
   /** Alt paa jorden tegnes bagfra og frem: det, der staar laengst nede, er naermest. En ting bag et skjul tegnes lige foer skjulet. */
   var lag = null, lagFor = null;
-  function skjulFod(sk) { return sk.type === 'trae' || sk.type === 'gran' ? sk.y + sk.r * 0.75 : sk.y; }
   function tegnJorden() {
-    var st = F.STEDER[sted];
-    if (lagFor !== omgang) {
-      lag = [];
-      st.skjul.forEach(function (sk) { lag.push({ y: skjulFod(sk), skjul: sk }); });
-      omgang.ting.forEach(function (t) {
-        var y = t.y + t.str / 2;
-        if (t.bag) y = skjulFod(st.skjul[t.skjul]) - 0.5;          // lige foer skjulet
-        else if (t.paa >= 0) y = skjulFod(st.skjul[t.paa]) + 0.5;  // lige efter: oppe i traeet
-        lag.push({ y: y, ting: t });
-      });
-      lag.sort(function (a, b) { return a.y - b.y; });
-      lagFor = omgang;
-    }
+    if (lagFor !== omgang) { lag = F.lagOrden(omgang, sted); lagFor = omgang; }   // samme raekkefoelge som trykket
     lag.forEach(function (l) { if (l.ting) tegnTing(l.ting); else tegnSkjul(l.skjul); });
   }
   function tegnSpil() {
