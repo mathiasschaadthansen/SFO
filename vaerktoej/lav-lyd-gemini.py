@@ -157,7 +157,8 @@ def klargoer(pcm, sr):
 def mp3(pcm, sr):
     import lameenc
     k = lameenc.Encoder()
-    k.set_bit_rate(48); k.set_in_sample_rate(sr); k.set_channels(1); k.set_quality(2)
+    # Bogens sider er op til 40 sekunder lange; med 40 kbit/s holder de sig under 200 KB, og tale lyder stadig rent
+    k.set_bit_rate(40 if SPIL == 'bog' else 48); k.set_in_sample_rate(sr); k.set_channels(1); k.set_quality(2)
     ud = array.array('h', pcm)
     if sys.byteorder == 'big':
         ud.byteswap()
