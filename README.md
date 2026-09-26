@@ -30,10 +30,11 @@ Spillene indtil nu:
 - **Bæverdammen** (mappen `baever`): et skydepuslespil på 6 x 6 felter. Skub
   stammerne til side, så Bæveren Bodils lyse stamme kan glide ud til
   dæmningen. 36 baner på tre stjerner, 1 eller 2 spillere.
-- **Egernreden** (mappen `egern`): to lege med tal. **Se hurtigt**
-  (subitizing): nødderne ses et øjeblik, så kommer bladene, og man vælger
-  kortet med samme antal. **Gemmeleg** (del og helhed): Egon har fem nødder,
-  nogle gemmer sig under bladet; hvor mange? "Tre og to er fem."
+- **Egernreden** (mappen `egern`): tal som dele og helhed. **Se hurtigt**
+  (subitizing): nødderne ses et øjeblik, og man vælger antallet; bagefter
+  lyser delene: "Fem og to er syv." **Gemmeleg**: hvor mange gemmer sig under
+  bladet? Med to spillere gemmer man for hinanden. **Ryst og hæld**: find alle
+  måder at dele fem, syv eller ti på.
 
 ## Kom i gang
 
@@ -138,10 +139,10 @@ games/baever/
   billeder/bodil.png    Bæveren Bodil, malet med Canva (se billeder/NOTICE.md)
   lyd/*.mp3             ét klip pr. sætning (Gemini, Kore); lyd/klip.json siger, hvilken fil der er hvilken sætning
 games/egern/
-  js/egern.js           mønstrene, gemmelegens dele, svarkortene, runderne og det, der siges — ingen DOM
-  js/game.js            stubben, bladene, kortene, del-helhedsmodellen, Egon og kurven, menu, stemme
+  js/egern.js           mønstrene og delene, gemmelegen, kastet i Ryst og hæld, runderne og det, der siges — ingen DOM
+  js/game.js            stubben, bladene, reden, tavlen, talrækken, Egon og kurven, menu, stemme
   lyd/*.mp3             ét klip pr. sætning (Gemini, Kore); lyd/klip.json siger, hvilken fil der er hvilken sætning
-test/egern.test.js      en robot spiller begge lege på alle stjerner; ét rigtigt kort, nødderne ligger frit, delene giver helheden
+test/egern.test.js      en robot spiller alle tre lege på alle stjerner; talrækken, mønstrene, delene og alle måder i Ryst og hæld
 test/baever.test.js     løser alle baner, lader en robot rode rundt og følge hjælpen ud, tjekker stemme og filer
 bog/
   js/bog.js             de ti opslag: tekst, rim, hvem Pelle møder, hvor nøglen og skaden er — ingen DOM
@@ -910,37 +911,61 @@ stemmen, billedet og filerne i service workeren.
 
 ## Egernreden (mappen `egern`)
 
-Egernet Egon samler nødder på en stubbe. Spillet øver to ting, som bruges i
-den tidlige talforståelse: at se små mængder med det samme uden at tælle
-(subitizing) og at se et tal som to dele (del og helhed, "tre og to er fem").
-Egon og nødden er Bogstavvejens malede billeder; resten er tegnet i kode.
+Egernet Egon samler nødder på en stubbe. Spillet øver det, der i den tidlige
+talforståelse kaldes del og helhed: at et tal kan ses som to dele ("tre og to
+er fem"). Vejen ind er subitizing: at se små mængder med det samme uden at
+tælle. Egon og nødden er Bogstavvejens malede billeder; resten er tegnet i
+kode.
 
-**Se hurtigt.** Bladene blæser væk, nødderne ses et øjeblik (2 sekunder ved
-én stjerne, 1,4 ved to og 1,5 ved tre), og bladene kommer tilbage. Tre kort
-viser et antal som en terning (1-6) eller en tierramme (7-10), og barnet
-trykker på det, der passer. Nødderne ligger på stubben på flere måder end på
-kortet: på en række, som en trekant eller spredt, så det er mængden, man
-genkender, ikke mønstret. Én stjerne 1-4, to stjerner 1-6, tre stjerner 4-10
-som to grupper (fx 5 og 2) eller en tierramme, så 7 ses som 5 og 2
-(konceptuel subitizing). Et forkert kort rokker, stemmen siger dets tal og
-"Kig igen", og nødderne vises igen; efter to forkerte bliver de liggende. Et
-tryk på bladene viser dem igen når som helst.
+**Forskningen bag, og hvorfor det er ét spil.** Konceptuel subitizing, at se
+7 som 5 og 2, er del og helhed set med øjnene (Clements 1999; NCETM), og
+gemmelegen virker kun, hvis barnet hurtigt kan se den del, der ligger fremme.
+Derfor er de to ikke hver sit spil. Seksårige ser ikke selv grupperne
+(Starkey & McCandliss 2014), så delene vises i farver og siges. Faste mønstre
+til fem kommer før femmer-strukturen til ti, og spredte mønstre kommer til
+sidst (Clements & Sarama). Nødderne ses i cirka to sekunder (Building
+Blocks' "Snapshots"), men selve svaret har ingen tidsgrænse. Del-helhedsmodellen
+med tal i cirkler bruges ikke: stubben er helheden, og en streg deler den i
+to. Ellers ser helheden og delene ud som dobbelt så mange (NCETM's advarsel).
+Studierne er små, og effekten er moderat; se også Wästerlid (2020) og NCUM's
+temaer om subitizing og del-del-helhed i børnehaveklassen.
+
+**Svaret** gives på en talrække med alle antal, 1-5 eller 1-10 (to rækker:
+1-5 og 6-10), som terning og tierramme. Et tilfældigt tryk er sjældent
+rigtigt, og rækken viser femmer-strukturen. Et forkert svar rokker kortet,
+stemmen siger dets tal og "Kig igen", og nødderne vises igen. Anden gang med
+delene i hver sin farve, så man ser 5 og 2 i stedet for at tælle én ad gangen.
+
+**Se hurtigt.** Bladene blæser væk, nødderne ses et øjeblik, og bladene
+kommer tilbage. Én stjerne: 1-5 i faste mønstre (række, femmerramme, terning,
+trekant). To stjerner: til 5 som før og hver anden gang 6-10 som "fem og"
+(tierramme eller en søjle på fem og en terning). Tre stjerner: 1-10 i
+tierramme, to grupper på alle måder og spredt til seks. Efter svaret lyser
+delene, og stemmen siger, hvordan man kunne se det: "Ja! Fem og to er syv."
+Et tryk på bladene viser nødderne igen.
 
 **Gemmeleg.** Egon har fx syv nødder i en tierramme ("Egon har syv nødder").
-De deler sig: nogle bliver til venstre på stubben, resten triller til højre
-og gemmer sig under et stort blad. Oppe i hjørnet står del-helhedsmodellen:
-helheden i den store cirkel og de to dele i de små, med et blad for den
-gemte del. Barnet vælger, hvor mange der gemmer sig; så løfter bladet sig,
-og stemmen siger "Ja! Fire og tre er syv." Én stjerne 2-5 nødder, to stjerner
-4-7, tre stjerner 6-10, og ingen opgave kommer to gange i samme omgang.
-Efter to forkerte løfter bladet sig lidt, så man kan kigge.
+De deler sig: nogle bliver på venstre side af stregen, resten gemmer sig under
+et stort blad. Hvor mange gemmer sig? Bladet løfter sig, og stemmen siger "Ja!
+Fire og tre er syv." Én stjerne 2-5 nødder, to 5-8, tre 6-10 med tiervennerne
+dobbelt så tit. **Med to spillere** gemmer den ene for den anden: stubbens kant
+har gemmerens farve, et tryk på en nød til venstre gemmer den, et tryk under
+bladet henter én tilbage, og øjet siger "færdig". Så gætter den anden, med
+kortene i sin farve, og næste gang bytter de.
 
-En omgang er seks spørgsmål; nødderne flyver op i Egons kurv, og cirklerne
-foroven tæller omgangen. Med to spillere er der otte, og man skiftes: kortenes
-kant har den spillers farve, hvis tur det er. **Stemmen** er 72 sætninger med
-Gemini (Kore), lavet med `vaerktoej/lav-lyd-gemini.py --spil egern` ud fra
-`Egern.saetninger()`; svarene sættes sammen af hele sætninger ("Ja!" og "Tre
-og to er fem.").
+**Ryst og hæld.** Egon har fx fem nødder; tryk på ham, så kaster han dem, og
+nogle lander i reden. Hvor mange? Hver måde at dele tallet på skrives op på
+tavlen til venstre som en trappe (én i reden og fire udenfor, to og tre …),
+og legen slutter, når alle måder er fundet ("Nu er alle måderne fundet!").
+Kommer en måde igen, siger stemmen "Den har vi allerede fundet". Én stjerne
+fem, to syv, tre ti (tiervennerne). Kastet vælger oftest en måde, der mangler,
+så det ikke trækker ud. Med to spillere skiftes man til at kaste.
+
+En omgang Se hurtigt eller Gemmeleg er seks spørgsmål (otte med to spillere);
+nødderne flyver op i Egons kurv, og cirklerne foroven tæller omgangen.
+**Stemmen** er 84 sætninger med Gemini (Kore), lavet med
+`vaerktoej/lav-lyd-gemini.py --spil egern` ud fra `Egern.saetninger()`;
+replikkerne sættes sammen af hele sætninger ("Ja!" og "Tre og to er fem.").
 
 ## Bogen om Nøddeskoven (mappen `bog`)
 

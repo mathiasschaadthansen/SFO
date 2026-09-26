@@ -59,11 +59,14 @@ Bæverdammen-testen løser alle 36 baner og kræver præcis det antal træk, der
 står ved dem, og som passer til stjernerne, lader en robot rode rundt og så
 følge hjælpen hele vejen ud, og tjekker, at alt, der siges, er indtalt.
 Banerne laves med `vaerktoej/lav-baever-baner.js`; ret ikke en bane i hånden.
-Egernrede-testen lader en robot spille Se hurtigt (subitizing) og Gemmeleg
-(del og helhed) på alle tre stjerner og tjekker, at der er præcis ét rigtigt
-kort, at nødderne ligger på stubben uden at røre hinanden, at tre stjerner
-viser to grupper eller en tierramme, at delene altid giver helheden, og at
-alt, der siges, er indtalt.
+Egernrede-testen lader en robot spille Se hurtigt (subitizing), Gemmeleg og
+Ryst og hæld (del og helhed) på alle tre stjerner og tjekker, at svaret gives
+på en talrække med ét rigtigt, at nødderne ligger på stubben uden at røre
+hinanden, at der er faste mønstre til fem før femmer-struktur og spredte, at
+delene altid giver helheden, at Ryst og hæld finder alle måder, og at alt,
+der siges, er indtalt. Designet bygger på research (README, Egernreden); lav
+ikke delene om til en del-helhedsmodel med tal i cirkler, og gå ikke tilbage
+til tre svarkort.
 
 **Stemme.** Hele appen taler med den samme stemme: Google Gemini
 (`gemini-3.8-flash-tts`, stemmen Kore). Klippene er små MP3-filer i hvert spils

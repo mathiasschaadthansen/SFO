@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v107';
+const VERSION = 'sfo-spil-v108';
 
 const FILER = [
   './',
@@ -826,6 +826,9 @@ const FILER = [
   'games/egern/js/egern.js',
   'games/egern/js/game.js',
   'games/egern/lyd/klip.json',
+  'games/egern/lyd/den_anden_gemmer_nogle_noedder_under_e9e20b.mp3',
+  'games/egern/lyd/den_ene_lukker_oejnene_e9c8d1.mp3',
+  'games/egern/lyd/den_har_vi_allerede_fundet_b7c3b0.mp3',
   'games/egern/lyd/egon_har_fem_noedder_5354d4.mp3',
   'games/egern/lyd/egon_har_fire_noedder_22bae6.mp3',
   'games/egern/lyd/egon_har_ni_noedder_e3a95f.mp3',
@@ -835,7 +838,7 @@ const FILER = [
   'games/egern/lyd/egon_har_ti_noedder_005d3c.mp3',
   'games/egern/lyd/egon_har_to_noedder_6f9f24.mp3',
   'games/egern/lyd/egon_har_tre_noedder_14bf0a.mp3',
-  'games/egern/lyd/egons_kurv_er_fuld_tak_for_654b89.mp3',
+  'games/egern/lyd/egons_kurv_er_fuld_f9ed46.mp3',
   'games/egern/lyd/en_57864d.mp3',
   'games/egern/lyd/en_og_en_er_to_cabb88.mp3',
   'games/egern/lyd/en_og_fem_er_seks_fde616.mp3',
@@ -852,6 +855,7 @@ const FILER = [
   'games/egern/lyd/fem_og_fire_er_ni_f57723.mp3',
   'games/egern/lyd/fem_og_to_er_syv_d78698.mp3',
   'games/egern/lyd/fem_og_tre_er_otte_4ec43e.mp3',
+  'games/egern/lyd/find_alle_maader_at_dele_dem_977608.mp3',
   'games/egern/lyd/fire_0e5c38.mp3',
   'games/egern/lyd/fire_og_en_er_fem_1b6349.mp3',
   'games/egern/lyd/fire_og_fem_er_ni_e90b18.mp3',
@@ -860,13 +864,17 @@ const FILER = [
   'games/egern/lyd/fire_og_to_er_seks_a388d3.mp3',
   'games/egern/lyd/fire_og_tre_er_syv_9b7b63.mp3',
   'games/egern/lyd/hvor_mange_gemmer_sig_c2b7a4.mp3',
+  'games/egern/lyd/hvor_mange_landede_i_reden_6812cd.mp3',
+  'games/egern/lyd/hvor_mange_noedder_er_der_67959e.mp3',
   'games/egern/lyd/hvor_mange_noedder_var_der_46dcf7.mp3',
   'games/egern/lyd/ja_b07788.mp3',
-  'games/egern/lyd/kig_godt_efter_hvor_mange_noedder_b548e3.mp3',
+  'games/egern/lyd/kig_godt_efter_734915.mp3',
   'games/egern/lyd/kig_igen_f71e6f.mp3',
+  'games/egern/lyd/kig_nu_84ff8d.mp3',
   'games/egern/lyd/ni_08e3e3.mp3',
   'games/egern/lyd/ni_og_en_er_ti_1a5c05.mp3',
   'games/egern/lyd/nogle_af_dem_gemmer_sig_under_49e2f9.mp3',
+  'games/egern/lyd/nu_er_alle_maaderne_fundet_9e001a.mp3',
   'games/egern/lyd/otte_b6666c.mp3',
   'games/egern/lyd/otte_og_en_er_ni_d0a9aa.mp3',
   'games/egern/lyd/otte_og_to_er_ti_a732bf.mp3',
@@ -880,6 +888,7 @@ const FILER = [
   'games/egern/lyd/syv_og_en_er_otte_64397b.mp3',
   'games/egern/lyd/syv_og_to_er_ni_4f275b.mp3',
   'games/egern/lyd/syv_og_tre_er_ti_a65daf.mp3',
+  'games/egern/lyd/tak_for_hjaelpen_f3af03.mp3',
   'games/egern/lyd/ti_9d1810.mp3',
   'games/egern/lyd/to_1dab66.mp3',
   'games/egern/lyd/to_og_en_er_tre_d08513.mp3',
@@ -897,7 +906,10 @@ const FILER = [
   'games/egern/lyd/tre_og_seks_er_ni_f49646.mp3',
   'games/egern/lyd/tre_og_syv_er_ti_ef59fc.mp3',
   'games/egern/lyd/tre_og_to_er_fem_2e5971.mp3',
-  'games/egern/lyd/tre_og_tre_er_seks_e98848.mp3'
+  'games/egern/lyd/tre_og_tre_er_seks_e98848.mp3',
+  'games/egern/lyd/tryk_paa_egon_igen_30494f.mp3',
+  'games/egern/lyd/tryk_paa_egon_saa_kaster_han_972074.mp3',
+  'games/egern/lyd/tryk_paa_oejet_naar_du_er_7e513b.mp3'
 ];
 
 /*
