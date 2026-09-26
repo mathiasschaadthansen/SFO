@@ -25,7 +25,7 @@ dag og tjekker, at alle bestillinger kan laves med det, der står på hylden, at
 alle ingredienser har en kilde, og at alle regninger kan betales med pungens
 mønter. Den tjekker også, at hver ret, ingrediens og gæst har en malet tegning,
 at tegningerne er kvadratiske, og at ingen af dem fylder over 40 KB. Tegnestue-testen tjekker, at
-alle 16 figurer kan tegnes, og at puslespillet kan samles. Stjerneur-testen lader en
+alle 16 figurer kan tegnes, at puslespillet kan samles, og at hver figur er indtalt. Stjerneur-testen lader en
 robot stille alle ure og vælge alle kort på alle niveauer og tjekker, at viserne
 låser rigtigt og hænger sammen, og at tiden siges rigtigt på dansk. Nøddeskovs-testen
 gennemspiller alle 36 baners gemte løsning i fysikken og fanger, hvis en
@@ -59,6 +59,14 @@ Bæverdammen-testen løser alle 36 baner og kræver præcis det antal træk, der
 står ved dem, og som passer til stjernerne, lader en robot rode rundt og så
 følge hjælpen hele vejen ud, og tjekker, at alt, der siges, er indtalt.
 Banerne laves med `vaerktoej/lav-baever-baner.js`; ret ikke en bane i hånden.
+Egernrede-testen lader en robot spille Se hurtigt (subitizing), Gemmeleg og
+Ryst og hæld (del og helhed) på alle tre stjerner og tjekker, at svaret gives
+på en talrække med ét rigtigt, at nødderne ligger på stubben uden at røre
+hinanden, at der er faste mønstre til fem før femmer-struktur og spredte, at
+delene altid giver helheden, at Ryst og hæld finder alle måder, og at alt,
+der siges, er indtalt. Designet bygger på research (README, Egernreden); lav
+ikke delene om til en del-helhedsmodel med tal i cirkler, og gå ikke tilbage
+til tre svarkort.
 
 **Stemme.** Hele appen taler med den samme stemme: Google Gemini
 (`gemini-3.8-flash-tts`, stemmen Kore). Klippene er små MP3-filer i hvert spils
@@ -76,12 +84,12 @@ To slags spil:
   (`ting()`, `restaurant()`, `klokken()` …), som Gemini-værktøjet også bruger.
   Bogstaver og tal indtales rene ("A.", "Tre."), og ordene i rammen "Her har
   du ordet kat.".
-- **Hele sætninger** (Himmelvejen, Årstidshaven, Bæverdammen): hver sætning er ét klip, og
+- **Hele sætninger** (Himmelvejen, Årstidshaven, Bæverdammen, Egernreden, Tegnestuen): hver sætning er ét klip, og
   `lyd/klip.json` er `{ sætning: fil }`. `js/stemme.js` deler en replik i
   sætninger og spiller den længste række, der har ét klip, så en sammensat
   replik ("Pelle ønsker sig to gulerødder. Og så én agurk.") er flere klip i
   træk. Sætningerne står i spillets kode (`Haven.saetninger()`,
-  `Oe.saetninger()`, `Daemning.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
+  `Oe.saetninger()`, `Daemning.saetninger()`, `Egern.saetninger()`, `Figurer.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
   Ændrer du en sætning, så kør værktøjet igen. Byg nye replikker af hele
   sætninger, aldrig et klip midt i en sætning.
 
@@ -156,6 +164,7 @@ spillet. Koden er ikke doebt om: modulerne hedder stadig `Klatbold`, `Bobler`,
 | Himmelvejen | `games/flyv/` | `test/flyv.test.js` |
 | Årstidshaven | `games/have/` | `test/have.test.js` |
 | Bæverdammen | `games/baever/` | `test/baever.test.js` |
+| Egernreden | `games/egern/` | `test/egern.test.js` |
 | Bogen om Nøddeskoven | `bog/` | `test/bog.test.js` |
 
 Bogen er ikke et spil: den ligger forrest på forsiden, har ingen knap ind i
@@ -200,7 +209,7 @@ Malede billeder ligger i `assets/malet/` (forsiden),
 (Skovkøkkenets 16 ingredienser, 3 retter og 12 gæster) og
 `games/bogstaver/billeder/` (Bogstavvejens 69 ting, kvadratiske som
 Skovkøkkenets; listen `MALET` i `ting.js` siger, hvilke ting der er malet).
-Rimhulen og Vrimleskoven genbruger Bogstavvejens billeder og ordklip fra
+Rimhulen, Vrimleskoven og Egernreden genbruger Bogstavvejens billeder og ordklip fra
 `../bogstaver/`; Rimhulen har kun sine elleve ekstra rimord selv, og
 Vrimleskoven har byens seks malede stykker i `games/find/billeder/` (husene
 forrest i byen er tegnet i kode, fordi tingene skal kunne sidde i vinduerne).

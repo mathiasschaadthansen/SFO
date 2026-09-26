@@ -68,21 +68,9 @@
   }
   function melodi(toner, mellemrum) { toner.forEach(function (f, i) { setTimeout(function () { tone(f, 0.16, 0.13); }, i * mellemrum); }); }
 
-  // Kun enhedens egne stemmer (localService), saa intet gaar over nettet
-  var stemme = null;
-  function findStemme() {
-    if (!('speechSynthesis' in window)) return;
-    stemme = window.speechSynthesis.getVoices().filter(function (v) { return v.localService && /^da/i.test(v.lang); })[0] || null;
-  }
-  if ('speechSynthesis' in window) { findStemme(); window.speechSynthesis.onvoiceschanged = findStemme; }
-  function sig(tekst) {
-    if (!lydTil || !stemme) return;
-    try {
-      var u = new SpeechSynthesisUtterance(tekst);
-      u.voice = stemme; u.lang = stemme.lang; u.rate = 0.9;
-      window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
-    } catch (e) { /* stemme er pynt */ }
-  }
+  /* Stemmen: klippene i lyd/ (Gemini, stemmen Kore), ellers enhedens egen danske stemme (kun en lokal). Se js/stemme.js. */
+  var stemme = Stemme.ny({ mappe: 'lyd/', kontekst: function () { try { return lydKontekst(); } catch (e) { return null; } }, til: function () { return lydTil; }, rate: 0.9 });
+  function sig(tekst) { stemme.sig(tekst); }
 
   /* ---------- laerred og plads ---------- */
 
@@ -269,7 +257,7 @@
     melodi([660, 880, 1100, 1320], 100);
     var b = braet();
     for (var i = 0; i < 26; i++) gnist(b.x + Math.random() * b.str, b.y + Math.random() * b.str);
-    setTimeout(function () { sig(figur.navn.charAt(0).toUpperCase() + figur.navn.slice(1) + '!'); }, 350);
+    setTimeout(function () { sig(Figurer.replik(figur)); }, 350);
   }
 
   function startPusle() {

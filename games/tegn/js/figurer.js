@@ -169,5 +169,14 @@
     return Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.01;
   }
 
-  rod.Figurer = { UNIVERSER: UNIVERSER, glyf: glyf, lukket: lukket };
+  /** Det, stemmen siger, naar figuren er tegnet: "En fisk!" */
+  function replik(figur) { return figur.navn.charAt(0).toUpperCase() + figur.navn.slice(1) + '!'; }
+  /** Alle replikker, én pr. figur. Klippene laves med vaerktoej/lav-lyd-gemini.py --spil tegn. */
+  function saetninger() {
+    var ud = [];
+    UNIVERSER.forEach(function (u) { u.figurer.forEach(function (f) { var t = replik(f); if (ud.indexOf(t) < 0) ud.push(t); }); });
+    return ud;
+  }
+
+  rod.Figurer = { UNIVERSER: UNIVERSER, glyf: glyf, lukket: lukket, replik: replik, saetninger: saetninger };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);

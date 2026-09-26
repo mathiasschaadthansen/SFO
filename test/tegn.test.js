@@ -114,5 +114,18 @@ console.log('\nTegn og pusl\n');
   tjek('spillets filer er med i service workerens FILER', mangler.length === 0, mangler.join(', '));
 }
 
+/* Stemmen: hver figur siges med Kore ("En fisk!"), et klip pr. figur */
+{
+  const ROD = path.join(__dirname, '..'), sw = fs.readFileSync(path.join(ROD, 'sw.js'), 'utf8');
+  const { Figurer } = require(path.join(ROD, 'games', 'tegn', 'js', 'figurer.js'));
+  const alle = Figurer.saetninger(), klip = JSON.parse(fs.readFileSync(path.join(ROD, 'games', 'tegn', 'lyd', 'klip.json'), 'utf8'));
+  tjek('hver figur har sin replik', alle.length === 16 && Figurer.replik({ navn: 'en fisk' }) === 'En fisk!');
+  const mangler = alle.filter(t => !klip[t]);
+  tjek('alt, Tegnestuen siger, er indtalt', mangler.length === 0, mangler.join(' | '));
+  tjek('alle klip findes og er med i FILER', Object.values(klip).every(f => fs.existsSync(path.join(ROD, 'games', 'tegn', 'lyd', f)) && sw.includes("'games/tegn/lyd/" + f + "'")));
+  const html = fs.readFileSync(path.join(ROD, 'games', 'tegn', 'index.html'), 'utf8'), game = fs.readFileSync(path.join(ROD, 'games', 'tegn', 'js', 'game.js'), 'utf8');
+  tjek('siden bruger den faelles stemme (js/stemme.js)', html.includes('../../js/stemme.js') && /Stemme\.ny\(/.test(game) && sw.includes("'games/tegn/lyd/klip.json'"));
+}
+
 console.log(fejl ? '\n' + fejl + ' test(s) fejlede.' : '\nAlle tests bestaaet.');
 process.exit(fejl ? 1 : 0);

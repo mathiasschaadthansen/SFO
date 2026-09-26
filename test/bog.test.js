@@ -28,9 +28,9 @@ const O = Bog.OPSLAG, W = Bog.BREDDE, H = Bog.HOEJDE;
   tjek('bogen har ti opslag', O.length === 10, O.length + ' opslag');
   const ids = O.map(o => o.id);
   tjek('alle opslag har hvert sit id', new Set(ids).size === ids.length);
-  // Himmelvejen er Sannes egen tur over hele oeen, Årstidshaven er Pelles egen have, og Bæverdammen er kommet til efter bogen;
+  // Himmelvejen er Sannes egen tur over hele oeen, Årstidshaven er Pelles egen have, og Bæverdammen og Egernreden er kommet til efter bogen;
   // ingen af dem er et af bogens ti steder
-  const spil = [...fs.readFileSync(path.join(ROD, 'js', 'games.js'), 'utf8').matchAll(/sti:\s*'(games\/[^']+)'/g)].map(m => m[1]).filter(s => s !== 'games/flyv/' && s !== 'games/have/' && s !== 'games/baever/');
+  const spil = [...fs.readFileSync(path.join(ROD, 'js', 'games.js'), 'utf8').matchAll(/sti:\s*'(games\/[^']+)'/g)].map(m => m[1]).filter(s => s !== 'games/flyv/' && s !== 'games/have/' && s !== 'games/baever/' && s !== 'games/egern/');
   tjek('opslagene besoeger alle ti spil, hvert én gang', spil.length === 10 && spil.every(s => O.filter(o => o.spil === s).length === 1), O.map(o => o.spil).join());
   tjek('historien begynder i Noeddeskoven og ender i Skovkoekkenet', O[0].id === 'noeddeskoven' && O[9].id === 'skovkoekkenet');
   const stedForkert = O.filter(o => {

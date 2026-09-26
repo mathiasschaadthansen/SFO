@@ -55,7 +55,7 @@ def arg(navn, standard=None):
     return sys.argv[sys.argv.index(navn) + 1] if navn in sys.argv else standard
 
 
-SAETNINGSSPIL = ('have', 'flyv', 'baever')
+SAETNINGSSPIL = ('have', 'flyv', 'baever', 'egern', 'tegn')
 FASTE_SPIL = ('bogstaver', 'restaurant', 'klokken', 'maskinen', 'find', 'rim', 'bog')
 SPIL = arg('--spil', 'have')
 if SPIL not in SAETNINGSSPIL + FASTE_SPIL:
@@ -84,6 +84,10 @@ def saetninger():
     """Saetningerne fra spillets egen kode, via node."""
     if SPIL == 'have':
         kode = "const { Haven } = require(%r); console.log(JSON.stringify(Haven.saetninger()));" % os.path.join(ROD, 'games', 'have', 'js', 'haven.js')
+    elif SPIL == 'tegn':
+        kode = "const { Figurer } = require(%r); console.log(JSON.stringify(Figurer.saetninger()));" % os.path.join(ROD, 'games', 'tegn', 'js', 'figurer.js')
+    elif SPIL == 'egern':
+        kode = "const { Egern } = require(%r); console.log(JSON.stringify(Egern.saetninger()));" % os.path.join(ROD, 'games', 'egern', 'js', 'egern.js')
     elif SPIL == 'baever':
         kode = "const { Daemning } = require(%r); console.log(JSON.stringify(Daemning.saetninger()));" % os.path.join(ROD, 'games', 'baever', 'js', 'daemning.js')
     else:
@@ -335,12 +339,14 @@ def registrer(liste=None):
         f.write('\n')
     p = os.path.join(ROD, 'sw.js')
     s = open(p, encoding='utf-8').read()
-    s = re.sub(r"  '%s/lyd/[^']+\.mp3',\n" % MAPPE, '', s)
+    # Ogsaa den sidste linje i FILER, som ikke har komma; ellers kom den med to gange, og addAll afviser dubletter
+    s = re.sub(r"  '%s/lyd/[^']+\.mp3',?\n" % MAPPE, '', s)
     linjer = ''.join("  '%s/lyd/%s',\n" % (MAPPE, f) for f in sorted(brugt))
     anker = "  '%s/lyd/klip.json',\n" % MAPPE
     if anker not in s:
         raise SystemExit('Tilfoej %s i FILER i sw.js foerst.' % anker.strip())
     s = s.replace(anker, anker + linjer)
+    s = re.sub(r"',\n\];", "'\n];", s)
     open(p, 'w', encoding='utf-8').write(s)
     mangler = [t for t in liste if t not in klip]
     if mangler:
