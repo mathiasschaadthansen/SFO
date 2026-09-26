@@ -349,7 +349,7 @@ Kræver `pip install lameenc`.
   siger, står i `vaerktoej/lav-lyd-elevenlabs.py` (som lavede Camillas klip
   før september 2026). Bogstaver og tal siges rene ("A.", "Tre."), ordene i
   rammen "Her har du ordet kat.".
-- `--spil have|flyv|baever|egern` laver ét klip pr. sætning ud fra spillets egen kode og
+- `--spil have|flyv|baever|egern|tegn` laver ét klip pr. sætning ud fra spillets egen kode og
   skriver `lyd/klip.json` og `sw.js`.
 
 `--proev` viser, hvad der ville blive lavet, og `--kun <tekst>` laver kun det,
@@ -658,7 +658,8 @@ rammer noget, og to toner der klinger ud, når klokken bliver ramt.
 Barnet vælger et univers (Havet, Dyrene, Maskiner, Haven) og tegner en figur
 ved at følge de stiplede streger med fingeren. Hver del får farve, så snart
 den er tegnet, og til sidst kommer øjne, smil og andet pynt af sig selv.
-Stemmen siger, hvad det blev til. Så bliver billedet til et puslespil med
+Stemmen siger, hvad det blev til ("En fisk!", ét klip pr. figur med Kore, lavet med
+`vaerktoej/lav-lyd-gemini.py --spil tegn` ud fra `Figurer.saetninger()`). Så bliver billedet til et puslespil med
 rigtige tappe, som samles ved at trække brikkerne ind på brættet. De klikker
 på plads, når de slippes tæt nok på. Fire figurer pr. univers, og til sidst
 hopper de alle fire på række.

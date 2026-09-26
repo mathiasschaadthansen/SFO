@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v108';
+const VERSION = 'sfo-spil-v109';
 
 const FILER = [
   './',
@@ -567,6 +567,23 @@ const FILER = [
   'games/tegn/js/figurer.js',
   'games/tegn/js/pusle.js',
   'games/tegn/js/game.js',
+  'games/tegn/lyd/klip.json',
+  'games/tegn/lyd/en_bil_8095b2.mp3',
+  'games/tegn/lyd/en_blaeksprutte_d96930.mp3',
+  'games/tegn/lyd/en_blomst_010dc2.mp3',
+  'games/tegn/lyd/en_fisk_0b8604.mp3',
+  'games/tegn/lyd/en_hval_0f4b47.mp3',
+  'games/tegn/lyd/en_kat_0107fb.mp3',
+  'games/tegn/lyd/en_kylling_337d4d.mp3',
+  'games/tegn/lyd/en_raket_669b13.mp3',
+  'games/tegn/lyd/en_robot_70fcfc.mp3',
+  'games/tegn/lyd/en_snegl_67cca1.mp3',
+  'games/tegn/lyd/en_soestjerne_ed1244.mp3',
+  'games/tegn/lyd/en_sol_6c0c92.mp3',
+  'games/tegn/lyd/en_sommerfugl_2d8e9b.mp3',
+  'games/tegn/lyd/et_hus_1734a3.mp3',
+  'games/tegn/lyd/et_tog_e6b74c.mp3',
+  'games/tegn/lyd/et_trae_a74c35.mp3',
   'games/maskinen/index.html',
   'games/maskinen/js/figurer.js',
   'games/maskinen/billeder/aeble.png',

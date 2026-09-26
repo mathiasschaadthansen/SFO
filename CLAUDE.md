@@ -25,7 +25,7 @@ dag og tjekker, at alle bestillinger kan laves med det, der står på hylden, at
 alle ingredienser har en kilde, og at alle regninger kan betales med pungens
 mønter. Den tjekker også, at hver ret, ingrediens og gæst har en malet tegning,
 at tegningerne er kvadratiske, og at ingen af dem fylder over 40 KB. Tegnestue-testen tjekker, at
-alle 16 figurer kan tegnes, og at puslespillet kan samles. Stjerneur-testen lader en
+alle 16 figurer kan tegnes, at puslespillet kan samles, og at hver figur er indtalt. Stjerneur-testen lader en
 robot stille alle ure og vælge alle kort på alle niveauer og tjekker, at viserne
 låser rigtigt og hænger sammen, og at tiden siges rigtigt på dansk. Nøddeskovs-testen
 gennemspiller alle 36 baners gemte løsning i fysikken og fanger, hvis en
@@ -84,12 +84,12 @@ To slags spil:
   (`ting()`, `restaurant()`, `klokken()` …), som Gemini-værktøjet også bruger.
   Bogstaver og tal indtales rene ("A.", "Tre."), og ordene i rammen "Her har
   du ordet kat.".
-- **Hele sætninger** (Himmelvejen, Årstidshaven, Bæverdammen, Egernreden): hver sætning er ét klip, og
+- **Hele sætninger** (Himmelvejen, Årstidshaven, Bæverdammen, Egernreden, Tegnestuen): hver sætning er ét klip, og
   `lyd/klip.json` er `{ sætning: fil }`. `js/stemme.js` deler en replik i
   sætninger og spiller den længste række, der har ét klip, så en sammensat
   replik ("Pelle ønsker sig to gulerødder. Og så én agurk.") er flere klip i
   træk. Sætningerne står i spillets kode (`Haven.saetninger()`,
-  `Oe.saetninger()`, `Daemning.saetninger()`, `Egern.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
+  `Oe.saetninger()`, `Daemning.saetninger()`, `Egern.saetninger()`, `Figurer.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
   Ændrer du en sætning, så kør værktøjet igen. Byg nye replikker af hele
   sætninger, aldrig et klip midt i en sætning.
 
