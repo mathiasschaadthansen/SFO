@@ -59,6 +59,11 @@ Bæverdammen-testen løser alle 36 baner og kræver præcis det antal træk, der
 står ved dem, og som passer til stjernerne, lader en robot rode rundt og så
 følge hjælpen hele vejen ud, og tjekker, at alt, der siges, er indtalt.
 Banerne laves med `vaerktoej/lav-baever-baner.js`; ret ikke en bane i hånden.
+Egernrede-testen lader en robot spille Se hurtigt (subitizing) og Gemmeleg
+(del og helhed) på alle tre stjerner og tjekker, at der er præcis ét rigtigt
+kort, at nødderne ligger på stubben uden at røre hinanden, at tre stjerner
+viser to grupper eller en tierramme, at delene altid giver helheden, og at
+alt, der siges, er indtalt.
 
 **Stemme.** Hele appen taler med den samme stemme: Google Gemini
 (`gemini-3.8-flash-tts`, stemmen Kore). Klippene er små MP3-filer i hvert spils
@@ -76,12 +81,12 @@ To slags spil:
   (`ting()`, `restaurant()`, `klokken()` …), som Gemini-værktøjet også bruger.
   Bogstaver og tal indtales rene ("A.", "Tre."), og ordene i rammen "Her har
   du ordet kat.".
-- **Hele sætninger** (Himmelvejen, Årstidshaven, Bæverdammen): hver sætning er ét klip, og
+- **Hele sætninger** (Himmelvejen, Årstidshaven, Bæverdammen, Egernreden): hver sætning er ét klip, og
   `lyd/klip.json` er `{ sætning: fil }`. `js/stemme.js` deler en replik i
   sætninger og spiller den længste række, der har ét klip, så en sammensat
   replik ("Pelle ønsker sig to gulerødder. Og så én agurk.") er flere klip i
   træk. Sætningerne står i spillets kode (`Haven.saetninger()`,
-  `Oe.saetninger()`, `Daemning.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
+  `Oe.saetninger()`, `Daemning.saetninger()`, `Egern.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
   Ændrer du en sætning, så kør værktøjet igen. Byg nye replikker af hele
   sætninger, aldrig et klip midt i en sætning.
 
@@ -156,6 +161,7 @@ spillet. Koden er ikke doebt om: modulerne hedder stadig `Klatbold`, `Bobler`,
 | Himmelvejen | `games/flyv/` | `test/flyv.test.js` |
 | Årstidshaven | `games/have/` | `test/have.test.js` |
 | Bæverdammen | `games/baever/` | `test/baever.test.js` |
+| Egernreden | `games/egern/` | `test/egern.test.js` |
 | Bogen om Nøddeskoven | `bog/` | `test/bog.test.js` |
 
 Bogen er ikke et spil: den ligger forrest på forsiden, har ingen knap ind i
@@ -200,7 +206,7 @@ Malede billeder ligger i `assets/malet/` (forsiden),
 (Skovkøkkenets 16 ingredienser, 3 retter og 12 gæster) og
 `games/bogstaver/billeder/` (Bogstavvejens 69 ting, kvadratiske som
 Skovkøkkenets; listen `MALET` i `ting.js` siger, hvilke ting der er malet).
-Rimhulen og Vrimleskoven genbruger Bogstavvejens billeder og ordklip fra
+Rimhulen, Vrimleskoven og Egernreden genbruger Bogstavvejens billeder og ordklip fra
 `../bogstaver/`; Rimhulen har kun sine elleve ekstra rimord selv, og
 Vrimleskoven har byens seks malede stykker i `games/find/billeder/` (husene
 forrest i byen er tegnet i kode, fordi tingene skal kunne sidde i vinduerne).

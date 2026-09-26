@@ -30,6 +30,10 @@ Spillene indtil nu:
 - **Bæverdammen** (mappen `baever`): et skydepuslespil på 6 x 6 felter. Skub
   stammerne til side, så Bæveren Bodils lyse stamme kan glide ud til
   dæmningen. 36 baner på tre stjerner, 1 eller 2 spillere.
+- **Egernreden** (mappen `egern`): to lege med tal. **Se hurtigt**
+  (subitizing): nødderne ses et øjeblik, så kommer bladene, og man vælger
+  kortet med samme antal. **Gemmeleg** (del og helhed): Egon har fem nødder,
+  nogle gemmer sig under bladet; hvor mange? "Tre og to er fem."
 
 ## Kom i gang
 
@@ -133,6 +137,11 @@ games/baever/
   js/game.js            pladsen og vandet tegnet i kode, træk med fingrene, Bodil, dæmningen, menu, stemme
   billeder/bodil.png    Bæveren Bodil, malet med Canva (se billeder/NOTICE.md)
   lyd/*.mp3             ét klip pr. sætning (Gemini, Kore); lyd/klip.json siger, hvilken fil der er hvilken sætning
+games/egern/
+  js/egern.js           mønstrene, gemmelegens dele, svarkortene, runderne og det, der siges — ingen DOM
+  js/game.js            stubben, bladene, kortene, del-helhedsmodellen, Egon og kurven, menu, stemme
+  lyd/*.mp3             ét klip pr. sætning (Gemini, Kore); lyd/klip.json siger, hvilken fil der er hvilken sætning
+test/egern.test.js      en robot spiller begge lege på alle stjerner; ét rigtigt kort, nødderne ligger frit, delene giver helheden
 test/baever.test.js     løser alle baner, lader en robot rode rundt og følge hjælpen ud, tjekker stemme og filer
 bog/
   js/bog.js             de ti opslag: tekst, rim, hvem Pelle møder, hvor nøglen og skaden er — ingen DOM
@@ -339,7 +348,7 @@ Kræver `pip install lameenc`.
   siger, står i `vaerktoej/lav-lyd-elevenlabs.py` (som lavede Camillas klip
   før september 2026). Bogstaver og tal siges rene ("A.", "Tre."), ordene i
   rammen "Her har du ordet kat.".
-- `--spil have|flyv|baever` laver ét klip pr. sætning ud fra spillets egen kode og
+- `--spil have|flyv|baever|egern` laver ét klip pr. sætning ud fra spillets egen kode og
   skriver `lyd/klip.json` og `sw.js`.
 
 `--proev` viser, hvad der ville blive lavet, og `--kun <tekst>` laver kun det,
@@ -898,6 +907,40 @@ Testen løser alle 36 baner og kræver præcis det antal træk, der står ved de
 lader en robot spille hver bane igennem, lader en anden robot rode rundt med
 tilfældige træk og så følge hjælpen hele vejen ud, og tjekker runderne,
 stemmen, billedet og filerne i service workeren.
+
+## Egernreden (mappen `egern`)
+
+Egernet Egon samler nødder på en stubbe. Spillet øver to ting, som bruges i
+den tidlige talforståelse: at se små mængder med det samme uden at tælle
+(subitizing) og at se et tal som to dele (del og helhed, "tre og to er fem").
+Egon og nødden er Bogstavvejens malede billeder; resten er tegnet i kode.
+
+**Se hurtigt.** Bladene blæser væk, nødderne ses et øjeblik (2 sekunder ved
+én stjerne, 1,4 ved to og 1,5 ved tre), og bladene kommer tilbage. Tre kort
+viser et antal som en terning (1-6) eller en tierramme (7-10), og barnet
+trykker på det, der passer. Nødderne ligger på stubben på flere måder end på
+kortet: på en række, som en trekant eller spredt, så det er mængden, man
+genkender, ikke mønstret. Én stjerne 1-4, to stjerner 1-6, tre stjerner 4-10
+som to grupper (fx 5 og 2) eller en tierramme, så 7 ses som 5 og 2
+(konceptuel subitizing). Et forkert kort rokker, stemmen siger dets tal og
+"Kig igen", og nødderne vises igen; efter to forkerte bliver de liggende. Et
+tryk på bladene viser dem igen når som helst.
+
+**Gemmeleg.** Egon har fx syv nødder i en tierramme ("Egon har syv nødder").
+De deler sig: nogle bliver til venstre på stubben, resten triller til højre
+og gemmer sig under et stort blad. Oppe i hjørnet står del-helhedsmodellen:
+helheden i den store cirkel og de to dele i de små, med et blad for den
+gemte del. Barnet vælger, hvor mange der gemmer sig; så løfter bladet sig,
+og stemmen siger "Ja! Fire og tre er syv." Én stjerne 2-5 nødder, to stjerner
+4-7, tre stjerner 6-10, og ingen opgave kommer to gange i samme omgang.
+Efter to forkerte løfter bladet sig lidt, så man kan kigge.
+
+En omgang er seks spørgsmål; nødderne flyver op i Egons kurv, og cirklerne
+foroven tæller omgangen. Med to spillere er der otte, og man skiftes: kortenes
+kant har den spillers farve, hvis tur det er. **Stemmen** er 72 sætninger med
+Gemini (Kore), lavet med `vaerktoej/lav-lyd-gemini.py --spil egern` ud fra
+`Egern.saetninger()`; svarene sættes sammen af hele sætninger ("Ja!" og "Tre
+og to er fem.").
 
 ## Bogen om Nøddeskoven (mappen `bog`)
 

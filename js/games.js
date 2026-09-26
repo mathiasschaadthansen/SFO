@@ -184,5 +184,16 @@ window.SPIL = [
     art: '<div class="art">' +
          '<img src="games/baever/billeder/bodil.png" alt="" style="left:40px;top:0;width:70px">' +
          '</div>'
+  },
+  {
+    id: 'egern',
+    navn: 'Egernreden',
+    tekst: 'Hvor mange nødder så du? Og hvor mange gemmer sig under bladet? Egon lærer tallene med dig. 1 eller 2 spillere.',
+    farve: '#e9dcc0',
+    sti: 'games/egern/',
+    art: '<div class="art">' +
+         '<img src="games/bogstaver/billeder/noed.png" alt="" style="left:6px;top:52px;width:36px">' +
+         '<img src="games/bogstaver/billeder/egern.png" alt="" style="left:40px;top:0;width:72px">' +
+         '</div>'
   }
 ];
