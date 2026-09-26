@@ -48,7 +48,7 @@
    * Priser i moenter. Prisen traekkes tilfaeldigt pr. kunde, saa regnestykket
    * varierer paa alle niveauer: paa 1 stjerne koster en ting 1 eller 2 (to ting,
    * summen er 2-4). Paa 2 og 3 stjerner koster en ting 1, 2 eller 3, og summen
-   * holdes paa hoejst 9, saa alle tal kan siges med Camillas talklip og
+   * holdes paa hoejst 9, saa alle tal kan siges med de indtalte talklip og
    * moenterne kan tegnes i boblen. Regningen viser én moent pr. krone, samlet
    * i en gruppe pr. ting, saa barnet kan taelle sig til prisen. Den samme ting
    * koster det samme inden for én bestilling (dobbelt ost = to gange prisen).

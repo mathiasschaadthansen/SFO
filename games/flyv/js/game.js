@@ -550,27 +550,13 @@
     slut: function () { melodi([523, 659, 784, 1047, 1319], 120); }
   };
 
-  /* Stemmen: enhedens egen danske stemme, og kun en, der ligger paa enheden, saa intet gaar
-     over nettet. Naar Camillas klip er lavet, afspilles de i stedet. */
-  var stemme = null, taleNr = 0;
-  function findStemme() {
-    try {
-      stemme = window.speechSynthesis.getVoices().filter(function (s) { return /^da/i.test(s.lang) && s.localService; })[0] || null;
-    } catch (e) { stemme = null; }
-  }
-  if (window.speechSynthesis) { findStemme(); window.speechSynthesis.onvoiceschanged = findStemme; }
+  /* Stemmen: klippene i lyd/ (Gemini, stemmen Kore), ellers enhedens egen danske stemme. Se js/stemme.js.
+     Naar et klip er i gang, faar flyvningen at vide, hvor laenge det varer, saa naeste replik venter. */
+  var stemme = Stemme.ny({ mappe: 'lyd/', kontekst: function () { return lyd; }, til: function () { return lydTil; }, rate: 0.88 });
   function sig(tekst) {
-    var nr = ++taleNr;
-    if (!lydTil || !window.speechSynthesis || !stemme) return;
-    try {
-      window.speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(tekst);
-      u.voice = stemme; u.lang = stemme.lang; u.rate = 0.88; u.pitch = 1.05;
-      u.onend = function () { if (nr === taleNr && F) F.taleFaerdig(); };
-      window.speechSynthesis.speak(u);
-    } catch (e) { /* stemmen er pynt; boblen viser, hvem brevet er til */ }
+    stemme.sig(tekst, function () { if (F) F.taleFaerdig(); }, function (sek) { if (F && F.taleVarer) F.taleVarer(sek); });
   }
-  function tie() { taleNr++; try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* intet */ } }
+  function tie() { stemme.tie(); }
 
   /* ---------- spillet ---------- */
   var tilstand = 'menu', tid = 0, svaerhed = 0;
@@ -1085,7 +1071,7 @@
   window.__debug = function () {
     var b = F.detteBud();
     return {
-      tilstand: tilstand, svaerhed: svaerhed, fugl: fugl, stemme: stemme ? stemme.name : null,
+      tilstand: tilstand, svaerhed: svaerhed, fugl: fugl, stemme: stemme.stemme(), klip: stemme.antalKlip(),
       bud: bud ? { nr: bud.nr, fase: bud.fase, rundt: bud.rundt } : null, bro: bro ? { klaret: bro.klaret, aktiv: bro.aktiv, y: BRO.y, z: BRO.z } : null,
       klaret: klaret ? Object.keys(klaret) : [], billeder: Object.keys(tekstur).length, udklip: udklip.length,
       dyr: b && b.sted && steder.dyr[b.sted] && tilstand === 'flyv' ? steder.dyr[b.sted].map(function (m) {

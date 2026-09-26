@@ -12,6 +12,8 @@ const path = require('path');
 const ROD = path.join(__dirname, '..', 'games', 'flyv');
 const { Oe } = require(path.join(ROD, 'js', 'oe.js'));
 const { Flyvning } = require(path.join(ROD, 'js', 'flyvning.js'));
+const { Stemme } = require(path.join(__dirname, '..', 'js', 'stemme.js'));
+const ALT_SAGT = new Set();   // alt, robotterne hoerte, til tjekket af stemmen
 
 let fejl = 0;
 function tjek(navn, betingelse, detalje) {
@@ -75,7 +77,7 @@ function styrMod(fu, x, z, hukommelse) {
 }
 function spil(niveau, maade) {
   const sagt = [];
-  const F = Flyvning.ny(steder.dyr, { sig: t => sagt.push(t) });
+  const F = Flyvning.ny(steder.dyr, { sig: t => { sagt.push(t); ALT_SAGT.add(t); } });
   F.nulstil(niveau);
   const dt = 1 / 30, fu = F.fugl, hu = {};
   let forkertFoerst = maade === 'tryk', broFase = maade === 'flyv' ? 0 : -1, t = 0, tryk = 0, fjernest = 0;
@@ -131,7 +133,7 @@ for (const niveau of [1, 2, 3]) {
 
 /* Havet: holder man fingeren i den forkerte side ude ved kysten, drejer Sanne alligevel hjem */
 {
-  const F = Flyvning.ny(steder.dyr, {});
+  const F = Flyvning.ny(steder.dyr, { sig: t => ALT_SAGT.add(t) });
   F.nulstil(2);
   F.fugl.x = 0; F.fugl.z = 220; F.fugl.h = 0;   // paa vej ud mod syd
   let fjernest = 0;
@@ -141,6 +143,23 @@ for (const niveau of [1, 2, 3]) {
     fjernest = Math.max(fjernest, Math.hypot(F.fugl.x, F.fugl.z));
   }
   tjek('drejer man vaek fra oeen, kommer Sanne alligevel hjem', fjernest < 300 && Math.hypot(F.fugl.x, F.fugl.z) < 290, Math.round(fjernest) + '');
+}
+
+/* Stemmen: hver saetning er ét klip, og alt, Himmelvejen siger, kan saettes sammen af dem */
+{
+  const S = Oe.saetninger(), kendt = {};
+  S.forEach(t => { kendt[t] = true; });
+  tjek('hver saetning staar én gang', new Set(S).size === S.length);
+  const udenKlip = [...ALT_SAGT].filter(t => !Stemme.del(t, kendt));
+  tjek('alt, robotterne hoerte, kan siges med klippene (' + ALT_SAGT.size + ' replikker)', ALT_SAGT.size > 10 && udenKlip.length === 0, udenKlip.slice(0, 3).join(' | '));
+  const klip = JSON.parse(fs.readFileSync(path.join(ROD, 'lyd', 'klip.json'), 'utf8'));
+  const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
+  const filer = Object.values(klip);
+  tjek('klip.json og hvert klip er i service workeren', sw.includes("'games/flyv/lyd/klip.json'") && filer.every(f => fs.existsSync(path.join(ROD, 'lyd', f)) && sw.includes("'games/flyv/lyd/" + f + "'")));
+  const gamle = Object.keys(klip).filter(t => !kendt[t]);
+  tjek('ingen klip til saetninger, spillet ikke laengere siger', gamle.length === 0, gamle.slice(0, 3).join(' | '));
+  const uindtalt = S.filter(t => !klip[t]);
+  tjek('alt, Himmelvejen siger, er indtalt (' + filer.length + ' klip)', uindtalt.length === 0, uindtalt.length + ' mangler, fx: ' + uindtalt.slice(0, 3).join(' | '));
 }
 
 /* Filerne */
@@ -158,8 +177,9 @@ for (const niveau of [1, 2, 3]) {
   tjek('alle laante billeder findes og er i service workeren', mangler.length === 0, mangler.join());
   tjek('ingen egne billedfiler: alt er laant eller tegnet i kode', !fs.existsSync(path.join(ROD, 'billeder')));
   const alt = kode + fs.readFileSync(path.join(ROD, 'js', 'oe.js'), 'utf8') + fs.readFileSync(path.join(ROD, 'js', 'flyvning.js'), 'utf8');
-  tjek('ingen netvaerk: ingen adresser og ingen fetch', !/https?:\/\//.test(alt) && !/fetch\(/.test(alt));
-  tjek('stemmen er kun en, der ligger paa enheden', /localService/.test(kode));
+  const stemme = fs.readFileSync(path.join(__dirname, '..', 'js', 'stemme.js'), 'utf8');
+  tjek('ingen netvaerk: ingen adresser, og kun spillets egne klip hentes', !/https?:\/\//.test(alt + stemme) && !/fetch\(/.test(alt));
+  tjek('stemmen er klip eller en stemme, der ligger paa enheden', /localService/.test(stemme) && kode.includes('Stemme.ny(') && html.includes('src="../../js/stemme.js"'));
   const hudKode = kode.slice(kode.indexOf('function tegnHud'), kode.indexOf('function pil('));
   tjek('der er ingen tekst at laese, mens man flyver', hudKode.length > 100 && !/fillText/.test(hudKode));
   tjek('pilen i hjoernet foerer tilbage til menuen', /Skal\.menuKnap\(/.test(kode));

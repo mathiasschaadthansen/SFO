@@ -27,7 +27,6 @@ Spillene indtil nu:
   tomater eller noget rødt. Find bedet med det rigtige skilt, så, vand og høst,
   og tæl med, når det lander hos Pelle. Hold kaninen og fuglen væk, og drej
   årstidsuret fra forår til vinter. I 3D som Himmelvejen.
-
 - **Bæverdammen** (mappen `baever`): et skydepuslespil på 6 x 6 felter. Skub
   stammerne til side, så Bæveren Bodils lyse stamme kan glide ud til
   dæmningen. 36 baner på tre stjerner, 1 eller 2 spillere.
@@ -50,6 +49,7 @@ index.html              menuen — bygges ud fra js/games.js
 js/games.js             spil-registret. Tilføj et spil = én blok her
 js/sprites.js           fælles indlæsning og omfarvning af sprites
 js/menu.js              fælles menuikoner: stjerner, spillere, start, igen, tilbage
+js/stemme.js            fælles stemme til spil, der taler i hele sætninger: klip fra lyd/klip.json, ellers enhedens stemme
 assets/kenney/          sprites fra Kenney (CC0): biler, klatter, figurer, raket
 sw.js                   offline-cache. Nye filer skal tilføjes til FILER
 manifest.webmanifest    gør siden til en app på hjemmeskærmen
@@ -84,7 +84,9 @@ games/bogstaver/
   js/game.js            tegn- og find-legen, minispillet, menu, stemme
   lyd/klip.json         rigtige optagelser, hvis der er nogen (se lyd/NOTICE.md)
 vaerktoej/lav-lyd.py    pakker optagelser som MP3 og skriver klip.json
-vaerktoej/lav-lyd-elevenlabs.py  laver klippene med ElevenLabs, én gang, med din egen nøgle
+vaerktoej/lav-lyd-elevenlabs.py  listerne over de faste spils klip (og ElevenLabs-udgaven, som lavede Camillas klip)
+vaerktoej/lav-lyd-gemini.py      laver alle spillenes klip med Gemini (Kore); Himmelvejen, Årstidshaven og Bæverdammen ét pr. sætning
+vaerktoej/lav-baever-baner.js    finder Bæverdammens baner og sorterer dem efter antal træk
 vaerktoej/optag.html    optagerside: siger man de 146 ord ind, får man WAV-filer med rigtige navne
 
 games/restaurant/
@@ -119,17 +121,19 @@ games/flyv/
   js/oe.js              øen: landskab, steder, flod, bro, træet, pynten, dyrene og brevene — ingen DOM
   js/flyvning.js        Sannes flyvning, brevene, broen og rundt om træet — ingen DOM
   js/game.js            3D-tegningen (WebGL 1, ingen biblioteker), kortet, ordene, menu, stemme
+  lyd/*.mp3             ét klip pr. sætning (Gemini, Kore); lyd/klip.json siger, hvilken fil der er hvilken sætning
 test/flyv.test.js       en robot flyver alle breve ud på alle tre stjerner, med tryk og ved at flyve selv
 games/have/
   js/haven.js           bedene, Pelles ønsker, ordene, vejret, årstiderne, kaninen og fuglen — ingen DOM
   js/game.js            3D-tegningen (samme tegner som Himmelvejen), boblen, redskaberne, årstidsuret, menu, stemme
+  lyd/*.mp3             ét klip pr. sætning (Gemini, Kore); lyd/klip.json siger, hvilken fil der er hvilken sætning
+test/have.test.js       en robot opfylder Pelles ønsker på alle tre stjerner og med to spillere
 games/baever/
   js/daemning.js        pladsen, stammerne, banerne, løseren, hjælpen og det, der siges — ingen DOM
   js/game.js            pladsen og vandet tegnet i kode, træk med fingrene, Bodil, dæmningen, menu, stemme
   billeder/bodil.png    Bæveren Bodil, malet med Canva (se billeder/NOTICE.md)
   lyd/*.mp3             ét klip pr. sætning (Gemini, Kore); lyd/klip.json siger, hvilken fil der er hvilken sætning
 test/baever.test.js     løser alle baner, lader en robot rode rundt og følge hjælpen ud, tjekker stemme og filer
-test/have.test.js       en robot opfylder Pelles ønsker på alle tre stjerner og med to spillere
 bog/
   js/bog.js             de ti opslag: tekst, rim, hvem Pelle møder, hvor nøglen og skaden er — ingen DOM
   js/scener.js          billedet til hvert opslag, tegnet i kode med spillenes malede figurer
@@ -321,16 +325,27 @@ Bogstaver bruger iPad'ens egen stemme. Den kan erstattes af en rigtig på en tim
 Man behøver ikke indtale alt på én gang. Kun de ord, der er optaget, bruger
 optagelsen, resten siges stadig af iPad'en.
 
-## Stemme fra ElevenLabs
+## Stemmen: Gemini (Kore)
 
-Alternativ til at indtale selv: `vaerktoej/lav-lyd-elevenlabs.py` laver de 146
-klip med en stemme fra ElevenLabs. Det sker én gang på din computer med din
-egen nøgle i miljøvariablen `ELEVENLABS_API_KEY`; nøglen ligger aldrig i
-repoet, og spillet kalder aldrig ElevenLabs. Kør `--stemmer` for at finde en
-dansk kvindestemme, lav bogstaverne først med `--kun bogstaver`, lyt, ret
-udtalen i `NAVNE` om nødvendigt, og lav så resten. Scriptet skriver
-`klip.json` og lægger filerne i `sw.js`. Gratis-planen kræver kreditering,
-den står i `lyd/NOTICE.md`.
+Hele appen taler med den samme stemme, Kore fra Google Gemini
+(`gemini-3.8-flash-tts`). `vaerktoej/lav-lyd-gemini.py --spil <mappe>` laver
+klippene én gang på en computer; spillene kalder aldrig Gemini, de spiller
+bare MP3-filerne. Nøglen fra aistudio.google.com ligger i miljøvariablen
+`GEMINI_API_KEY` (eller som API-credential i Claude Code) og aldrig i repoet.
+Kræver `pip install lameenc`.
+
+- `--spil bogstaver|rim|find|restaurant|klokken|maskinen|bog` laver klippene om
+  i de samme filer, som spillene allerede kender. Listen over, hvad hver fil
+  siger, står i `vaerktoej/lav-lyd-elevenlabs.py` (som lavede Camillas klip
+  før september 2026). Bogstaver og tal siges rene ("A.", "Tre."), ordene i
+  rammen "Her har du ordet kat.".
+- `--spil have|flyv|baever` laver ét klip pr. sætning ud fra spillets egen kode og
+  skriver `lyd/klip.json` og `sw.js`.
+
+`--proev` viser, hvad der ville blive lavet, og `--kun <tekst>` laver kun det,
+der passer. Uden betaling på nøglen giver Gemini kun cirka 10 klip om dagen;
+med betaling cirka 10 i minuttet, og hele appen (cirka 25 minutters tale)
+koster få kroner.
 
 ## Lave et nyt spil
 
@@ -417,10 +432,10 @@ ofte flere stykker (blåbær, oliven) og ville snyde, når man tæller. Én stje
 to ting til 1 eller 2, summen (2-4) vises som tomme mønter, og pungen har kun
 1-mønter, så det er at tælle. To stjerner: tre ting til 1, 2 eller 3, og pungen
 har 1- og 2-mønter. Tre stjerner: fire ting til 1, 2 eller 3, og pungen har 1, 2
-og 5. Summen er højst 9 (`SUM_MAKS`), så alle tal kan siges med Camillas
+og 5. Summen er højst 9 (`SUM_MAKS`), så alle tal kan siges med de indtalte
 talklip, og to kunder i række ved samme station får aldrig det samme
 regnestykke. Der er altid nok mønter af
-hver, så man kan aldrig køre fast. Stemmen siger regnestykket med Camillas talklip fra
+hver, så man kan aldrig køre fast. Stemmen siger regnestykket med de indtalte talklip fra
 bogstavspillet ("to plus to plus en er lig med"), tæller den løbende sum for
 hver mønt og siger facit til sidst. Et tryk på kunden gentager stykket. Fri
 leg har hverken gård eller regning.
@@ -513,7 +528,7 @@ sagde "halv otte". Et tryk på uret siger tiden: "Klokken syv om morgenen".
 En hel omgang giver en gul stjerne: én dag.
 
 **Stemme.** Klippene ligger i `games/klokken/lyd/` og laves med
-`vaerktoej/lav-lyd-elevenlabs.py --spil klokken`: `klokken_1.mp3` til
+`vaerktoej/lav-lyd-gemini.py --spil klokken`: `klokken_1.mp3` til
 `klokken_12.mp3`, `halv_1.mp3` til `halv_12.mp3` (tallet er det, der siges),
 `stil_uret.mp3`, `hvad_goer.mp3`, `om_morgen/dag/aften/nat.mp3`,
 `goer_<kort>.mp3`, `drej_<kort>.mp3`, `flot_1-3.mp3`, `naesten.mp3` og
@@ -659,7 +674,7 @@ den ramme passer. Elleve ekstra ord, der rimer på dem (stol, mur, mål, bog,
 pil, vand, mund, sky, bjørn, kanin, salat), ligger i spillets egne
 mapper.
 
-**Rim.** Camilla siger "Her har du ordet kat. Hvad rimer på det?", og barnet
+**Rim.** Stemmen siger "Her har du ordet kat. Hvad rimer på det?", og barnet
 finder det kort, der rimer, og svarer med det grønne flueben under kortet,
 som i Bogstavvejens minispil. Et tryk på kortet siger kortets ord, og et tryk
 på skyen gentager spørgsmålet. Rigtigt svar: kortet bliver gult, og stemmen
@@ -671,7 +686,7 @@ Rimgrupperne står i `RIM` i `rim.js` og er skrevet i hånden, fordi dansk
 ikke kan rimes i kode. Med to spillere har hvert barn sin egen række kort i
 sin egen farve.
 
-**Klap.** Camilla siger "Her har du ordet elefant. Klap det!", og barnet
+**Klap.** Stemmen siger "Her har du ordet elefant. Klap det!", og barnet
 klapper stavelserne på trommen. En prik pr. stavelse fyldes. Når prikkerne er
 fulde, og der har været ro et øjeblik, pulserer prikkerne, og stemmen siger
 "Flot klappet!". Ordene veksler mellem en, to og tre stavelser, også ved én
@@ -785,8 +800,10 @@ former med vinger, der slår. Figurerne er de malede billeder fra de andre spil,
 sat op som udklip, der vender mod kameraet. Der er ingen nye billedfiler.
 Bliver det for tungt, går tegningen selv ned i opløsning.
 
-**Stemmen** er enhedens egen danske stemme (kun en lokal) indtil videre. Skal
-Camilla indtale brevene, er sætningerne dem i `BUD` i `oe.js`.
+**Stemmen** er klip med Gemini (stemmen Kore), ét pr. sætning i `lyd/`, lavet
+med `vaerktoej/lav-lyd-gemini.py --spil flyv` ud fra `Oe.saetninger()`. Et
+forkert dyrs svar er to klip i træk: "Nej, jeg sidder mellem de to huse." og
+brevets "Brevet skal til kaninen oven på taget.".
 
 Testen tjekker øen, floden og pladsen under broen, at hvert sted har tre ens
 dyr, hvor præcis ét sidder dér, hvor brevet siger, at den, der sidder mellem,
@@ -831,8 +848,11 @@ spillers redskab.
 
 **3D** med samme WebGL 1-tegner som Himmelvejen. Alle figurer er lånt fra de
 andre spil (Nøddeskoven, Bogstavvejen, Skovkøkkenet og forsiden); der er
-ingen nye billedfiler. **Stemmen** er enhedens egen danske stemme (kun en
-lokal) indtil Camilla har indtalt sætningerne i `haven.js`.
+ingen nye billedfiler. **Stemmen** er klip med Gemini (stemmen Kore), ét pr.
+sætning, lavet med `vaerktoej/lav-lyd-gemini.py --spil have` ud fra
+`Haven.saetninger()`. Ønsker og tællinger er hele sætninger for hver
+mulighed ("Pelle ønsker sig tre tomater.", "Og så én agurk.", "To!"), og
+`js/stemme.js` sætter dem sammen.
 
 Testen lader en robot opfylde ni ønsker på hver stjerne og fire med to
 spillere, og tjekker, at stemmen tæller med, at ønskerne har den rette
@@ -871,8 +891,8 @@ stammer; de to får forskellige baner fra den samme stjerne.
 
 **Grafikken** er tegnet i kode (stammer med bark og årringe, bredden med
 sten, vandet) på nær Bodil, der er malet med Canva. **Stemmen** er otte
-sætninger med Gemini (Kore), én fil pr. sætning, ud fra `Daemning.saetninger()`;
-`js/stemme.js` spiller dem.
+sætninger med Gemini (Kore), lavet med `vaerktoej/lav-lyd-gemini.py --spil
+baever` ud fra `Daemning.saetninger()`.
 
 Testen løser alle 36 baner og kræver præcis det antal træk, der står ved dem,
 lader en robot spille hver bane igennem, lader en anden robot rode rundt med
@@ -897,10 +917,10 @@ husker ikke noget mellem to læsninger.
 
 Teksten læses højt, når man blader, og igen med højttaleren i hjørnet.
 Klippene ligger i `bog/lyd/` som `<opslagets id>.mp3` og står i
-`lyd/klip.json`. De er læst op af Gemini ud fra bogens egen tekst, hele siden
-med rimet i ét stykke, og lavet om til MP3 i mono, 22 kHz — Ogg, som de kom
-i, kan ikke afspilles på ældre iPads. Mangler et klip, læser enhedens egen
-danske stemme i stedet. Klippene laves med `vaerktoej/lav-lyd-elevenlabs.py --spil bog`
+`lyd/klip.json`. De er læst op af Gemini (Kore, som spillene) ud fra bogens
+egen tekst, hele siden med rimet i ét stykke, som MP3 i mono — Ogg kan ikke
+afspilles på ældre iPads. Mangler et klip, læser enhedens egen danske stemme
+i stedet. Klippene laves med `vaerktoej/lav-lyd-gemini.py --spil bog`
 (ét klip pr. opslag, teksten og rimet i én omgang). Der er ingen printknap i
 appen: PDF'en laves én gang med `vaerktoej/lav-bog-pdf.js` (kræver
 Playwright) og sendes til dem, der skal printe den. Den tegner alle sider i

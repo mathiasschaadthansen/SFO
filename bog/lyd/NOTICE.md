@@ -1,15 +1,15 @@
 # Bogens oplæsning
 
 Ti klip, ét pr. opslag, navngivet efter opslagets id i `js/bog.js`
-(`noeddeskoven.mp3` og så videre). De er lavet til projektet med Gemini
-Storybook i september 2026 ud fra bogens egen tekst: hele siden, teksten og
-rimet, læst i ét stykke.
+(`noeddeskoven.mp3` og så videre): hele siden, teksten og rimet, læst i ét
+stykke.
 
-Stemmen er en anden end Camillas fra ElevenLabs, som spillene bruger, fordi
-bogen er læst højt ét sted fra ende til anden. Skal den en dag læses af
-Camilla i stedet, laves klippene med
-`vaerktoej/lav-lyd-elevenlabs.py --spil bog`, som skriver de samme filnavne.
+De er lavet til projektet i september 2026 med Google Gemini
+(`gemini-3.8-flash-tts`, stemmen Kore, den samme stemme som i spillene) med
+`vaerktoej/lav-lyd-gemini.py --spil bog`, ud fra bogens egen tekst. Bogstaver
+i teksten skrives, som de siges (æn, pe, æs). Tidligere var bogen læst af en
+anden Gemini-stemme i Gemini Storybook.
 
-Filerne kom som Ogg Opus og er lavet om til MP3, mono, 22 kHz, 48 kbit/s,
-med stilhed klippet af enderne og ens lydstyrke — det samme format som
-spillenes klip. Ogg kan ikke afspilles på ældre iPads, MP3 kan.
+Filerne er MP3, mono, 48 kbit/s, med stilhed klippet af enderne og ens
+lydstyrke — det samme format som spillenes klip. Ogg kan ikke afspilles på
+ældre iPads, MP3 kan.

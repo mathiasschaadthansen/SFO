@@ -50,7 +50,7 @@ def ting():
     kode = (
         "const { Ting } = require(%r); const { Glyffer } = require(%r);"
         "const ud = []; Glyffer.BOGSTAVER.forEach(n => (Ting.TING[n] || []).forEach(t => {"
-        "const fil = t.fil ? t.fil.replace('ting/', '').replace('.svg', '') : ({'xylofon': 'xylofon', 'ål': 'aal'})[t.ord];"
+        "const fil = t.fil ? t.fil.split('/').pop().replace(/\\.(svg|png)$/, '') : ({'xylofon': 'xylofon', 'ål': 'aal'})[t.ord];"
         "ud.push([t.ord, fil]); })); console.log(JSON.stringify(ud));"
     ) % (os.path.join(ROD, 'games', 'bogstaver', 'js', 'ting.js'), os.path.join(ROD, 'games', 'bogstaver', 'js', 'glyffer.js'))
     return json.loads(subprocess.check_output(['node', '-e', kode]))

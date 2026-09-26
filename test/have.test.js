@@ -12,6 +12,7 @@ const path = require('path');
 const ROD = path.join(__dirname, '..');
 const MAPPE = path.join(ROD, 'games', 'have');
 const { Haven } = require(path.join(MAPPE, 'js', 'haven.js'));
+const { Stemme } = require(path.join(ROD, 'js', 'stemme.js'));
 
 let fejl = 0;
 function tjek(navn, betingelse, detalje) {
@@ -23,13 +24,14 @@ console.log('\nÅrstidshaven\n');
 
 const { AFGROEDER, AFGR_ALLE, KATEGORI, ORD, TAK, TRIN, antalOrd, oenskeTekst } = Haven;
 
-/* En have med styr paa alt, der bliver sagt */
+/* En have med styr paa alt, der bliver sagt. ALT_SAGT samler alt fra alle haverne til tjekket af stemmen. */
+const ALT_SAGT = new Set();
 function nyHave(seed) {
   const sagt = [], taelt = [];
   const H = Haven.ny({
     tilfaeldig: Haven.tilfaeldig(seed),
-    sig: t => sagt.push(t),
-    sigKoe: t => { sagt.push(t); if (/^(en|to|tre|fire|fem|seks)$/.test(t)) taelt.push(t); }
+    sig: t => { sagt.push(t); ALT_SAGT.add(t); },
+    sigKoe: t => { sagt.push(t); ALT_SAGT.add(t); if (/^(En|To|Tre|Fire|Fem)!$/.test(t)) taelt.push(t); }
   });
   return { H, sagt, taelt };
 }
@@ -56,7 +58,7 @@ function gro(H, bd, til = 'moden') {
     antalOrd(3, 'gulerod') === 'tre gulerødder' && antalOrd(5, 'peberfrugt') === 'fem peberfrugter', [antalOrd(1, 'salat'), antalOrd(3, 'gulerod')].join());
   tjek('oensket siges som en hel saetning', oenskeTekst({ dele: [{ afgr: 'tomat', antal: 3 }] }, true) === 'Pelle ønsker sig tre tomater. Kan I finde bedet med skiltet?');
   tjek('en kategori spoerger, hvad der passer', oenskeTekst({ dele: [{ kat: 'roed', antal: 1 }] }, true) === 'Pelle ønsker sig noget rødt. Hvad er rødt i haven?');
-  tjek('to ting paa én gang siges med og', oenskeTekst({ dele: [{ afgr: 'gulerod', antal: 2 }, { afgr: 'agurk', antal: 1 }] }, false) === 'Pelle ønsker sig to gulerødder og én agurk.');
+  tjek('to ting paa én gang siges som to saetninger', oenskeTekst({ dele: [{ afgr: 'gulerod', antal: 2 }, { afgr: 'agurk', antal: 1 }] }, false) === 'Pelle ønsker sig to gulerødder. Og så én agurk.');
 }
 
 /* Robotten: opfylder oensker, som et barn ville, og jager dyrene vaek */
@@ -209,6 +211,43 @@ for (const niveau of [1, 2, 3]) {
   tjek('om foraaret er frøene fra sidste aar i frøposen', sagt[sagt.length - 1].includes('frø fra sidste år'));
 }
 
+/* Stemmen: hver saetning er ét klip, og alt, haven kan sige, kan saettes sammen af dem */
+{
+  const S = Haven.saetninger(), kendt = {};
+  S.forEach(t => { kendt[t] = true; });
+  tjek('hver saetning staar én gang', new Set(S).size === S.length);
+  tjek('saetningerne er hele saetninger med tegn til sidst', S.every(t => /^[A-ZÆØÅÉ].*[.!?]$/.test(t) && Stemme.saetninger(t).join(' ') === t), S.filter(t => !/[.!?]$/.test(t)).join(' | '));
+  const udenKlip = [...ALT_SAGT].filter(t => !Stemme.del(t, kendt));
+  tjek('alt, robotterne hoerte, kan siges med klippene (' + ALT_SAGT.size + ' replikker)', udenKlip.length === 0, udenKlip.slice(0, 3).join(' | '));
+  // Og alle oensker og alt, Pelle kan mangle, ogsaa dem, robotterne ikke moedte
+  const alle = [];
+  const dele = [];
+  AFGR_ALLE.forEach(a => { for (let n = 1; n <= 5; n++) dele.push({ afgr: a, antal: n }); });
+  Object.keys(KATEGORI).forEach(k => { for (let n = 1; n <= 3; n++) dele.push({ kat: k, antal: n }); });
+  dele.forEach(d => {
+    alle.push(oenskeTekst({ dele: [d] }, true), oenskeTekst({ dele: [d] }, false));
+    AFGR_ALLE.filter(a => a !== d.afgr).forEach(a => { for (let n = 1; n <= 3; n++) alle.push(oenskeTekst({ dele: [d, { afgr: a, antal: n }] }, true)); });
+    for (let f = 1; f < d.antal; f++) alle.push(Haven.manglerTekst([{ afgr: d.afgr, kat: d.kat, antal: d.antal, faaet: f }]));
+  });
+  AFGR_ALLE.forEach(a => { for (let n = 1; n <= 3; n++) alle.push(Haven.manglerTekst([{ afgr: 'tomat', antal: 3, faaet: 1 }, { afgr: a, antal: n, faaet: 0 }])); });
+  const mangler = alle.filter(t => !Stemme.del(t, kendt));
+  tjek('alle oensker og alt, Pelle kan mangle, kan siges med klippene', mangler.length === 0, mangler.slice(0, 3).join(' | '));
+  tjek('en indtalt replik bruges hel, og en sammensat deles', Stemme.del('Det er forår. Nu kan vi så frø i bedene.', { 'Det er forår. Nu kan vi så frø i bedene.': 'a.mp3', 'Det er forår.': 'b.mp3' }).join() === 'a.mp3' &&
+    Stemme.del('Pelle ønsker sig to gulerødder. Og så én agurk.', { 'Pelle ønsker sig to gulerødder.': 'a.mp3', 'Og så én agurk.': 'b.mp3' }).join() === 'a.mp3,b.mp3' &&
+    Stemme.del('Noget helt nyt.', {}) === null);
+  const klipSti = path.join(MAPPE, 'lyd', 'klip.json');
+  const klip = fs.existsSync(klipSti) ? JSON.parse(fs.readFileSync(klipSti, 'utf8')) : {};
+  const sw = fs.readFileSync(path.join(ROD, 'sw.js'), 'utf8');
+  const filer = Object.values(klip);
+  tjek('klip.json er i service workeren', sw.includes("'games/have/lyd/klip.json'"));
+  tjek('hvert klip findes og er i service workeren', filer.every(f => fs.existsSync(path.join(MAPPE, 'lyd', f)) && sw.includes("'games/have/lyd/" + f + "'")), filer.filter(f => !fs.existsSync(path.join(MAPPE, 'lyd', f))).slice(0, 3).join());
+  tjek('klippenes filnavne er uden æ, ø og å', filer.every(f => /^[a-z0-9_]+\.mp3$/.test(f)));
+  const gamle = Object.keys(klip).filter(t => !kendt[t]);
+  tjek('ingen klip til saetninger, haven ikke laengere siger', gamle.length === 0, gamle.slice(0, 3).join(' | '));
+  const uindtalt = S.filter(t => !klip[t]);
+  tjek('alt, haven siger, er indtalt (' + filer.length + ' klip)', uindtalt.length === 0, uindtalt.length + ' mangler, fx: ' + uindtalt.slice(0, 3).join(' | '));
+}
+
 /* Filerne og rammerne */
 {
   const sw = fs.readFileSync(path.join(ROD, 'sw.js'), 'utf8');
@@ -222,10 +261,12 @@ for (const niveau of [1, 2, 3]) {
   const laant = [...kode.matchAll(/'\.\.\/([^']+\.png)'/g)].map(m => path.normalize(path.join('games/have', '..', m[1])).split(path.sep).join('/'));
   tjek('de laante billeder findes', laant.length >= 18 && laant.every(f => fs.existsSync(path.join(ROD, f))), laant.filter(f => !fs.existsSync(path.join(ROD, f))).join());
   tjek('de laante billeder er i service workeren', laant.every(f => sw.includes("'" + f + "'")), laant.filter(f => !sw.includes("'" + f + "'")).join());
-  const alt = html + kode + haven;
-  tjek('ingen netvaerkskald', !/https?:\/\/|fetch\(|XMLHttpRequest|WebSocket|sendBeacon/.test(alt));
+  const stemme = fs.readFileSync(path.join(ROD, 'js', 'stemme.js'), 'utf8');
+  const alt = html + kode + haven + stemme;
+  tjek('ingen netvaerkskald: kun spillets egne filer hentes', !/https?:\/\/|XMLHttpRequest|WebSocket|sendBeacon/.test(alt) && !/fetch\(/.test(html + kode + haven) &&
+    [...stemme.matchAll(/fetch\(([^)]*)\)/g)].every(m => /^mappe \+/.test(m[1])));
   tjek('ingen browser-storage', !/localStorage|sessionStorage|indexedDB|document\.cookie/.test(alt));
-  tjek('kun en stemme, der ligger paa enheden', kode.includes('localService'));
+  tjek('stemmen er klip eller en stemme, der ligger paa enheden', stemme.includes('localService') && kode.includes('Stemme.ny(') && html.includes('src="../../js/stemme.js"') && sw.includes("'js/stemme.js'"));
   tjek('ingen tekst at laese i haven (intet fillText)', !/fillText|strokeText/.test(kode));
   tjek('pilen i hjoernet foerer tilbage til menuen', kode.includes('Skal.menuKnap(visMenu)'));
   tjek('menuen: stjerner foer de groenne startknapper', kode.indexOf('Menu.stjerneRaekke') > 0 && kode.indexOf('Menu.stjerneRaekke') < kode.indexOf('Menu.startRaekke'));

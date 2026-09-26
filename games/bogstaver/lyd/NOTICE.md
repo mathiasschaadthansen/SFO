@@ -17,6 +17,9 @@ Optagelser lavet til projektet er projektets egne. Er klippene lavet med
 ElevenLabs på gratis-planen, gælder deres krav om kreditering: stemmen er
 genereret med elevenlabs.io.
 
-**Status september 2026:** Klippene er lavet med ElevenLabs, stemmen Camilla
-(`4RklGmuxoAskAbGXplXN`), og pakket ned til mono 22 kHz, 48 kbps med stilheden
-klippet væk. Stemmen er genereret med elevenlabs.io.
+**Status september 2026:** Klippene er lavet med Google Gemini
+(`gemini-3.8-flash-tts`, stemmen Kore) med `vaerktoej/lav-lyd-gemini.py --spil
+bogstaver`, pakket som MP3, mono, 48 kbit/s, med stilheden klippet væk og ens
+lydstyrke. Bogstaver og tal er indtalt rene ("A.", "Tre."), og ordene i rammen
+"Her har du ordet kat.", fordi et kort ord alene bliver udtalt forkert.
+Tidligere var de indtalt med Camilla fra ElevenLabs.

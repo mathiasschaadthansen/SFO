@@ -81,6 +81,42 @@
   };
   var TAK_BLANDET = 'Tak! Det bliver en lækker suppe.';
 
+  /* Alt det faste, stemmen siger. Hver linje er ét klip i lyd/. */
+  var TEKST = {
+    vinterSover: 'Pelle sover vintersøvn.',
+    vinter: 'Haven sover. Vi venter til foråret.',
+    saaet: 'Frøene er i jorden. Nu skal de have vand.',
+    klarHoest: 'Den er klar. Tag kurven og høst.',
+    harFroe: 'Her er der allerede frø. Giv dem vand.',
+    ingenFroe: 'Her er ingen frø endnu. Tag frøposen først.',
+    glad: 'Ah, nu er den glad igen.',
+    trinSpire: 'Frøet er blevet til en spire.',
+    trinPlante: 'Spiren er blevet til en plante med blade. Én gang vand mere.',
+    nokVand: 'Den har fået vand nok. Nu kan den høstes.',
+    toerstHoest: 'Den er tørstig. Giv den vand først.',
+    ikkeHoest: 'Her er ikke noget at høste. Så nogle frø.',
+    ikkeKlar: 'Den er ikke færdig endnu. Giv den vand.',
+    opAfJorden: 'Guleroden kom op af jorden.',
+    hoestet: 'Den kommer i kurven.',
+    nyeFroe: 'Planten gav også nye frø. Dem gemmer vi i frøposen til foråret.',
+    modenGulerod: 'Guleroden er færdig. Den gror nede i jorden. Kun de grønne blade er oppe.',
+    modenSalat: 'Salaten er færdig. Den gror oven på jorden.',
+    kaninVaek: 'Hop hop! Kaninen hopper hjem.',
+    fuglVaek: 'Fuglen flyver væk. Giv frøene vand, så er de sikre.',
+    aeble: 'Tag kurven, så kan du plukke æblet.',
+    sneen: 'Sneen dækkede det, der ikke blev høstet.',
+    froeSidsteAar: 'Vi har frø fra sidste år i frøposen.',
+    kanin: 'Åh nej, kaninen gnasker i bedet! Tryk på den, så hopper den væk.',
+    kaninSpiste: 'Kaninen spiste lidt. Giv planten vand, så vokser den igen.',
+    fugl: 'Se, fuglen vil spise frøene! Tryk på den.',
+    fuglSpiste: 'Fuglen spiste frøene. Så nye, og giv dem vand.',
+    toerst: 'Solen skinner varmt, og planten hænger. Giv den vand.',
+    regn: 'Det regner. Regnen vander haven.',
+    findBedet: 'Kan I finde bedet med skiltet?'
+  };
+  /* Naar en afgroede lander hos Pelle, taeller stemmen med */
+  var TAELLER = ['', 'En!', 'To!', 'Tre!', 'Fire!', 'Fem!'];
+
   function antalOrd(n, afgr) { var o = ORD[afgr]; return (n === 1 ? (o[2] ? 'ét' : 'én') : TAL[n]) + ' ' + (n === 1 ? o[0] : o[1]); }
   function passer(del, afgr) { return del.afgr ? del.afgr === afgr : KATEGORI[del.kat].medlemmer.indexOf(afgr) >= 0; }
   function delTekst(d, n) {
@@ -89,13 +125,51 @@
     return n === 1 ? (d.kat === 'jord' ? 'én ting, der gror nede i jorden' : 'én ' + k.en) : TAL[n] + ' ' + k.flere;
   }
   function oenskeTekst(oenske, nyt) {
-    var tekst = 'Pelle ønsker sig ' + oenske.dele.map(function (d) { return d.afgr || d.antal > 1 ? delTekst(d, d.antal) : KATEGORI[d.kat].navn; }).join(' og ') + '.';
+    var d0 = oenske.dele[0], d1 = oenske.dele[1];
+    var tekst = 'Pelle ønsker sig ' + (d0.afgr || d0.antal > 1 ? delTekst(d0, d0.antal) : KATEGORI[d0.kat].navn) + '.';
+    if (d1) tekst += ' Og så ' + delTekst(d1, d1.antal) + '.';   // to ting paa én gang: to saetninger, saa hver er ét klip
     var kat = oenske.dele.filter(function (d) { return d.kat; })[0];
     if (kat) tekst += ' ' + KATEGORI[kat.kat].spoerg;
-    else if (nyt) tekst += ' Kan I finde bedet med skiltet?';
+    else if (nyt) tekst += ' ' + TEKST.findBedet;
     return tekst;
   }
+  /* Pelle takker og siger, hvad han mangler. Mangler han to ting, er den anden sin egen saetning. */
+  function manglerTekst(dele) {
+    var t = 'Tak! Jeg mangler ' + delTekst(dele[0], dele[0].antal - dele[0].faaet) + ' mere.';
+    if (dele[1]) t += ' Og så ' + delTekst(dele[1], dele[1].antal - dele[1].faaet) + '.';
+    return t;
+  }
+  function modenTekst(a) {
+    if (a === 'gulerod') return TEKST.modenGulerod;
+    if (a === 'salat') return TEKST.modenSalat;
+    return 'Nu hænger der ' + ORD[a][1] + ' på planten. Tag kurven og høst.';
+  }
   function stort(t) { return t.replace(/^./, function (c) { return c.toUpperCase(); }); }
+
+  /* Alle saetninger, stemmen kan sige, hver som ét klip. Lange replikker er sat sammen af dem,
+     og Stemme.del i js/stemme.js finder klippene. Listen bruges af vaerktoej/lav-lyd-gemini.py og testen. */
+  function saetninger() {
+    var ud = [];
+    function laeg(t) { if (ud.indexOf(t) < 0) ud.push(t); }
+    AAR.forEach(function (a) { laeg(AAR_SIG[a]); });
+    Object.keys(TEKST).forEach(function (k) { laeg(TEKST[k]); });
+    AFGR_ALLE.forEach(function (a) {
+      for (var n = 1; n <= 5; n++) laeg('Pelle ønsker sig ' + antalOrd(n, a) + '.');   // én til fem af én slags
+      for (n = 1; n <= 3; n++) { laeg('Og så ' + antalOrd(n, a) + '.'); laeg(stort(antalOrd(n, a)) + '!'); }   // anden del og hoesten
+      for (n = 1; n <= 4; n++) laeg('Tak! Jeg mangler ' + antalOrd(n, a) + ' mere.');
+      laeg(TAK[a]); laeg(modenTekst(a));
+    });
+    Object.keys(KATEGORI).forEach(function (k) {
+      var d = { kat: k };
+      laeg('Pelle ønsker sig ' + KATEGORI[k].navn + '.');
+      for (var n = 2; n <= 3; n++) laeg('Pelle ønsker sig ' + delTekst(d, n) + '.');
+      for (n = 1; n <= 2; n++) laeg('Tak! Jeg mangler ' + delTekst(d, n) + ' mere.');
+      laeg(KATEGORI[k].spoerg);
+    });
+    TAELLER.slice(1).forEach(laeg);
+    laeg(TAK_BLANDET);
+    return ud;
+  }
 
   /* ---------- en have ---------- */
   function ny(kroge) {
@@ -147,32 +221,32 @@
     }
     function sigOenske() {
       if (H.oenske) sig(oenskeTekst(H.oenske, false));
-      else if (H.aar === 'vinter') sig('Pelle sover vintersøvn.');
+      else if (H.aar === 'vinter') sig(TEKST.vinterSover);
     }
 
     /* Et tryk paa et bed med et redskab. Forkert redskab er aldrig straf: bedet rokker, og stemmen hjaelper. */
     function arbejd(bd, redskab) {
       if (H.skift) return;
-      if (H.aar === 'vinter') { rys(bd); if (k.sne) k.sne(bd); hint('vinter', 'Haven sover. Vi venter til foråret.'); return; }
+      if (H.aar === 'vinter') { rys(bd); if (k.sne) k.sne(bd); hint('vinter', TEKST.vinter); return; }
       var klar = bd.vaekst >= 1, trin = TRIN.indexOf(bd.fase);
       if (redskab === 'froe') {
         if (bd.fase === 'tom') {
           bd.fase = 'saaet'; bd.vaekst = 0; bd.saaetTid = H.tid; bd.antal = tilf(1, 3); lyd('saa');
-          hint('saaet', 'Frøene er i jorden. Nu skal de have vand.');
-        } else { rys(bd); hint('harFroe', bd.fase === 'moden' ? 'Den er klar. Tag kurven og høst.' : 'Her er der allerede frø. Giv dem vand.'); }
+          hint('saaet', TEKST.saaet);
+        } else { rys(bd); hint('harFroe', bd.fase === 'moden' ? TEKST.klarHoest : TEKST.harFroe); }
       } else if (redskab === 'vand') {
-        if (bd.fase === 'tom') { vandPaa(bd, 12); lyd('plask'); hint('ingenFroe', 'Her er ingen frø endnu. Tag frøposen først.'); }
-        else if (bd.toerst) { vandPaa(bd); lyd('plask'); bd.toerst = false; gnist(bd.x, 3, bd.z, 8); lyd('glad'); hint('glad', 'Ah, nu er den glad igen.'); }
+        if (bd.fase === 'tom') { vandPaa(bd, 12); lyd('plask'); hint('ingenFroe', TEKST.ingenFroe); }
+        else if (bd.toerst) { vandPaa(bd); lyd('plask'); bd.toerst = false; gnist(bd.x, 3, bd.z, 8); lyd('glad'); hint('glad', TEKST.glad); }
         else if (trin >= 0 && trin < 3 && klar) {
           vandPaa(bd); lyd('plask'); bd.fase = TRIN[trin + 1]; bd.vaekst = 0;
           lyd('trin', trin);   // hvert trin sin tone, hoejere og hoejere
-          if (bd.fase === 'spire') hint('trinSpire', 'Frøet er blevet til en spire.');
-          else if (bd.fase === 'plante') hint('trinPlante', 'Spiren er blevet til en plante med blade. Én gang vand mere.');
-        } else { vandPaa(bd, 10); lyd('plask'); if (bd.fase === 'moden') hint('nokVand', 'Den har fået vand nok. Nu kan den høstes.'); }
+          if (bd.fase === 'spire') hint('trinSpire', TEKST.trinSpire);
+          else if (bd.fase === 'plante') hint('trinPlante', TEKST.trinPlante);
+        } else { vandPaa(bd, 10); lyd('plask'); if (bd.fase === 'moden') hint('nokVand', TEKST.nokVand); }
       } else if (redskab === 'kurv') {
-        if (bd.fase === 'moden' && klar && bd.toerst) { rys(bd); hint('toerstHoest', 'Den er tørstig. Giv den vand først.'); }
+        if (bd.fase === 'moden' && klar && bd.toerst) { rys(bd); hint('toerstHoest', TEKST.toerstHoest); }
         else if (bd.fase === 'moden' && klar) hoest(bd);
-        else { rys(bd); hint('ikkeKlar', bd.fase === 'tom' ? 'Her er ikke noget at høste. Så nogle frø.' : 'Den er ikke færdig endnu. Giv den vand.'); }
+        else { rys(bd); hint('ikkeKlar', bd.fase === 'tom' ? TEKST.ikkeHoest : TEKST.ikkeKlar); }
       }
     }
 
@@ -191,14 +265,14 @@
       lyd('hoest'); gnist(bd.x, 3, bd.z, 24);
       /* Stemmen siger, hvor mange der blev hoestet, og hvad det hedder */
       var linje = stort(antalOrd(n, afgr)) + '!';
-      if (afgr === 'gulerod' && H.hint.opAfJorden === undefined) { H.hint.opAfJorden = H.tid; linje += ' Guleroden kom op af jorden.'; }
+      if (afgr === 'gulerod' && H.hint.opAfJorden === undefined) { H.hint.opAfJorden = H.tid; linje += ' ' + TEKST.opAfJorden; }
       sig(linje);
-      if (!tilPelle) hint('hoestet', 'Den kommer i kurven.');
+      if (!tilPelle) hint('hoestet', TEKST.hoestet);
       /* Om efteraaret giver planten nye frø til naeste aar */
       if (H.aar === 'efteraar' && !H.gemteFroe[afgr]) {
         H.gemteFroe[afgr] = true;
         if (k.froe) k.froe(bd);
-        sigKoe('Planten gav også nye frø. Dem gemmer vi i frøposen til foråret.');
+        sigKoe(TEKST.nyeFroe);
       }
     }
     /* Hver gang én lander hos Pelle, taeller stemmen, og en prik i boblen bliver fyldt */
@@ -206,11 +280,10 @@
       var d = f.del; d.paaVej--; d.faaet++;
       if (!H.oenske || H.oenske.dele.indexOf(d) < 0) { H.kurv.push(f.tx); return; }   // aarstiden skiftede undervejs
       H.pelleFaaet.push(f.tx); H.pelleHop = 0.6; lyd('tael', d.faaet);
-      sigKoe(TAL[d.faaet].replace('é', 'e'));
+      sigKoe(TAELLER[d.faaet]);
       if (!f.sidste) return;
       if (H.oenske.dele.every(function (x) { return x.faaet >= x.antal; })) { pelleFaar(); return; }
-      var mangler = H.oenske.dele.filter(function (x) { return x.faaet < x.antal; }).map(function (x) { return delTekst(x, x.antal - x.faaet); });
-      sigKoe('Tak! Jeg mangler ' + mangler.join(' og ') + ' mere.');
+      sigKoe(manglerTekst(H.oenske.dele.filter(function (x) { return x.faaet < x.antal; })));
     }
     /* Pelle faar hele sit oenske: han hopper, takker, og lidt efter oensker han sig noget nyt */
     function pelleFaar() {
@@ -221,9 +294,7 @@
     }
     function modenLinje(bd) {
       var a = bd.afgr;
-      if (a === 'gulerod') hint('modenGulerod', 'Guleroden er færdig. Den gror nede i jorden. Kun de grønne blade er oppe.');
-      else if (a === 'salat') hint('modenSalat', 'Salaten er færdig. Den gror oven på jorden.');
-      else hint('moden' + a, 'Nu hænger der ' + ORD[a][1] + ' på planten. Tag kurven og høst.');
+      hint('moden' + a, modenTekst(a));
     }
 
     /* Dyrene, der vil have noget fra haven: tryk paa dem, saa gaar de. Aldrig straf, kun et trin tilbage. */
@@ -231,20 +302,20 @@
       var K = H.kanin;
       if (K.fase !== 'hen' && K.fase !== 'spiser') return false;
       K.fase = 'flygter'; if (K.bed) K.bed.gnav = 0;
-      lyd('kanin'); hint('kaninVaek', 'Hop hop! Kaninen hopper hjem.');
+      lyd('kanin'); hint('kaninVaek', TEKST.kaninVaek);
       return true;
     }
     function jagFugl() {
       var T = H.fugl;
       if (T.fase !== 'kommer' && T.fase !== 'pikker') return false;
       T.fase = 'flyver'; T.t = 0;
-      lyd('fugl'); hint('fuglVaek', 'Fuglen flyver væk. Giv frøene vand, så er de sikre.');
+      lyd('fugl'); hint('fuglVaek', TEKST.fuglVaek);
       return true;
     }
     /* Aeblerne i traeet om efteraaret: med kurven plukkes de */
     function aeble(a, redskab) {
       if (H.aar !== 'efteraar' || a.alfa <= 0) return false;
-      if (redskab !== 'kurv') { hint('aeble', 'Tag kurven, så kan du plukke æblet.'); return false; }
+      if (redskab !== 'kurv') { hint('aeble', TEKST.aeble); return false; }
       a.alfa = 0;
       H.flyvere.push({ tx: 'aeble', fra: [a.x, a.y, a.z], til: [KURV.x, 2.6, KURV.z], t: 0, h: 2 });
       lyd('aeble');
@@ -268,9 +339,9 @@
       H.fugl.fase = 'vaek'; H.fugl.bed = null;
       H.oenske = null; H.naesteOenske = a === 'vinter' ? 1e9 : H.tid + 5;
       H.regn = null; H.naesteRegn = H.tid + 18;
-      var froeLinje = a === 'foraar' && Object.keys(H.gemteFroe).length ? ' Vi har frø fra sidste år i frøposen.' : '';
+      var froeLinje = a === 'foraar' && Object.keys(H.gemteFroe).length ? ' ' + TEKST.froeSidsteAar : '';
       if (a === 'foraar') H.gemteFroe = {};
-      sig(AAR_SIG[a] + (daekket ? ' Sneen dækkede det, der ikke blev høstet.' : '') + froeLinje);
+      sig(AAR_SIG[a] + (daekket ? ' ' + TEKST.sneen : '') + froeLinje);
     }
     /* En ny have: foraar, tomme bede, den valgte svaerhed og én eller to spillere */
     function nulstil(niveau, spillere) {
@@ -305,7 +376,7 @@
         if (K.bed.fase !== 'plante' && K.bed.fase !== 'moden') { K.fase = 'rundt'; K.naeste = tid + 10; return; }
         if (mod(K, K.bed.x + 3, K.bed.z + BED_D / 2 + 1.3, 8, dt)) {
           K.fase = 'spiser'; K.t = 0;
-          hint('kanin', 'Åh nej, kaninen gnasker i bedet! Tryk på den, så hopper den væk.');
+          hint('kanin', TEKST.kanin);
         }
       } else if (K.fase === 'spiser') {
         K.t += dt; K.bed.gnav = K.t / 8;
@@ -313,7 +384,7 @@
         if (K.t > 8) {   // kaninen fik et par blade: planten gaar et trin tilbage, og kaninen hopper maet hjem
           K.bed.fase = K.bed.fase === 'moden' ? 'plante' : 'spire'; K.bed.vaekst = 1; K.bed.gnav = 0; K.bed.rys = 1;
           lyd('spiste'); K.fase = 'flygter';
-          hint('kaninSpiste', 'Kaninen spiste lidt. Giv planten vand, så vokser den igen.');
+          hint('kaninSpiste', TEKST.kaninSpiste);
         }
       } else if (K.fase === 'flygter') {
         if (mod(K, 48, 19, 16, dt)) { K.fase = 'rundt'; K.naeste = tid + 26 + tal() * 12; K.x = -48; }
@@ -328,7 +399,7 @@
         var ventende = H.bede.filter(function (bd) { return bd.fase === 'saaet' && bd.vaekst >= 1 && tid - (bd.saaetTid === undefined ? tid : bd.saaetTid) > 7; });
         if (ventende.length && !H.skift) {
           f.bed = ventende[0]; f.fase = 'kommer'; f.t = 0; f.x = f.bed.x + 30; f.z = f.bed.z - 20; f.y = 26;
-          hint('fugl', 'Se, fuglen vil spise frøene! Tryk på den.');
+          hint('fugl', TEKST.fugl);
         }
         return;
       }
@@ -343,7 +414,7 @@
         if (f.bed.fase !== 'saaet') { f.fase = 'flyver'; f.t = 0; }
         else if (f.t > 6) {
           f.bed.fase = 'tom'; f.bed.vaekst = 1; f.bed.rys = 1; f.bed.antal = 0; f.fase = 'flyver'; f.t = 0; lyd('spiste');
-          hint('fuglSpiste', 'Fuglen spiste frøene. Så nye, og giv dem vand.');
+          hint('fuglSpiste', TEKST.fuglSpiste);
         }
       } else if (f.fase === 'flyver') {
         f.t += dt; f.dy = 0; f.y += dt * 14; f.x += dt * 16; f.z -= dt * 8;
@@ -364,14 +435,14 @@
         bd.vaad = Math.max(0, bd.vaad - dt); bd.rys = Math.max(0, bd.rys - dt * 2.5); bd.siden += dt;
         /* Sommerens sol: en plante, der ikke har faaet vand laenge, haenger, indtil nogen vander den */
         if (H.aar === 'sommer' && !bd.toerst && bd.vaekst >= 1 && (bd.fase === 'spire' || bd.fase === 'plante' || bd.fase === 'moden') && bd.siden > TOERST_EFTER) {
-          bd.toerst = true; hint('toerst', 'Solen skinner varmt, og planten hænger. Giv den vand.');
+          bd.toerst = true; hint('toerst', TEKST.toerst);
         }
         if (bd.fase === 'moden' && bd.vaekst >= 1 && !bd.meldt) { bd.meldt = true; gnist(bd.x, 3.5, bd.z, 10); lyd('moden'); modenLinje(bd); }
         if (bd.fase !== 'moden') bd.meldt = false;
       });
       /* Foraarets byger vander alle saaede bede: naturen hjaelper */
       if (H.aar === 'foraar' && !H.regn && tid > H.naesteRegn && H.bede.some(function (bd) { return bd.fase === 'saaet' || bd.fase === 'spire' || bd.fase === 'plante'; })) {
-        H.regn = { t: 0 }; hint('regn', 'Det regner. Regnen vander haven.');
+        H.regn = { t: 0 }; hint('regn', TEKST.regn);
       }
       if (H.regn) {
         H.regn.t += dt;
@@ -409,7 +480,8 @@
     sub: sub, dot: dot, cross: cross, norm: norm, mix: mix, klem: klem, jaevn: jaevn, tilfaeldig: tilfaeldig, stoej: stoej, hex: hex, blend: blend,
     AAR: AAR, AAR_SIG: AAR_SIG, AFGROEDER: AFGROEDER, AFGR_ALLE: AFGR_ALLE, BED_B: BED_B, BED_D: BED_D, BED_H: BED_H,
     KURV: KURV, PELLE: PELLE, PELLE_TO: PELLE_TO, TRIN: TRIN, POS: POS, ORD: ORD, TAL: TAL, KATEGORI: KATEGORI, TAK: TAK, TAK_BLANDET: TAK_BLANDET,
-    antalOrd: antalOrd, delTekst: delTekst, oenskeTekst: oenskeTekst, passer: passer, ny: ny
+    antalOrd: antalOrd, delTekst: delTekst, oenskeTekst: oenskeTekst, manglerTekst: manglerTekst, passer: passer, ny: ny,
+    TEKST: TEKST, TAELLER: TAELLER, saetninger: saetninger
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = { Haven: Haven };
   else rod.Haven = Haven;

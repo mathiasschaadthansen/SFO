@@ -214,7 +214,7 @@ function foelg(glyf, tolerance, afvig) {
   const manglerLille = tre.filter(t => t.ord.split('').some(ch => !Glyffer.GLYFFER[tilNavn(ch)])).map(t => t.ord);
   tjek('alle ord kan tegnes med store bogstaver', manglerStor.length === 0, 'mangler: ' + manglerStor);
   tjek('alle ord kan tegnes med smaa bogstaver', manglerLille.length === 0, 'mangler: ' + manglerLille);
-  // Ordet siges med Camillas stemme, naar det skal tegnes, saa alle ord skal vaere indtalt
+  // Ordet siges med den indtalte stemme, naar det skal tegnes, saa alle ord skal vaere indtalt
   const klip = JSON.parse(fs.readFileSync(path.join(ROD, '..', 'lyd', 'klip.json'), 'utf8'));
   const ordFil = t => t.fil ? t.fil.replace(/^.*\//, '').replace(/\.(svg|png)$/, '') : ({ 'xylofon': 'xylofon', 'ål': 'aal' })[t.ord];
   const udenKlip = tre.filter(t => !klip.includes('ord_' + ordFil(t) + '.mp3')).map(t => t.ord);
