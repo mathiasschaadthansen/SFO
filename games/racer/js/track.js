@@ -156,6 +156,10 @@
       c.stroke();
     }
 
+    // Pynt i engen: blomster, buske og sten, langt fra vejen. Kun maling —
+    // masken nedenfor bygges af midterlinjen alene og ser aldrig dette lag.
+    this._pynt(c);
+
     // Vejen: en malet grussti. Skyggen ligger UNDER vejen og er lige saa bred,
     // saa den ikke kan forveksles med kanten. Asfaltbredden er praecis v —
     // den samme som masken bruger, saa det, man ser, er det, man kan koere paa.
@@ -215,6 +219,161 @@
     this.maske = maske;
     this.maskeB = mb;
     this.maskeH = mh;
+  };
+
+  /**
+   * Tilfaeldige tal med et fast udgangspunkt, saa den samme bane altid har
+   * blomsterne de samme steder.
+   */
+  function froe(tekst) {
+    var s = 2166136261;
+    for (var i = 0; i < tekst.length; i++) s = Math.imul(s ^ tekst.charCodeAt(i), 16777619);
+    return function () {
+      s = (s + 0x6D2B79F5) | 0;
+      var t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /** Korteste afstand fra (x, y) til vejens midterlinje. */
+  Bane.prototype._afstandTilVej = function (x, y) {
+    var linje = this.linje, bedst = Infinity;
+    for (var i = 0; i < linje.length; i++) {
+      var dx = linje[i].x - x, dy = linje[i].y - y;
+      var d = dx * dx + dy * dy;
+      if (d < bedst) bedst = d;
+    }
+    return Math.sqrt(bedst);
+  };
+
+  var BLOMST = ['#f8f1e6', '#f0c46a', '#d95f45', '#9b7bd4', '#e08a52', '#f8f1e6'];
+
+  function tegnBlomst(c, x, y, r, farve) {
+    for (var k = 0; k < 5; k++) {
+      var v = k * Math.PI * 2 / 5;
+      c.fillStyle = farve;
+      c.beginPath();
+      c.arc(x + Math.cos(v) * r, y + Math.sin(v) * r, r * 0.85, 0, Math.PI * 2);
+      c.fill();
+    }
+    c.fillStyle = farve === '#f0c46a' ? '#b18a56' : '#f0c46a';
+    c.beginPath();
+    c.arc(x, y, r * 0.7, 0, Math.PI * 2);
+    c.fill();
+  }
+
+  function tegnBusk(c, x, y, r, tal) {
+    // Skygge, saa en dyb krone og lysere klatter ovenpaa, som akvarel i lag
+    c.fillStyle = 'rgba(74,58,44,0.16)';
+    c.beginPath();
+    c.ellipse(x + r * 0.15, y + r * 0.55, r * 1.25, r * 0.6, 0, 0, Math.PI * 2);
+    c.fill();
+    var klatter = [[-0.55, 0.1, 0.62], [0.5, 0.15, 0.6], [0, -0.25, 0.72], [-0.1, 0.25, 0.6]];
+    c.fillStyle = '#5f8240';
+    klatter.forEach(function (k) {
+      c.beginPath(); c.arc(x + k[0] * r, y + k[1] * r, k[2] * r, 0, Math.PI * 2); c.fill();
+    });
+    c.fillStyle = 'rgba(147,188,99,0.8)';
+    klatter.forEach(function (k) {
+      c.beginPath(); c.arc(x + k[0] * r - r * 0.12, y + k[1] * r - r * 0.16, k[2] * r * 0.62, 0, Math.PI * 2); c.fill();
+    });
+    c.fillStyle = 'rgba(214,232,170,0.35)';
+    c.beginPath(); c.arc(x - r * 0.25, y - r * 0.45, r * 0.28, 0, Math.PI * 2); c.fill();
+    // En busk i hver tredje bliver til en baerbusk med smaa roede prikker
+    if (tal < 0.34) {
+      c.fillStyle = '#d95f45';
+      [[-0.5, -0.05], [0.35, -0.2], [0.1, 0.3], [-0.15, -0.5], [0.6, 0.25]].forEach(function (p) {
+        c.beginPath(); c.arc(x + p[0] * r, y + p[1] * r, Math.max(2, r * 0.09), 0, Math.PI * 2); c.fill();
+      });
+    }
+  }
+
+  /** En knoldet sten: en ujaevn rand af bloede buer, ikke et aeg. */
+  function stenForm(c, r, buler) {
+    var n = buler.length;
+    function pkt(i) {
+      var v = (i % n) / n * Math.PI * 2;
+      return [Math.cos(v) * r * buler[i % n], Math.sin(v) * r * 0.66 * buler[i % n]];
+    }
+    c.beginPath();
+    var p0 = pkt(0), p1 = pkt(1);
+    c.moveTo((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2);
+    for (var i = 1; i <= n; i++) {
+      var a = pkt(i), b = pkt(i + 1);
+      c.quadraticCurveTo(a[0], a[1], (a[0] + b[0]) / 2, (a[1] + b[1]) / 2);
+    }
+    c.closePath();
+  }
+
+  function tegnSten(c, x, y, r, tilfaeldig) {
+    var buler = [];
+    for (var i = 0; i < 7; i++) buler.push(0.8 + tilfaeldig() * 0.3);
+    c.save();
+    c.translate(x, y);
+    c.rotate((tilfaeldig() - 0.5) * 0.8);
+    c.fillStyle = 'rgba(74,58,44,0.18)';
+    c.beginPath(); c.ellipse(r * 0.1, r * 0.4, r * 1.05, r * 0.5, 0, 0, Math.PI * 2); c.fill();
+    // Moerk underside, lys top forskudt opad, og en lille lys kant hvor solen rammer
+    c.fillStyle = '#b18a56';
+    stenForm(c, r, buler); c.fill();
+    c.save();
+    c.translate(-r * 0.06, -r * 0.14);
+    c.scale(0.9, 0.86);
+    c.fillStyle = '#d9ba8a';
+    stenForm(c, r, buler); c.fill();
+    c.restore();
+    c.fillStyle = 'rgba(239,227,208,0.85)';
+    c.beginPath(); c.ellipse(-r * 0.32, -r * 0.32, r * 0.3, r * 0.12, -0.25, 0, Math.PI * 2); c.fill();
+    c.restore();
+  }
+
+  /**
+   * Blomster, buske og sten spredt i engen. Alt holder mindst en bilbredde
+   * fri af vejens kant og skygge, saa intet ligner en forhindring paa vejen.
+   */
+  Bane.prototype._pynt = function (c) {
+    var b = this.bredde, h = this.hoejde;
+    var tilfaeldig = froe(this.navn || 'bane');
+    var fri = this.vejbredde / 2 + 15 + 55;      // vejens halve bredde, skyggen og god luft
+    var self = this;
+    function plads(r) {
+      for (var forsoeg = 0; forsoeg < 12; forsoeg++) {
+        var x = r + tilfaeldig() * (b - 2 * r), y = r + tilfaeldig() * (h - 2 * r);
+        if (self._afstandTilVej(x, y) > fri + r) return { x: x, y: y };
+      }
+      return null;
+    }
+    var areal = b * h;
+    var i, p;
+    // Sten foerst, saa buskene kan staa lidt foran dem
+    for (i = 0; i < Math.round(areal / 160000); i++) {
+      var sr = 9 + tilfaeldig() * 9;
+      p = plads(sr);
+      if (p) {
+        tegnSten(c, p.x, p.y, sr, tilfaeldig);
+        if (tilfaeldig() < 0.6) tegnSten(c, p.x + sr * 1.25, p.y + sr * 0.45, sr * 0.55, tilfaeldig);
+      }
+    }
+    for (i = 0; i < Math.round(areal / 90000); i++) {
+      var br = 18 + tilfaeldig() * 14;
+      p = plads(br * 1.3);
+      if (p) tegnBusk(c, p.x, p.y, br, tilfaeldig());
+    }
+    // Blomster i smaa klynger af samme farve, som de gror i en eng
+    for (i = 0; i < Math.round(areal / 30000); i++) {
+      p = plads(26);
+      if (!p) continue;
+      var farve = BLOMST[Math.floor(tilfaeldig() * BLOMST.length)];
+      var antal = 3 + Math.floor(tilfaeldig() * 4);
+      for (var k = 0; k < antal; k++) {
+        var fx = p.x + (tilfaeldig() - 0.5) * 44, fy = p.y + (tilfaeldig() - 0.5) * 30;
+        c.strokeStyle = 'rgba(77,122,60,0.45)';
+        c.lineWidth = 1.5;
+        c.beginPath(); c.moveTo(fx, fy); c.lineTo(fx + 1, fy + 7); c.stroke();
+        tegnBlomst(c, fx, fy, 2.6 + tilfaeldig() * 1.6, farve);
+      }
+    }
   };
 
   Bane.prototype._checkpoints = function (antal) {

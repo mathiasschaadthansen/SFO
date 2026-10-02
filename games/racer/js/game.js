@@ -26,15 +26,16 @@
     };
   }
 
-  // Farver boernene kan vaelge. Hver bil er malet: lys top, lak og dyb kant,
-  // og ruder i en koelig tone, saa de kan ses mod lakken.
+  // Farver boernene kan vaelge, alle fra den malede palet. Hver bil er malet
+  // mat som akvarel: lak i midten, en lys vask hvor solen rammer og en dybere
+  // kant, og ruder i en daempet, koelig tone, saa de kan ses mod lakken.
   var FARVER = [
-    { navn: 'Rød',    lys: '#f6a68d', lak: '#e4644a', moerk: '#a83a24', rude: '#7f96a2', rudeLys: '#cfe0e6' },
-    { navn: 'Blå',    lys: '#9ad2f0', lak: '#3f9ad6', moerk: '#23648f', rude: '#7f96a2', rudeLys: '#dceaf0' },
-    { navn: 'Grøn',   lys: '#c3e08e', lak: '#7ab648', moerk: '#4a7a2c', rude: '#7f96a2', rudeLys: '#dceaf0' },
-    { navn: 'Gul',    lys: '#ffe2a0', lak: '#f2c14e', moerk: '#c48f24', rude: '#8a8f7e', rudeLys: '#e4e8d8' },
-    { navn: 'Lilla',  lys: '#d3bff2', lak: '#9b7bd4', moerk: '#654a9c', rude: '#8b8ba2', rudeLys: '#e0dcee' },
-    { navn: 'Orange', lys: '#ffc9a0', lak: '#ef9152', moerk: '#bd6226', rude: '#8a8f7e', rudeLys: '#e8e2d4' }
+    { navn: 'Rød',    lys: '#eea38c', lak: '#d95f45', moerk: '#a8473a', rude: '#8fa7b3', rudeLys: '#c9dde4' },
+    { navn: 'Blå',    lys: '#b5dcf0', lak: '#5f9fc9', moerk: '#3f739a', rude: '#8a9aa6', rudeLys: '#d6e2e6' },
+    { navn: 'Grøn',   lys: '#c4dc9f', lak: '#93bc63', moerk: '#5f8240', rude: '#8fa7b3', rudeLys: '#d4e4e8' },
+    { navn: 'Gul',    lys: '#f8e2ab', lak: '#f0c46a', moerk: '#b18a56', rude: '#8f9a8e', rudeLys: '#e2e6d6' },
+    { navn: 'Lilla',  lys: '#cdbcec', lak: '#9b7bd4', moerk: '#6c5596', rude: '#8f92a8', rudeLys: '#dcdaea' },
+    { navn: 'Orange', lys: '#f3c09a', lak: '#e08a52', moerk: '#a8663a', rude: '#8f9a8e', rudeLys: '#e6e0d2' }
   ];
   var FORMER = ['racer', 'bus', 'truck'];
 
@@ -378,9 +379,9 @@
     c.ellipse(-2, 3, L * 0.54, B * 0.6, 0, 0, Math.PI * 2);
     c.fill();
 
-    // Hjul: samme sorte gummi paa alle tre former, tegnet foerst
+    // Hjul: samme moerke gummi paa alle tre former, tegnet foerst
     function hjul(x, br, ud) {
-      c.fillStyle = '#4a4239';
+      c.fillStyle = '#5e4a3a';
       [-1, 1].forEach(function (d) {
         c.beginPath();
         c.roundRect(x, d * (B / 2 + ud) - (d > 0 ? 0 : 5), br, 5, 2.5);
@@ -388,18 +389,30 @@
       });
     }
 
-    // Malet karosseri: lyst ovenfra, dybere mod kanten
+    // Malet karosseri, mat som akvarel: et jaevnt lag lak, en bloed lys vask
+    // paa den ene side og en dybere side, og pigmentet samler sig i kanten.
+    // Ingen glansstribe, saa bilen ligner maling og ikke plastik.
     function krop(x, y, br, h, r) {
-      var g = c.createLinearGradient(0, y, 0, y + h);
-      g.addColorStop(0, farve.moerk);
-      g.addColorStop(0.28, farve.lak);
-      g.addColorStop(0.5, farve.lys);
-      g.addColorStop(0.72, farve.lak);
-      g.addColorStop(1, farve.moerk);
-      c.fillStyle = g;
+      c.fillStyle = farve.lak;
       c.beginPath();
       c.roundRect(x, y, br, h, r);
       c.fill();
+      var g = c.createLinearGradient(0, y, 0, y + h);
+      g.addColorStop(0, farve.lys);
+      g.addColorStop(0.45, farve.lak);
+      g.addColorStop(1, farve.moerk);
+      // Gennemsigtigheden ganges paa, saa en bil paa aeresrunde forbliver bleg
+      c.save();
+      c.globalAlpha *= 0.55;
+      c.fillStyle = g;
+      c.fill();
+      c.restore();
+      c.save();
+      c.globalAlpha *= 0.5;
+      c.strokeStyle = farve.moerk;
+      c.lineWidth = 1.4;
+      c.stroke();
+      c.restore();
     }
 
     function rude(x, y, br, h, r) {
@@ -410,6 +423,9 @@
       c.beginPath();
       c.roundRect(x, y, br, h, r);
       c.fill();
+      c.strokeStyle = 'rgba(94,74,58,0.3)';
+      c.lineWidth = 1;
+      c.stroke();
     }
 
     if (form === 'truck') {
@@ -436,12 +452,6 @@
       krop(-L / 2, -B / 2, L, B, 7);
       rude(-4, -B / 2 + 4, 13, B - 8, 4);
     }
-
-    // Lys glans hen over taget
-    c.fillStyle = 'rgba(255,255,255,0.22)';
-    c.beginPath();
-    c.ellipse(-L * 0.1, -B * 0.26, L * 0.3, B * 0.13, 0, 0, Math.PI * 2);
-    c.fill();
   }
 
   function tegnBil(bil) {
@@ -502,21 +512,45 @@
     biler.forEach(tegnBil);
     ctx.restore();
 
-    // Omgangstæller — cirkler i stedet for tal, saa 6-aarige kan aflaese den
+    // Omgangstæller — cirkler i stedet for tal, saa 6-aarige kan aflaese den.
+    // Cirklerne er i bilens egen farve: en ring foer omgangen, fyldte bagefter.
     ctx.save();
     // Til hoejre for hjem-knappen i det foerste udsnit
-    ctx.translate(x + (x === 0 ? 74 : 18), y + 32);
+    var CIRKEL_R = 13, CIRKEL_GAB = 36;
+    ctx.translate(x + (x === 0 ? 84 : 28), y + 32);
+    // Et lille stykke papir bag cirklerne, saa de kan ses mod engen og blomsterne
+    var pladeB = (INDSTIL.omgange - 1) * CIRKEL_GAB + CIRKEL_R * 2 + 16;
+    ctx.fillStyle = 'rgba(107,85,68,0.18)';
+    ctx.beginPath();
+    ctx.roundRect(-CIRKEL_R - 8, -CIRKEL_R - 8 + 4, pladeB, CIRKEL_R * 2 + 16, CIRKEL_R + 8);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(248,241,230,0.92)';
+    ctx.beginPath();
+    ctx.roundRect(-CIRKEL_R - 8, -CIRKEL_R - 8, pladeB, CIRKEL_R * 2 + 16, CIRKEL_R + 8);
+    ctx.fill();
     for (var i = 0; i < INDSTIL.omgange; i++) {
+      var koert = i < bil.omgang;
       ctx.beginPath();
-      ctx.arc(i * 26, 0, 9, 0, Math.PI * 2);
-      ctx.fillStyle = i < bil.omgang ? bil.farve.lak : 'rgba(255,248,232,0.55)';
+      ctx.arc(i * CIRKEL_GAB, 0, CIRKEL_R, 0, Math.PI * 2);
+      ctx.fillStyle = koert ? bil.farve.lak : bil.farve.lys;
+      ctx.globalAlpha = koert ? 1 : 0.45;
       ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = 'rgba(94,74,58,0.55)';
+      ctx.globalAlpha = 1;
+      if (koert) {
+        // Lys vask i den fyldte cirkel, som i bilens lak
+        ctx.fillStyle = 'rgba(248,241,230,0.35)';
+        ctx.beginPath();
+        ctx.arc(i * CIRKEL_GAB - 4, -4, CIRKEL_R * 0.38, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(i * CIRKEL_GAB, 0, CIRKEL_R, 0, Math.PI * 2);
+      }
+      ctx.lineWidth = koert ? 3 : 4;
+      ctx.strokeStyle = koert ? bil.farve.moerk : bil.farve.lak;
       ctx.stroke();
     }
     // Ternet flag naar bilen er i maal
-    if (bil.faerdig) tegnFlag(INDSTIL.omgange * 26 - 4, -12);
+    if (bil.faerdig) tegnFlag(INDSTIL.omgange * CIRKEL_GAB - 12, -13);
     ctx.restore();
   }
 
@@ -563,41 +597,84 @@
   /**
    * Nedtaelling som lyskurv: tre roede lys taendes ét ad gangen, saa
    * bliver alle groenne. Roed, gul, groen forstaar alle, ogsaa uden tal.
+   * Lyskurven er et lille malet traeskilt, der haenger oeverst paa skaermen,
+   * saa det aldrig daekker barnets egen bil midt paa skaermen. Med to
+   * spillere faar hver halvdel sit eget skilt. cx er skiltets midte.
    */
-  function tegnLyskurv(B, H) {
+  function tegnLyskurv(cx) {
     var tal = Math.ceil(nedtaelling - 0.2);
     var taendt = Math.max(0, Math.min(3, 4 - tal));
     var groen = tal <= 0;
-    var r = 26, gab = 70;
-    var cx = B / 2, cy = H / 2 - 30;
+    var r = 16, gab = 42;
+    var cy = 58;
+    var sb = gab * 2 + r * 2 + 30, sh = r * 2 + 24;
+    var sx = cx - sb / 2, sy = cy - sh / 2;
 
     ctx.save();
-    ctx.fillStyle = '#6b5545';
+    // Snore op til kanten
+    ctx.strokeStyle = '#8a663d';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.roundRect(cx - gab - r - 18, cy - r - 18, gab * 2 + r * 2 + 36, r * 2 + 36, 24);
+    ctx.moveTo(sx + 22, 0); ctx.lineTo(sx + 22, sy + 6);
+    ctx.moveTo(sx + sb - 22, 0); ctx.lineTo(sx + sb - 22, sy + 6);
+    ctx.stroke();
+    // Skygge og braet
+    ctx.fillStyle = 'rgba(107,85,68,0.22)';
+    ctx.beginPath();
+    ctx.roundRect(sx, sy + 5, sb, sh, 14);
     ctx.fill();
+    var trae = ctx.createLinearGradient(0, sy, 0, sy + sh);
+    trae.addColorStop(0, '#d9ba8a');
+    trae.addColorStop(1, '#b18a56');
+    ctx.fillStyle = trae;
+    ctx.beginPath();
+    ctx.roundRect(sx, sy, sb, sh, 14);
+    ctx.fill();
+    ctx.strokeStyle = '#8a663d';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    // Aarer i traeet
+    ctx.strokeStyle = 'rgba(138,102,61,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(sx + 12, sy + sh * 0.3); ctx.quadraticCurveTo(cx, sy + sh * 0.22, sx + sb - 12, sy + sh * 0.32);
+    ctx.moveTo(sx + 14, sy + sh * 0.76); ctx.quadraticCurveTo(cx, sy + sh * 0.84, sx + sb - 14, sy + sh * 0.72);
+    ctx.stroke();
+    // Soem hvor snoren sidder
+    ctx.fillStyle = '#8a663d';
+    [sx + 22, sx + sb - 22].forEach(function (nx) {
+      ctx.beginPath(); ctx.arc(nx, sy + 6, 2.6, 0, Math.PI * 2); ctx.fill();
+    });
     for (var i = 0; i < 3; i++) {
       var lys = groen || i < taendt;
+      var lx = cx + (i - 1) * gab;
+      // Lille malet fordybning, som lyset sidder i
+      ctx.fillStyle = '#8a663d';
       ctx.beginPath();
-      ctx.arc(cx + (i - 1) * gab, cy, r, 0, Math.PI * 2);
-      ctx.fillStyle = !lys ? '#4e4034' : (groen ? '#8fae86' : '#d95f45');
+      ctx.arc(lx, cy + 1.5, r + 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(lx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = !lys ? '#6b5545' : (groen ? '#93bc63' : '#d95f45');
       ctx.fill();
       if (lys) {
-        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.fillStyle = 'rgba(248,241,230,0.35)';
         ctx.beginPath();
-        ctx.arc(cx + (i - 1) * gab - 8, cy - 8, r * 0.4, 0, Math.PI * 2);
+        ctx.arc(lx - 5, cy - 5, r * 0.38, 0, Math.PI * 2);
         ctx.fill();
       }
     }
     if (groen) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = '800 96px ui-rounded, system-ui, sans-serif';
-      ctx.lineWidth = 10;
+      ctx.font = '800 54px ui-rounded, system-ui, sans-serif';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 8;
       ctx.strokeStyle = '#6b5545';
       ctx.fillStyle = '#f0c46a';
-      ctx.strokeText('KØR!', cx, cy + 110);
-      ctx.fillText('KØR!', cx, cy + 110);
+      ctx.strokeText('KØR!', cx, sy + sh + 40);
+      ctx.fillText('KØR!', cx, sy + sh + 40);
     }
     ctx.restore();
   }
@@ -622,14 +699,17 @@
       ctx.fillRect(halv - 3, 0, 6, H);
     }
 
-    if (tilstand === 'nedtaelling') tegnLyskurv(B, H);
+    if (tilstand === 'nedtaelling') {
+      if (spillere.length === 2) { tegnLyskurv(B / 4); tegnLyskurv(B * 3 / 4); }
+      else tegnLyskurv(B / 2);
+    }
   }
 
   /* ---------- slutskaerm med konfetti ---------- */
 
   function startKonfetti(canvas) {
     konfetti = [];
-    var farver = ['#e4644a', '#3f9ad6', '#7ab648', '#f2c14e', '#9b7bd4', '#ef9152'];
+    var farver = FARVER.map(function (f) { return f.lak; });
     for (var i = 0; i < 70; i++) {
       konfetti.push({
         x: Math.random() * canvas.width,

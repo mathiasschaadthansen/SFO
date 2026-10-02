@@ -29,7 +29,9 @@
     };
   }
 
-  var FARVER = ['#d95f45', '#5f9fc9', '#7ab648', '#f0c46a', '#9b7bd4', '#e08a52'];
+  var FARVER = ['#d95f45', '#5f9fc9', '#93bc63', '#f0c46a', '#9b7bd4', '#e08a52'];
+  // Penslens regnbue gaar gennem den malede palet i stedet for neonfarver
+  var REGNBUE = [[217, 95, 69], [224, 138, 82], [240, 196, 106], [147, 188, 99], [95, 159, 201], [155, 123, 212]];
   var TOLERANCE = [14, 10, 7];       // pr. stjerne, i kasse-enheder
   var STREGFARVE = '#e08a52';
 
@@ -328,6 +330,14 @@
     ctx.globalAlpha = 1;
   }
 
+  /** Farven et stykke (0..1) hen ad regnbuen: roed, fersken, gul, groen, blaa, lilla. */
+  function regnbueFarve(andel) {
+    var t = Math.max(0, Math.min(1, andel || 0)) * (REGNBUE.length - 1);
+    var i = Math.min(REGNBUE.length - 2, Math.floor(t)), f = t - i;
+    var a = REGNBUE[i], b = REGNBUE[i + 1];
+    return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * f) + ',' + Math.round(a[1] + (b[1] - a[1]) * f) + ',' + Math.round(a[2] + (b[2] - a[2]) * f) + ')';
+  }
+
   function fest(x, y) {
     for (var c = 0; c < 6; c++) puf(x, y, FARVER[c], 12, 320, 5, 1.2);
   }
@@ -417,7 +427,7 @@
       // Spor efter koeretoejet
       if (koeretoej === 'raket') puf(px, py, Math.random() < 0.5 ? '#f0c46a' : '#e08a52', 2, 90, 3, 0.45);
       else if (koeretoej === 'bil') { if (Math.random() < 0.5) puf(px, py, '#cbb382', 1, 50, 3, 0.5); }
-      else puf(px, py, 'hsl(' + Math.floor(spor.andel() * 360) + ',85%,60%)', 1, 40, 4, 0.5);
+      else puf(px, py, regnbueFarve(spor.andel()), 1, 40, 4, 0.5);
       // Toner der stiger langs stregen, som et instrument
       var streg = spor.streger[Math.min(spor.aktiv, spor.streger.length - 1)];
       var andelStreg = spor.aktiv > aktivFør ? 1 : spor.indeks / (streg.length - 1);
@@ -802,7 +812,7 @@
   function tegnFlueben(x, y, r) {
     ctx.save();
     ctx.translate(x, y);
-    ctx.fillStyle = '#7ab648'; ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 4;
+    ctx.fillStyle = '#93bc63'; ctx.strokeStyle = '#5f8240'; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.strokeStyle = '#f8f1e6'; ctx.lineWidth = r * 0.24; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     ctx.beginPath(); ctx.moveTo(-r * 0.45, 0.02 * r); ctx.lineTo(-r * 0.12, r * 0.34); ctx.lineTo(r * 0.48, -r * 0.32); ctx.stroke();
@@ -820,13 +830,38 @@
     ctx.restore();
   }
 
+  function ordBogstaver(ord) {
+    return ord.split('').map(function (ch) { return kategori === 'smaa' ? tingNavn(ch) : tingNavn(ch).toUpperCase(); });
+  }
+
+  /**
+   * Ordets bogstaver sat efter deres egen bredde, saa brede bogstaver som D og Ø
+   * ikke roerer hinanden og et I ikke staar alene. Alt i ordets hoejder: kasse[i]
+   * er venstre kant af bogstavets kasse, og fra/til er hvor stregerne rent faktisk
+   * naar ud til, med stregens tykkelse. Bruges til at centrere ordet og til at
+   * faa et langt ord som JULETRÆ til at passe inden for kortet.
+   */
+  var ORD_MELLEMRUM = 0.2;
+  function ordSats(ord) {
+    var bogstaver = ordBogstaver(ord), kasse = [], x = 0;
+    bogstaver.forEach(function (n) {
+      var a = 0.25, b = 0.75;
+      if (G[n]) {
+        a = Infinity; b = -Infinity;
+        G[n].streger.forEach(function (st) { st.forEach(function (q) { a = Math.min(a, q[0] / 100); b = Math.max(b, q[0] / 100); }); });
+      }
+      kasse.push(x - a);
+      x += (b - a) + ORD_MELLEMRUM;
+    });
+    return { bogstaver: bogstaver, kasse: kasse, fra: -0.06, til: Math.max(0, x - ORD_MELLEMRUM) + 0.06 };
+  }
+
   /** Et ord skrevet med spillets egne streger, centreret om (cx, cy). Store eller smaa efter kategori. */
   function tegnOrd(ord, cx, cy, hoejde, fremhaev) {
-    var bogstaver = ord.split('').map(function (ch) { return kategori === 'smaa' ? tingNavn(ch) : tingNavn(ch).toUpperCase(); });
-    var b = hoejde * 0.72;
-    var x0 = cx - bogstaver.length * b / 2;
-    bogstaver.forEach(function (n, i) {
-      if (G[n]) tegnGlyf(ctx, G[n], x0 + i * b, cy - hoejde / 2, hoejde, fremhaev && i === 0 ? fremhaev : '#5e4a3a', fremhaev ? 11 : 9);
+    var sats = ordSats(ord);
+    var x0 = cx - (sats.fra + sats.til) / 2 * hoejde;
+    sats.bogstaver.forEach(function (n, i) {
+      if (G[n]) tegnGlyf(ctx, G[n], x0 + sats.kasse[i] * hoejde, cy - hoejde / 2, hoejde, fremhaev && i === 0 ? fremhaev : '#5e4a3a', fremhaev ? 11 : 9);
     });
   }
 
@@ -850,8 +885,11 @@
       ctx.fillStyle = vaelgLoest && k.rigtig ? '#f0c46a' : (ordSide ? '#fdf3d9' : '#f8f1e6');
       ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.roundRect(-k.str / 2, -k.str / 2, k.str, k.str, 24); ctx.fill(); ctx.stroke();
-      if (ordSide) tegnOrd(t.ord, 0, 0, Math.min(k.str * 0.3, k.str * 0.95 / (t.ord.length * 0.72 + 0.4)), '#e08a52');
-      else tegnTing(t, 0, 0, k.str * 0.62);
+      if (ordSide) {
+        // Ordet skaleres, saa det altid holder sig inden for kortets kant
+        var sats = ordSats(t.ord);
+        tegnOrd(t.ord, 0, 0, Math.min(k.str * 0.3, k.str * 0.8 / (sats.til - sats.fra)), '#e08a52');
+      } else tegnTing(t, 0, 0, k.str * 0.62);
       ctx.restore();
       if (!vaelgLoest) tegnFlueben(k.x, knapY(k), vaelgKnapR);
     });
@@ -859,8 +897,9 @@
     if (vaelgLoest) {
       var rigtig = kort.filter(function (k) { return k.rigtig; })[0];
       if (rigtig) {
-        var ord = rigtig.ting.ord, hh = Math.min(H * 0.12, B * 0.8 / (ord.length * 0.72 + 1));
-        var bb = ord.length * hh * 0.72 + hh * 0.9, yy = H - hh * 1.6 - 12;
+        var ord = rigtig.ting.ord, sats = ordSats(ord), bredde = sats.til - sats.fra;
+        var hh = Math.min(H * 0.12, B * 0.8 / (bredde + 1));
+        var bb = bredde * hh + hh * 0.9, yy = H - hh * 1.6 - 12;
         ctx.fillStyle = '#f8f1e6'; ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 5;
         ctx.beginPath(); ctx.roundRect(B / 2 - bb / 2, yy, bb, hh * 1.6, 26); ctx.fill(); ctx.stroke();
         tegnOrd(ord, B / 2, yy + hh * 0.8, hh, '#e08a52');
@@ -913,7 +952,7 @@
       c.beginPath(); c.roundRect(-4, -2, 20, 4, 2); c.fill(); c.stroke();
       c.fillStyle = '#ddd4c0';
       c.beginPath(); c.roundRect(-11, -3.5, 8, 7, 1.5); c.fill(); c.stroke();
-      c.fillStyle = 'hsl(' + Math.floor((andel || 0) * 360) + ',85%,60%)';
+      c.fillStyle = regnbueFarve(andel);
       c.beginPath(); c.arc(-12, 0, 3.5, 0, Math.PI * 2); c.fill();
       c.restore();
     }
@@ -951,7 +990,7 @@
       var til = indtil && si === indtil.aktiv ? indtil.indeks : streg.length - 1;
       ctx.lineWidth = 13 * sk; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       for (var i = 1; i <= til; i++) {
-        ctx.strokeStyle = 'hsl(' + Math.floor((talt + i) / alleN * 360) + ',85%,60%)';
+        ctx.strokeStyle = regnbueFarve((talt + i) / alleN);
         ctx.beginPath();
         ctx.moveTo(x + streg[i - 1][0] * sk, y + streg[i - 1][1] * sk);
         ctx.lineTo(x + streg[i][0] * sk, y + streg[i][1] * sk);
@@ -1142,7 +1181,7 @@
     c.beginPath(); c.ellipse(x - r * 0.35, y - r * 0.4, r * 0.25, r * 0.15, -0.6, 0, Math.PI * 2); c.fill();
     c.strokeStyle = '#5e4a3a'; c.lineWidth = Math.max(2, r * 0.14); c.lineCap = 'round';
     c.beginPath(); c.moveTo(x, y - r * 0.9); c.lineTo(x + r * 0.1, y - r * 1.35); c.stroke();
-    c.fillStyle = '#7ab648';
+    c.fillStyle = '#93bc63';
     c.beginPath(); c.ellipse(x + r * 0.35, y - r * 1.15, r * 0.35, r * 0.18, -0.5, 0, Math.PI * 2); c.fill(); c.stroke();
   }
 
