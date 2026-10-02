@@ -38,6 +38,27 @@
   // lagt oven paa den halvcirkel koden tegner. Ansigt, oerer og hop er stadig kode.
   var klatBilleder = {};
   FARVER.forEach(function (f) { var i = new Image(); i.src = 'billeder/klat-' + f.fil + '.png'; klatBilleder[f.fil] = i; });
+  // Skyggen langs jorden males direkte paa kroppen (source-atop), saa den kun falder,
+  // hvor der er maling. Laves én gang pr. farve, naar billedet er hentet.
+  var skyggedeKroppe = {};
+  function skyggetKrop(fil, img) {
+    if (skyggedeKroppe[fil]) return skyggedeKroppe[fil];
+    var b = img.naturalWidth, h = img.naturalHeight;
+    var cv = document.createElement('canvas');
+    cv.width = b; cv.height = h;
+    var k = cv.getContext('2d');
+    k.drawImage(img, 0, 0);
+    k.globalCompositeOperation = 'source-atop';
+    // Samme skygge som foer: fra 0.35 R over jorden og ned til jorden. Kroppen tegnes
+    // 1.5 R hoej med bunden 0.04 R under jorden, saa det er 74 % og 97 % nede i billedet.
+    var bund = k.createLinearGradient(0, h * 0.74, 0, h * 0.973);
+    bund.addColorStop(0, 'rgba(74,58,44,0)');
+    bund.addColorStop(1, 'rgba(74,58,44,0.28)');
+    k.fillStyle = bund;
+    k.fillRect(0, 0, b, h);
+    skyggedeKroppe[fil] = cv;
+    return cv;
+  }
   var FJAES = ['glad', 'sej', 'soed'];
 
   // Malet palet til banen. Samme toner som i Maskinen, saa spillene ligner hinanden.
@@ -267,133 +288,253 @@
 
   /* ---------- tegning ---------- */
 
+  /* ---------- akvarel ---------- */
+
+  // Fast tilfaeldighed, saa baggrunden males ens hver gang den males om
+  function tilfaeldig(frø) {
+    var a = frø >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /** En bloed, lukket kurve gennem punkterne. */
+  function bloedForm(c, pkt) {
+    var n = pkt.length;
+    c.beginPath();
+    c.moveTo((pkt[n - 1][0] + pkt[0][0]) / 2, (pkt[n - 1][1] + pkt[0][1]) / 2);
+    for (var i = 0; i < n; i++) {
+      var a = pkt[i], b = pkt[(i + 1) % n];
+      c.quadraticCurveTo(a[0], a[1], (a[0] + b[0]) / 2, (a[1] + b[1]) / 2);
+    }
+    c.closePath();
+  }
+
+  /** En ujaevn ellipse, som en pensel laver den. */
+  function ujaevnEllipse(c, x, y, rx, ry, r, uro) {
+    var pkt = [], n = 16;
+    for (var i = 0; i < n; i++) {
+      var v = i / n * Math.PI * 2, k = 1 + (r() - 0.5) * uro;
+      pkt.push([x + Math.cos(v) * rx * k, y + Math.sin(v) * ry * k]);
+    }
+    bloedForm(c, pkt);
+  }
+
+  /**
+   * En vandfarveplet: tynde lag oven paa hinanden, hvert lidt forskudt, og en kant
+   * hvor farven samler sig, som naar vandet toerrer. Saa bliver kanten bloed og levende.
+   */
+  function plet(c, x, y, rx, ry, farve, styrke, r, lag) {
+    c.save();
+    c.fillStyle = farve;
+    c.strokeStyle = farve;
+    for (var l = 0; l < (lag || 3); l++) {
+      var k = 1 - l * 0.09;
+      c.globalAlpha = styrke;
+      ujaevnEllipse(c, x + (r() - 0.5) * rx * 0.1, y + (r() - 0.5) * ry * 0.1, rx * k, ry * k, r, 0.16);
+      c.fill();
+      if (l === 0) { c.globalAlpha = styrke * 0.8; c.lineWidth = Math.max(1, rx * 0.025); c.stroke(); }
+    }
+    c.restore();
+  }
+
+  /** Et bloedt skaer uden kant: vaad maling, der flyder ud i papiret. rgb som 'r,g,b'. */
+  function skaer(c, x, y, rx, ry, rgb, styrke) {
+    c.save();
+    c.translate(x, y);
+    c.scale(1, ry / rx);
+    var g = c.createRadialGradient(0, 0, 0, 0, 0, rx);
+    g.addColorStop(0, 'rgba(' + rgb + ',' + styrke + ')');
+    g.addColorStop(0.6, 'rgba(' + rgb + ',' + (styrke * 0.45) + ')');
+    g.addColorStop(1, 'rgba(' + rgb + ',0)');
+    c.fillStyle = g;
+    c.beginPath(); c.arc(0, 0, rx, 0, Math.PI * 2); c.fill();
+    c.restore();
+  }
+
   // Papirkorn. Tegnes én gang og laegges som moenster hen over banen, saa
-  // farverne ikke staar helt flade. Ét moenster-fyld pr. billede, intet mere.
-  var korn = null, kornFyld = null;
-  function kornMoenster() {
+  // farverne ikke staar helt flade.
+  var korn = null;
+  function kornLaerred() {
     if (!korn) {
       korn = document.createElement('canvas');
       korn.width = 160; korn.height = 160;
-      var k = korn.getContext('2d');
+      var k = korn.getContext('2d'), r = tilfaeldig(7);
       for (var i = 0; i < 2600; i++) {
-        k.fillStyle = 'rgba(74,58,44,' + (0.02 + Math.random() * 0.04).toFixed(3) + ')';
-        k.fillRect(Math.random() * 160, Math.random() * 160, 1, 1);
+        k.fillStyle = 'rgba(74,58,44,' + (0.02 + r() * 0.04).toFixed(3) + ')';
+        k.fillRect(r() * 160, r() * 160, 1, 1);
+      }
+      for (i = 0; i < 900; i++) {
+        k.fillStyle = 'rgba(255,255,255,' + (0.04 + r() * 0.08).toFixed(3) + ')';
+        k.fillRect(r() * 160, r() * 160, 1, 1);
       }
     }
-    if (!kornFyld) kornFyld = ctx.createPattern(korn, 'repeat');
-    return kornFyld;
+    return korn;
   }
 
-  function tegnBaggrund() {
-    var B = window.innerWidth, H = window.innerHeight, s = visning.skala;
-    var jord = sy(0);
+  /** Solen: en varm glorie og en malet skive i lag. Samme sted og samme stoerrelse som foer. */
+  function malSol(c, x, y, R, r) {
+    var skin = c.createRadialGradient(x, y, R * 0.6, x, y, R * 2.6);
+    skin.addColorStop(0, 'rgba(255,226,160,0.55)');
+    skin.addColorStop(0.5, 'rgba(255,226,160,0.18)');
+    skin.addColorStop(1, 'rgba(255,226,160,0)');
+    c.fillStyle = skin;
+    c.beginPath(); c.arc(x, y, R * 2.6, 0, Math.PI * 2); c.fill();
+    // Ujaevne kanter: to tynde lag, der flyder lidt ud over skiven
+    plet(c, x, y, R * 1.05, R * 1.05, '#f0c46a', 0.28, r, 2);
+    // Selve skiven: lys midte, varmere mod kanten
+    c.save();
+    var g = c.createRadialGradient(x - R * 0.25, y - R * 0.25, R * 0.1, x, y, R);
+    g.addColorStop(0, '#fff1c8');
+    g.addColorStop(0.55, '#ffdf9e');
+    g.addColorStop(1, '#f0c46a');
+    c.fillStyle = g;
+    c.globalAlpha = 0.9;
+    ujaevnEllipse(c, x, y, R * 0.97, R * 0.97, r, 0.08);
+    c.fill();
+    c.clip();
+    // Pigmentet, der har samlet sig i papiret
+    c.fillStyle = '#e08a52';
+    for (var i = 0; i < 90; i++) {
+      c.globalAlpha = 0.06 + r() * 0.1;
+      c.beginPath();
+      c.arc(x + (r() - 0.5) * R * 2, y + (r() - 0.5) * R * 2, R * (0.012 + r() * 0.02), 0, Math.PI * 2);
+      c.fill();
+    }
+    c.restore();
+    plet(c, x - R * 0.3, y - R * 0.32, R * 0.4, R * 0.32, '#fff8e6', 0.25, r, 2);
+  }
 
-    var himmel = ctx.createLinearGradient(0, 0, 0, Math.max(jord, 1));
+  /** En sky: blaalige pust forneden, hvide pust ovenpaa og lidt lys paa toppen. */
+  function malSky(c, x, y, R, r) {
+    var i;
+    for (i = 0; i < 6; i++) {
+      plet(c, x + (i / 5 - 0.5) * R * 2.4 + (r() - 0.5) * R * 0.3, y + R * (0.28 + r() * 0.15),
+        R * (0.5 + r() * 0.25), R * (0.3 + r() * 0.1), '#b4cbdb', 0.4, r, 2);
+    }
+    [[0, -0.05, 1], [1.05, 0.12, 0.78], [-1.05, 0.18, 0.72], [0.42, -0.42, 0.62], [-0.42, -0.32, 0.58],
+     [1.6, 0.3, 0.45], [-1.6, 0.32, 0.42]].forEach(function (d) {
+      plet(c, x + R * d[0], y + R * d[1], R * d[2] * 1.1, R * d[2] * 0.85, '#ffffff', 0.3, r, 3);
+    });
+    plet(c, x - R * 0.25, y - R * 0.38, R * 0.7, R * 0.36, '#ffffff', 0.4, r, 2);
+  }
+
+  // Baggrunden staar stille, saa den males én gang pr. skaermstoerrelse og genbruges
+  var baggrund = { laerred: null, noegle: '' };
+
+  function tegnBaggrund() {
+    var B = window.innerWidth, H = window.innerHeight;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var noegle = B + 'x' + H + '@' + dpr + ':' + visning.skala;
+    if (baggrund.noegle !== noegle) {
+      var cv = baggrund.laerred || document.createElement('canvas');
+      cv.width = Math.max(1, Math.floor(B * dpr));
+      cv.height = Math.max(1, Math.floor(H * dpr));
+      var c = cv.getContext('2d');
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      malBaggrund(c, B, H);
+      baggrund.laerred = cv;
+      baggrund.noegle = noegle;
+    }
+    ctx.drawImage(baggrund.laerred, 0, 0, B, H);
+  }
+
+  function malBaggrund(c, B, H) {
+    var s = visning.skala;
+    var jord = sy(0);
+    var r = tilfaeldig(11);
+
+    var himmel = c.createLinearGradient(0, 0, 0, Math.max(jord, 1));
     himmel.addColorStop(0, P.himmelTop);
     himmel.addColorStop(1, P.himmelBund);
-    ctx.fillStyle = himmel;
-    ctx.fillRect(0, 0, B, H);
+    c.fillStyle = himmel;
+    c.fillRect(0, 0, B, H);
+    // Himlen er malet vaad i vaad: store, bloede skyer af blaat og lyst uden kant
+    for (var w = 0; w < 10; w++) {
+      skaer(c, r() * B, r() * jord * 0.85, (160 + r() * 220) * s, (40 + r() * 50) * s,
+        w % 3 ? '143,199,232' : '248,241,230', w % 3 ? 0.22 : 0.3);
+    }
 
-    // Sol: en bloed malet plet, samme sted og samme stoerrelse som foer
-    var solX = sx(120), solY = sy(INDSTIL.hoejde - 70), solR = 38 * s;
-    var skin = ctx.createRadialGradient(solX, solY, solR * 0.5, solX, solY, solR * 2.4);
-    skin.addColorStop(0, 'rgba(255,222,150,0.55)');
-    skin.addColorStop(1, 'rgba(255,222,150,0)');
-    ctx.fillStyle = skin;
-    ctx.beginPath(); ctx.arc(solX, solY, solR * 2.4, 0, Math.PI * 2); ctx.fill();
-    var kugle = ctx.createRadialGradient(solX - solR * 0.3, solY - solR * 0.3, solR * 0.15, solX, solY, solR);
-    kugle.addColorStop(0, '#fff4d2');
-    kugle.addColorStop(1, P.sol);
-    ctx.fillStyle = kugle;
-    ctx.beginPath(); ctx.arc(solX, solY, solR, 0, Math.PI * 2); ctx.fill();
+    // Sol: samme sted og samme stoerrelse som foer
+    malSol(c, sx(120), sy(INDSTIL.hoejde - 70), 38 * s, r);
 
-    // Skyer (faste, saa de ikke flimrer) — malede, bloede kanter
+    // Skyer, samme steder som foer
     [[300, 450, 1], [640, 500, 0.8], [850, 430, 1.1]].forEach(function (sk) {
-      var x = sx(sk[0]), y = sy(sk[1]), r = 26 * sk[2] * s;
-      ctx.save();
-      ctx.globalAlpha = 0.72;
-      ctx.fillStyle = '#ffffff';
-      [[0, 0, 1], [1.1, 0.2, 0.8], [-1.1, 0.25, 0.75], [0.4, -0.45, 0.6]].forEach(function (d) {
-        ctx.beginPath();
-        ctx.ellipse(x + r * d[0], y + r * d[1], r * d[2] * 1.15, r * d[2] * 0.8, 0, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      ctx.globalAlpha = 0.5;
-      ctx.fillStyle = '#d8e9f2';
-      ctx.beginPath();
-      ctx.ellipse(x, y + r * 0.45, r * 1.5, r * 0.32, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+      malSky(c, sx(sk[0]), sy(sk[1]), 26 * sk[2] * s, r);
     });
 
     // Bloede bakker bag banen, saa himlen ikke moeder graesset i en lige streg.
     // De ligger lavt og daempet, saa bolden og figurerne staar klart foran dem.
-    ctx.save();
+    c.save();
     [[0.16, 62, 'rgba(120,160,105,0.5)'], [0.62, 78, 'rgba(120,160,105,0.42)'], [0.92, 50, 'rgba(120,160,105,0.5)']].forEach(function (bk) {
-      ctx.fillStyle = bk[2];
-      ctx.beginPath();
-      ctx.ellipse(B * bk[0], jord + 6 * s, B * 0.3, bk[1] * s, 0, Math.PI, 0);
-      ctx.fill();
+      c.fillStyle = bk[2];
+      c.beginPath();
+      c.ellipse(B * bk[0], jord + 6 * s, B * 0.3, bk[1] * s, 0, Math.PI, 0);
+      c.fill();
     });
-    ctx.restore();
+    c.restore();
 
     // Graes under jorden og helt ned
-    var graes = ctx.createLinearGradient(0, jord, 0, H);
+    var graes = c.createLinearGradient(0, jord, 0, H);
     graes.addColorStop(0, P.graesLys);
     graes.addColorStop(1, P.graesDyb);
-    ctx.fillStyle = graes;
-    ctx.fillRect(0, jord, B, H - jord);
+    c.fillStyle = graes;
+    c.fillRect(0, jord, B, H - jord);
     // Malede pletter i graesset, saa det ikke staar helt fladt. Faste steder.
-    ctx.save();
+    c.save();
     for (var pl = 0; pl < 14; pl++) {
       var px = ((pl * 173) % 100) / 100 * B, py = jord + ((pl * 61) % 100) / 100 * (H - jord);
-      ctx.fillStyle = pl % 2 ? 'rgba(199,222,150,0.16)' : 'rgba(93,130,64,0.12)';
-      ctx.beginPath();
-      ctx.ellipse(px, py, (90 + (pl * 37) % 120) * s, (34 + (pl * 19) % 40) * s, 0, 0, Math.PI * 2);
-      ctx.fill();
+      c.fillStyle = pl % 2 ? 'rgba(199,222,150,0.16)' : 'rgba(93,130,64,0.12)';
+      c.beginPath();
+      c.ellipse(px, py, (90 + (pl * 37) % 120) * s, (34 + (pl * 19) % 40) * s, 0, 0, Math.PI * 2);
+      c.fill();
     }
-    ctx.restore();
+    c.restore();
 
-    // Bloed kant af lys graes og spredte totter. Faste vaerdier, saa de staar stille.
-    ctx.save();
-    var kant = ctx.createLinearGradient(0, jord - 9 * s, 0, jord + 14 * s);
+    // Bloed kant af lys graes og spredte totter. Faste vaerdier.
+    c.save();
+    var kant = c.createLinearGradient(0, jord - 9 * s, 0, jord + 14 * s);
     kant.addColorStop(0, 'rgba(190,214,140,0)');
     kant.addColorStop(0.45, 'rgba(190,214,140,0.85)');
     kant.addColorStop(1, 'rgba(147,188,99,0)');
-    ctx.fillStyle = kant;
-    ctx.fillRect(0, jord - 9 * s, B, 23 * s);
-    ctx.lineCap = 'round';
+    c.fillStyle = kant;
+    c.fillRect(0, jord - 9 * s, B, 23 * s);
+    c.lineCap = 'round';
     for (var n = 0; n < Math.ceil(B / (17 * s)); n++) {
       var x = (n * 17 + (n * 13) % 11) * s;
       var h = (7 + (n * 7) % 9) * s;
       var lud = (((n % 3) - 1)) * 4 * s;
-      ctx.globalAlpha = n % 2 ? 0.28 : 0.4;
-      ctx.strokeStyle = n % 2 ? P.graesLys : P.straa;
-      ctx.lineWidth = 2.4 * s;
-      ctx.beginPath();
-      ctx.moveTo(x, jord + 5 * s);
-      ctx.quadraticCurveTo(x + 2 * s, jord - h * 0.5, x + lud, jord - h);
-      ctx.stroke();
+      c.globalAlpha = n % 2 ? 0.28 : 0.4;
+      c.strokeStyle = n % 2 ? P.graesLys : P.straa;
+      c.lineWidth = 2.4 * s;
+      c.beginPath();
+      c.moveTo(x, jord + 5 * s);
+      c.quadraticCurveTo(x + 2 * s, jord - h * 0.5, x + lud, jord - h);
+      c.stroke();
     }
-    ctx.restore();
+    c.restore();
 
     // Papirkorn hen over det hele
-    ctx.save();
-    ctx.globalAlpha = 0.5;
-    ctx.fillStyle = kornMoenster();
-    ctx.fillRect(0, 0, B, H);
-    ctx.restore();
+    c.save();
+    c.globalAlpha = 0.6;
+    c.fillStyle = c.createPattern(kornLaerred(), 'repeat');
+    c.fillRect(0, 0, B, H);
+    c.restore();
 
     // Midterlinje, samme sted og samme laengde som foer
-    ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
-    ctx.lineWidth = 3 * s;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(sx(INDSTIL.bredde / 2), jord);
-    ctx.lineTo(sx(INDSTIL.bredde / 2), jord + 40 * s);
-    ctx.stroke();
-    ctx.restore();
+    c.save();
+    c.strokeStyle = 'rgba(255,255,255,0.75)';
+    c.lineWidth = 3 * s;
+    c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(sx(INDSTIL.bredde / 2), jord);
+    c.lineTo(sx(INDSTIL.bredde / 2), jord + 40 * s);
+    c.stroke();
+    c.restore();
   }
 
   function tegnMaal(side) {
@@ -482,7 +623,7 @@
     c.scale(sqx, sqy);
     if (malet) {
       var bb = R * 2.15, bh = R * 1.5;
-      c.drawImage(b, -bb / 2, R * 0.04 - bh, bb, bh);
+      c.drawImage(skyggetKrop(farve.fil, b), -bb / 2, R * 0.04 - bh, bb, bh);
     } else {
       // Oerer bag kroppen
       [-1, 1].forEach(function (d) {
@@ -510,8 +651,10 @@
       c.lineWidth = 3;
       c.stroke();
     }
-    {
-      // Skygge langs jorden, saa den staar paa banen
+    if (!malet) {
+      // Skygge langs jorden, saa den staar paa banen. Den malede krop har skyggen
+      // malet ind i sig selv (skyggetKrop), for halvcirklen er bredere forneden end
+      // billedet, og saa stod skyggen som et graat baand uden for kroppen.
       c.save();
       c.beginPath();
       c.arc(0, 0, R, Math.PI, 0);
@@ -524,13 +667,11 @@
       c.fillRect(-R, -R, R * 2, R);
       c.restore();
 
-      if (!malet) {
-        // Glans
-        c.fillStyle = 'rgba(255,255,255,0.26)';
-        c.beginPath();
-        c.ellipse(-side * R * 0.36, -R * 0.66, R * 0.2, R * 0.09, -side * 0.5, 0, Math.PI * 2);
-        c.fill();
-      }
+      // Glans
+      c.fillStyle = 'rgba(255,255,255,0.26)';
+      c.beginPath();
+      c.ellipse(-side * R * 0.36, -R * 0.66, R * 0.2, R * 0.09, -side * 0.5, 0, Math.PI * 2);
+      c.fill();
     }
     c.restore();
 
@@ -647,6 +788,35 @@
     ctx.restore();
   }
 
+  // Boldens billede skaleres ned i trin én gang pr. stoerrelse, saa den ikke flimrer
+  // i spilloekken, og skaeres til en cirkel. Billedet er 309 x 320, saa det trykkes
+  // en anelse sammen til et kvadrat; det kan ikke ses.
+  var boldBillede = new Image();
+  boldBillede.src = '../../assets/malet/bold.png';
+  var boldLaerred = null, boldStr = 0;
+  function maletBold(r) {
+    if (!boldBillede.complete || !boldBillede.naturalWidth) return null;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var D = Math.max(8, Math.ceil(r * 2 * dpr));
+    if (boldLaerred && boldStr === D) return boldLaerred;
+    var kilde = boldBillede, w = kilde.naturalWidth, h = kilde.naturalHeight;
+    while (w / 2 > D * 1.5) {
+      var trin = document.createElement('canvas');
+      w = Math.round(w / 2); h = Math.round(h / 2);
+      trin.width = w; trin.height = h;
+      trin.getContext('2d').drawImage(kilde, 0, 0, w, h);
+      kilde = trin;
+    }
+    var cv = document.createElement('canvas');
+    cv.width = D; cv.height = D;
+    var k = cv.getContext('2d');
+    k.drawImage(kilde, 0, 0, D, D);
+    k.globalCompositeOperation = 'destination-in';
+    k.beginPath(); k.arc(D / 2, D / 2, D / 2, 0, Math.PI * 2); k.fill();
+    boldLaerred = cv; boldStr = D;
+    return cv;
+  }
+
   function tegnBold() {
     var b = kamp.bold, s = visning.skala, r = b.r * s;
     hale.forEach(function (h) {
@@ -665,7 +835,20 @@
 
     ctx.translate(sx(b.x), sy(b.y));
     ctx.rotate(b.x / 40);
-    // Malet laederbold: lys foroven, varm skygge forneden
+    // Den malede bold (samme som paa forsiden), praecis saa stor som i fysikken,
+    // med en tynd blaekkant, saa den kan ses mod himlen
+    var malet = maletBold(r);
+    if (malet) {
+      ctx.drawImage(malet, -r, -r, r * 2, r * 2);
+      ctx.strokeStyle = 'rgba(94,74,58,0.85)';
+      ctx.lineWidth = 1.6 * s;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
+    // Reserve, hvis billedet ikke er hentet: malet laederbold i kode
     var maling = ctx.createRadialGradient(-r * 0.32, -r * 0.34, r * 0.08, 0, 0, r);
     maling.addColorStop(0, '#ffffff');
     maling.addColorStop(0.7, '#ffffff');
