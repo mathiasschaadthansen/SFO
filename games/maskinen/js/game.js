@@ -192,7 +192,7 @@
   /* ---------- tegning af delene ---------- */
 
   /** Farven en del har, indtil dens tegning er malet faerdig foerste gang. */
-  var GRUNDFARVE = { rampe: P.trae, trampolin: P.blaa, klods: P.trae, baand: P.sten, blaeser: P.blaaM, vippe: P.trae, kanon: P.stenDyb, tragt: P.sten };
+  var GRUNDFARVE = { rampe: P.trae, trampolin: P.blaa, klods: P.trae, baand: P.sten, blaeser: P.trae, vippe: P.trae, kanon: P.stenDyb, tragt: P.sten };
   function reserve(c, b, h, farve) {
     c.fillStyle = farve;
     c.beginPath(); c.roundRect(-b / 2, -h / 2, b, h, Math.min(b, h) * 0.3); c.fill();
@@ -383,8 +383,18 @@
       var mg = c.createRadialGradient(mx, my, mr, mx, my, mr * 4);
       mg.addColorStop(0, 'rgba(255,240,200,.35)'); mg.addColorStop(1, 'rgba(255,240,200,0)');
       c.fillStyle = mg; c.fillRect(mx - mr * 4, my - mr * 4, mr * 8, mr * 8);
-      c.fillStyle = '#fbf0c8'; c.beginPath(); c.arc(mx, my, mr, 0, TAU); c.fill();
-      c.fillStyle = T.himmel[0]; c.beginPath(); c.arc(mx - mr * 0.45, my - mr * 0.2, mr * 0.8, 0, TAU); c.fill();
+      // En rigtig maanesegl: maanen minus en skive, saa himlen ses gennem den
+      // (evenodd inden for maanens cirkel, ikke en moerk skive ovenpaa)
+      c.save();
+      c.beginPath(); c.arc(mx, my, mr, 0, TAU); c.clip();
+      c.beginPath();
+      c.rect(mx - mr * 2, my - mr * 2, mr * 4, mr * 4);
+      c.moveTo(mx - mr * 0.45 + mr * 0.8, my - mr * 0.2);
+      c.arc(mx - mr * 0.45, my - mr * 0.2, mr * 0.8, 0, TAU);
+      var sg = c.createLinearGradient(mx - mr, my - mr, mx + mr, my + mr);
+      sg.addColorStop(0, '#fdf6dc'); sg.addColorStop(1, '#efdca6');
+      c.fillStyle = sg; c.fill('evenodd');
+      c.restore();
     }
     if (T.skyer) {
       c.fillStyle = 'rgba(255,255,255,.55)';

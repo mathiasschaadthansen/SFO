@@ -59,6 +59,13 @@
     billeder[o.fil] = img;
   });
   var pelle = new Image(); pelle.src = '../../assets/malet/pindsvin.png';
+  // Lygten og svampen er Noeddeskovens malede billeder. Hulen tegnes én gang,
+  // saa den tegnes forfra, naar et af dem er hentet.
+  var lygte = new Image(), svamp = new Image();
+  [lygte, svamp].forEach(function (img) { img.onload = function () { bag = null; }; });
+  lygte.src = '../maskinen/billeder/lygte.png';
+  svamp.src = '../maskinen/billeder/svamp.png';
+  function klar(img) { return img.complete && img.naturalWidth > 0; }
 
   /* ---------- lyd og stemme (som i Bogstavvejen) ---------- */
 
@@ -187,16 +194,35 @@
       var x = B * a, h = 40 + i * 10;
       c.beginPath(); c.moveTo(x - 20, 24); c.quadraticCurveTo(x, 30, x + 4, 24 + h); c.quadraticCurveTo(x + 6, 30, x + 22, 24); c.closePath(); c.fill();
     });
-    // Lygter i palettens farver, med et bloedt lys om sig
+    // Lygter i palettens farver: det malede billede med et bloedt lys om sig
     [[B * 0.08, H * 0.45, '#f0c46a'], [B * 0.92, H * 0.4, '#9b7bd4'], [B * 0.9, H * 0.8, '#8fc7e8']].forEach(function (l) {
       var lg = c.createRadialGradient(l[0], l[1], 4, l[0], l[1], 90);
       lg.addColorStop(0, l[2] + 'aa'); lg.addColorStop(1, l[2] + '00');
       c.fillStyle = lg; c.fillRect(l[0] - 90, l[1] - 90, 180, 180);
-      c.strokeStyle = KANT; c.lineWidth = 3; c.beginPath(); c.moveTo(l[0], l[1] - 34); c.lineTo(l[0], l[1] - 20); c.stroke();
-      c.fillStyle = l[2]; c.beginPath(); c.roundRect(l[0] - 13, l[1] - 20, 26, 30, 8); c.fill(); c.stroke();
+      if (klar(lygte)) {
+        var lh = Math.min(76, H * 0.095), lb = lh * lygte.naturalWidth / lygte.naturalHeight, top = l[1] - lh * 0.56;
+        c.strokeStyle = KANT; c.lineWidth = 2.5; c.lineCap = 'round';
+        c.beginPath(); c.moveTo(l[0], top - 18); c.lineTo(l[0], top + 4); c.stroke();
+        c.drawImage(lygte, l[0] - lb / 2, top, lb, lh);
+        // Glasset lyser i lygtens egen farve
+        var gl = c.createRadialGradient(l[0], l[1], 1, l[0], l[1], 16);
+        gl.addColorStop(0, 'rgba(255,250,228,.75)'); gl.addColorStop(0.5, l[2] + '66'); gl.addColorStop(1, l[2] + '00');
+        c.fillStyle = gl; c.fillRect(l[0] - 16, l[1] - 16, 32, 32);
+      } else {
+        c.strokeStyle = KANT; c.lineWidth = 3; c.beginPath(); c.moveTo(l[0], l[1] - 34); c.lineTo(l[0], l[1] - 20); c.stroke();
+        c.fillStyle = l[2]; c.beginPath(); c.roundRect(l[0] - 13, l[1] - 20, 26, 30, 8); c.fill(); c.stroke();
+      }
     });
-    // Smaa svampe paa gulvet
-    [[B * 0.2, H - 46, '#d95f45'], [B * 0.24, H - 40, '#e08a52'], [B * 0.66, H - 44, '#d95f45']].forEach(function (s) {
+    // Smaa svampe paa gulvet, malede som i Noeddeskoven. s[1] er hattens underkant.
+    [[B * 0.2, H - 46, '#d95f45', 34, 1], [B * 0.24, H - 40, '#e08a52', 26, -1], [B * 0.66, H - 44, '#d95f45', 31, 1]].forEach(function (s) {
+      if (klar(svamp)) {
+        var sb = s[3], sh = sb * svamp.naturalHeight / svamp.naturalWidth, fod = s[1] + 16;
+        c.fillStyle = 'rgba(94,74,58,.22)'; c.beginPath(); c.ellipse(s[0], fod, sb * 0.42, 3.5, 0, 0, Math.PI * 2); c.fill();
+        c.save(); c.translate(s[0], fod); c.scale(s[4], 1);
+        c.drawImage(svamp, -sb / 2, -sh, sb, sh);
+        c.restore();
+        return;
+      }
       c.fillStyle = PAPIR; c.beginPath(); c.roundRect(s[0] - 5, s[1], 10, 16, 4); c.fill();
       c.fillStyle = s[2]; c.beginPath(); c.arc(s[0], s[1], 14, Math.PI, 0); c.fill(); c.strokeStyle = KANT; c.lineWidth = 2.5; c.stroke();
       c.fillStyle = PAPIR; c.beginPath(); c.arc(s[0] - 5, s[1] - 6, 2.5, 0, 7); c.arc(s[0] + 4, s[1] - 4, 2, 0, 7); c.fill();
@@ -502,11 +528,81 @@
       // Trommen: den store trykflade. Den dukker, naar der slaas.
       var squash = st.tryk > 0 ? 1 - st.tryk * 0.5 : 1, ty = t.y + (1 - squash) * t.rh;
       ctx.fillStyle = 'rgba(94,74,58,.2)'; ctx.beginPath(); ctx.ellipse(t.x, t.y + t.rh * 1.9, t.rb * 1.05, t.rh * 0.6, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = farve; ctx.strokeStyle = KANT; ctx.lineWidth = 4;
-      ctx.beginPath(); ctx.ellipse(t.x, t.y + t.rh * 1.5, t.rb, t.rh, 0, 0, Math.PI); ctx.lineTo(t.x - t.rb, ty); ctx.ellipse(t.x, ty, t.rb, t.rh, 0, Math.PI, 0, true); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#fdf3d9'; ctx.beginPath(); ctx.ellipse(t.x, ty, t.rb, t.rh, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.strokeStyle = 'rgba(94,74,58,.35)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(t.x, ty, t.rb * 0.55, t.rh * 0.55, 0, 0, Math.PI * 2); ctx.stroke();
+      tegnTromme(ctx, t.x, ty, t.y + t.rh * 1.5, t.rb, t.rh, farve, 4);
     });
+  }
+
+  /** Lys eller moerk udgave af en #rrggbb-farve: k > 0 mod hvid, k < 0 mod blaek. */
+  function nuance(hex, k) {
+    var mod = k > 0 ? [255, 250, 240] : [74, 56, 42], a = Math.abs(k);
+    return 'rgb(' + [1, 3, 5].map(function (i) { var v = parseInt(hex.slice(i, i + 2), 16); return Math.round(v + (mod[(i - 1) / 2] - v) * a); }).join(',') + ')';
+  }
+
+  /**
+   * Trommen: en krop af trae i spillerens farve med aarer, en snoet snoer i
+   * zigzag mellem de to baand og et skind med skygge. top er skindets midte,
+   * bund er bundens midte; formen er den samme, som trykfladen regnes ud fra.
+   */
+  function tegnTromme(c, x, top, bund, rb, rh, farve, lw) {
+    var PI = Math.PI;
+    function krop() { c.beginPath(); c.ellipse(x, bund, rb, rh, 0, 0, PI); c.lineTo(x - rb, top); c.ellipse(x, top, rb, rh, 0, PI, 0, true); c.closePath(); }
+    c.save();
+    c.lineJoin = 'round'; c.lineCap = 'round';
+    // Kroppen: rund skygge fra siderne mod midten, saa den ser ud som en cylinder
+    var kg = c.createLinearGradient(x - rb, 0, x + rb, 0);
+    kg.addColorStop(0, nuance(farve, -0.32)); kg.addColorStop(0.36, nuance(farve, 0.16));
+    kg.addColorStop(0.62, farve); kg.addColorStop(1, nuance(farve, -0.38));
+    krop(); c.fillStyle = kg; c.fill();
+    c.save(); krop(); c.clip();
+    // Traeets aarer: bloede, lodrette buer, der foelger rundingen
+    c.strokeStyle = nuance(farve, -0.5); c.globalAlpha = 0.3; c.lineWidth = Math.max(1, lw * 0.4);
+    for (var i = 1; i < 14; i++) {
+      var v = PI - i / 14 * PI, ax = x + Math.cos(v) * rb, kurve = Math.sin(i * 2.3) * rb * 0.03;
+      c.beginPath(); c.moveTo(ax, top + Math.sin(v) * rh);
+      c.bezierCurveTo(ax + kurve, top + (bund - top) * 0.35 + Math.sin(v) * rh, ax - kurve, top + (bund - top) * 0.7 + Math.sin(v) * rh, ax + kurve * 0.5, bund + Math.sin(v) * rh);
+      c.stroke();
+    }
+    // Et par knaster i traeet
+    c.globalAlpha = 0.18; c.lineWidth = Math.max(1, lw * 0.35);
+    [[-0.55, 0.55], [0.4, 0.4]].forEach(function (k) {
+      c.beginPath(); c.ellipse(x + rb * k[0], top + (bund - top) * k[1] + rh * 0.8, rb * 0.05, rh * 0.18, 0, 0, PI * 2); c.stroke();
+    });
+    c.globalAlpha = 1;
+    // Baandene foroven og forneden
+    var bb = Math.max(4, (bund - top) * 0.16);
+    [[top, 1], [bund - bb, -1]].forEach(function (b) {
+      c.beginPath(); c.ellipse(x, b[0] + bb, rb, rh, 0, 0, PI); c.lineTo(x - rb, b[0]); c.ellipse(x, b[0], rb, rh, 0, PI, 0, true); c.closePath();
+      c.fillStyle = nuance(farve, -0.28); c.fill();
+      c.strokeStyle = 'rgba(255,250,240,.35)'; c.lineWidth = Math.max(1, lw * 0.4);
+      c.beginPath(); c.ellipse(x, b[0] + bb * 0.3, rb, rh, 0, 0.12, PI - 0.12); c.stroke();
+    });
+    // Snoeren i zigzag mellem baandene
+    var tak = 9, sti = [];
+    for (var n = 0; n <= tak * 2; n++) {
+      var a = 0.08 + n / (tak * 2) * (PI - 0.16), ned = n % 2 === 1;
+      sti.push([x + Math.cos(a) * rb * 0.995, (ned ? bund - bb * 0.55 : top + bb * 0.55) + Math.sin(a) * rh]);
+    }
+    c.beginPath(); sti.forEach(function (p, k) { if (k) c.lineTo(p[0], p[1]); else c.moveTo(p[0], p[1]); });
+    c.strokeStyle = KANT; c.lineWidth = Math.max(2.5, lw * 1.25); c.stroke();
+    c.strokeStyle = '#f8f1e6'; c.lineWidth = Math.max(1.4, lw * 0.6); c.stroke();
+    c.fillStyle = KANT;
+    sti.forEach(function (p) { c.beginPath(); c.arc(p[0], p[1], Math.max(1.5, lw * 0.55), 0, PI * 2); c.fill(); });
+    c.restore();
+    krop(); c.strokeStyle = KANT; c.lineWidth = lw; c.stroke();
+    // Skindet: lyst i midten, skygge ind mod kanten og et lys oppe til venstre
+    var sg = c.createRadialGradient(x - rb * 0.18, top - rh * 0.25, rb * 0.05, x, top, rb);
+    sg.addColorStop(0, '#fffaf0'); sg.addColorStop(0.6, '#f8ecd2'); sg.addColorStop(1, '#e5d3ae');
+    c.fillStyle = sg; c.beginPath(); c.ellipse(x, top, rb, rh, 0, 0, PI * 2); c.fill();
+    c.save(); c.beginPath(); c.ellipse(x, top, rb, rh, 0, 0, PI * 2); c.clip();
+    c.strokeStyle = 'rgba(177,138,86,.35)'; c.lineWidth = Math.max(2, rh * 0.16);
+    c.beginPath(); c.ellipse(x, top + rh * 0.06, rb * 0.97, rh * 0.94, 0, 0, PI * 2); c.stroke();
+    c.restore();
+    c.beginPath(); c.ellipse(x, top, rb, rh, 0, 0, PI * 2); c.strokeStyle = KANT; c.lineWidth = lw; c.stroke();
+    // Midten af skindet, hvor man slaar
+    c.strokeStyle = 'rgba(94,74,58,.3)'; c.lineWidth = Math.max(1.5, lw * 0.7);
+    c.beginPath(); c.ellipse(x, top, rb * 0.55, rh * 0.55, 0, 0, PI * 2); c.stroke();
+    c.fillStyle = 'rgba(177,138,86,.12)'; c.fill();
+    c.restore();
   }
 
   /* ---------- slut, menu ---------- */
@@ -544,8 +640,7 @@
       c.beginPath(); c.arc(w / 2, h / 2, 10, Math.PI - 0.8, Math.PI + 0.8); c.stroke();
     } else {
       var x = w / 2, ty = h * 0.62, rb = 62, rh = 22;
-      c.fillStyle = '#d95f45'; c.beginPath(); c.ellipse(x, ty + 30, rb, rh, 0, 0, Math.PI); c.lineTo(x - rb, ty); c.ellipse(x, ty, rb, rh, 0, Math.PI, 0, true); c.closePath(); c.fill(); c.stroke();
-      c.fillStyle = '#fdf3d9'; c.beginPath(); c.ellipse(x, ty, rb, rh, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+      tegnTromme(c, x, ty, ty + 30, rb, rh, '#d95f45', 4);
       [-1, 0, 1].forEach(function (d, i) { c.fillStyle = i < 2 ? GUL : 'rgba(248,241,230,.9)'; c.beginPath(); c.arc(x + d * 40, 34, 13, 0, Math.PI * 2); c.fill(); c.stroke(); });
     }
   }
