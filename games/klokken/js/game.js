@@ -88,7 +88,8 @@
   var ALLE = ['mus', 'jord', 'sol', 'maane'].concat(U.DAGEN.map(function (d) { return d.kort; })).map(function (n) { return STI + n + '.svg'; });
   Sprites.forhent(ALLE);
   var RAKET = '../../assets/kenney/raket.png';
-  Sprites.forhent([RAKET]);
+  var MILO = 'billeder/milo.png';         // den malede Milo fra bogen; mangler den, tegnes musen i kode
+  Sprites.forhent([RAKET, MILO]);
   function billede(navn) { return Sprites.hent(navn === 'raket' ? RAKET : STI + navn + '.svg'); }
   function tegnBillede(navn, x, y, str, vinkel, c) {
     c = c || ctx;
@@ -404,12 +405,21 @@
     fg.addColorStop(0, '#ffffff'); fg.addColorStop(1, '#eeeae0');
     c.fillStyle = fg; c.beginPath(); c.arc(cx, cy, r, 0, TAU); c.fill();
     c.lineWidth = Math.max(2, r * 0.028); c.strokeStyle = MOERK; c.stroke();
-    // Smaa maerker for minutterne, stoerre paa hver time
-    c.lineCap = 'round';
+    // Glassets lysstribe ligger under tallene, saa de staar lige moerke hele vejen rundt
+    c.save();
+    c.beginPath(); c.arc(cx, cy, r, 0, TAU); c.clip();
+    var sg = c.createLinearGradient(cx - r, cy - r, cx + r * 0.2, cy + r * 0.4);
+    sg.addColorStop(0, 'rgba(255,255,255,.5)'); sg.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = sg; c.beginPath(); c.ellipse(cx - r * 0.25, cy - r * 0.35, r * 0.78, r * 0.55, -0.5, 0, TAU); c.fill();
+    c.restore();
+    // Smaa maerker for minutterne, stoerre paa hver time. De sidder helt ude ved
+    // kanten, saa de ender uden for tallene (ogsaa de brede, 10 og 11).
     for (var m = 0; m < 60; m++) {
-      var v = m / 60 * TAU, ydre = spids(cx, cy, v, r * 0.94), indre = spids(cx, cy, v, r * (m % 5 ? 0.9 : 0.85));
-      c.strokeStyle = m % 5 ? 'rgba(94,74,58,.3)' : MOERK;
-      c.lineWidth = m % 5 ? Math.max(1, r * 0.012) : Math.max(2, r * 0.032);
+      var time = m % 5 === 0, v = m / 60 * TAU;
+      var ydre = spids(cx, cy, v, r * (time ? 0.99 : 0.972)), indre = spids(cx, cy, v, r * (time ? 0.94 : 0.95));
+      c.lineCap = time ? 'butt' : 'round';
+      c.strokeStyle = time ? MOERK : 'rgba(94,74,58,.3)';
+      c.lineWidth = time ? Math.max(2, r * 0.032) : Math.max(1, r * 0.012);
       c.beginPath(); c.moveTo(ydre.x, ydre.y); c.lineTo(indre.x, indre.y); c.stroke();
     }
     // Tallene
@@ -423,13 +433,6 @@
       }
       c.fillStyle = MOERK; c.fillText(String(h), pos.x, pos.y + r * 0.008);
     }
-    // Glassets lysstribe
-    c.save();
-    c.beginPath(); c.arc(cx, cy, r, 0, TAU); c.clip();
-    var sg = c.createLinearGradient(cx - r, cy - r, cx + r * 0.2, cy + r * 0.4);
-    sg.addColorStop(0, 'rgba(255,255,255,.5)'); sg.addColorStop(1, 'rgba(255,255,255,0)');
-    c.fillStyle = sg; c.beginPath(); c.ellipse(cx - r * 0.25, cy - r * 0.35, r * 0.78, r * 0.55, -0.5, 0, TAU); c.fill();
-    c.restore();
     urCache[noegle] = { cv: cv, str: str };
     return urCache[noegle];
   }
@@ -520,6 +523,8 @@
     c.fillStyle = g; c.beginPath(); c.arc(cx, cy, pr, 0, TAU); c.fill();
 
     c.save(); c.beginPath(); c.arc(cx, cy, pr, 0, TAU); c.clip();
+    var tilf = fastTilfaelde(nr * 97 + 13);
+    akvarelPletter(c, cx, cy, pr, farve, tilf);
     if (slags === 'striber') {
       c.fillStyle = 'rgba(255,255,255,.2)';
       [-0.6, -0.1, 0.42, 0.78].forEach(function (y, k) {
@@ -541,10 +546,15 @@
         c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = pr * 0.02; c.stroke();
       });
     }
+    akvarelKorn(c, cx, cy, pr, farve, tilf);
     // Skygge langs randen, saa kuglen ser rund ud
     var skygge = c.createRadialGradient(cx - pr * 0.3, cy - pr * 0.35, pr * 0.4, cx, cy, pr);
     skygge.addColorStop(0, 'rgba(0,0,0,0)'); skygge.addColorStop(1, 'rgba(6,10,30,.45)');
     c.fillStyle = skygge; c.fillRect(cx - pr, cy - pr, pr * 2, pr * 2);
+    // Farven samler sig ved kanten, som naar akvarel toerrer
+    c.strokeStyle = moerkere(farve, 0.25); c.globalAlpha = 0.35; c.lineWidth = pr * 0.06;
+    c.beginPath(); c.arc(cx, cy, pr * 0.975, 0, TAU); c.stroke();
+    c.globalAlpha = 1;
     c.restore();
 
     c.lineWidth = Math.max(3, pr * 0.028); c.strokeStyle = MOERK;
@@ -557,6 +567,49 @@
     }
     planetCache[noegle] = { cv: cv, str: str };
     return planetCache[noegle];
+  }
+  /** Et lille, fast tilfaelde, saa hver planet faar de samme pletter hver gang. */
+  function fastTilfaelde(n) {
+    var t = (n * 2654435761) % 4294967296;
+    return function () { t = (t * 1664525 + 1013904223) % 4294967296; return t / 4294967296; };
+  }
+  /** En uregelmaessig klat: en rund form med bugtet kant, som en draabe farve paa vaadt papir. */
+  function klat(c, x, y, r, tilf) {
+    var f1 = tilf() * TAU, f2 = tilf() * TAU, f3 = tilf() * TAU, n = 18, pkt = [];
+    for (var i = 0; i < n; i++) {
+      var a = i / n * TAU, rr0 = r * (1 + 0.14 * Math.sin(3 * a + f1) + 0.08 * Math.sin(5 * a + f2) + 0.05 * Math.sin(9 * a + f3));
+      pkt.push([x + Math.cos(a) * rr0, y + Math.sin(a) * rr0]);
+    }
+    c.beginPath();
+    c.moveTo((pkt[0][0] + pkt[n - 1][0]) / 2, (pkt[0][1] + pkt[n - 1][1]) / 2);
+    for (var k = 0; k < n; k++) {
+      var p = pkt[k], q = pkt[(k + 1) % n];
+      c.quadraticCurveTo(p[0], p[1], (p[0] + q[0]) / 2, (p[1] + q[1]) / 2);
+    }
+    c.closePath();
+  }
+  /** Akvarellens bloede pletter: lysere og moerkere skyer af farve med en svag, toer rand. */
+  function akvarelPletter(c, cx, cy, pr, farve, tilf) {
+    for (var i = 0; i < 10; i++) {
+      var v = tilf() * TAU, af = Math.sqrt(tilf()) * pr * 0.85;
+      var x = cx + Math.cos(v) * af, y = cy + Math.sin(v) * af, rr0 = pr * (0.18 + tilf() * 0.3);
+      var lys = i % 3 !== 0, kerne = lys ? lysere(farve, 0.32) : moerkere(farve, 0.28);
+      var g = c.createRadialGradient(x, y, 0, x, y, rr0 * 1.2);
+      g.addColorStop(0, kerne); g.addColorStop(1, lys ? lysere(farve, 0.1) : farve);
+      klat(c, x, y, rr0, tilf);
+      c.globalAlpha = lys ? 0.36 : 0.3; c.fillStyle = g; c.fill();
+      c.globalAlpha = 0.16; c.strokeStyle = moerkere(farve, 0.4); c.lineWidth = Math.max(1, pr * 0.01); c.stroke();
+    }
+    c.globalAlpha = 1;
+  }
+  /** Papirets korn: mange smaa prikker, mest moerke. Tegnes kun én gang ind i planetens billede. */
+  function akvarelKorn(c, cx, cy, pr, farve, tilf) {
+    var n = Math.min(2200, Math.round(pr * pr * 0.07));
+    for (var i = 0; i < n; i++) {
+      var v = tilf() * TAU, af = Math.sqrt(tilf()) * pr, s = Math.max(0.5, pr * (0.003 + tilf() * 0.006));
+      c.fillStyle = tilf() < 0.3 ? 'rgba(255,250,240,.16)' : 'rgba(70,45,30,.12)';
+      c.fillRect(cx + Math.cos(v) * af, cy + Math.sin(v) * af, s, s);
+    }
   }
   function tegnPlanet(c, cx, cy, r, nr, skala, farve) {
     skala = skala === undefined ? 1 : skala;
@@ -637,8 +690,9 @@
   /* ---------- rummusen ---------- */
 
   /**
-   * Rummusen som hel astronaut: rygsaek, dragt, arme, stoevler og glashjelm med
-   * Noto-musen indeni. peg er en vinkel, armen skal pege i (mod uret, naar musen
+   * Rummusen Milo: det malede billede fra bogen (billeder/milo.png). Mangler det,
+   * tegnes han i kode som hel astronaut: rygsaek, dragt, arme, stoevler og
+   * glashjelm med Noto-musen indeni. peg er en vinkel, armen skal pege i (mod uret, naar musen
    * hjaelper); ellers svaever armene.
    */
   function tegnMus(c, x, y, str, valg) {
@@ -648,6 +702,22 @@
     c.translate(x, y - hop + sv);
     c.lineJoin = 'round'; c.lineCap = 'round';
     var lw = Math.max(2.5, str * 0.045), hjelm = str * 0.34;
+    var milo = Sprites.hent(MILO);
+    if (Sprites.klar(milo)) {
+      c.drawImage(milo, -str * 0.68, -str * 0.62, str * 1.36, str * 1.36);
+      if (valg.peg !== undefined) {
+        // Armen, der peger, naar musen hjaelper: dragtens farve og en graa pote
+        var px = Math.cos(valg.peg) * str * 0.55, py = Math.sin(valg.peg) * str * 0.55;
+        c.strokeStyle = MOERK; c.lineWidth = str * 0.14;
+        c.beginPath(); c.moveTo(0, 0); c.lineTo(px, py); c.stroke();
+        c.strokeStyle = '#eceae3'; c.lineWidth = str * 0.1;
+        c.beginPath(); c.moveTo(0, 0); c.lineTo(px, py); c.stroke();
+        c.fillStyle = '#a19a94'; c.beginPath(); c.arc(px, py, str * 0.075, 0, TAU); c.fill();
+        c.strokeStyle = MOERK; c.lineWidth = lw * 0.8; c.stroke();
+      }
+      c.restore();
+      return;
+    }
     // Rygsaek
     rr(c, -str * 0.3, -str * 0.02, str * 0.6, str * 0.42, str * 0.14, '#c3c6c0', MOERK, lw);
     rr(c, -str * 0.12, str * 0.04, str * 0.24, str * 0.12, str * 0.05, '#9a9c96', MOERK, lw * 0.7);

@@ -112,8 +112,7 @@ test/tegn.test.js       alle figurer kan tegnes, og puslespillet kan samles på 
 games/rim/
   js/rim.js             ordene, rimgrupperne, stavelserne og reglerne — ingen DOM
   js/game.js            hulen, rim-legen, klap-legen, menu, stemme
-  ting/*.svg            otte ekstra rimord, Noto Emoji (Apache 2.0, se ting/NOTICE.md)
-  billeder/*.png        bjørn, kanin og salat, malede og kvadratiske (se billeder/NOTICE.md)
+  billeder/*.png        de elleve ekstra rimord, malede og kvadratiske (se billeder/NOTICE.md)
   lyd/*.mp3             de ekstra ord og hulens fire sætninger; resten er Bogstavvejens klip
 test/rim.test.js        en robot spiller rim og klapper alle ord på alle tre stjerner
 games/find/
@@ -149,6 +148,7 @@ bog/
   js/scener.js          billedet til hvert opslag, tegnet i kode med spillenes malede figurer
   js/game.js            forsiden, bladring, oplæsning og find-nøglen; print kun til PDF-værktøjet
   billeder/skade.png    Skaden Sanne, bogens eget billede (se billeder/NOTICE.md)
+  billeder/skade-flyver.png  Sanne, der flyver med et brev, til Himmelvejens menu
   billeder/opslag/*.jpg de ti malede opslag og forsiden fra Gemini, 600 x 780 (se NOTICE.md dér)
   udkast/*.png          skærmklip af Gemini-udkastet, kun til at sammenligne med; ikke i appen
   lyd/*.mp3             oplæsningen, ét klip pr. opslag (se lyd/NOTICE.md)
@@ -492,7 +492,8 @@ så hver bestilling kan få sit eget stemmeklip: `lyd/bestil_<id>.mp3`, plus
 Rummusen lærer, hvordan uret virker. Spillet ligger i `games/klokken/` og har
 tre lege, som vælges med billedfliser øverst i menuen. Tider, låsning af
 viserne, opgaver og dagens gøremål ligger i `js/ur.js`, som testes i Node
-(`test/klokken.test.js`). `js/game.js` er kun skærm og lyd.
+(`test/klokken.test.js`). `js/game.js` er kun skærm og lyd. Rummusen er
+Milo fra bogen, malet i `billeder/milo.png` (se `billeder/NOTICE.md`).
 
 **Uret.** Begge visere er der altid: klokken 3 er den røde timeviser på 3 og
 den blå minutviser på 12. De hænger sammen som på et rigtigt ur, så trækker

@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v109';
+const VERSION = 'sfo-spil-v111';
 
 const FILER = [
   './',
@@ -26,6 +26,7 @@ const FILER = [
   'bog/js/scener.js',
   'bog/js/game.js',
   'bog/billeder/skade.png',
+  'bog/billeder/skade-flyver.png',
   'bog/billeder/NOTICE.md',
   'bog/billeder/opslag/noeddeskoven.jpg',
   'bog/billeder/opslag/susebanen.jpg',
@@ -319,17 +320,17 @@ const FILER = [
   'games/rim/index.html',
   'games/rim/js/rim.js',
   'games/rim/js/game.js',
-  'games/rim/ting/bog.svg',
-  'games/rim/ting/maal.svg',
-  'games/rim/ting/mund.svg',
-  'games/rim/ting/mur.svg',
-  'games/rim/ting/pil.svg',
-  'games/rim/ting/sky.svg',
-  'games/rim/ting/stol.svg',
-  'games/rim/ting/vand.svg',
   'games/rim/billeder/bjoern.png',
   'games/rim/billeder/kanin.png',
   'games/rim/billeder/salat.png',
+  'games/rim/billeder/bog.png',
+  'games/rim/billeder/maal.png',
+  'games/rim/billeder/mund.png',
+  'games/rim/billeder/mur.png',
+  'games/rim/billeder/pil.png',
+  'games/rim/billeder/sky.png',
+  'games/rim/billeder/stol.png',
+  'games/rim/billeder/vand.png',
   'games/rim/lyd/klip.json',
   'games/rim/lyd/hvad_rimer_det.mp3',
   'games/rim/lyd/klap_det.mp3',
@@ -619,6 +620,7 @@ const FILER = [
   'games/klokken/index.html',
   'games/klokken/js/ur.js',
   'games/klokken/js/game.js',
+  'games/klokken/billeder/milo.png',
   'games/klokken/lyd/klip.json',
   'games/klokken/lyd/drej_aftensmad.mp3',
   'games/klokken/lyd/drej_bad.mp3',
@@ -673,6 +675,7 @@ const FILER = [
   'games/restaurant/index.html',
   'games/restaurant/js/koekken.js',
   'games/restaurant/js/game.js',
+  'games/restaurant/billeder/ko.png',
   'games/restaurant/billeder/abe.png',
   'games/restaurant/billeder/agurk.png',
   'games/restaurant/billeder/ananas.png',

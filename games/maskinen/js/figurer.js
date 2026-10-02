@@ -366,10 +366,15 @@ var Figurer = (function () {
 
     /* Blaeserens hus. Vingen tegnes for sig, saa den kan dreje rundt. */
     blaeserhus: function (b, h) {
+      var m = Math.min(b, h), cx = tal(b / 2), cy = tal(h / 2);
+      // En kasse af trae med en salviegroen ring om vingen, som de andre dele
       return doc(b, h,
-        klods(1, 1, b - 2, h - 2, Math.min(b, h) * 0.26, 'g', P.stenDyb) +
-        '<circle cx="' + tal(b / 2) + '" cy="' + tal(h / 2) + '" r="' + tal(Math.min(b, h) * 0.34) + '" fill="' + P.stenDyb + '" opacity="0.22"/>',
-        forløb('g', P.blaaLys, P.blaaM));
+        traestykke(1, 1, b - 2, h - 2, m * 0.26, 'g') +
+        '<circle cx="' + cx + '" cy="' + cy + '" r="' + tal(m * 0.4) + '" fill="url(#r)"/>' +
+        '<circle cx="' + cx + '" cy="' + cy + '" r="' + tal(m * 0.4) + '" fill="none" stroke="' + P.salvieDyb + '" stroke-width="' + tal(Math.max(1, m * 0.035)) + '" opacity="0.55"/>' +
+        '<circle cx="' + cx + '" cy="' + cy + '" r="' + tal(m * 0.32) + '" fill="' + P.salvieDyb + '" opacity="0.35"/>' +
+        '<path d="M' + tal(b / 2 - m * 0.3) + ' ' + tal(h / 2 - m * 0.2) + 'A' + tal(m * 0.36) + ' ' + tal(m * 0.36) + ' 0 0 1 ' + tal(b / 2 + m * 0.2) + ' ' + tal(h / 2 - m * 0.3) + '" fill="none" stroke="' + P.salvieLys + '" stroke-width="' + tal(Math.max(1, m * 0.03)) + '" stroke-linecap="round" opacity="0.7"/>',
+        forløb('g', P.traeLys, P.trae) + stråle('r', P.salvie, P.salvieM));
     },
     blaeservinge: function (b, h) {
       var cx = b / 2, cy = h / 2, r = Math.min(b, h) * 0.44, v = '';

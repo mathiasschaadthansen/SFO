@@ -22,7 +22,14 @@ og gemt som 8-bit PNG med palet. Kvadratet er ikke pynt: `tegnBillede` i
 `game.js` tegner hvert billede som `drawImage(img, -str/2, -str/2, str, str)`,
 saa et billede der ikke er kvadratisk, bliver trukket skaevt.
 
-Klokken, hjertet, koen, maelken og bien er stadig Noto Emoji og ligger i
-`assets/noto/`.
+`ko.png` er malet den 2. oktober 2026 med Googles billedmodel Gemini
+(`gemini-3.1-flash-image`), med grisen og kaninen som forlaeg, saa koen er
+malet med samme runde hovedform, rosa kinder og penselstrog som gaesterne.
+Googles vilkaar for Gemini API giver brugeren retten til det, der laves.
+Efterbehandlingen er den samme som ovenfor.
+
+Klokken er Noeddeskovens malede messingklokke (`../../maskinen/billeder/klokke.png`),
+tegnet i sine egne proportioner. Hjertet, maelken og bien er stadig Noto Emoji
+og ligger i `assets/noto/` (klokken ogsaa, som reserve).
 
 Nye billeder skal med i `FILER` i `sw.js`.

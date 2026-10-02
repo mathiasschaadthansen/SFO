@@ -126,17 +126,92 @@
     for (var i = 1; i < punkter.length; i++) c.lineTo(punkter[i][0], punkter[i][1]);
   }
 
+  /* ---- akvarel: farven lagt som vand paa papir, med korn og en bloed kant ---- */
+  var BLAEK = '#6b5545';
+  function rgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+  /** Farven h, moerkere (k < 1) eller lysere (k > 1, blandet med hvid), med alfa a. */
+  function farvetone(h, k, a) {
+    var r = rgb(h).map(function (v) { return Math.round(k <= 1 ? v * k : v + (255 - v) * (k - 1)); });
+    return 'rgba(' + r[0] + ',' + r[1] + ',' + r[2] + ',' + (a === undefined ? 1 : a) + ')';
+  }
+  /** Pigmentets korn: et lille laerred med prikker og fnug, lavet én gang og lagt som moenster. */
+  var korn = null;
+  function kornLaerred() {
+    if (korn) return korn;
+    korn = document.createElement('canvas'); korn.width = korn.height = 128;
+    var k = korn.getContext('2d'), s = 9;
+    function r() { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; }
+    function prik(x, y, st, farve, bloed) {
+      if (bloed) {
+        // en bloed plet: fuld farve i midten, intet i kanten
+        var g = k.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, farve); g.addColorStop(1, farve.replace(/[\d.]+\)$/, '0)'));
+        [-128, 0, 128].forEach(function (dx) { [-128, 0, 128].forEach(function (dy) {
+          if (x + dx > -st && x + dx < 128 + st && y + dy > -st && y + dy < 128 + st) { k.save(); k.translate(x + dx, y + dy); k.scale(st, st); k.fillStyle = g; k.beginPath(); k.arc(0, 0, 1, 0, Math.PI * 2); k.fill(); k.restore(); }
+        }); });
+        return;
+      }
+      k.fillStyle = farve;
+      // moenstret skal gaa i ét uden synlige kanter: det, der stikker ud, tegnes ogsaa i den anden side
+      [-128, 0, 128].forEach(function (dx) { [-128, 0, 128].forEach(function (dy) {
+        if (x + dx > -st && x + dx < 128 + st && y + dy > -st && y + dy < 128 + st) { k.beginPath(); k.arc(x + dx, y + dy, st, 0, Math.PI * 2); k.fill(); }
+      }); });
+    }
+    // store, bloede skyer, hvor vandet har samlet lidt mere eller lidt mindre farve
+    for (var i = 0; i < 60; i++) prik(r() * 128, r() * 128, 6 + r() * 12, r() < 0.5 ? 'rgba(255,255,255,' + (0.05 + r() * 0.07).toFixed(3) + ')' : 'rgba(70,50,35,' + (0.03 + r() * 0.05).toFixed(3) + ')', true);
+    // og pigmentets fine korn
+    for (var j = 0; j < 420; j++) prik(r() * 128, r() * 128, 0.4 + r() * 0.8, r() < 0.3 ? 'rgba(255,255,255,' + (0.06 + r() * 0.1).toFixed(3) + ')' : 'rgba(70,50,35,' + (0.03 + r() * 0.07).toFixed(3) + ')');
+    return korn;
+  }
+  function ramme(punkter) {
+    var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    punkter.forEach(function (p) { x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]); x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]); });
+    return { x: x0, y: y0, b: x1 - x0, h: y1 - y0 };
+  }
+  /** Akvarelfyld inden i delens omrids: grundfarve, lys fra oven til venstre, korn og farve, der samler sig i kanten. */
+  function vask(c, d) {
+    var r = ramme(d.sti), f = d.fyld;
+    sti(c, d.sti); c.closePath();
+    c.fillStyle = f; c.fill();
+    c.save(); c.clip();
+    var g = c.createRadialGradient(r.x + r.b * 0.32, r.y + r.h * 0.28, 0, r.x + r.b * 0.32, r.y + r.h * 0.28, Math.max(r.b, r.h) * 0.75);
+    g.addColorStop(0, farvetone(f, 1.38, 0.55)); g.addColorStop(1, farvetone(f, 1.38, 0));
+    c.fillStyle = g; c.fillRect(r.x - 1, r.y - 1, r.b + 2, r.h + 2);
+    var g2 = c.createLinearGradient(0, r.y, 0, r.y + r.h);
+    g2.addColorStop(0.45, farvetone(f, 0.82, 0)); g2.addColorStop(1, farvetone(f, 0.82, 0.32));
+    c.fillStyle = g2; c.fillRect(r.x - 1, r.y - 1, r.b + 2, r.h + 2);
+    // et par skyer af lidt moerkere og lysere farve; froeet er delens plads, saa de ligger stille
+    var s = Math.round(r.x * 131 + r.y * 71 + r.b * 17) + 1;
+    for (var i = 0; i < 4; i++) {
+      s = (s * 1664525 + 1013904223) % 4294967296; var a = s / 4294967296;
+      s = (s * 1664525 + 1013904223) % 4294967296; var b = s / 4294967296;
+      var sky = c.createRadialGradient(0, 0, 0, 0, 0, 1);
+      sky.addColorStop(0, farvetone(f, i % 2 ? 0.84 : 1.3, 0.3)); sky.addColorStop(1, farvetone(f, i % 2 ? 0.84 : 1.3, 0));
+      c.save(); c.translate(r.x + a * r.b, r.y + b * r.h); c.rotate(a * 3); c.scale(r.b * (0.22 + a * 0.22), r.h * (0.2 + b * 0.2));
+      c.fillStyle = sky; c.beginPath(); c.arc(0, 0, 1, 0, Math.PI * 2); c.fill(); c.restore();
+    }
+    // kornet ligger i skaermens pixels, saa det er lige fint paa alle stoerrelser
+    if (!c.kornMoenster) c.kornMoenster = c.createPattern(kornLaerred(), 'repeat');
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = c.kornMoenster; c.fillRect(0, 0, c.canvas.width, c.canvas.height); c.restore();
+    sti(c, d.sti); c.closePath();
+    c.strokeStyle = farvetone(f, 0.78, 0.22); c.lineWidth = 3.2; c.stroke();
+    c.strokeStyle = farvetone(f, 0.68, 0.4); c.lineWidth = 1.2; c.stroke();
+    c.restore();
+  }
+
   function tegnDel(c, d) {
     c.lineJoin = 'round'; c.lineCap = 'round';
     if (Figurer.lukket(d)) {
+      if (d.fyld && d.fyld !== '#5e4a3a') vask(c, d);
+      else if (d.fyld) { sti(c, d.sti); c.closePath(); c.fillStyle = d.fyld; c.fill(); }
       sti(c, d.sti); c.closePath();
-      if (d.fyld) { c.fillStyle = d.fyld; c.fill(); }
-      c.strokeStyle = '#5e4a3a'; c.lineWidth = d.pynt ? 1.3 : 2; c.stroke();
+      c.strokeStyle = BLAEK; c.lineWidth = d.pynt ? 0.7 : 1.05; c.stroke();
     } else if (d.pynt) {
-      sti(c, d.sti); c.strokeStyle = d.farve; c.lineWidth = 1.6; c.stroke();
+      sti(c, d.sti); c.strokeStyle = d.farve === '#5e4a3a' ? BLAEK : d.farve; c.lineWidth = 1.5; c.stroke();
     } else {
-      sti(c, d.sti); c.strokeStyle = '#5e4a3a'; c.lineWidth = 6.2; c.stroke();
-      sti(c, d.sti); c.strokeStyle = d.farve; c.lineWidth = 3.6; c.stroke();
+      // en malet streg: tynd varm kant, farven og et lyst stroeg midt i, hvor penslen loeftede
+      sti(c, d.sti); c.strokeStyle = BLAEK; c.lineWidth = 5; c.stroke();
+      c.strokeStyle = d.farve; c.lineWidth = 3.6; c.stroke();
+      c.strokeStyle = farvetone(d.farve, 1.35, 0.45); c.lineWidth = 1.1; c.stroke();
     }
   }
 
@@ -225,8 +300,11 @@
       k.scale(sk, sk); k.translate(m, m);
       k.save(); brikSti(k, br); k.clip();
       k.drawImage(billede, -br.kol * pusle.b, -br.raek * pusle.h, 100, 100);
+      // En lys kant inde i brikken, som papkanten paa et rigtigt puslespil, og kun en svag streg udenom
+      brikSti(k, br); k.lineJoin = 'round';
+      k.strokeStyle = 'rgba(255,250,240,0.7)'; k.lineWidth = 1.3; k.stroke();
       k.restore();
-      brikSti(k, br); k.strokeStyle = '#5e4a3a'; k.lineWidth = 0.9; k.lineJoin = 'round'; k.stroke();
+      brikSti(k, br); k.strokeStyle = 'rgba(107,85,69,0.32)'; k.lineWidth = 0.35; k.lineJoin = 'round'; k.stroke();
       return { billede: l, m: m };
     });
   }
@@ -359,27 +437,53 @@
     ctx.beginPath(); ctx.roundRect(b.x, b.y, b.str, b.str, 20); ctx.stroke();
   }
 
+  /**
+   * Det, der staar stille, mens barnet tegner: universet svagt paa papiret, de stiplede streger og
+   * de dele, der er tegnet faerdige. Akvarellen er tung at male, saa laget males kun, naar en
+   * streg er faerdig, og laegges ellers bare paa i hvert billede.
+   */
+  var tegneLag = null;
+  function tegneBillede(b) {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var noegle = figur.id + '|' + univers.id + '|' + spor.aktiv + '|' + Math.round(b.str) + '|' + dpr;
+    if (tegneLag && tegneLag.noegle === noegle) return tegneLag.l;
+    var l = document.createElement('canvas'), c = l.getContext('2d');
+    l.width = l.height = Math.ceil(b.str * dpr);
+    c.scale(b.u * dpr, b.u * dpr);
+    // Universet anes svagt paa papiret, mens man tegner
+    c.save();
+    c.beginPath(); c.roundRect(1, 1, 98, 98, 3.5); c.clip();
+    c.globalAlpha = 0.24; tegnBaggrund(c, univers.id); c.globalAlpha = 1;
+    c.restore();
+    c.lineJoin = 'round'; c.lineCap = 'round';
+    var dele = figur.dele.filter(function (d) { return !d.pynt; });
+    // Det der mangler: stiplet, paa et lyst baand, saa det staar tydeligt paa baggrunden. Det der er tegnet: med farve.
+    dele.forEach(function (d, k) {
+      if (k < spor.aktiv) return;
+      sti(c, d.sti);
+      c.strokeStyle = 'rgba(255,250,240,0.75)'; c.lineWidth = k === spor.aktiv ? 4.6 : 3.6; c.stroke();
+      c.setLineDash([2.5, 3.5]); c.strokeStyle = k === spor.aktiv ? '#8f7d69' : '#cbbfac'; c.lineWidth = k === spor.aktiv ? 2.4 : 1.8; c.stroke();
+      c.setLineDash([]);
+    });
+    dele.forEach(function (d, k) { if (k < spor.aktiv) tegnDel(c, d); });
+    tegneLag = { noegle: noegle, l: l };
+    return l;
+  }
+
   function tegnTegning(b) {
     tegnPapir(b);
+    ctx.drawImage(tegneBillede(b), b.x, b.y, b.str, b.str);
     ctx.save();
     ctx.translate(b.x, b.y); ctx.scale(b.u, b.u);
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     var dele = figur.dele.filter(function (d) { return !d.pynt; });
-    // Det der mangler: stiplet. Det der er tegnet: med farve.
-    dele.forEach(function (d, k) {
-      if (k < spor.aktiv) return;
-      sti(ctx, d.sti);
-      ctx.setLineDash([2.5, 3.5]); ctx.strokeStyle = k === spor.aktiv ? '#9d8c78' : '#d6cdbd'; ctx.lineWidth = k === spor.aktiv ? 2.4 : 1.8; ctx.stroke();
-      ctx.setLineDash([]);
-    });
-    dele.forEach(function (d, k) { if (k < spor.aktiv) tegnDel(ctx, d); });
     if (!spor.faerdig) {
       var d = dele[spor.aktiv], punkter = spor.streger[spor.aktiv];
       if (spor.indeks > 0) {
         sti(ctx, punkter.slice(0, spor.indeks + 1));
-        ctx.strokeStyle = '#5e4a3a'; ctx.lineWidth = 5.4; ctx.stroke();
-        sti(ctx, punkter.slice(0, spor.indeks + 1));
+        ctx.strokeStyle = BLAEK; ctx.lineWidth = 4.6; ctx.stroke();
         ctx.strokeStyle = d.fyld || d.farve; ctx.lineWidth = 3.2; ctx.stroke();
+        ctx.strokeStyle = farvetone(d.fyld || d.farve, 1.35, 0.45); ctx.lineWidth = 1; ctx.stroke();
       }
       // En lille prik loeber i forvejen og viser vejen
       var frem = Math.min(punkter.length - 1, spor.indeks + Math.floor(((tid * 1.1) % 1) * Math.min(30, punkter.length)));
@@ -417,14 +521,32 @@
     }
   }
 
+  /**
+   * Det faerdige billede males én gang pr. figur i to lag: baggrund og figur, og pynten (oejne,
+   * smil) for sig, saa pynten kan tone frem. Saa ligger akvarelkornet stille, naar billedet hopper.
+   */
+  var helt = null;
+  function heltBilleder(b) {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2), noegle = figur.id + '|' + univers.id + '|' + Math.round(b.str) + '|' + dpr;
+    if (helt && helt.noegle === noegle) return helt;
+    function lag(pynt) {
+      var l = document.createElement('canvas'), c = l.getContext('2d');
+      l.width = l.height = Math.ceil(b.str * dpr);
+      c.scale(b.u * dpr, b.u * dpr);
+      c.beginPath(); c.roundRect(1, 1, 98, 98, 3.5); c.clip();
+      if (!pynt) tegnBaggrund(c, univers.id);
+      figur.dele.forEach(function (d) { if (!!d.pynt === pynt) tegnDel(c, d); });
+      return l;
+    }
+    helt = { noegle: noegle, grund: lag(false), pynt: lag(true) };
+    return helt;
+  }
+
   function tegnHeltBillede(b, pyntAlfa, hop) {
     tegnPapir(b);
-    ctx.save();
-    ctx.translate(b.x, b.y - (hop || 0)); ctx.scale(b.u, b.u);
-    ctx.beginPath(); ctx.roundRect(1, 1, 98, 98, 3.5); ctx.clip();
-    tegnBaggrund(ctx, univers.id);
-    tegnFigur(ctx, figur, pyntAlfa);
-    ctx.restore();
+    var h = heltBilleder(b), y = b.y - (hop || 0);
+    ctx.drawImage(h.grund, b.x, y, b.str, b.str);
+    if (pyntAlfa > 0) { ctx.globalAlpha = pyntAlfa; ctx.drawImage(h.pynt, b.x, y, b.str, b.str); ctx.globalAlpha = 1; }
   }
 
   function tegnBrik(b, br, nr, x, y, loeftet) {
@@ -432,7 +554,7 @@
     if (!bb) return;
     var px = b.x + (x - bb.m) * b.u, py = b.y + (y - bb.m) * b.u;
     var bred = (pusle.b + 2 * bb.m) * b.u, hoej = (pusle.h + 2 * bb.m) * b.u;
-    if (!br.paa) { ctx.shadowColor = 'rgba(94,74,58,0.35)'; ctx.shadowBlur = loeftet ? 18 : 6; ctx.shadowOffsetY = loeftet ? 10 : 3; }
+    if (!br.paa) { ctx.shadowColor = loeftet ? 'rgba(94,74,58,0.3)' : 'rgba(94,74,58,0.26)'; ctx.shadowBlur = loeftet ? 26 : 12; ctx.shadowOffsetY = loeftet ? 12 : 5; }
     ctx.drawImage(bb.billede, px, py, bred, hoej);
     ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
   }
@@ -503,7 +625,6 @@
     visOverlay(
       '<div class="kort">' +
       '<h2>Tegnestuen</h2>' +
-      '<p class="hjaelp">Tegn figuren med fingeren. Så bliver den til et puslespil.</p>' +
       '<div class="baner">' + universer + '</div>' +
       Menu.stjerneRaekke(svaerhed) +
       Menu.lydRaekke(lydTil) +
