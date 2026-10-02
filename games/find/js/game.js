@@ -195,21 +195,130 @@
       if (i % 4 === 0) sten(c, x, y, (5 + rnd() * 5) * kk); else if (i % 4 === 1) blomst(c, x, y, farver[i % farver.length], kk); else graes(c, x, y, kk);
     }
   }
-  function hoestak(c, x, y, r) { c.fillStyle = '#e5c37a'; c.beginPath(); c.arc(x, y, r, Math.PI, 0); c.lineTo(x + r, y + r * 0.3); c.lineTo(x - r, y + r * 0.3); c.closePath(); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke(); c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = 2; [-0.5, 0, 0.5].forEach(function (d) { c.beginPath(); c.moveTo(x + d * r, y - r * 0.2); c.lineTo(x + d * r * 1.2, y + r * 0.2); c.stroke(); }); }
+  /* Rekvisitterne har praecis de samme omrids som foer; kun malingen er ny: bloede overgange, straa, aarringe og en tynd, halvgennemsigtig kant. */
+  var TYND = 'rgba(94,74,58,.5)';
+  function hoestak(c, x, y, r) {
+    c.fillStyle = 'rgba(94,74,58,.14)'; c.beginPath(); c.ellipse(x, y + r * 0.3, r * 1.15, r * 0.16, 0, 0, 7); c.fill();
+    c.beginPath(); c.arc(x, y, r, Math.PI, 0); c.lineTo(x + r, y + r * 0.3); c.lineTo(x - r, y + r * 0.3); c.closePath();
+    var g = c.createLinearGradient(0, y - r, 0, y + r * 0.3); g.addColorStop(0, '#f2d690'); g.addColorStop(0.6, '#e5c37a'); g.addColorStop(1, '#c9a25c');
+    c.fillStyle = g; c.fill();
+    c.save(); c.clip();
+    var l = c.createRadialGradient(x - r * 0.35, y - r * 0.6, 0, x - r * 0.35, y - r * 0.6, r * 0.9);
+    l.addColorStop(0, 'rgba(255,246,214,.55)'); l.addColorStop(1, 'rgba(255,246,214,0)'); c.fillStyle = l; c.fillRect(x - r, y - r, r * 2, r * 1.3);
+    // straa: tynde buer fra toppen og ned ad siderne, skiftevis lyse og moerke
+    c.lineCap = 'round';
+    for (var i = 0; i < 26; i++) {
+      var t = (i + 0.5) / 26, sx = x - r + t * r * 2, sy = y - Math.sqrt(Math.max(0, 1 - (t * 2 - 1) * (t * 2 - 1))) * r, bo = (t - 0.5) * r * 0.5;
+      c.strokeStyle = i % 3 ? 'rgba(150,108,48,.32)' : 'rgba(255,240,196,.6)'; c.lineWidth = i % 3 ? 1 : 1.3;
+      c.beginPath(); c.moveTo(sx, sy + 2); c.quadraticCurveTo(sx + bo * 0.5, (sy + y) / 2 + r * 0.1, sx + bo, y + r * 0.3); c.stroke();
+    }
+    var b = c.createLinearGradient(0, y, 0, y + r * 0.3); b.addColorStop(0, 'rgba(120,86,40,0)'); b.addColorStop(1, 'rgba(120,86,40,.3)');
+    c.fillStyle = b; c.fillRect(x - r, y, r * 2, r * 0.3);
+    c.restore();
+    c.strokeStyle = TYND; c.lineWidth = 1.5; c.lineJoin = 'round'; c.beginPath(); c.arc(x, y, r, Math.PI, 0); c.lineTo(x + r, y + r * 0.3); c.lineTo(x - r, y + r * 0.3); c.closePath(); c.stroke();
+  }
   function baenk(c, x, y, k) {
     if (billedeFod(c, '#by-baenk', x, y + 6 * (k || 1), 104 * (k || 1))) return;
     k = k || 1; rr(c, x - 40 * k, y - 12 * k, 80 * k, 8 * k, 3, '#b18a56', KANT, 2); rr(c, x - 40 * k, y - 34 * k, 80 * k, 8 * k, 3, '#b18a56', KANT, 2); c.strokeStyle = KANT; c.lineWidth = 3; [-30, 30].forEach(function (d) { c.beginPath(); c.moveTo(x + d * k, y - 34 * k); c.lineTo(x + d * k, y + 6 * k); c.stroke(); }); }
-  function baad(c, x, y, k) { k = k || 1; c.fillStyle = '#b18a56'; c.beginPath(); c.moveTo(x - 46 * k, y - 10 * k); c.lineTo(x + 46 * k, y - 10 * k); c.lineTo(x + 34 * k, y + 12 * k); c.lineTo(x - 34 * k, y + 12 * k); c.closePath(); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke(); c.strokeStyle = '#8a663d'; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 40 * k, y); c.lineTo(x + 40 * k, y); c.stroke(); }
-  function stub(c, x, y, k) { k = k || 1; c.fillStyle = '#8a663d'; c.beginPath(); c.roundRect(x - 26 * k, y - 18 * k, 52 * k, 30 * k, 6); c.fill(); c.fillStyle = '#d9ba8a'; c.beginPath(); c.ellipse(x, y - 18 * k, 26 * k, 10 * k, 0, 0, 7); c.fill(); c.strokeStyle = KANT; c.lineWidth = 2.5; c.stroke(); c.strokeStyle = 'rgba(94,74,58,.4)'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(x, y - 18 * k, 14 * k, 5 * k, 0, 0, 7); c.stroke(); }
+  function baad(c, x, y, k) {
+    k = k || 1;
+    // skyggen i vandet og et par lyse kruser
+    c.fillStyle = 'rgba(60,110,150,.22)'; c.beginPath(); c.ellipse(x, y + 13 * k, 44 * k, 6 * k, 0, 0, 7); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 1.5; c.lineCap = 'round';
+    [[-52, 16, 14], [40, 18, 18], [-20, 21, 12]].forEach(function (p) { c.beginPath(); c.moveTo(x + p[0] * k, y + p[1] * k); c.quadraticCurveTo(x + (p[0] + p[2] / 2) * k, y + (p[1] - 2) * k, x + (p[0] + p[2]) * k, y + p[1] * k); c.stroke(); });
+    c.beginPath(); c.moveTo(x - 46 * k, y - 10 * k); c.lineTo(x + 46 * k, y - 10 * k); c.lineTo(x + 34 * k, y + 12 * k); c.lineTo(x - 34 * k, y + 12 * k); c.closePath();
+    var g = c.createLinearGradient(0, y - 10 * k, 0, y + 12 * k); g.addColorStop(0, '#c9a06a'); g.addColorStop(0.5, '#b18a56'); g.addColorStop(1, '#8a663d');
+    c.fillStyle = g; c.fill();
+    c.save(); c.clip();
+    // plankerne og traeets aarer
+    c.strokeStyle = 'rgba(94,74,58,.28)'; c.lineWidth = 1.2;
+    [-3, 5].forEach(function (d) { c.beginPath(); c.moveTo(x - 46 * k, y + d * k); c.lineTo(x + 46 * k, y + d * k); c.stroke(); });
+    c.strokeStyle = 'rgba(255,236,200,.25)'; c.lineWidth = 1;
+    [[-30, -6], [8, 1], [-12, 9], [22, -7]].forEach(function (p) { c.beginPath(); c.moveTo(x + p[0] * k, y + p[1] * k); c.lineTo(x + (p[0] + 14) * k, y + p[1] * k); c.stroke(); });
+    c.restore();
+    c.beginPath(); c.moveTo(x - 46 * k, y - 10 * k); c.lineTo(x + 46 * k, y - 10 * k); c.lineTo(x + 34 * k, y + 12 * k); c.lineTo(x - 34 * k, y + 12 * k); c.closePath();
+    c.strokeStyle = TYND; c.lineWidth = 1.5; c.lineJoin = 'round'; c.stroke();
+    // raelingen: en lys kant foroven, og den gamle planke paa siden
+    c.strokeStyle = '#e5d3ae'; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 44 * k, y - 9 * k); c.lineTo(x + 44 * k, y - 9 * k); c.stroke();
+    c.strokeStyle = 'rgba(138,102,61,.8)'; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 40 * k, y); c.lineTo(x + 40 * k, y); c.stroke();
+  }
+  function stub(c, x, y, k) {
+    k = k || 1;
+    c.fillStyle = 'rgba(94,74,58,.16)'; c.beginPath(); c.ellipse(x, y + 12 * k, 32 * k, 6 * k, 0, 0, 7); c.fill();
+    // barken: moerk i siderne og lysere, hvor lyset rammer
+    c.beginPath(); c.roundRect(x - 26 * k, y - 18 * k, 52 * k, 30 * k, 6);
+    var g = c.createLinearGradient(x - 26 * k, 0, x + 26 * k, 0); g.addColorStop(0, '#6a4c2c'); g.addColorStop(0.35, '#9c7647'); g.addColorStop(1, '#6f5030');
+    c.fillStyle = g; c.fill();
+    c.save(); c.clip();
+    c.lineCap = 'round';
+    for (var i = 0; i < 9; i++) { var bx = x - 23 * k + i * 5.8 * k; c.strokeStyle = i % 2 ? 'rgba(60,42,26,.35)' : 'rgba(214,180,130,.25)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(bx, y - 12 * k); c.quadraticCurveTo(bx + 1.5 * k, y, bx - 0.5 * k, y + 12 * k); c.stroke(); }
+    c.restore();
+    c.strokeStyle = TYND; c.lineWidth = 1.3; c.beginPath(); c.roundRect(x - 26 * k, y - 18 * k, 52 * k, 30 * k, 6); c.stroke();
+    // snitfladen: lyst trae med aarringe
+    c.beginPath(); c.ellipse(x, y - 18 * k, 26 * k, 10 * k, 0, 0, 7);
+    var t = c.createRadialGradient(x - 4 * k, y - 20 * k, 0, x, y - 18 * k, 26 * k); t.addColorStop(0, '#ecd5a6'); t.addColorStop(0.7, '#d9ba8a'); t.addColorStop(1, '#c29d66');
+    c.fillStyle = t; c.fill();
+    c.strokeStyle = 'rgba(138,102,61,.4)'; c.lineWidth = 0.9;
+    [5, 10, 15, 20].forEach(function (rx) { c.beginPath(); c.ellipse(x + rx * 0.04 * k, y - 18 * k, rx * k, rx * 0.38 * k, 0, 0, 7); c.stroke(); });
+    c.strokeStyle = 'rgba(138,102,61,.45)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x + 2 * k, y - 18 * k); c.lineTo(x + 12 * k, y - 21 * k); c.stroke();
+    c.strokeStyle = 'rgba(111,80,48,.7)'; c.lineWidth = 2; c.beginPath(); c.ellipse(x, y - 18 * k, 26 * k, 10 * k, 0, 0, 7); c.stroke();
+  }
   /** En vaeltet stamme med et hul i enden, som en ting kan kigge ud af (pladsen 'stamme'). */
   function stamme(c, st) {
     var x = fx(st.x), y = fy(st.y), b = fs(st.b), h = fh(st.h);
     c.fillStyle = 'rgba(94,74,58,.15)'; c.beginPath(); c.ellipse(x + b / 2, y + h, b * 0.55, h * 0.25, 0, 0, 7); c.fill();
-    rr(c, x + h * 0.4, y, b - h * 0.4, h, h / 2, '#8a663d', KANT, 3);
-    c.fillStyle = '#4a3a2c'; c.beginPath(); c.ellipse(x + h * 0.5, y + h / 2, h * 0.5, h * 0.48, 0, 0, 7); c.fill(); c.strokeStyle = KANT; c.lineWidth = 3; c.stroke();
-    c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = 2; [0.35, 0.6, 0.85].forEach(function (t) { c.beginPath(); c.moveTo(x + b * t, y + 4); c.lineTo(x + b * t - 8, y + h - 4); c.stroke(); });
+    // stammen: rund, lys foroven og moerk forneden, med barkens lange furer
+    c.beginPath(); c.roundRect(x + h * 0.4, y, b - h * 0.4, h, h / 2);
+    var g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#a98251'); g.addColorStop(0.45, '#8a663d'); g.addColorStop(1, '#5e4430');
+    c.fillStyle = g; c.fill();
+    c.save(); c.clip();
+    c.lineCap = 'round';
+    for (var i = 0; i < 7; i++) {
+      var fy0 = y + h * (0.14 + i * 0.12);
+      c.strokeStyle = i % 2 ? 'rgba(60,42,26,.3)' : 'rgba(222,190,140,.22)'; c.lineWidth = 1.3;
+      c.beginPath(); c.moveTo(x + h * 0.6, fy0); c.bezierCurveTo(x + b * 0.4, fy0 + 2, x + b * 0.7, fy0 - 2, x + b, fy0 + 1); c.stroke();
+    }
+    c.strokeStyle = 'rgba(94,74,58,.3)'; c.lineWidth = 1.5; [0.35, 0.6, 0.85].forEach(function (t) { c.beginPath(); c.moveTo(x + b * t, y + 4); c.lineTo(x + b * t - 8, y + h - 4); c.stroke(); });
+    c.restore();
+    c.strokeStyle = TYND; c.lineWidth = 1.5; c.beginPath(); c.roundRect(x + h * 0.4, y, b - h * 0.4, h, h / 2); c.stroke();
+    // hullet i enden: moerkt inderst og en kant af lyst trae
+    c.beginPath(); c.ellipse(x + h * 0.5, y + h / 2, h * 0.5, h * 0.48, 0, 0, 7);
+    var hul = c.createRadialGradient(x + h * 0.55, y + h * 0.55, 0, x + h * 0.5, y + h / 2, h * 0.5); hul.addColorStop(0, '#241b14'); hul.addColorStop(0.75, '#3a2d22'); hul.addColorStop(1, '#5a4532');
+    c.fillStyle = hul; c.fill();
+    c.strokeStyle = '#c9a56f'; c.lineWidth = 2.5; c.stroke();
+    c.strokeStyle = TYND; c.lineWidth = 1; c.stroke();
   }
   /* ---- malet i kode: vask, korn og bloede kanter, saa kodehusene passer til de malede stykker ---- */
+  /** Et andet froe til papiret og stenene, saa blomsterne og graesset ligger, hvor de altid har ligget. */
+  var froe2 = 1;
+  function rnd2() { froe2 = (froe2 * 1664525 + 1013904223) % 4294967296; return froe2 / 4294967296; }
+  /** Papirets struktur: bloede pletter og fibre paa et lille laerred, lavet én gang og lagt som moenster. */
+  var papir = null;
+  function papirLaerred() {
+    if (papir) return papir;
+    papir = document.createElement('canvas'); papir.width = papir.height = 160;
+    var k = papir.getContext('2d'), gem = froe2; froe2 = 21;
+    function overalt(x, y, r, tegn) { [-160, 0, 160].forEach(function (dx) { [-160, 0, 160].forEach(function (dy) { if (x + dx > -r && x + dx < 160 + r && y + dy > -r && y + dy < 160 + r) tegn(x + dx, y + dy); }); }); }
+    for (var i = 0; i < 50; i++) {
+      var lys = rnd2() < 0.5, a = (lys ? 0.07 : 0.045) * (0.5 + rnd2()), r = 8 + rnd2() * 16;
+      overalt(rnd2() * 160, rnd2() * 160, r, function (x, y) {
+        var g = k.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, lys ? 'rgba(255,255,255,' + a.toFixed(3) + ')' : 'rgba(94,74,58,' + a.toFixed(3) + ')'); g.addColorStop(1, lys ? 'rgba(255,255,255,0)' : 'rgba(94,74,58,0)');
+        k.fillStyle = g; k.beginPath(); k.arc(x, y, r, 0, 7); k.fill();
+      });
+    }
+    k.lineCap = 'round';
+    for (var j = 0; j < 120; j++) {
+      var fx0 = rnd2() * 160, fy0 = rnd2() * 160, v = rnd2() * 7, l = 3 + rnd2() * 7, lysF = rnd2() < 0.5;
+      k.strokeStyle = lysF ? 'rgba(255,255,255,.16)' : 'rgba(94,74,58,.08)'; k.lineWidth = 0.7;
+      overalt(fx0, fy0, l, function (x, y) { k.beginPath(); k.moveTo(x, y); k.quadraticCurveTo(x + Math.cos(v) * l * 0.5 + 1, y + Math.sin(v) * l * 0.5 - 1, x + Math.cos(v) * l, y + Math.sin(v) * l); k.stroke(); });
+    }
+    froe2 = gem;
+    return papir;
+  }
+  function papirFyld(c, x, y, b, h) {
+    if (!c.papirMoenster) c.papirMoenster = c.createPattern(papirLaerred(), 'repeat');
+    c.fillStyle = c.papirMoenster; c.fillRect(x, y, b, h);
+  }
   function rgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
   /** Farven h, moerkere (k < 1) eller lysere (k > 1, blandet med hvid), med alfa a. */
   function farvetone(h, k, a) {
@@ -239,9 +348,15 @@
     }
     c.fillStyle = farvetone(farve, 0.7, 0.06);
     for (var k = 0; k < b * h / 90; k++) { c.beginPath(); c.arc(x0 + rnd() * b, y0 + rnd() * h, 0.8 + rnd() * 1.2, 0, 7); c.fill(); }
-    // kanten er moerkere, som naar vandet samler farven yderst
-    c.strokeStyle = farvetone(farve, 0.72, 0.5); c.lineWidth = 3; haandsti(c, pts, luk !== false); c.stroke();
+    papirFyld(c, x0 - 4, y0 - 4, b + 8, h + 8);
+    // kanten er moerkere, som naar vandet samler farven yderst: en bloed overgang i stedet for en streg
+    haandsti(c, pts, luk !== false);
+    c.strokeStyle = farvetone(farve, 0.78, 0.1); c.lineWidth = 10; c.stroke();
+    c.strokeStyle = farvetone(farve, 0.75, 0.14); c.lineWidth = 5; c.stroke();
+    c.strokeStyle = farvetone(farve, 0.72, 0.32); c.lineWidth = 2; c.stroke();
     c.restore();
+    // og farven er loebet en smule ud i papiret
+    c.strokeStyle = farvetone(farve, 0.85, 0.16); c.lineWidth = 2.2; c.stroke();
   }
   /** Et hus i byen, malet i kode efter Find.STEDER.by.huse: vinduerne og doeren er pladser og ligger praecis, hvor reglerne siger. */
   function hus(c, h) {
@@ -249,6 +364,8 @@
     c.fillStyle = 'rgba(94,74,58,.15)'; c.beginPath(); c.ellipse(x + b / 2, y + hh + 4, b * 0.6, 8, 0, 0, 7); c.fill();
     // vaeggen
     vask(c, [[x, y + 3], [x + b, y + 3], [x + b, y + hh], [x, y + hh]], h.farve);
+    var lys = c.createLinearGradient(x, 0, x + b, 0); lys.addColorStop(0, 'rgba(255,250,235,.16)'); lys.addColorStop(0.5, 'rgba(255,250,235,0)'); lys.addColorStop(1, 'rgba(94,74,58,.08)');
+    c.fillStyle = lys; c.fillRect(x + 1, y + 4, b - 2, hh - 5);
     // skorstenen: mursten
     if (h.skorsten) {
       var sx = x + b * 0.72, sy = y - fh(34), sb = fs(18), sh = fh(40);
@@ -307,7 +424,10 @@
     var x = fx(t.x), y = fy(t.y);
     vask(c, [[x - 30, y - 22], [x + 26, y - 22], [x + 18, y], [x - 22, y]], '#5f9fc9');
     c.strokeStyle = farvetone('#8a663d', 1, 0.9); c.lineWidth = 3; c.lineCap = 'round'; c.beginPath(); c.moveTo(x + 26, y - 22); c.lineTo(x + 52, y - 26); c.stroke();
-    c.fillStyle = '#4a4239'; c.beginPath(); c.arc(x - 20, y + 4, 9, 0, 7); c.fill();
+    var dk = c.createRadialGradient(x - 22, y + 2, 1, x - 20, y + 4, 9); dk.addColorStop(0, '#6a6055'); dk.addColorStop(1, '#3e3730');
+    c.fillStyle = dk; c.beginPath(); c.arc(x - 20, y + 4, 9, 0, 7); c.fill();
+    c.strokeStyle = 'rgba(229,211,174,.55)'; c.lineWidth = 1; for (var e = 0; e < 4; e++) { var ev = e * Math.PI / 4; c.beginPath(); c.moveTo(x - 20 - Math.cos(ev) * 5, y + 4 - Math.sin(ev) * 5); c.lineTo(x - 20 + Math.cos(ev) * 5, y + 4 + Math.sin(ev) * 5); c.stroke(); }
+    c.fillStyle = '#d9ba8a'; c.beginPath(); c.arc(x - 20, y + 4, 2, 0, 7); c.fill();
   }
   function toerresnor(c, sn) {
     var x1 = fx(sn.x1), y1 = fy(sn.y1), x2 = fx(sn.x2), y2 = fy(sn.y2);
@@ -315,11 +435,23 @@
     c.strokeStyle = KANT; c.lineWidth = 2; c.beginPath(); c.moveTo(x1, y1 - 28); c.quadraticCurveTo((x1 + x2) / 2, y1 - 16, x2, y2 - 28); c.stroke();
     ['#d95f45', '#8fc7e8', '#f0c46a', '#9b7bd4'].forEach(function (f, i) { var t = 0.2 + i * 0.2, x = x1 + (x2 - x1) * t, yy = y1 - 28 + 12 * 4 * t * (1 - t), hh = 18 + (i % 2) * 6; vask(c, [[x - 8, yy], [x + 8, yy], [x + 8, yy + hh], [x - 8, yy + hh]], f); });
   }
+  /** Gaden: ujaevne brosten i lidt forskellige farver, lagt i raekker paa sandet. */
   function brosten(c, B, yFra, yTil) {
     var y0 = fy(yFra), y1 = fy(yTil);
-    c.fillStyle = '#e5d3ae'; c.fillRect(0, y0, B, y1 - y0);
-    c.strokeStyle = 'rgba(94,74,58,.16)'; c.lineWidth = 1.5;
-    var h = 20; for (var r = 0; r * 24 < y1 - y0 - h; r++) for (var x = (r % 2) * 21 - 10; x < B; x += 42) { c.beginPath(); c.roundRect(x, y0 + 4 + r * 24, 36, h, 6); c.stroke(); }
+    c.fillStyle = '#dcc8a0'; c.fillRect(0, y0, B, y1 - y0);
+    var toner = ['#e9d9b8', '#e5d3ae', '#eadcbf', '#dfcba4', '#e6d6b4'];
+    for (var r = 0; r * 24 < y1 - y0 - 20; r++) {
+      var x = (r % 2) * 21 - 10 - rnd2() * 8;
+      while (x < B) {
+        var sb = 28 + rnd2() * 12, sh = 17 + rnd2() * 4, sy = y0 + 4 + r * 24 + (rnd2() - 0.5) * 2.5, rad = 5 + rnd2() * 3;
+        c.fillStyle = toner[Math.floor(rnd2() * toner.length)];
+        c.beginPath(); c.roundRect(x, sy, sb, sh, rad); c.fill();
+        c.fillStyle = 'rgba(255,255,255,.28)'; c.beginPath(); c.ellipse(x + sb * 0.38, sy + sh * 0.32, sb * 0.26, sh * 0.16, -0.1, 0, 7); c.fill();
+        c.strokeStyle = 'rgba(94,74,58,.14)'; c.lineWidth = 1.2; c.beginPath(); c.roundRect(x, sy, sb, sh, rad); c.stroke();
+        x += sb + 4 + rnd2() * 4;
+      }
+    }
+    papirFyld(c, 0, y0, B, y1 - y0);
   }
 
   function tegnEng(c, B, H) {
@@ -332,7 +464,10 @@
     c.fillStyle = '#a9c97a'; c.beginPath(); c.moveTo(0, H * 0.7); c.quadraticCurveTo(B * 0.5, H * 0.62, B, H * 0.72); c.lineTo(B, H); c.lineTo(0, H); c.fill();
     c.strokeStyle = '#e5d3ae'; c.lineWidth = 44; c.lineCap = 'round'; c.beginPath(); c.moveTo(B * 0.05, H); c.quadraticCurveTo(B * 0.3, H * 0.7, B * 0.55, H * 0.62); c.quadraticCurveTo(B * 0.8, H * 0.55, B * 0.95, hor + 10); c.stroke();
     // Soeen ligger, hvor feltet ikke lader ting ligge (zonerne i find.js); baaden er en plads
-    c.fillStyle = '#8fc7e8'; c.beginPath(); c.ellipse(fx(st.soe.x), fy(st.soe.y), fs(st.soe.rx), fh(st.soe.ry), 0, 0, 7); c.fill(); c.strokeStyle = '#5f9fc9'; c.lineWidth = 4; c.stroke();
+    var sg = c.createRadialGradient(fx(st.soe.x) - fs(30), fy(st.soe.y) - fh(12), 0, fx(st.soe.x), fy(st.soe.y), fs(st.soe.rx));
+    sg.addColorStop(0, '#b4dcf0'); sg.addColorStop(0.7, '#8fc7e8'); sg.addColorStop(1, '#73b2db');
+    c.fillStyle = sg; c.beginPath(); c.ellipse(fx(st.soe.x), fy(st.soe.y), fs(st.soe.rx), fh(st.soe.ry), 0, 0, 7); c.fill();
+    c.strokeStyle = 'rgba(95,159,201,.45)'; c.lineWidth = 5; c.stroke(); c.strokeStyle = 'rgba(95,130,64,.35)'; c.lineWidth = 1.5; c.stroke();
     c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 2; [[-60, -10], [20, 14], [70, -18]].forEach(function (p) { c.beginPath(); c.moveTo(fx(st.soe.x) + p[0], fy(st.soe.y) + p[1]); c.lineTo(fx(st.soe.x) + p[0] + 30, fy(st.soe.y) + p[1]); c.stroke(); });
     baad(c, fx(st.baad.x), fy(st.baad.y), fs(1));
     billede(c, '#siv', fx(660), fy(380), fs(60)); billede(c, '#siv', fx(910), fy(400), fs(50));
@@ -384,19 +519,25 @@
       bag = document.createElement('canvas');
       bag.width = Math.floor(B * dpr); bag.height = Math.floor(H * dpr); bag.b = B; bag.h = H; bag.sted = sted;
       var c = bag.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      froe2 = 11;
       (SCENER[sted] || tegnEng)(c, B, H);
     }
     ctx.drawImage(bag, 0, 0, B, H);
   }
   // Baggrunden tegnes igen, naar traeerne og huset er hentet
-  ['#trae', '#gran', '#hus', '#siv', '#svamp', '#kastanje', '#by-hus1', '#by-hus2', '#by-hus3', '#by-bod', '#by-baenk'].forEach(function (n) { billeder[n].addEventListener('load', function () { bag = null; }); });
+  // og menuens stedknapper, hvis menuen staar fremme
+  ['#trae', '#gran', '#hus', '#siv', '#svamp', '#kastanje', '#by-hus1', '#by-hus2', '#by-hus3', '#by-bod', '#by-baenk', '#by-broend'].forEach(function (n) {
+    billeder[n].addEventListener('load', function () { bag = null; if (tilstand === 'menu') overlay.querySelectorAll('canvas[data-sted]').forEach(tegnStedIkon); });
+  });
 
   /** Skjulet: et malet trae eller en gran med foden i (x, y), et stakit eller en broend tegnet i kode. Tingene bag det tegnes lige foer det. */
   function tegnSkjul(sk) {
     if (sk.type === 'hegn') {
       var x0 = fx(sk.x), x1 = fx(sk.x + sk.b), y = fy(sk.y), h = fh(sk.h), bb = fs(9);
       ctx.strokeStyle = '#b18a56'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x0, y - h * 0.7); ctx.lineTo(x1, y - h * 0.7); ctx.moveTo(x0, y - h * 0.3); ctx.lineTo(x1, y - h * 0.3); ctx.stroke();
-      for (var x = x0 + bb / 2; x < x1; x += fs(20)) { ctx.fillStyle = '#d9ba8a'; ctx.beginPath(); ctx.moveTo(x - bb / 2, y); ctx.lineTo(x - bb / 2, y - h * 0.85); ctx.lineTo(x, y - h); ctx.lineTo(x + bb / 2, y - h * 0.85); ctx.lineTo(x + bb / 2, y); ctx.closePath(); ctx.fill(); ctx.strokeStyle = farvetone('#d9ba8a', 0.65, 0.6); ctx.lineWidth = 2; ctx.stroke(); }
+      ctx.strokeStyle = 'rgba(229,211,174,.6)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x0, y - h * 0.7 - 1.2); ctx.lineTo(x1, y - h * 0.7 - 1.2); ctx.moveTo(x0, y - h * 0.3 - 1.2); ctx.lineTo(x1, y - h * 0.3 - 1.2); ctx.stroke();
+      var pg = ctx.createLinearGradient(0, y - h, 0, y); pg.addColorStop(0, '#ecd8b0'); pg.addColorStop(0.6, '#d9ba8a'); pg.addColorStop(1, '#bf9a64');
+      for (var x = x0 + bb / 2; x < x1; x += fs(20)) { ctx.fillStyle = pg; ctx.beginPath(); ctx.moveTo(x - bb / 2, y); ctx.lineTo(x - bb / 2, y - h * 0.85); ctx.lineTo(x, y - h); ctx.lineTo(x + bb / 2, y - h * 0.85); ctx.lineTo(x + bb / 2, y); ctx.closePath(); ctx.fill(); ctx.strokeStyle = farvetone('#b18a56', 0.7, 0.45); ctx.lineWidth = 1.2; ctx.stroke(); }
       return;
     }
     if (sk.type === 'broend') {
@@ -591,22 +732,63 @@
   function visOverlay(html) { overlay.innerHTML = html; overlay.hidden = false; }
   function skjulOverlay() { overlay.hidden = true; }
 
-  /** Stedernes knapper: engen med buske, skoven med graner, byen med huse. Tegnet i kode. */
+  /**
+   * Stedernes knapper: et lille malet billede af hvert sted, med de samme malede traeer, graner og huse
+   * som i spillet, paa en bloed himmel og jord. Mangler et billede endnu, tegnes knappen igen, naar det kommer.
+   */
   function tegnStedIkon(cv) {
-    var w = cv.width, h = cv.height, c = cv.getContext('2d'), s = cv.dataset.sted;
+    var w = cv.width, h = cv.height, c = cv.getContext('2d'), s = cv.dataset.sted, gem = froe2;
+    froe2 = s === 'skov' ? 3 : s === 'by' ? 5 : 7;
     c.clearRect(0, 0, w, h);
-    c.fillStyle = s === 'skov' ? '#c9dfe9' : '#8fc7e8'; c.beginPath(); c.roundRect(0, 0, w, h, 14); c.fill();
-    c.fillStyle = s === 'skov' ? '#5f8240' : s === 'by' ? '#e5d3ae' : '#93bc63'; c.beginPath(); c.roundRect(0, h * 0.55, w, h * 0.45, [0, 0, 14, 14]); c.fill();
-    if (s === 'skov') { c.fillStyle = '#4f6f36'; [0.2, 0.5, 0.8].forEach(function (a) { c.beginPath(); c.moveTo(w * a - 24, h * 0.62); c.lineTo(w * a, h * 0.12); c.lineTo(w * a + 24, h * 0.62); c.closePath(); c.fill(); }); }
-    else if (s === 'by') {
-      [[0.1, 0.3, '#f0c46a', '#d95f45'], [0.42, 0.22, '#f8f1e6', '#5f9fc9'], [0.72, 0.34, '#aed3e4', '#d95f45']].forEach(function (a) {
-        var x = w * a[0], y = h * a[1], b = w * 0.26, hh = h * 0.6 - y;
-        c.fillStyle = a[2]; c.fillRect(x, y, b, hh); c.strokeStyle = KANT; c.lineWidth = 2; c.strokeRect(x, y, b, hh);
-        c.fillStyle = a[3]; c.beginPath(); c.moveTo(x - 4, y); c.lineTo(x + b / 2, y - h * 0.16); c.lineTo(x + b + 4, y); c.closePath(); c.fill(); c.stroke();
-        c.fillStyle = '#dcecf3'; c.fillRect(x + b * 0.3, y + hh * 0.25, b * 0.4, hh * 0.3); c.strokeRect(x + b * 0.3, y + hh * 0.25, b * 0.4, hh * 0.3);
-      });
+    c.save();
+    c.beginPath(); c.roundRect(0, 0, w, h, 14); c.clip();
+    // himlen
+    var g = c.createLinearGradient(0, 0, 0, h * 0.6);
+    g.addColorStop(0, s === 'skov' ? '#b9d6e4' : '#8fc7e8'); g.addColorStop(1, s === 'skov' ? '#eaf0d8' : '#dcecf3');
+    c.fillStyle = g; c.fillRect(0, 0, w, h);
+    if (s === 'eng') { var sol = c.createRadialGradient(w * 0.84, h * 0.2, 0, w * 0.84, h * 0.2, 26); sol.addColorStop(0, 'rgba(240,196,106,1)'); sol.addColorStop(0.45, 'rgba(240,196,106,.9)'); sol.addColorStop(1, 'rgba(240,196,106,0)'); c.fillStyle = sol; c.fillRect(0, 0, w, h); }
+    c.fillStyle = 'rgba(255,255,255,.85)'; c.beginPath(); c.arc(w * 0.22, h * 0.17, 8, 0, 7); c.arc(w * 0.22 + 10, h * 0.17 - 4, 10, 0, 7); c.arc(w * 0.22 + 21, h * 0.17, 7, 0, 7); c.fill();
+    // bakken bagved og jorden forrest
+    c.fillStyle = s === 'skov' ? '#5f8240' : '#7fa955';
+    c.beginPath(); c.moveTo(0, h * 0.5); c.quadraticCurveTo(w * 0.3, h * 0.36, w * 0.6, h * 0.48); c.quadraticCurveTo(w * 0.85, h * 0.56, w, h * 0.44); c.lineTo(w, h); c.lineTo(0, h); c.fill();
+    if (s === 'skov') {
+      [[0.1, 0.6, 46, '#gran'], [0.32, 0.56, 42, '#trae'], [0.55, 0.6, 50, '#gran'], [0.8, 0.56, 44, '#trae'], [0.98, 0.6, 46, '#gran']].forEach(function (t) { billedeFod(c, t[3], w * t[0], h * t[1], t[2]); });
+      c.fillStyle = '#7fa955'; c.beginPath(); c.moveTo(0, h * 0.64); c.quadraticCurveTo(w * 0.5, h * 0.56, w, h * 0.64); c.lineTo(w, h); c.lineTo(0, h); c.fill();
+      c.strokeStyle = '#e5d3ae'; c.lineWidth = 10; c.lineCap = 'round'; c.beginPath(); c.moveTo(w * 0.62, h + 4); c.quadraticCurveTo(w * 0.45, h * 0.82, w * 0.3, h * 0.68); c.stroke();
+      billedeFod(c, '#gran', w * 0.2, h * 0.98, 52);
+      billedeFod(c, '#trae', w * 0.84, h * 1.02, 60);
+      stub(c, w * 0.5, h * 0.86, 0.42);
+      billede(c, '#svamp', w * 0.64, h * 0.9, 14);
+    } else if (s === 'by') {
+      billedeFod(c, '#trae', w * 0.07, h * 0.5, 34); billedeFod(c, '#gran', w * 0.95, h * 0.5, 30);
+      // gaden af brosten
+      c.fillStyle = '#dcc8a0'; c.fillRect(0, h * 0.68, w, h * 0.32);
+      for (var r = 0; r < 4; r++) for (var x = (r % 2) * 8 - 8; x < w; x += 18) {
+        c.fillStyle = ['#e9d9b8', '#e5d3ae', '#eadcbf', '#dfcba4'][Math.floor(rnd2() * 4)];
+        c.beginPath(); c.roundRect(x + rnd2() * 2, h * 0.7 + r * 9, 14 + rnd2() * 2, 7, 3); c.fill();
+      }
+      [['#by-hus1', 0.22, 52], ['#by-hus3', 0.5, 50], ['#by-hus2', 0.78, 52]].forEach(function (t) { billedeFod(c, t[0], w * t[1], h * 0.76, t[2]); });
+      billedeFod(c, '#by-broend', w * 0.5, h * 0.98, 24);
+    } else {
+      billedeFod(c, '#gran', w * 0.12, h * 0.52, 30); billedeFod(c, '#trae', w * 0.36, h * 0.5, 34);
+      c.fillStyle = '#93bc63'; c.beginPath(); c.moveTo(0, h * 0.58); c.quadraticCurveTo(w * 0.45, h * 0.5, w, h * 0.6); c.lineTo(w, h); c.lineTo(0, h); c.fill();
+      c.fillStyle = '#a9c97a'; c.beginPath(); c.moveTo(0, h * 0.82); c.quadraticCurveTo(w * 0.5, h * 0.74, w, h * 0.84); c.lineTo(w, h); c.lineTo(0, h); c.fill();
+      // soeen med baaden
+      var sg = c.createRadialGradient(w * 0.74, h * 0.72, 0, w * 0.76, h * 0.74, 36); sg.addColorStop(0, '#b4dcf0'); sg.addColorStop(1, '#73b2db');
+      c.fillStyle = sg; c.beginPath(); c.ellipse(w * 0.76, h * 0.74, 34, 10, 0, 0, 7); c.fill();
+      baad(c, w * 0.78, h * 0.72, 0.3);
+      hoestak(c, w * 0.3, h * 0.76, 17);
+      billedeFod(c, '#trae', w * 0.1, h * 1.02, 52);
+      billede(c, '#siv', w * 0.95, h * 0.68, 16);
+      for (var i = 0; i < 9; i++) blomst(c, w * (0.3 + rnd2() * 0.65), h * (0.88 + rnd2() * 0.1), ['#d95f45', '#9b7bd4', '#f8f1e6', '#f0c46a'][i % 4], 0.55);
     }
-    else { c.fillStyle = '#5f8240'; c.beginPath(); c.arc(w * 0.28, h * 0.56, 24, 0, 7); c.arc(w * 0.7, h * 0.6, 19, 0, 7); c.fill(); c.fillStyle = GUL; c.beginPath(); c.arc(w * 0.82, h * 0.22, 14, 0, 7); c.fill(); }
+    // papiret og en bloed, lys kant inderst, som paa et malet kort
+    papirFyld(c, 0, 0, w, h);
+    c.beginPath(); c.roundRect(0, 0, w, h, 14);
+    c.strokeStyle = 'rgba(248,241,230,.55)'; c.lineWidth = 6; c.stroke();
+    c.strokeStyle = 'rgba(94,74,58,.12)'; c.lineWidth = 2; c.stroke();
+    c.restore();
+    froe2 = gem;
   }
   function visMenu() {
     tilstand = 'menu';
