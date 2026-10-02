@@ -151,14 +151,16 @@
   /* ---------- former ---------- */
   function Former() { this.p = []; this.n = []; this.f = []; this.i = []; }
   Former.prototype.punkt = function (p, n, f) { this.p.push(p[0], p[1], p[2]); this.n.push(n[0], n[1], n[2]); this.f.push(f[0], f[1], f[2]); return this.p.length / 3 - 1; };
+  /* f er én farve til hele formen, eller en liste med én farve pr. hjoerne, saa farven kan glide over fladen */
+  function hjoerne(f, k) { return typeof f[0] === 'number' ? f : f[k]; }
   Former.prototype.firkant = function (a, b, c, d, f, n) {
     n = n || norm(cross(sub(b, a), sub(d, a)));
-    var i = this.punkt(a, n, f); this.punkt(b, n, f); this.punkt(c, n, f); this.punkt(d, n, f);
+    var i = this.punkt(a, n, hjoerne(f, 0)); this.punkt(b, n, hjoerne(f, 1)); this.punkt(c, n, hjoerne(f, 2)); this.punkt(d, n, hjoerne(f, 3));
     this.i.push(i, i + 1, i + 2, i, i + 2, i + 3);
   };
   Former.prototype.trekant = function (a, b, c, f, n) {
     n = n || norm(cross(sub(b, a), sub(c, a)));
-    var i = this.punkt(a, n, f); this.punkt(b, n, f); this.punkt(c, n, f);
+    var i = this.punkt(a, n, hjoerne(f, 0)); this.punkt(b, n, hjoerne(f, 1)); this.punkt(c, n, hjoerne(f, 2));
     this.i.push(i, i + 1, i + 2);
   };
   Former.prototype.kasse = function (x, y, z, b, h, d, f) {
@@ -258,25 +260,44 @@
   }
 
 
-  /* Skaden: krop, hoved, naeb og hale i én form, vingerne for sig, saa de kan slaa. */
-  var SORT = hex('#2b2a33'), HVID = hex('#f1ece2'), VINGEBLAA = hex('#2f4566'), HALE = hex('#27464f'), NAEB = hex('#4a4239');
+  /*
+   * Skaden: krop, hoved, naeb og hale i én form, vingerne for sig, saa de kan slaa.
+   * Farverne er taget fra den malede skade i bogen (bog/billeder/skade.png): et
+   * blødt, varmt sort, en blaagroen glans paa vingerne og halen og et varmt
+   * hvidt. Hvert hjoerne har sin egen farve, saa farven glider over fladerne.
+   */
+  var SORT = hex('#34322e'), SORT_LYS = hex('#45443f'), SORT_GLANS = hex('#3a4a4f'), SORT_MOERK = hex('#2a2926');
+  var HVID = hex('#f6f0e3'), HVID_SKYGGE = hex('#ddd3c1'), HVID_VARM = hex('#efe4cf');
+  var VINGEBLAA = hex('#4a6875'), VINGEBLAA_LYS = hex('#5b8696'), VINGEGROEN = hex('#3f6f6c');
+  var HALE = hex('#3d5a5c'), HALE_GLANS = hex('#4f7a78'), HALE_SPIDS = hex('#3a3f4a');
+  var NAEB = hex('#5e5a54'), NAEB_SPIDS = hex('#3f3c38');
+  function blandF(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
   function lavKrop() {
     var F = new Former();
     F.ellipsoide(0, 0, 0, 1.5, 1.35, 3.0, function (ux, uy, uz) {
-      if (uy < -0.25 && uz < 0.6) return HVID;
-      if (uy > 0.0 && Math.abs(ux) > 0.62 && uz > -0.5 && uz < 0.5) return HVID;
-      return SORT;
+      // maven: varmt hvid, lidt skygge ind mod siderne og bagud
+      if (uy < -0.25 && uz < 0.6) return blandF(HVID, HVID_SKYGGE, Math.min(1, Math.max(0, (uy + 0.6) * 1.6) * 0.6 + Math.max(0, -uz - 0.3) * 0.5));
+      // skuldrene: de hvide pletter paa ryggen
+      if (uy > 0.0 && Math.abs(ux) > 0.62 && uz > -0.5 && uz < 0.5) return blandF(HVID_VARM, HVID_SKYGGE, Math.max(0, 0.5 - uy) * 0.8);
+      // det sorte: blaagroen glans paa ryggen bagtil, lysere hen mod hovedet
+      var glans = Math.max(0, uy) * Math.max(0, 0.4 - uz) * 1.2;
+      return blandF(blandF(SORT, SORT_LYS, Math.max(0, uz) * 0.6), SORT_GLANS, Math.min(1, glans));
     }, 16, 12);
-    F.ellipsoide(0, 0.55, 3.25, 1.12, 1.08, 1.2, function () { return SORT; }, 12, 9);
+    F.ellipsoide(0, 0.55, 3.25, 1.12, 1.08, 1.2, function (ux, uy, uz) {
+      // hovedet: lidt lysere paa issen, moerkere under hagen
+      return blandF(blandF(SORT, SORT_LYS, Math.max(0, uy) * 0.7), SORT_MOERK, Math.max(0, -uy) * 0.8);
+    }, 12, 9);
     var b = 0.34, zb = 4.25, y0 = 0.42, spids = [0, 0.32, 5.7];
-    F.trekant([-b, y0 + b, zb], [b, y0 + b, zb], spids, NAEB);
-    F.trekant([b, y0 + b, zb], [b, y0 - b, zb], spids, NAEB);
-    F.trekant([b, y0 - b, zb], [-b, y0 - b, zb], spids, NAEB);
-    F.trekant([-b, y0 - b, zb], [-b, y0 + b, zb], spids, NAEB);
+    F.trekant([-b, y0 + b, zb], [b, y0 + b, zb], spids, [NAEB, NAEB, NAEB_SPIDS]);
+    F.trekant([b, y0 + b, zb], [b, y0 - b, zb], spids, [NAEB, NAEB, NAEB_SPIDS]);
+    F.trekant([b, y0 - b, zb], [-b, y0 - b, zb], spids, [NAEB, NAEB, NAEB_SPIDS]);
+    F.trekant([-b, y0 - b, zb], [-b, y0 + b, zb], spids, [NAEB, NAEB, NAEB_SPIDS]);
+    // halen: moerk ved roden, blaagroen glans paa midten og en lilla-blaa spids
     var hale = [[0.55, 0.1, -2.3], [0.8, 0.22, -5.8], [0.5, 0.3, -9.4]], op = [0, 1, 0];
+    var haleF = [[SORT, SORT], [HALE, HALE_GLANS], [HALE_SPIDS, HALE_SPIDS]];
     for (var i = 0; i < 2; i++) {
-      var a = hale[i], c = hale[i + 1];
-      F.firkant([-a[0], a[1], a[2]], [a[0], a[1], a[2]], [c[0], c[1], c[2]], [-c[0], c[1], c[2]], HALE, op);
+      var a = hale[i], c = hale[i + 1], fa = haleF[i], fc = haleF[i + 1];
+      F.firkant([-a[0], a[1], a[2]], [a[0], a[1], a[2]], [c[0], c[1], c[2]], [-c[0], c[1], c[2]], [fa[0], fa[1], fc[1], fc[0]], op);
     }
     return F.faerdig();
   }
@@ -284,9 +305,12 @@
     var F = new Former(), s = side, op = [0, 1, 0];
     var rod = [[0, 0, 1.1], [0, 0, -1.3]], mid = [[3.0 * s, 0.25, 0.95], [3.0 * s, 0.15, -1.8]];
     var ude = [[5.4 * s, 0.25, 0.45], [5.6 * s, 0.05, -2.1]], spids = [7.2 * s, 0.1, -1.1];
-    F.firkant(rod[0], mid[0], mid[1], rod[1], VINGEBLAA, op);
-    F.firkant(mid[0], ude[0], ude[1], mid[1], HVID, op);
-    F.trekant(ude[0], spids, ude[1], SORT, op);
+    // inderst: fra sort ved kroppen til blaagroen glans ud mod den hvide plet
+    F.firkant(rod[0], mid[0], mid[1], rod[1], [SORT, VINGEBLAA_LYS, VINGEGROEN, SORT_GLANS], op);
+    // den hvide plet paa haandsvingfjerene, lidt graa langs bagkanten
+    F.firkant(mid[0], ude[0], ude[1], mid[1], [HVID, HVID, HVID_SKYGGE, blandF(HVID_SKYGGE, VINGEBLAA, 0.25)], op);
+    // spidsen: blødt sort
+    F.trekant(ude[0], spids, ude[1], [blandF(SORT, HVID_SKYGGE, 0.12), SORT_MOERK, SORT], op);
     return F.faerdig();
   }
 
@@ -860,7 +884,7 @@
       var sx = cx + fugl.x * sk, sy = cy + fugl.z * sk;
       hx.translate(sx, sy); hx.rotate(Math.atan2(Math.cos(fugl.h), Math.sin(fugl.h)));
       hx.beginPath(); hx.moveTo(9, 0); hx.lineTo(-6, -6); hx.lineTo(-3, 0); hx.lineTo(-6, 6); hx.closePath();
-      hx.fillStyle = '#2b2a33'; hx.fill(); hx.lineWidth = 1.6; hx.strokeStyle = '#f8f1e6'; hx.stroke();
+      hx.fillStyle = '#34322e'; hx.fill(); hx.lineWidth = 1.6; hx.strokeStyle = '#f8f1e6'; hx.stroke();
       hx.restore();
       hx.lineWidth = 2.5; hx.strokeStyle = 'rgba(94,74,58,.45)'; hx.beginPath(); hx.arc(cx, cy, ks / 2, 0, 7); hx.stroke();
     }
@@ -973,20 +997,39 @@
   function skjulOverlay() { overlay.hidden = true; }
   function stop() { tie(); fingre = {}; fingerOrden = []; if (vind) vind.gain.value = 0; }
 
-  /* Menuens billede: Sanne med et brev over oeen, tegnet i kode */
+  /* Menuens billede: den malede Sanne fra bogen med et brev over oeen. Mangler billedet, tegnes hun i kode. */
+  var skade = new Image();
+  skade.onload = function () { if (tilstand === 'menu') { var eks = overlay.querySelector('canvas.eksempel'); if (eks) tegnEksempel(eks); } };
+  skade.src = '../../bog/billeder/skade.png';
   function tegnEksempel(c) {
     var x = c.getContext('2d'), w = c.width, h = c.height;
-    x.fillStyle = '#cfe3ec'; rr(x, 0, 0, w, h, 18); x.fill();
+    x.clearRect(0, 0, w, h);
+    x.save(); rr(x, 0, 0, w, h, 18); x.clip();
+    var him = x.createLinearGradient(0, 0, 0, h); him.addColorStop(0, '#c4dfec'); him.addColorStop(1, '#e3eef0');
+    x.fillStyle = him; x.fillRect(0, 0, w, h);
+    if (billede.sky) { x.globalAlpha = 0.9; x.drawImage(billede.sky, w * 0.04, h * 0.06, 120, 60); x.drawImage(billede.sky, w * 0.66, h * 0.16, 96, 48); x.globalAlpha = 1; }
     x.fillStyle = '#93bc63'; x.beginPath(); x.ellipse(w / 2, h + 40, w * 0.62, 95, 0, 0, 7); x.fill();
+    x.fillStyle = 'rgba(95,130,64,.25)'; x.beginPath(); x.ellipse(w * 0.62, h + 46, w * 0.4, 80, 0, 0, 7); x.fill();
     x.fillStyle = '#5f9fc9'; x.beginPath(); x.moveTo(w * 0.47, h); x.quadraticCurveTo(w * 0.5, h - 30, w * 0.55, h - 44); x.lineTo(w * 0.58, h - 44); x.quadraticCurveTo(w * 0.55, h - 26, w * 0.56, h); x.fill();
     if (billede.kanin) x.drawImage(billede.kanin, w * 0.14, h - 70, 40, 56);
     if (billede.trae) x.drawImage(billede.trae, w * 0.7, h - 96, 74, 80);
     var sx = w * 0.46, sy = h * 0.34;
-    x.fillStyle = '#2f4566'; x.beginPath(); x.moveTo(sx - 60, sy - 6); x.lineTo(sx, sy + 4); x.lineTo(sx + 60, sy - 6); x.lineTo(sx + 50, sy + 6); x.lineTo(sx, sy + 12); x.lineTo(sx - 50, sy + 6); x.fill();
-    x.fillStyle = '#f1ece2'; x.beginPath(); x.moveTo(sx - 60, sy - 6); x.lineTo(sx - 36, sy); x.lineTo(sx - 48, sy + 6); x.fill(); x.beginPath(); x.moveTo(sx + 60, sy - 6); x.lineTo(sx + 36, sy); x.lineTo(sx + 48, sy + 6); x.fill();
-    x.fillStyle = '#2b2a33'; x.beginPath(); x.ellipse(sx, sy + 6, 13, 17, 0, 0, 7); x.fill();
-    x.fillStyle = '#f1ece2'; x.beginPath(); x.ellipse(sx, sy + 12, 7, 9, 0, 0, 7); x.fill();
-    if (billede.brev) x.drawImage(billede.brev, sx - 16, sy + 16, 32, 32);
+    if (skade.complete && skade.naturalWidth) {
+      // Sanne staar paa bakken med brevet i naebbet, klar til at flyve
+      var sh = 148, sb = sh * skade.naturalWidth / skade.naturalHeight, fx = w * 0.37, fy = h - 52;
+      x.save(); x.translate(fx, fy);
+      x.fillStyle = 'rgba(94,74,58,.16)'; x.beginPath(); x.ellipse(6, 0, sb * 0.36, 5, 0, 0, 7); x.fill();
+      x.drawImage(skade, -sb * 0.5, -sh, sb, sh);
+      if (billede.brev) { x.translate(sb * 0.36, -sh * 0.86); x.rotate(0.18); x.drawImage(billede.brev, -4, -14, 34, 34); }
+      x.restore();
+    } else {
+      x.fillStyle = '#4a6875'; x.beginPath(); x.moveTo(sx - 60, sy - 6); x.lineTo(sx, sy + 4); x.lineTo(sx + 60, sy - 6); x.lineTo(sx + 50, sy + 6); x.lineTo(sx, sy + 12); x.lineTo(sx - 50, sy + 6); x.fill();
+      x.fillStyle = '#f6f0e3'; x.beginPath(); x.moveTo(sx - 60, sy - 6); x.lineTo(sx - 36, sy); x.lineTo(sx - 48, sy + 6); x.fill(); x.beginPath(); x.moveTo(sx + 60, sy - 6); x.lineTo(sx + 36, sy); x.lineTo(sx + 48, sy + 6); x.fill();
+      x.fillStyle = '#34322e'; x.beginPath(); x.ellipse(sx, sy + 6, 13, 17, 0, 0, 7); x.fill();
+      x.fillStyle = '#f6f0e3'; x.beginPath(); x.ellipse(sx, sy + 12, 7, 9, 0, 0, 7); x.fill();
+      if (billede.brev) x.drawImage(billede.brev, sx - 16, sy + 16, 32, 32);
+    }
+    x.restore();
   }
 
   function visMenu() {

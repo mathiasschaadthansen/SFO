@@ -17,5 +17,8 @@ ind over de naesten-hvide pixels, bloed kant), billedet er beskaaret til
 indholdet, skaleret til 320 px paa den lange led og gemt som 8-bit PNG med
 palet (Pillow).
 
-Stammerne, pladsen og vandet tegnes i kode i `js/game.js`. Mangler billedet,
-tegner spillet en enkel Bodil i kode i stedet.
+Stammerne, pladsen, vandet og daemningen tegnes i kode i `js/game.js`.
+Mangler billedet, tegner spillet en enkel Bodil i kode i stedet.
+
+Sivene ved vandet er laant fra Nøddeskoven (`../maskinen/billeder/siv.png`,
+se NOTICE.md dér), saa der ikke kommer et nyt billede til.
