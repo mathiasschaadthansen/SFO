@@ -437,26 +437,46 @@
     ctx.beginPath(); ctx.roundRect(b.x, b.y, b.str, b.str, 20); ctx.stroke();
   }
 
-  function tegnTegning(b) {
-    tegnPapir(b);
-    ctx.save();
-    ctx.translate(b.x, b.y); ctx.scale(b.u, b.u);
+  /**
+   * Det, der staar stille, mens barnet tegner: universet svagt paa papiret, de stiplede streger og
+   * de dele, der er tegnet faerdige. Akvarellen er tung at male, saa laget males kun, naar en
+   * streg er faerdig, og laegges ellers bare paa i hvert billede.
+   */
+  var tegneLag = null;
+  function tegneBillede(b) {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var noegle = figur.id + '|' + univers.id + '|' + spor.aktiv + '|' + Math.round(b.str) + '|' + dpr;
+    if (tegneLag && tegneLag.noegle === noegle) return tegneLag.l;
+    var l = document.createElement('canvas'), c = l.getContext('2d');
+    l.width = l.height = Math.ceil(b.str * dpr);
+    c.scale(b.u * dpr, b.u * dpr);
     // Universet anes svagt paa papiret, mens man tegner
-    ctx.save();
-    ctx.beginPath(); ctx.roundRect(1, 1, 98, 98, 3.5); ctx.clip();
-    ctx.globalAlpha = 0.24; tegnBaggrund(ctx, univers.id); ctx.globalAlpha = 1;
-    ctx.restore();
-    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    c.save();
+    c.beginPath(); c.roundRect(1, 1, 98, 98, 3.5); c.clip();
+    c.globalAlpha = 0.24; tegnBaggrund(c, univers.id); c.globalAlpha = 1;
+    c.restore();
+    c.lineJoin = 'round'; c.lineCap = 'round';
     var dele = figur.dele.filter(function (d) { return !d.pynt; });
     // Det der mangler: stiplet, paa et lyst baand, saa det staar tydeligt paa baggrunden. Det der er tegnet: med farve.
     dele.forEach(function (d, k) {
       if (k < spor.aktiv) return;
-      sti(ctx, d.sti);
-      ctx.strokeStyle = 'rgba(255,250,240,0.75)'; ctx.lineWidth = k === spor.aktiv ? 4.6 : 3.6; ctx.stroke();
-      ctx.setLineDash([2.5, 3.5]); ctx.strokeStyle = k === spor.aktiv ? '#8f7d69' : '#cbbfac'; ctx.lineWidth = k === spor.aktiv ? 2.4 : 1.8; ctx.stroke();
-      ctx.setLineDash([]);
+      sti(c, d.sti);
+      c.strokeStyle = 'rgba(255,250,240,0.75)'; c.lineWidth = k === spor.aktiv ? 4.6 : 3.6; c.stroke();
+      c.setLineDash([2.5, 3.5]); c.strokeStyle = k === spor.aktiv ? '#8f7d69' : '#cbbfac'; c.lineWidth = k === spor.aktiv ? 2.4 : 1.8; c.stroke();
+      c.setLineDash([]);
     });
-    dele.forEach(function (d, k) { if (k < spor.aktiv) tegnDel(ctx, d); });
+    dele.forEach(function (d, k) { if (k < spor.aktiv) tegnDel(c, d); });
+    tegneLag = { noegle: noegle, l: l };
+    return l;
+  }
+
+  function tegnTegning(b) {
+    tegnPapir(b);
+    ctx.drawImage(tegneBillede(b), b.x, b.y, b.str, b.str);
+    ctx.save();
+    ctx.translate(b.x, b.y); ctx.scale(b.u, b.u);
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    var dele = figur.dele.filter(function (d) { return !d.pynt; });
     if (!spor.faerdig) {
       var d = dele[spor.aktiv], punkter = spor.streger[spor.aktiv];
       if (spor.indeks > 0) {
