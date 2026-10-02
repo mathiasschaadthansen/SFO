@@ -138,11 +138,12 @@ const paaDisk = f => fs.existsSync(path.join(ROD, f));
   const store = malede.filter(f => fs.statSync(path.join(ROD, 'billeder', f)).size > 40 * 1024);
   tjek('de malede billeder er kvadratiske', skaeve.length === 0, 'skaeve: ' + skaeve);
   tjek('ingen malet billede fylder over 40 KB', store.length === 0, 'for store: ' + store);
-  tjek('billeder/ og ting/ har NOTICE.md, og ting/ har LICENSE', paaDisk('billeder/NOTICE.md') && paaDisk('ting/NOTICE.md') && paaDisk('ting/LICENSE'));
+  tjek('billeder/ har NOTICE.md', paaDisk('billeder/NOTICE.md'));
   const brugte = new Set(R.ALLE.map(o => o.fil));
-  const ubrugte = fs.readdirSync(path.join(ROD, 'ting')).filter(f => f.endsWith('.svg') && !brugte.has('ting/' + f))
-    .concat(malede.filter(f => !brugte.has('billeder/' + f)));
-  tjek('alle billeder i ting/ og billeder/ bruges af et ord', ubrugte.length === 0, 'ubrugte: ' + ubrugte);
+  const ubrugte = malede.filter(f => !brugte.has('billeder/' + f));
+  tjek('alle billeder i billeder/ bruges af et ord', ubrugte.length === 0, 'ubrugte: ' + ubrugte);
+  const egne = R.ALLE.filter(o => o.fil && !o.fil.startsWith('billeder/') && !o.fil.startsWith('../bogstaver/'));
+  tjek('alle ekstra ord er malede billeder i billeder/', egne.length === 0, 'andre: ' + egne.map(o => o.fil));
 }
 
 /* Siden og service workeren */

@@ -4,8 +4,9 @@
  *
  * Ordene er Bogstavvejens ting (billeder og stemme genbruges derfra, saa
  * intet skal males eller indtales to gange) plus nogle faa ekstra ord, som
- * rimer paa dem: stol, mur, maal, bog, pil, vand, mund, sky (Noto Emoji i
- * ting/), bjoern og kanin (Noeddeskovens malede) og salat (Skovkoekkenets).
+ * rimer paa dem: stol, mur, maal, bog, pil, vand, mund, sky (malet til
+ * Rimhulen), bjoern og kanin (Noeddeskovens malede) og salat (Skovkoekkenets).
+ * Alle ligger i billeder/.
  * Ski blev proevet og taget ud igen: stemmen sagde "skie".
  *
  * RIM er grupperne af ord, der rimer. STAVELSER er antal stavelser i hvert ord.
@@ -36,9 +37,9 @@
   });
 
   var EKSTRA = [
-    ['stol', 'stol', 'ting/stol.svg'], ['mur', 'mur', 'ting/mur.svg'], ['mål', 'maal', 'ting/maal.svg'],
-    ['bog', 'bog', 'ting/bog.svg'], ['pil', 'pil', 'ting/pil.svg'], ['vand', 'vand', 'ting/vand.svg'],
-    ['mund', 'mund', 'ting/mund.svg'], ['sky', 'sky', 'ting/sky.svg'],
+    ['stol', 'stol', 'billeder/stol.png'], ['mur', 'mur', 'billeder/mur.png'], ['mål', 'maal', 'billeder/maal.png'],
+    ['bog', 'bog', 'billeder/bog.png'], ['pil', 'pil', 'billeder/pil.png'], ['vand', 'vand', 'billeder/vand.png'],
+    ['mund', 'mund', 'billeder/mund.png'], ['sky', 'sky', 'billeder/sky.png'],
     ['bjørn', 'bjoern', 'billeder/bjoern.png'], ['kanin', 'kanin', 'billeder/kanin.png'], ['salat', 'salat', 'billeder/salat.png']
   ];
   EKSTRA.forEach(function (e) { laeg({ ord: e[0], navn: e[1], fil: e[2], tegn: null, klip: 'lyd/ord_' + e[1] + '.mp3' }); });

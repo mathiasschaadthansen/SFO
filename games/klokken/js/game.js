@@ -88,7 +88,8 @@
   var ALLE = ['mus', 'jord', 'sol', 'maane'].concat(U.DAGEN.map(function (d) { return d.kort; })).map(function (n) { return STI + n + '.svg'; });
   Sprites.forhent(ALLE);
   var RAKET = '../../assets/kenney/raket.png';
-  Sprites.forhent([RAKET]);
+  var MILO = 'billeder/milo.png';         // den malede Milo fra bogen; mangler den, tegnes musen i kode
+  Sprites.forhent([RAKET, MILO]);
   function billede(navn) { return Sprites.hent(navn === 'raket' ? RAKET : STI + navn + '.svg'); }
   function tegnBillede(navn, x, y, str, vinkel, c) {
     c = c || ctx;
@@ -689,8 +690,9 @@
   /* ---------- rummusen ---------- */
 
   /**
-   * Rummusen som hel astronaut: rygsaek, dragt, arme, stoevler og glashjelm med
-   * Noto-musen indeni. peg er en vinkel, armen skal pege i (mod uret, naar musen
+   * Rummusen Milo: det malede billede fra bogen (billeder/milo.png). Mangler det,
+   * tegnes han i kode som hel astronaut: rygsaek, dragt, arme, stoevler og
+   * glashjelm med Noto-musen indeni. peg er en vinkel, armen skal pege i (mod uret, naar musen
    * hjaelper); ellers svaever armene.
    */
   function tegnMus(c, x, y, str, valg) {
@@ -700,6 +702,22 @@
     c.translate(x, y - hop + sv);
     c.lineJoin = 'round'; c.lineCap = 'round';
     var lw = Math.max(2.5, str * 0.045), hjelm = str * 0.34;
+    var milo = Sprites.hent(MILO);
+    if (Sprites.klar(milo)) {
+      c.drawImage(milo, -str * 0.68, -str * 0.62, str * 1.36, str * 1.36);
+      if (valg.peg !== undefined) {
+        // Armen, der peger, naar musen hjaelper: dragtens farve og en graa pote
+        var px = Math.cos(valg.peg) * str * 0.55, py = Math.sin(valg.peg) * str * 0.55;
+        c.strokeStyle = MOERK; c.lineWidth = str * 0.14;
+        c.beginPath(); c.moveTo(0, 0); c.lineTo(px, py); c.stroke();
+        c.strokeStyle = '#eceae3'; c.lineWidth = str * 0.1;
+        c.beginPath(); c.moveTo(0, 0); c.lineTo(px, py); c.stroke();
+        c.fillStyle = '#a19a94'; c.beginPath(); c.arc(px, py, str * 0.075, 0, TAU); c.fill();
+        c.strokeStyle = MOERK; c.lineWidth = lw * 0.8; c.stroke();
+      }
+      c.restore();
+      return;
+    }
     // Rygsaek
     rr(c, -str * 0.3, -str * 0.02, str * 0.6, str * 0.42, str * 0.14, '#c3c6c0', MOERK, lw);
     rr(c, -str * 0.12, str * 0.04, str * 0.24, str * 0.12, str * 0.05, '#9a9c96', MOERK, lw * 0.7);
