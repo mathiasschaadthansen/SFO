@@ -148,6 +148,7 @@ bog/
   js/scener.js          billedet til hvert opslag, tegnet i kode med spillenes malede figurer
   js/game.js            forsiden, bladring, oplæsning og find-nøglen; print kun til PDF-værktøjet
   billeder/skade.png    Skaden Sanne, bogens eget billede (se billeder/NOTICE.md)
+  billeder/skade-flyver.png  Sanne, der flyver med et brev, til Himmelvejens menu
   billeder/opslag/*.jpg de ti malede opslag og forsiden fra Gemini, 600 x 780 (se NOTICE.md dér)
   udkast/*.png          skærmklip af Gemini-udkastet, kun til at sammenligne med; ikke i appen
   lyd/*.mp3             oplæsningen, ét klip pr. opslag (se lyd/NOTICE.md)

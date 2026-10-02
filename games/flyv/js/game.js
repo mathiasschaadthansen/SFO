@@ -997,10 +997,10 @@
   function skjulOverlay() { overlay.hidden = true; }
   function stop() { tie(); fingre = {}; fingerOrden = []; if (vind) vind.gain.value = 0; }
 
-  /* Menuens billede: den malede Sanne fra bogen med et brev over oeen. Mangler billedet, tegnes hun i kode. */
+  /* Menuens billede: den malede Sanne fra bogen flyver med et brev over oeen. Mangler billedet, tegnes hun i kode. */
   var skade = new Image();
   skade.onload = function () { if (tilstand === 'menu') { var eks = overlay.querySelector('canvas.eksempel'); if (eks) tegnEksempel(eks); } };
-  skade.src = '../../bog/billeder/skade.png';
+  skade.src = '../../bog/billeder/skade-flyver.png';
   function tegnEksempel(c) {
     var x = c.getContext('2d'), w = c.width, h = c.height;
     x.clearRect(0, 0, w, h);
@@ -1015,13 +1015,9 @@
     if (billede.trae) x.drawImage(billede.trae, w * 0.7, h - 96, 74, 80);
     var sx = w * 0.46, sy = h * 0.34;
     if (skade.complete && skade.naturalWidth) {
-      // Sanne staar paa bakken med brevet i naebbet, klar til at flyve
-      var sh = 148, sb = sh * skade.naturalWidth / skade.naturalHeight, fx = w * 0.37, fy = h - 52;
-      x.save(); x.translate(fx, fy);
-      x.fillStyle = 'rgba(94,74,58,.16)'; x.beginPath(); x.ellipse(6, 0, sb * 0.36, 5, 0, 0, 7); x.fill();
-      x.drawImage(skade, -sb * 0.5, -sh, sb, sh);
-      if (billede.brev) { x.translate(sb * 0.36, -sh * 0.86); x.rotate(0.18); x.drawImage(billede.brev, -4, -14, 34, 34); }
-      x.restore();
+      // Sanne flyver hoejt over oeen med brevet i naebbet (brevet er malet med i billedet)
+      var str = 116;
+      x.drawImage(skade, sx - str / 2, sy - str / 2, str, str);
     } else {
       x.fillStyle = '#4a6875'; x.beginPath(); x.moveTo(sx - 60, sy - 6); x.lineTo(sx, sy + 4); x.lineTo(sx + 60, sy - 6); x.lineTo(sx + 50, sy + 6); x.lineTo(sx, sy + 12); x.lineTo(sx - 50, sy + 6); x.fill();
       x.fillStyle = '#f6f0e3'; x.beginPath(); x.moveTo(sx - 60, sy - 6); x.lineTo(sx - 36, sy); x.lineTo(sx - 48, sy + 6); x.fill(); x.beginPath(); x.moveTo(sx + 60, sy - 6); x.lineTo(sx + 36, sy); x.lineTo(sx + 48, sy + 6); x.fill();
