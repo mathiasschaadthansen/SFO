@@ -89,7 +89,7 @@
     lærred.width = Math.floor(window.innerWidth * dpr); lærred.height = Math.floor(window.innerHeight * dpr);
     lærred.style.width = window.innerWidth + 'px'; lærred.style.height = window.innerHeight + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    L = null; jord = null;
+    L = null; jord = null; stubbeKort = null; redeKort = null; kurvKort = null; bladKort = {}; antalBladKort = 0;
   }
   /** Stubben i midten, Egon til hoejre, svarene forneden, tavlen (Ryst og haeld) til venstre. Venstre kant er fri til knapperne. */
   function layout() {
@@ -282,24 +282,261 @@
     if (klar(noedBillede)) ctx.drawImage(noedBillede, x - d / 2, y - d / 2, d, d);
     else { ctx.fillStyle = '#b18a56'; ctx.beginPath(); ctx.arc(x, y, d * 0.42, 0, 7); ctx.fill(); }
   }
+  /* ---------- malet grafik: tegnes én gang paa et lille laerred og genbruges hver frame ---------- */
+  function dprNu() { return Math.min(window.devicePixelRatio || 1, 2); }
+  /** Et lille laerred paa b x h punkter, med origo i (ox, oy). */
+  function lilleLaerred(b, h, ox, oy) {
+    var dpr = dprNu(), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.ceil(b * dpr)); c.height = Math.max(1, Math.ceil(h * dpr));
+    var x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, ox * dpr, oy * dpr);
+    return { c: c, x: x, b: b, h: h, ox: ox, oy: oy };
+  }
+  function tilf(n) { return function () { n = (n * 9301 + 49297) % 233280; return n / 233280; }; }
+
+  /** Bladets omrids: spids i begge ender. b er bredden i forhold til laengden. */
+  function bladForm(c, s, b) { c.beginPath(); c.moveTo(-s, 0); c.quadraticCurveTo(0, -s * b, s, 0); c.quadraticCurveTo(0, s * b, -s, 0); c.closePath(); }
+  /** Et malet blad: fuldt daekkende bund, akvarel i lag ovenpaa, tynde aarer, der spidser til, og en lidt moerkere kant. */
+  function lavBlad(s, b, farve) {
+    var pad = 6, hb = s * b / 2, l = lilleLaerred(2 * s + pad * 2 + 4, s * b + pad * 2 + 6, pad + s, pad + hb), c = l.x;
+    var r = tilf(Math.round(s * 7 + b * 100) % 233280);
+    // skyggen under bladet
+    c.save(); c.translate(4, 6); bladForm(c, s, b); c.fillStyle = 'rgba(94,74,58,.18)'; c.fill(); c.restore();
+    // bunden er helt daekkende, saa det, der ligger under, aldrig skinner igennem
+    bladForm(c, s, b); c.fillStyle = farve; c.fill();
+    c.save(); bladForm(c, s, b); c.clip();
+    // lyset fra oven og en svag moerk vask forneden
+    var g = c.createLinearGradient(0, -hb, 0, hb);
+    g.addColorStop(0, 'rgba(248,241,230,.34)'); g.addColorStop(0.5, 'rgba(248,241,230,0)'); g.addColorStop(1, 'rgba(94,74,58,.14)');
+    c.fillStyle = g; c.fillRect(-s, -hb, 2 * s, 2 * hb);
+    // akvarelpletter: lyse og moerke skyer, der flyder ud i hinanden
+    for (var k = 0; k < 7; k++) {
+      var px = (r() - 0.5) * 1.5 * s, py = (r() - 0.5) * hb * 1.2, pr = s * (0.18 + r() * 0.22), lys = k % 2 === 0;
+      var gg = c.createRadialGradient(px, py, 0, px, py, pr);
+      gg.addColorStop(0, lys ? 'rgba(248,241,230,.2)' : 'rgba(94,74,58,.09)'); gg.addColorStop(1, lys ? 'rgba(248,241,230,0)' : 'rgba(94,74,58,0)');
+      c.fillStyle = gg; c.fillRect(px - pr, py - pr, pr * 2, pr * 2);
+    }
+    // midtribben: tynd, og den spidser til mod spidsen
+    var w = Math.max(1, s * 0.028);
+    c.fillStyle = 'rgba(94,74,58,.3)';
+    c.beginPath(); c.moveTo(-s * 0.98, -w); c.quadraticCurveTo(0, -w * 0.7 - s * 0.015, s * 0.9, 0); c.quadraticCurveTo(0, w * 0.7 - s * 0.015, -s * 0.98, w); c.closePath(); c.fill();
+    // sidearerne: buer ud mod kanten og spidser til
+    var wv = Math.max(0.7, s * 0.014);
+    c.fillStyle = 'rgba(94,74,58,.2)';
+    for (var i = 0; i < 5; i++) {
+      var x0 = -s * 0.7 + i * s * 0.3;
+      for (var side = -1; side <= 1; side += 2) {
+        var xe = x0 + s * 0.3, kant = hb * (1 - (xe / s) * (xe / s)), ye = side * kant * 0.78, cx = x0 + s * 0.06, cy = ye * 0.75;
+        c.beginPath(); c.moveTo(x0 - wv, 0); c.quadraticCurveTo(cx, cy, xe, ye); c.quadraticCurveTo(cx + wv * 2, cy, x0 + wv, 0); c.closePath(); c.fill();
+      }
+    }
+    // en lidt moerkere kant, bloed indad
+    bladForm(c, s, b); c.strokeStyle = 'rgba(94,74,58,.16)'; c.lineWidth = Math.max(3, s * 0.12); c.stroke();
+    c.strokeStyle = 'rgba(94,74,58,.3)'; c.lineWidth = Math.max(1.2, s * 0.03); c.stroke();
+    c.restore();
+    l.s = s;
+    return l;
+  }
+  var bladKort = {}, antalBladKort = 0;
   /** Et blad: spids i begge ender og en midtribbe. bred er bladets bredde i forhold til laengden. */
   function tegnBlad(x, y, s, v, farve, alfa, bred) {
-    var b = bred || 0.55;
+    var b = bred || 0.55, n = farve + ':' + b + ':' + Math.round(s), sp = bladKort[n];
+    if (!sp) {
+      if (antalBladKort > 80) { bladKort = {}; antalBladKort = 0; }
+      sp = bladKort[n] = lavBlad(Math.max(4, Math.round(s)), b, farve); antalBladKort++;
+    }
+    var k = s / sp.s;
     ctx.save(); ctx.translate(x, y); ctx.rotate(v); ctx.globalAlpha = alfa;
-    ctx.fillStyle = 'rgba(94,74,58,.18)'; ctx.beginPath(); ctx.moveTo(-s + 4, 6); ctx.quadraticCurveTo(0, -s * b + 6, s + 4, 6); ctx.quadraticCurveTo(0, s * b + 6, -s + 4, 6); ctx.fill();
-    ctx.fillStyle = farve; ctx.beginPath(); ctx.moveTo(-s, 0); ctx.quadraticCurveTo(0, -s * b, s, 0); ctx.quadraticCurveTo(0, s * b, -s, 0); ctx.fill();
-    ctx.strokeStyle = 'rgba(94,74,58,.35)'; ctx.lineWidth = Math.max(1.5, s * 0.04);
-    ctx.beginPath(); ctx.moveTo(-s * 0.9, 0); ctx.lineTo(s * 0.95, 0);
-    for (var k = -2; k <= 2; k++) { ctx.moveTo(k * s * 0.3, 0); ctx.lineTo(k * s * 0.3 + s * 0.18, -s * b * 0.38); ctx.moveTo(k * s * 0.3, 0); ctx.lineTo(k * s * 0.3 + s * 0.18, s * b * 0.38); }
-    ctx.stroke(); ctx.restore(); ctx.globalAlpha = 1;
+    ctx.drawImage(sp.c, -sp.ox * k, -sp.oy * k, sp.b * k, sp.h * k);
+    ctx.restore(); ctx.globalAlpha = 1;
   }
+
+  /** Stubben: barken med furer, aarringe tegnet i haanden og et par revner. Midten og radius er de samme som foer. */
+  function lavStubbe(R) {
+    var m = Math.ceil(R * 1.06) + 14, l = lilleLaerred(m * 2 + 10, m * 2 + R * 0.14 + 10, m, m), c = l.x, r = tilf(4711), i, v;
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    // skyggen
+    c.fillStyle = 'rgba(94,74,58,.1)'; c.beginPath(); c.ellipse(10, R * 0.14, R * 1.05, R * 1.01, 0, 0, 7); c.fill();
+    c.fillStyle = 'rgba(94,74,58,.12)'; c.beginPath(); c.ellipse(7, R * 0.1, R * 1.01, R * 0.98, 0, 0, 7); c.fill();
+    // barken: kanten er lidt ujaevn, men gaar aldrig uden for R
+    var fa = r() * 6, fb = r() * 6;
+    c.beginPath();
+    for (i = 0; i <= 96; i++) { v = i / 96 * Math.PI * 2; var r0 = R * (1 - 0.012 - 0.01 * Math.sin(v * 7 + fa) - 0.006 * Math.sin(v * 17 + fb)); c.lineTo(Math.cos(v) * r0, Math.sin(v) * r0); }
+    c.closePath(); c.fillStyle = '#8a663d'; c.fill();
+    c.save(); c.clip();
+    var lysB = c.createLinearGradient(-R, -R, R, R);
+    lysB.addColorStop(0, 'rgba(229,211,174,.28)'); lysB.addColorStop(0.5, 'rgba(229,211,174,0)'); lysB.addColorStop(1, 'rgba(94,74,58,.25)');
+    c.fillStyle = lysB; c.fillRect(-R, -R, 2 * R, 2 * R);
+    // furerne i barken: korte streger paa tvaers af ringen
+    for (i = 0; i < 130; i++) {
+      v = r() * Math.PI * 2;
+      var r1 = R * (0.9 + r() * 0.02), r2 = R * (0.94 + r() * 0.07), dv = (r() - 0.5) * 0.03;
+      c.strokeStyle = i % 3 === 0 ? 'rgba(177,138,86,.6)' : 'rgba(94,74,58,.42)'; c.lineWidth = i % 3 === 0 ? 1 + r() : 1.5 + r() * 2;
+      c.beginPath(); c.moveTo(Math.cos(v) * r1, Math.sin(v) * r1);
+      c.quadraticCurveTo(Math.cos(v + dv) * (r1 + r2) / 2, Math.sin(v + dv) * (r1 + r2) / 2, Math.cos(v + dv * 2) * r2, Math.sin(v + dv * 2) * r2); c.stroke();
+    }
+    c.restore();
+    // det lyse lag lige under barken
+    c.fillStyle = '#b18a56'; c.beginPath(); c.arc(0, 0, R * 0.915, 0, 7); c.fill();
+    // snitfladen
+    c.fillStyle = '#e5d3ae'; c.beginPath(); c.arc(0, 0, R * 0.9, 0, 7); c.fill();
+    c.save(); c.beginPath(); c.arc(0, 0, R * 0.9, 0, 7); c.clip();
+    var g = c.createRadialGradient(-R * 0.15, -R * 0.2, R * 0.05, 0, 0, R * 0.9);
+    g.addColorStop(0, 'rgba(248,241,230,.45)'); g.addColorStop(0.6, 'rgba(248,241,230,0)'); g.addColorStop(1, 'rgba(217,186,138,.55)');
+    c.fillStyle = g; c.fillRect(-R, -R, 2 * R, 2 * R);
+    // aarringene: ikke helt runde, ikke lige tykke, og lidt forskudt mod den ene side
+    var mx = R * 0.03, my = -R * 0.02, nr = 0;
+    for (var ring = 0.1; ring < 0.86; ring += 0.06 + r() * 0.05) {
+      var p1 = r() * 6, p2 = r() * 6, p3 = r() * 6, a1 = 0.025 + r() * 0.02, skub = (1 - ring) * 0.6;
+      c.beginPath();
+      for (i = 0; i <= 90; i++) {
+        v = i / 90 * Math.PI * 2;
+        var rad = R * ring * (1 + a1 * Math.sin(3 * v + p1) + 0.015 * Math.sin(5 * v + p2) + 0.008 * Math.sin(11 * v + p3));
+        c.lineTo(mx * skub + Math.cos(v) * rad, my * skub + Math.sin(v) * rad * 0.97);
+      }
+      c.closePath();
+      var tynd = nr % 3 === 2;
+      c.strokeStyle = tynd ? 'rgba(177,138,86,.42)' : 'rgba(217,186,138,.95)'; c.lineWidth = tynd ? 1.3 : 2 + r() * 1.4; c.stroke();
+      nr++;
+    }
+    // marven i midten
+    c.fillStyle = 'rgba(177,138,86,.55)'; c.beginPath(); c.ellipse(mx, my, R * 0.035, R * 0.03, 0.4, 0, 7); c.fill();
+    // et par revner fra kanten ind mod midten, vaek fra den lodrette deling
+    [0.42, 2.6, -2.3].forEach(function (va, k) {
+      var x = Math.cos(va) * R * 0.9, y = Math.sin(va) * R * 0.9, ind = R * (0.2 + k * 0.05), trin = 7, bred = 4.2;
+      for (var t = 0; t < trin; t++) {
+        var vv = va + (r() - 0.5) * 0.5, nx = x - Math.cos(vv) * ind / trin, ny = y - Math.sin(vv) * ind / trin;
+        c.strokeStyle = 'rgba(138,102,61,.8)'; c.lineWidth = Math.max(0.8, bred * (1 - t / trin));
+        c.beginPath(); c.moveTo(x, y); c.lineTo(nx, ny); c.stroke();
+        x = nx; y = ny;
+      }
+    });
+    c.restore();
+    return l;
+  }
+  /** Reden (Ryst og haeld): kviste i lag og en skaal med skygge inderst. Samme ellipse som foer: rx x ry. */
+  function tegnRede(c, rx, ry, froe) {
+    var r = tilf(froe || 77), ix = rx * 0.78, iy = ry * 0.765, i;
+    c.save(); c.lineCap = 'round'; c.lineJoin = 'round';
+    c.fillStyle = 'rgba(94,74,58,.22)'; c.beginPath(); c.ellipse(2, ry * 0.06, rx * 0.97, ry * 0.95, 0, 0, 7); c.fill();
+    c.fillStyle = '#8a663d'; c.beginPath(); c.ellipse(0, 0, rx, ry, 0, 0, 7); c.fill();
+    // skaalen inderst, med skygge langs den oeverste kant
+    c.save(); c.beginPath(); c.ellipse(0, 0, ix, iy, 0, 0, 7); c.clip();
+    c.fillStyle = '#d9ba8a'; c.fillRect(-ix, -iy, ix * 2, iy * 2);
+    var g = c.createRadialGradient(0, iy * 0.15, 0, 0, iy * 0.15, ix * 1.05);
+    g.addColorStop(0, 'rgba(229,211,174,.6)'); g.addColorStop(0.55, 'rgba(229,211,174,0)'); g.addColorStop(1, 'rgba(94,74,58,.42)');
+    c.fillStyle = g; c.fillRect(-ix, -iy, ix * 2, iy * 2);
+    c.strokeStyle = 'rgba(94,74,58,.3)'; c.lineWidth = iy * 0.45; c.beginPath(); c.ellipse(0, iy * 0.18, ix * 1.08, iy * 1.08, 0, 0, 7); c.stroke();
+    // bloedt straa i bunden
+    for (i = 0; i < 16; i++) {
+      var sx = (r() - 0.5) * ix * 1.3, sy = (r() - 0.5) * iy * 1.1, sl = ix * (0.2 + r() * 0.25), sv = r() * 3;
+      c.strokeStyle = i % 2 ? 'rgba(248,241,230,.35)' : 'rgba(177,138,86,.4)'; c.lineWidth = Math.max(0.8, rx * 0.018);
+      c.beginPath(); c.moveTo(sx, sy); c.quadraticCurveTo(sx + Math.cos(sv) * sl * 0.6, sy + Math.sin(sv) * sl * 0.2 - sl * 0.15, sx + Math.cos(sv) * sl, sy + Math.sin(sv) * sl * 0.4); c.stroke();
+    }
+    c.restore();
+    // kvistene i tre lag: de moerke bagerst, de lyse foran. Hver kvist er en lige pind paa skraa af ringen,
+    // saa de krydser hinanden som i en rigtig rede. Alt holdes inden for redens ellipse.
+    c.save(); c.beginPath(); c.ellipse(0, 0, rx, ry, 0, 0, 7); c.clip();
+    var lag = [['#5e4a3a', '#6b5545'], ['#8a663d', '#b18a56', '#6b5545'], ['#b18a56', '#d9ba8a', '#8a663d']];
+    lag.forEach(function (farver, li) {
+      var antal = li === 0 ? 40 : 30;
+      for (var k = 0; k < antal; k++) {
+        var a = r() * Math.PI * 2, f = 0.78 + r() * 0.17, mx = Math.cos(a) * rx * f, my = Math.sin(a) * ry * f;
+        var retn = a + Math.PI / 2 + (r() - 0.5) * 0.9, l2 = rx * (0.16 + r() * 0.2), w = rx * (0.03 + r() * 0.035);
+        var dx = Math.cos(retn) * l2, dy = Math.sin(retn) * l2 * (ry / rx), bue = (r() - 0.5) * l2 * 0.25;
+        if (li > 0) { c.strokeStyle = 'rgba(94,74,58,.28)'; c.lineWidth = w; c.beginPath(); c.moveTo(mx - dx + 1, my - dy + 1.5); c.quadraticCurveTo(mx + bue + 1, my - bue + 1.5, mx + dx + 1, my + dy + 1.5); c.stroke(); }
+        c.strokeStyle = farver[k % farver.length]; c.lineWidth = w;
+        c.beginPath(); c.moveTo(mx - dx, my - dy); c.quadraticCurveTo(mx + bue, my - bue, mx + dx, my + dy); c.stroke();
+        if (li === 2 && k % 5 === 0) {   // en lille gren, der stikker ud til siden
+          c.lineWidth = w * 0.6; c.beginPath(); c.moveTo(mx + dx * 0.3, my + dy * 0.3); c.lineTo(mx + dx * 0.3 + Math.cos(retn + 0.7) * rx * 0.09, my + dy * 0.3 + Math.sin(retn + 0.7) * ry * 0.09); c.stroke();
+        }
+      }
+      if (li === 1) {   // kanten ind mod skaalen
+        c.strokeStyle = 'rgba(94,74,58,.4)'; c.lineWidth = Math.max(1, rx * 0.03); c.beginPath(); c.ellipse(0, 0, ix * 1.01, iy * 1.01, 0, 0, 7); c.stroke();
+      }
+    });
+    // skaalen holdes fri for kviste, saa noedderne ligger paa bloedt straa
+    c.restore();
+    c.save(); c.beginPath(); c.ellipse(0, 0, ix * 0.97, iy * 0.97, 0, 0, 7); c.clip();
+    c.fillStyle = 'rgba(94,74,58,.22)'; c.beginPath(); c.ellipse(0, 0, ix * 1.2, iy * 1.2, 0, 0, 7); c.ellipse(0, iy * 0.22, ix * 0.98, iy * 0.92, 0, 0, 7); c.fill('evenodd');
+    c.restore();
+    // lys paa den oeverste kant
+    c.strokeStyle = 'rgba(248,241,230,.3)'; c.lineWidth = Math.max(1.2, rx * 0.03);
+    c.beginPath(); c.ellipse(0, 0, rx * 0.9, ry * 0.9, 0, Math.PI * 1.1, Math.PI * 1.7); c.stroke();
+    c.restore();
+  }
+  function lavRede(R) {
+    var rx = R * 0.36, ry = R * 0.34, l = lilleLaerred(rx * 2 + 12, ry * 2 + 14, rx + 6, ry + 6);
+    tegnRede(l.x, rx, ry, 77);
+    return l;
+  }
+  /** Kurven: flettet af vidjer, raekke for raekke. krop tegner kurvens omrids paa c. Samme udseende som kurven i Aarstidshaven. */
+  function flettetKurv(c, krop, x, y, b, h, raekker, top) {
+    var i, j;
+    c.save();
+    krop(c); c.fillStyle = '#8a663d'; c.fill();
+    c.save(); krop(c); c.clip();
+    // vidjerne gaar skiftevis over og under de lodrette stave
+    var rh = (h - top) / raekker, n = Math.max(5, Math.round(b / (rh * 1.5))), bw = b / n, sw = bw * 0.34, t = rh * 0.84;
+    function vidje(vx, vy, vb, vh, farve) {
+      c.fillStyle = farve; c.beginPath(); c.roundRect(vx, vy, vb, vh, vh / 2); c.fill();
+      c.fillStyle = 'rgba(248,241,230,.45)'; c.fillRect(vx + vh * 0.4, vy + vh * 0.16, Math.max(0, vb - vh * 0.8), Math.max(0.8, vh * 0.14));
+      c.fillStyle = 'rgba(94,74,58,.18)'; c.fillRect(vx + vh * 0.35, vy + vh * 0.68, Math.max(0, vb - vh * 0.7), Math.max(0.8, vh * 0.18));
+    }
+    for (var pas = 0; pas < 2; pas++) {
+      for (i = 0; i < raekker; i++) {
+        var ry = y + top + i * rh, vy = ry + (rh - t) / 2;
+        for (j = 0; j < n; j++) {
+          var bx = x + j * bw, over = (i + j) % 2 === 0;
+          if (pas === 0 && !over) {
+            // staven ligger oven paa vidjen: vidjen i skygge, staven lys og lodret
+            vidje(bx - bw * 0.1, vy + t * 0.06, bw * 1.2, t * 0.88, '#b18a56');
+            c.fillStyle = 'rgba(94,74,58,.25)'; c.fillRect(bx + bw / 2 - sw / 2 - 1, ry, sw + 2, rh);
+            c.fillStyle = '#d9ba8a'; c.fillRect(bx + bw / 2 - sw / 2, ry, sw, rh);
+            c.fillStyle = 'rgba(248,241,230,.4)'; c.fillRect(bx + bw / 2 - sw * 0.3, ry, Math.max(0.8, sw * 0.2), rh);
+          }
+          if (pas === 1 && over) vidje(bx - bw * 0.06, vy, bw * 1.12, t, '#e5d3ae');
+        }
+      }
+    }
+    // rund kurv: moerkere ude i siderne og forneden
+    var gs = c.createLinearGradient(x, 0, x + b, 0);
+    gs.addColorStop(0, 'rgba(94,74,58,.32)'); gs.addColorStop(0.3, 'rgba(94,74,58,0)'); gs.addColorStop(0.7, 'rgba(94,74,58,0)'); gs.addColorStop(1, 'rgba(94,74,58,.32)');
+    c.fillStyle = gs; c.fillRect(x, y, b, h);
+    var gb = c.createLinearGradient(0, y, 0, y + h);
+    gb.addColorStop(0, 'rgba(94,74,58,.18)'); gb.addColorStop(0.35, 'rgba(94,74,58,0)'); gb.addColorStop(1, 'rgba(94,74,58,.22)');
+    c.fillStyle = gb; c.fillRect(x, y, b, h);
+    c.restore();
+    krop(c); c.strokeStyle = 'rgba(94,74,58,.55)'; c.lineWidth = Math.max(1.5, h * 0.03); c.stroke();
+    c.restore();
+  }
+  /** Den snoede kant: skraa vidjer side om side langs et baand fra x0 til x1, midt paa y. */
+  function snoetKant(c, x0, x1, y, kh) {
+    c.save();
+    c.fillStyle = '#b18a56'; c.beginPath(); c.roundRect(x0, y - kh / 2, x1 - x0, kh, kh / 2); c.fill();
+    var n = Math.max(6, Math.round((x1 - x0) / (kh * 0.42))), d = (x1 - x0 - kh * 0.6) / n;
+    c.lineCap = 'round';
+    for (var i = 0; i < n; i++) {
+      var x = x0 + kh * 0.3 + d * (i + 0.5), ax = x - d * 0.55, ay = y + kh * 0.24, bx = x + d * 0.55, by = y - kh * 0.24;
+      c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = d * 0.8 + 2;
+      c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by); c.stroke();
+      c.strokeStyle = i % 2 ? '#d9ba8a' : '#e5d3ae'; c.lineWidth = d * 0.8;
+      c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by); c.stroke();
+    }
+    c.strokeStyle = 'rgba(94,74,58,.5)'; c.lineWidth = Math.max(1.2, kh * 0.07); c.beginPath(); c.roundRect(x0, y - kh / 2, x1 - x0, kh, kh / 2); c.stroke();
+    c.restore();
+  }
+  /** Egons kurv: samme kasse og kant som foer (kb x kh), nu flettet. */
+  function lavKurv(kb, kh) {
+    var l = lilleLaerred(kb + 12, kh + 12, 6, 6), c = l.x;
+    flettetKurv(c, function (cc) { cc.beginPath(); cc.roundRect(0, 0, kb, kh, kh * 0.3); }, 0, 0, kb, kh, 4, kh * 0.12);
+    snoetKant(c, -3, kb + 3, -3 + kh * 0.13, kh * 0.26);
+    return l;
+  }
+  var stubbeKort = null, redeKort = null, kurvKort = null;
   function tegnStubbe() {
     var cx = L.cx, cy = L.cy, R = L.R;
-    ctx.fillStyle = 'rgba(94,74,58,.2)'; ctx.beginPath(); ctx.ellipse(cx + 8, cy + R * 0.12, R * 1.04, R * 1.0, 0, 0, 7); ctx.fill();
-    ctx.fillStyle = '#8a663d'; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.fill();
-    ctx.fillStyle = '#e5d3ae'; ctx.beginPath(); ctx.arc(cx, cy, R * 0.9, 0, 7); ctx.fill();
-    ctx.strokeStyle = '#d9ba8a'; ctx.lineWidth = 3;
-    for (var r = 0.18; r < 0.88; r += 0.14) { ctx.beginPath(); ctx.ellipse(cx + R * 0.02, cy - R * 0.01, R * r, R * r * 0.97, 0.3, 0, 7); ctx.stroke(); }
+    if (!stubbeKort || stubbeKort.R !== R) { stubbeKort = lavStubbe(R); stubbeKort.R = R; }
+    ctx.drawImage(stubbeKort.c, cx - stubbeKort.ox, cy - stubbeKort.oy, stubbeKort.b, stubbeKort.h);
     // Den der gemmer, har sin farve om stubben
     ctx.strokeStyle = q && q.selv && fase === 'gemmer' ? FARVER[q.gemmer] : '#6b5545'; ctx.lineWidth = q && q.selv && fase === 'gemmer' ? 7 : 3;
     ctx.beginPath(); ctx.arc(cx, cy, R * 0.9, 0, 7); ctx.stroke();
@@ -310,11 +547,8 @@
     }
     // Ryst og haeld: reden paa venstre halvdel
     if (q && q.leg === 'ryst') {
-      var rx = cx - 0.46 * R;
-      ctx.fillStyle = '#b18a56'; ctx.beginPath(); ctx.ellipse(rx, cy, R * 0.36, R * 0.34, 0, 0, 7); ctx.fill();
-      ctx.fillStyle = '#d9ba8a'; ctx.beginPath(); ctx.ellipse(rx, cy, R * 0.28, R * 0.26, 0, 0, 7); ctx.fill();
-      ctx.strokeStyle = '#8a663d'; ctx.lineWidth = 2;
-      for (var k = 0; k < 14; k++) { var v = k / 14 * Math.PI * 2; ctx.beginPath(); ctx.arc(rx + Math.cos(v) * R * 0.32, cy + Math.sin(v) * R * 0.3, R * 0.07, v, v + 2.2); ctx.stroke(); }
+      if (!redeKort || redeKort.R !== R) { redeKort = lavRede(R); redeKort.R = R; }
+      ctx.drawImage(redeKort.c, cx - 0.46 * R - redeKort.ox, cy - redeKort.oy, redeKort.b, redeKort.h);
     }
     // Se hurtigt: femmer- og tierrammens tomme pladser
     if (q && q.leg === 'se' && q.ramme) {
@@ -336,11 +570,8 @@
     var kb = e.h * 0.62, kh = e.h * 0.3, kx = e.x - kb / 2 - e.h * 0.05, ky = e.y - kh * 0.6;
     var vis = Math.min(kurv, 24), d = kb * 0.2;
     for (var i = 0; i < vis; i++) { var r = Math.floor(i / 6), c = i % 6; tegnNoed(kx + kb * 0.12 + c * kb * 0.152 + (r % 2) * kb * 0.07, ky + kh * 0.1 - r * d * 0.45, d); }
-    rr(kx, ky, kb, kh, kh * 0.3, '#b18a56');
-    ctx.strokeStyle = '#8a663d'; ctx.lineWidth = 2;
-    for (var k = 1; k < 3; k++) { ctx.beginPath(); ctx.moveTo(kx + 4, ky + kh * k / 3); ctx.lineTo(kx + kb - 4, ky + kh * k / 3); ctx.stroke(); }
-    for (var m = 1; m < 7; m++) { ctx.beginPath(); ctx.moveTo(kx + kb * m / 7, ky + 3); ctx.lineTo(kx + kb * m / 7, ky + kh - 3); ctx.stroke(); }
-    rr(kx - 3, ky - 3, kb + 6, kh * 0.26, kh * 0.13, '#d9ba8a');
+    if (!kurvKort || kurvKort.kb !== kb || kurvKort.kh !== kh) { kurvKort = lavKurv(kb, kh); kurvKort.kb = kb; kurvKort.kh = kh; }
+    ctx.drawImage(kurvKort.c, kx - kurvKort.ox, ky - kurvKort.oy, kurvKort.b, kurvKort.h);
   }
   /** Noedder i et kort: terning til og med fem, fra seks tierramme med tomme pladser, saa 6-10 ses som fem og lidt. */
   function tegnAntal(n, cx, cy, b, h) {
@@ -476,8 +707,7 @@
         E.terning(3, 20).forEach(function (p) { tegnNoed(w * 0.3 + p.x, h / 2 + p.y, 34); });
         tegnBlad(w * 0.7, h / 2, 50, -0.4, '#93bc63', 1, 0.95);
       } else {
-        c.fillStyle = '#b18a56'; c.beginPath(); c.ellipse(w * 0.33, h * 0.55, 52, 40, 0, 0, 7); c.fill();
-        c.fillStyle = '#d9ba8a'; c.beginPath(); c.ellipse(w * 0.33, h * 0.55, 40, 29, 0, 0, 7); c.fill();
+        c.save(); c.translate(w * 0.33, h * 0.55); tegnRede(c, 52, 40, 31); c.restore();
         E.terning(3, 15).forEach(function (p) { tegnNoed(w * 0.33 + p.x, h * 0.55 + p.y, 28); });
         E.terning(2, 16).forEach(function (p) { tegnNoed(w * 0.76 + p.x, h * 0.55 + p.y, 28); });
       }

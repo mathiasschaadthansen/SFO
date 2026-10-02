@@ -94,12 +94,20 @@
   ].join('\n'), [
     'precision highp float;',
     'varying vec3 vf; varying vec3 vn; varying vec3 vw;',
-    'uniform vec3 sol; uniform vec3 taage; uniform vec3 kam; uniform float taet; uniform float tid; uniform float vand; uniform vec4 tone;',
+    'uniform vec3 sol; uniform vec3 taage; uniform vec3 kam; uniform float taet; uniform float tid; uniform float vand; uniform vec4 tone; uniform float korn;',
     STOEJ_GLSL,
     'void main(){',
     '  vec3 nn = normalize(vn);',
     '  float l = 0.62 + 0.45*max(dot(nn, sol), 0.0) - 0.06*max(-nn.y, 0.0);',
     '  vec3 c = vf*tone.rgb;',
+    /* Traeets aarer i bedenes braedder: striber paa langs og en fuge mellem de to braedder */
+    '  if (korn > 0.0) {',
+    '    float langs = abs(nn.x) > 0.5 ? vw.z : vw.x;',
+    '    float tvaers = abs(nn.y) > 0.5 ? (abs(nn.x) > 0.5 ? vw.x : vw.z) : vw.y;',
+    '    float k1 = st(vec2(langs*0.45, tvaers*13.0))*0.6 + st(vec2(langs*1.4, tvaers*31.0))*0.4;',
+    '    c *= 1.0 - korn*(0.28*smoothstep(0.35, 0.8, k1) + 0.06);',
+    '    c *= 1.0 - korn*0.32*(1.0 - smoothstep(0.0, 0.045, abs(vw.y - ' + (BED_H / 2).toFixed(3) + ')))*(1.0 - abs(nn.y));',
+    '  }',
     '  if (vand > 0.5) {',
     '    float b = st(vw.xz*0.045 + vec2(tid*0.06, tid*0.04))*0.6 + st(vw.xz*0.11 - vec2(tid*0.05, 0.0))*0.4;',
     '    c = mix(c, vec3(0.64, 0.82, 0.92), smoothstep(0.52, 0.8, b)*0.5);',
@@ -144,6 +152,8 @@
   var HJOERNER = buffer(new Float32Array([-0.5, 0, 0.5, 0, 0.5, 1, -0.5, 1]));
   var HJ_IDX = buffer(new Uint16Array([0, 1, 2, 0, 2, 3]), gl.ELEMENT_ARRAY_BUFFER);
   var SKAERM = buffer(new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]));
+
+  var SOL = norm([0.45, 0.8, 0.35]);   // solen kommer fra hoejre og forfra
 
   /* ---------- former ---------- */
   function Former() { this.p = []; this.n = []; this.f = []; this.i = []; }
@@ -259,6 +269,133 @@
     });
   }
 
+  /* Kurven: flettet af vidjer, der skiftevis gaar over og under de lodrette stave. krop tegner kurvens omrids.
+     Samme udseende som Egons kurv i Egernreden. */
+  function flettetKurv(c, krop, x, y, b, h, raekker, top) {
+    var i, j;
+    c.save();
+    krop(c); c.fillStyle = '#8a663d'; c.fill();
+    c.save(); krop(c); c.clip();
+    var rh = (h - top) / raekker, n = Math.max(5, Math.round(b / (rh * 1.5))), bw = b / n, sw = bw * 0.34, t = rh * 0.84;
+    function vidje(vx, vy, vb, vh, farve) {
+      c.fillStyle = farve; rr(c, vx, vy, vb, vh, vh / 2); c.fill();
+      c.fillStyle = 'rgba(248,241,230,.45)'; c.fillRect(vx + vh * 0.4, vy + vh * 0.16, Math.max(0, vb - vh * 0.8), Math.max(0.8, vh * 0.14));
+      c.fillStyle = 'rgba(94,74,58,.18)'; c.fillRect(vx + vh * 0.35, vy + vh * 0.68, Math.max(0, vb - vh * 0.7), Math.max(0.8, vh * 0.18));
+    }
+    for (var pas = 0; pas < 2; pas++) {
+      for (i = 0; i < raekker; i++) {
+        var ry = y + top + i * rh, vy = ry + (rh - t) / 2;
+        for (j = 0; j < n; j++) {
+          var bx = x + j * bw, over = (i + j) % 2 === 0;
+          if (pas === 0 && !over) {
+            vidje(bx - bw * 0.1, vy + t * 0.06, bw * 1.2, t * 0.88, '#b18a56');
+            c.fillStyle = 'rgba(94,74,58,.25)'; c.fillRect(bx + bw / 2 - sw / 2 - 1, ry, sw + 2, rh);
+            c.fillStyle = '#d9ba8a'; c.fillRect(bx + bw / 2 - sw / 2, ry, sw, rh);
+            c.fillStyle = 'rgba(248,241,230,.4)'; c.fillRect(bx + bw / 2 - sw * 0.3, ry, Math.max(0.8, sw * 0.2), rh);
+          }
+          if (pas === 1 && over) vidje(bx - bw * 0.06, vy, bw * 1.12, t, '#e5d3ae');
+        }
+      }
+    }
+    /* rund kurv: moerkere ude i siderne og forneden */
+    var gs = c.createLinearGradient(x, 0, x + b, 0);
+    gs.addColorStop(0, 'rgba(94,74,58,.32)'); gs.addColorStop(0.3, 'rgba(94,74,58,0)'); gs.addColorStop(0.7, 'rgba(94,74,58,0)'); gs.addColorStop(1, 'rgba(94,74,58,.32)');
+    c.fillStyle = gs; c.fillRect(x, y, b, h);
+    var gb = c.createLinearGradient(0, y, 0, y + h);
+    gb.addColorStop(0, 'rgba(94,74,58,.18)'); gb.addColorStop(0.35, 'rgba(94,74,58,0)'); gb.addColorStop(1, 'rgba(94,74,58,.22)');
+    c.fillStyle = gb; c.fillRect(x, y, b, h);
+    c.restore();
+    krop(c); c.strokeStyle = 'rgba(94,74,58,.55)'; c.lineWidth = Math.max(1.5, h * 0.03); c.stroke();
+    c.restore();
+  }
+  /* Den snoede kant: skraa vidjer side om side langs et baand fra x0 til x1, midt paa y */
+  function snoetKant(c, x0, x1, y, kh) {
+    c.save();
+    c.fillStyle = '#b18a56'; rr(c, x0, y - kh / 2, x1 - x0, kh, kh / 2); c.fill();
+    var n = Math.max(6, Math.round((x1 - x0) / (kh * 0.42))), d = (x1 - x0 - kh * 0.6) / n;
+    c.lineCap = 'round';
+    for (var i = 0; i < n; i++) {
+      var x = x0 + kh * 0.3 + d * (i + 0.5), ax = x - d * 0.55, ay = y + kh * 0.24, bx = x + d * 0.55, by = y - kh * 0.24;
+      c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = d * 0.8 + 2;
+      c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by); c.stroke();
+      c.strokeStyle = i % 2 ? '#d9ba8a' : '#e5d3ae'; c.lineWidth = d * 0.8;
+      c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by); c.stroke();
+    }
+    c.strokeStyle = 'rgba(94,74,58,.5)'; c.lineWidth = Math.max(1.2, kh * 0.07); rr(c, x0, y - kh / 2, x1 - x0, kh, kh / 2); c.stroke();
+    c.restore();
+  }
+  /* Hanken: en snoet bue af vidjer */
+  function flettetHank(c, cx, cy, r, w) {
+    c.save(); c.lineCap = 'round';
+    c.strokeStyle = 'rgba(94,74,58,.55)'; c.lineWidth = w + 3; c.beginPath(); c.arc(cx, cy, r, Math.PI, 0); c.stroke();
+    c.strokeStyle = '#b18a56'; c.lineWidth = w; c.beginPath(); c.arc(cx, cy, r, Math.PI, 0); c.stroke();
+    var n = Math.round(r * Math.PI / (w * 0.7));
+    for (var i = 0; i < n; i++) {
+      var v = Math.PI + (i + 0.5) / n * Math.PI, ca = Math.cos(v), sa = Math.sin(v);
+      var ax = cx + ca * (r - w * 0.38), ay = cy + sa * (r - w * 0.38), v2 = v + w * 0.55 / r, bx = cx + Math.cos(v2) * (r + w * 0.38), by = cy + Math.sin(v2) * (r + w * 0.38);
+      c.strokeStyle = i % 2 ? '#d9ba8a' : '#e5d3ae'; c.lineWidth = w * 0.42;
+      c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by); c.stroke();
+    }
+    c.restore();
+  }
+  /* En bloed snedrive: hvid bunke med en blaa skygge forneden */
+  function sneDrive(c, x, y, w, r) {
+    c.fillStyle = 'rgba(143,199,232,.55)'; c.beginPath(); c.ellipse(x + w * 0.04, y + w * 0.1, w * 0.52, w * 0.17, 0, 0, 7); c.fill();
+    c.fillStyle = 'rgba(248,251,252,.96)'; c.beginPath();
+    c.ellipse(x - w * 0.24, y + w * 0.02, w * 0.24, w * 0.13, 0, 0, 7);
+    c.ellipse(x + w * 0.02, y - w * 0.03, w * 0.3, w * 0.17, 0, 0, 7);
+    c.ellipse(x + w * 0.27, y + w * 0.03, w * 0.22, w * 0.11, 0, 0, 7);
+    c.fill();
+    c.fillStyle = 'rgba(174,211,228,.5)'; c.beginPath(); c.ellipse(x + w * 0.05, y + w * 0.08, w * 0.42, w * 0.05, 0, 0, 7); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.8)'; c.beginPath(); c.ellipse(x - w * 0.06, y - w * 0.1, w * 0.14, w * 0.04, -0.2, 0, 7); c.fill();
+  }
+  /* Graestotter og smaa blomster, der ligger malet paa jorden i forgrunden. Hver aarstid sine. */
+  function tegnTot(c, b, h, aar, k) {
+    var r = tilfaeldig(31 + k * 7 + AAR.indexOf(aar) * 13), i;
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    function straa(x0, y0, l, v, bred, farve) {
+      var x1 = x0 + Math.sin(v) * l, y1 = y0 - Math.cos(v) * l, mx = x0 + Math.sin(v * 0.4) * l * 0.5, my = y0 - Math.cos(v * 0.4) * l * 0.5;
+      c.fillStyle = farve; c.beginPath(); c.moveTo(x0 - bred, y0); c.quadraticCurveTo(mx, my, x1, y1); c.quadraticCurveTo(mx + bred * 0.6, my, x0 + bred, y0); c.closePath(); c.fill();
+    }
+    var vinter = aar === 'vinter', efter = aar === 'efteraar';
+    var groen = vinter ? ['#b18a56', '#8a663d'] : efter ? ['#b18a56', '#93bc63', '#d9ba8a'] : ['#5f8240', '#93bc63', '#5f8240'];
+    /* skyggen under totten */
+    c.fillStyle = vinter ? 'rgba(143,199,232,.5)' : 'rgba(60,48,38,.16)'; c.beginPath(); c.ellipse(b / 2, h * 0.86, b * 0.36, h * 0.07, 0, 0, 7); c.fill();
+    if (vinter) {
+      for (i = 0; i < 6; i++) straa(b * (0.36 + r() * 0.28), h * 0.84, h * (0.3 + r() * 0.25), (r() - 0.5) * 1.2, 2.2, groen[i % 2]);
+      sneDrive(c, b / 2, h * 0.8, b * 0.62, r);
+      return;
+    }
+    var n = 11 + Math.floor(r() * 4);
+    for (i = 0; i < n; i++) {
+      var u = i / (n - 1) - 0.5;
+      straa(b / 2 + u * b * 0.42 + (r() - 0.5) * 6, h * 0.86, h * (0.38 + r() * 0.34) * (1 - Math.abs(u) * 0.7), u * 1.5 + (r() - 0.5) * 0.4, 2.6 + r() * 1.2, groen[i % groen.length]);
+    }
+    c.fillStyle = 'rgba(248,241,230,.22)';
+    for (i = 0; i < 4; i++) straa(b / 2 + (r() - 0.5) * b * 0.3, h * 0.86, h * (0.3 + r() * 0.2), (r() - 0.5) * 1.2, 1.2, 'rgba(248,241,230,.3)');
+    function blomst(x, y, s, krone, midte, blade) {
+      c.fillStyle = krone;
+      for (var j = 0; j < blade; j++) { var v = j / blade * Math.PI * 2; c.beginPath(); c.ellipse(x + Math.cos(v) * s * 0.55, y + Math.sin(v) * s * 0.55, s * 0.42, s * 0.3, v, 0, 7); c.fill(); }
+      c.fillStyle = midte; c.beginPath(); c.arc(x, y, s * 0.3, 0, 7); c.fill();
+      c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = 1.2; c.beginPath(); c.arc(x, y, s * 0.3, 0, 7); c.stroke();
+    }
+    if (efter) {   /* visne blade i graesset */
+      for (i = 0; i < 3; i++) {
+        var lx = b * (0.25 + r() * 0.5), ly = h * (0.7 + r() * 0.12), lv = r() * 3;
+        c.save(); c.translate(lx, ly); c.rotate(lv); c.fillStyle = ['#e08a52', '#d95f45', '#f0c46a'][i];
+        c.beginPath(); c.moveTo(-9, 0); c.quadraticCurveTo(0, -8, 9, 0); c.quadraticCurveTo(0, 8, -9, 0); c.fill(); c.restore();
+      }
+      return;
+    }
+    if (k === 0) return;
+    var farver = aar === 'foraar' ? (k === 1 ? ['#f8f1e6', '#f0c46a', 7] : ['#9b7bd4', '#f0c46a', 5]) : (k === 1 ? ['#d95f45', '#5e4a3a', 5] : ['#f0c46a', '#e08a52', 5]);
+    for (i = 0; i < 3; i++) {
+      var fx = b * (0.3 + i * 0.2 + (r() - 0.5) * 0.08), fy = h * (0.42 + r() * 0.22);
+      c.strokeStyle = '#5f8240'; c.lineWidth = 2; c.beginPath(); c.moveTo(fx, fy); c.lineTo(b / 2 + (fx - b / 2) * 0.4, h * 0.86); c.stroke();
+      blomst(fx, fy, 9 + r() * 3, farver[0], farver[1], farver[2]);
+    }
+  }
+
   /* Tegnet i kode: traeet i de fire aarstider, kurven, draaber, blade, fnug, frø og en sommerfugl */
   function lavKodeTeksturer() {
     var trae = billede.trae, gran = billede.gran;
@@ -286,26 +423,31 @@
       farvetTrae('traeSommer', trae, null, 0);
       farvetTrae('traeEfteraar', trae, '#e08a52', 0.55);
       farvetTrae('traeVinter', trae, '#dfe7ec', 0.8, function (c, b, h) {
-        var r = tilfaeldig(5); c.fillStyle = 'rgba(255,255,255,.9)';
-        for (var i = 0; i < 40; i++) { var x = b * (0.18 + r() * 0.64), y = h * (0.12 + r() * 0.45); c.beginPath(); c.ellipse(x, y, 14 + r() * 12, 6 + r() * 4, 0, 0, 7); c.fill(); }
+        /* Sne i bloede driver paa grenene, med en blaa skygge under. Kun oven paa traeet, ikke ude i luften. */
+        var r = tilfaeldig(5); c.globalCompositeOperation = 'source-atop';
+        for (var i = 0; i < 34; i++) { var x = b * (0.2 + r() * 0.6), y = h * (0.12 + r() * 0.44); sneDrive(c, x, y, 34 + r() * 30, r); }
+        c.globalCompositeOperation = 'source-over';
       });
     }
     if (gran) {
       kodeTekstur('granSne', 512, 512, function (c, b, h) {
         c.drawImage(gran, 0, 0, b, h);
-        var r = tilfaeldig(9); c.globalCompositeOperation = 'source-atop'; c.fillStyle = 'rgba(255,255,255,.92)';
-        for (var i = 0; i < 16; i++) { var y = h * (0.15 + i * 0.045), bb = b * (0.08 + i * 0.022); c.beginPath(); c.ellipse(b / 2 + (r() - 0.5) * 30, y, bb, 7, 0, 0, 7); c.fill(); }
+        /* Sne i driver paa hver etage af grenene, med en blaa skygge under */
+        var r = tilfaeldig(9); c.globalCompositeOperation = 'source-atop';
+        for (var i = 0; i < 9; i++) {
+          var y = h * (0.16 + i * 0.075), bb = b * (0.1 + i * 0.04), x0 = b / 2 + (r() - 0.5) * 24;
+          for (var k = -2; k <= 2; k++) sneDrive(c, x0 + k * bb * 0.42, y + Math.abs(k) * 5, bb * 0.5 + r() * 10, r);
+        }
         c.globalCompositeOperation = 'source-over';
       });
       forhold.granSne = forhold.gran;
     }
     kodeTekstur('kurv', 256, 256, function (c) {
-      c.lineWidth = 12; c.strokeStyle = '#8a663d'; c.beginPath(); c.arc(128, 128, 84, Math.PI, 0); c.stroke();
-      c.fillStyle = '#d9ba8a'; c.strokeStyle = KANT; c.lineWidth = 7;
-      c.beginPath(); c.moveTo(30, 120); c.lineTo(226, 120); c.lineTo(200, 240); c.lineTo(56, 240); c.closePath(); c.fill(); c.stroke();
-      c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = 4;
-      [80, 128, 176].forEach(function (x) { c.beginPath(); c.moveTo(x, 124); c.lineTo(x + (x - 128) * -0.15, 236); c.stroke(); });
-      [160, 200].forEach(function (y) { c.beginPath(); c.moveTo(40 + (y - 120) * 0.2, y); c.lineTo(216 - (y - 120) * 0.2, y); c.stroke(); });
+      /* Den flettede kurv, samme form og stoerrelse som foer: hank, krop og en snoet kant */
+      flettetHank(c, 128, 128, 84, 13);
+      flettetKurv(c, function (cc) { cc.beginPath(); cc.moveTo(30, 120); cc.lineTo(226, 120); cc.lineTo(202, 230); cc.quadraticCurveTo(200, 240, 190, 240); cc.lineTo(66, 240); cc.quadraticCurveTo(56, 240, 54, 230); cc.closePath(); },
+        30, 120, 196, 120, 5, 12);
+      snoetKant(c, 24, 232, 122, 22);
     });
     kodeTekstur('draabe', 64, 64, function (c) {
       c.fillStyle = '#8fc7e8'; c.beginPath(); c.moveTo(32, 4); c.quadraticCurveTo(54, 40, 32, 60); c.quadraticCurveTo(10, 40, 32, 4); c.fill();
@@ -347,6 +489,7 @@
       for (var j = 0; j < 10; j++) { var r = j % 2 ? 11 : 30, v = -Math.PI / 2 + j * Math.PI / 5; c.lineTo(32 + Math.cos(v) * r, 32 + Math.sin(v) * r); }
       c.closePath(); c.fill(); c.strokeStyle = 'rgba(94,74,58,.6)'; c.lineWidth = 2; c.stroke();
     });
+    AAR.forEach(function (aar) { for (var k = 0; k < 3; k++) kodeTekstur('tot_' + aar + '_' + k, 128, 128, function (c, b, h) { tegnTot(c, b, h, aar, k); }); });
     kodeTekstur('skygge', 64, 64, function (c) {
       var g = c.createRadialGradient(32, 32, 2, 32, 32, 32); g.addColorStop(0, 'rgba(60,48,38,.35)'); g.addColorStop(1, 'rgba(60,48,38,0)');
       c.fillStyle = g; c.fillRect(0, 0, 64, 64);
@@ -376,6 +519,11 @@
     var sti = (Math.abs(z + 2.5) < 1.6 && Math.abs(x) < 32) || (Math.abs(x) < 1.6 && z > -12 && z < 20) || (z > 11 && z < 13.5 && Math.abs(x) < 32);
     if (sti) c = blend(c, hex(S.sti), 0.85);
     if (s === 'efteraar' && n2 > 0.78) c = blend(c, hex('#e08a52'), 0.25);   // visne blade paa graesset
+    if (s === 'vinter') {   // bloede snedriver: en blaa skygge paa den side, der vender vaek fra solen
+      var dr = stoej(x * 0.055 + 5, z * 0.075 - 2), dr2 = stoej(x * 0.13 - 4, z * 0.13 + 9);
+      c = blend(c, hex('#aed3e4'), klem(1 - Math.abs(dr - 0.56) / 0.13, 0, 1) * 0.6 + klem(0.4 - dr2, 0, 0.4) * 0.5);
+      c = blend(c, hex('#f8fbfc'), klem(dr - 0.62, 0, 0.2) * 3);
+    }
     return c;
   }
   function lavLandskab(s) {
@@ -410,21 +558,80 @@
     return F.faerdig();
   }
   /* Et bed: ramme af braedder og muld med furer. Muld og ramme er hver sin form, saa mulden kan blive vaad. */
+  /* To braedder paa hver side i skiftevis moerkt og lyst trae, med aarer fra tegneren (korn). Samme ydre maal som foer. */
   function lavBedRamme() {
-    var F = new Former(), trae = hex('#8a663d'), kant = hex('#b18a56'), t = 0.55;
-    F.kasse(0, BED_H / 2, -BED_D / 2, BED_B, BED_H, t, trae); F.kasse(0, BED_H / 2, BED_D / 2, BED_B, BED_H, t, trae);
-    F.kasse(-BED_B / 2, BED_H / 2, 0, t, BED_H, BED_D, trae); F.kasse(BED_B / 2, BED_H / 2, 0, t, BED_H, BED_D, trae);
+    var F = new Former(), moerk = hex('#8a663d'), lys = hex('#b18a56'), kant = hex('#b18a56'), t = 0.55, bh = BED_H / 2;
+    [0, 1].forEach(function (n) {
+      var y = bh * n + bh / 2, a = n ? lys : moerk, b = n ? moerk : lys;
+      F.kasse(0, y, -BED_D / 2, BED_B + t, bh, t, a); F.kasse(0, y, BED_D / 2, BED_B + t, bh, t, a);
+      F.kasse(-BED_B / 2, y, 0, t, bh, BED_D - t, b); F.kasse(BED_B / 2, y, 0, t, bh, BED_D - t, b);
+    });
     F.kasse(0, BED_H + 0.06, -BED_D / 2, BED_B + 0.2, 0.12, t + 0.2, kant); F.kasse(0, BED_H + 0.06, BED_D / 2, BED_B + 0.2, 0.12, t + 0.2, kant);
-    F.kasse(-BED_B / 2 + 0.7, 1.5, BED_D / 2 + 0.1, 0.22, 3, 0.22, kant);   // pinden til skiltet med det, der gror
+    F.kasse(-BED_B / 2, BED_H + 0.06, 0, t + 0.2, 0.12, BED_D - t - 0.2, kant); F.kasse(BED_B / 2, BED_H + 0.06, 0, t + 0.2, 0.12, BED_D - t - 0.2, kant);
+    [-1, 1].forEach(function (sx) { [-1, 1].forEach(function (sz) { F.kasse(sx * BED_B / 2, (BED_H + 0.28) / 2, sz * BED_D / 2, 0.78, BED_H + 0.28, 0.78, moerk); }); });   // hjoernestolper
+    F.kasse(-BED_B / 2 + 0.7, 1.5, BED_D / 2 + 0.1, 0.22, 3, 0.22, lys);   // pinden til skiltet med det, der gror
     return F.faerdig();
   }
+  /* Mulden: kamme, hvor planterne staar (z = 0 og ±1.5), furer imellem, lidt ujaevn, og lidt lys paa kammene */
   function lavMuld() {
-    var F = new Former(), muld = hex('#6b4a2e'), fure = hex('#553a24');
-    F.kasse(0, 0.5, 0, BED_B - 0.5, 0.9, BED_D - 0.5, muld);
-    [-1.5, 0, 1.5].forEach(function (z) { F.kasse(0, 0.97, z, BED_B - 1.4, 0.06, 0.35, fure); });
+    var F = new Former(), muld = hex('#6b4a2e'), fure = hex('#553a24'), lys = hex('#8a663d');
+    var B = BED_B - 0.5, D = BED_D - 0.5, NX = 40, NZ = 24, i, j;
+    F.kasse(0, 0.42, 0, B, 0.74, D, muld);
+    function kam(x, z) {
+      var raekke = Math.round(z / 1.5), slyng = 0.1 * Math.sin(x * 0.8 + raekke * 1.9);
+      return Math.cos((z + slyng) / 1.5 * Math.PI * 2);   // 1 paa kammen, -1 i furen
+    }
+    function y(x, z) {
+      var k = kam(x, z), dybde = 0.8 + 0.4 * stoej(x * 0.5 + 3, z * 0.5 + 1);
+      return 0.9 + 0.075 * k * dybde + 0.022 * (stoej(x * 1.9, z * 1.9) - 0.5);
+    }
+    var start = F.p.length / 3;
+    for (j = 0; j <= NZ; j++) for (i = 0; i <= NX; i++) {
+      var x = -B / 2 + B * i / NX, z = -D / 2 + D * j / NZ, e = 0.05;
+      var n = norm([y(x - e, z) - y(x + e, z), 2 * e, y(x, z - e) - y(x, z + e)]);
+      var k = kam(x, z), c = blend(muld, fure, klem(-k, 0, 1) * 0.85);
+      c = blend(c, lys, klem(k - 0.15, 0, 0.85) * 0.75);
+      c = blend(c, fure, klem(stoej(x * 2.3 + 7, z * 2.3) - 0.6, 0, 0.4) * 0.8);   // klumper
+      F.punkt([x, y(x, z), z], n, c);
+    }
+    for (j = 0; j < NZ; j++) for (i = 0; i < NX; i++) {
+      var a = start + j * (NX + 1) + i, b = a + 1, cc = a + NX + 1, d = cc + 1;
+      F.i.push(a, cc, b, b, cc, d);
+    }
     return F.faerdig();
   }
-  function lavSneBed() { var F = new Former(); F.ellipsoide(0, 1.1, 0, BED_B / 2 - 0.1, 0.7, BED_D / 2 - 0.1, function () { return hex('#f8fbfc'); }, 16, 8); return F.faerdig(); }
+  /* Sneen paa bedet: en bloed, ujaevn drive. Hvid i solen, blaa i skyggen. Samme omrids som foer. */
+  function lavSneBed() {
+    var F = new Former(), hvid = hex('#f8fbfc'), blaa = hex('#aed3e4'), dyb = hex('#8fc7e8');
+    var rx = BED_B / 2 - 0.1, rz = BED_D / 2 - 0.1, NA = 64, NR = 14, start = F.p.length / 3, i, j;
+    /* Hoejden over bedet: en bloed bunke med et par buler, der falder ned mod kanten */
+    function hoej(ux, uz) {
+      var r2 = ux * ux + uz * uz;
+      if (r2 >= 1) return 0;
+      var bule = 1 + 0.3 * Math.sin(ux * 5.3 + 1.3) * Math.cos(uz * 3.7) + 0.16 * Math.sin(ux * 11 + uz * 6.5);
+      return 0.62 * Math.pow(1 - r2, 0.55) * bule;
+    }
+    function pkt(ux, uz) { return [rx * ux, 1.0 + hoej(ux, uz), rz * uz]; }
+    for (j = 0; j <= NR; j++) {
+      var rr0 = Math.min(j / NR, 0.999);
+      for (i = 0; i <= NA; i++) {
+        var v = i / NA * Math.PI * 2, ux = Math.cos(v) * rr0, uz = Math.sin(v) * rr0, e = 0.02;
+        var px = pkt(ux + e, uz), mx = pkt(ux - e, uz), pz = pkt(ux, uz + e), mz = pkt(ux, uz - e);
+        var n = norm(cross(sub(pz, mz), sub(px, mx)));
+        if (n[1] < 0) n = [-n[0], -n[1], -n[2]];
+        var lys = dot(n, SOL);
+        var c = blend(hvid, blaa, klem((0.86 - lys) * 2.4, 0, 1));
+        c = blend(c, dyb, klem((0.6 - lys) * 1.6, 0, 0.55));
+        c = blend(c, blaa, klem((rr0 - 0.78) * 3, 0, 0.55));   // kanten ned mod braedderne ligger i skygge
+        F.punkt(pkt(ux, uz), n, c);
+      }
+    }
+    for (j = 0; j < NR; j++) for (i = 0; i < NA; i++) {
+      var a = start + j * (NA + 1) + i, b = a + 1, cc = a + NA + 1, d = cc + 1;
+      F.i.push(a, cc, b, b, cc, d);
+    }
+    return F.faerdig();
+  }
   /* En spire: stilk og to blade. En plante: flere store blade. */
   function lavSpire() {
     var F = new Former(), stilk = hex('#5f8240'), blad = hex('#93bc63');
@@ -584,19 +791,23 @@
   }
 
   /* ---------- tegning ---------- */
-  var SOL = norm([0.45, 0.8, 0.35]), TAET = 0.0032;
+  var TAET = 0.0032;
   var vp = null, kamHoejre = [1, 0, 0];
+  /* Hvor totterne ligger: x, z og hvilken slags. Kun paa graesset i forgrunden og ude i siderne, uden for stierne. */
+  var TOTTER = [[-29, 16.5, 0], [-23.5, 20, 1], [-18, 15.5, 2], [-7.5, 16.5, 0], [-4.5, 20.5, 2], [5, 15.8, 1], [8, 20.2, 0],
+    [23.5, 19.5, 2], [28.5, 16.5, 1], [-30, 22, 2], [13, 22.5, 1], [-30.5, 8.5, 0], [30.5, 8, 2]];
   function bindForm(m) {
     gl.bindBuffer(gl.ARRAY_BUFFER, m.p); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, m.n); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, m.f); gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 0, 0);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.i);
   }
-  function tegnForm(m, model, farve) {
+  function tegnForm(m, model, farve, korn) {
     bindForm(m);
     gl.uniformMatrix4fv(LYS.u.m, false, model);
     gl.uniform4fv(LYS.u.tone, farve || [1, 1, 1, 0]);
     gl.uniform1f(LYS.u.vand, 0);
+    gl.uniform1f(LYS.u.korn, korn || 0);
     gl.drawElements(gl.TRIANGLES, m.antal, gl.UNSIGNED_SHORT, 0);
   }
   function projicer(p) {
@@ -640,7 +851,7 @@
     if (aar === 'vinter') tegnForm(sneHegn, id, [1, 1, 1, 0.08]);
     H.bede.forEach(function (bd) {
       var m = kaede(M.flyt(bd.x + bedRys(bd), 0, bd.z));
-      tegnForm(bedRamme, m, [lys, lys, lys, 0]);
+      tegnForm(bedRamme, m, [lys, lys, lys, 0], 1);
       var v = bd.vaad > 0 ? 0.72 + 0.28 * (1 - Math.min(1, bd.vaad / 2)) : 1;
       if (bd.toerst) v = 1.14;
       tegnForm(muld, m, [v, v, v * (bd.toerst ? 0.92 : 1.02), 0]);
@@ -679,6 +890,8 @@
       laeg(v, u.foran || 0);
       if (!u.flyver && !u.sky && !u.solen && u.h < 8 && !u.aebleI) laeg({ tx: 'skygge', x: u.x, y: 0.12, z: u.z - u.h * 0.35, h: u.h * 0.7, b: u.h * 0.7, alfa: 0.9, flad: true, hoejre: [1, 0, 0], op: [0, 0, 1] }, -50);
     });
+    /* Graestotter og blomster malet paa jorden i forgrunden, flade som skyggerne, saa de aldrig staar i vejen */
+    TOTTER.forEach(function (t) { laeg({ tx: 'tot_' + aar + '_' + t[2], x: t[0], y: 0.08, z: t[1] + 1.6, h: 3.2, b: 3.4, alfa: 1, flad: true, hoejre: [1, 0, 0], op: [0, 0, -1] }, -50); });
     /* Afgroederne i bedene, frøene i jorden og det, der er i kurven */
     H.bede.forEach(function (bd) {
       var r = bedRys(bd);
@@ -727,7 +940,18 @@
   /* ---------- HUD: aarstidsuret, redskaberne og Pelles boble ---------- */
   var hudSkala = 1, knapper = [], uret = null, boble = null;
   var UR_FARVER = { foraar: '#a9c97a', sommer: '#f0c46a', efteraar: '#e08a52', vinter: '#aed3e4' };
+  /* Redskabernes billeder tegnes én gang pr. stoerrelse og genbruges hver frame */
+  var ikonKort = {};
   function tegnRedskab(c, hvad, x, y, r) {
+    var n = hvad + ':' + r + ':' + hudSkala, k = ikonKort[n];
+    if (!k) {
+      var m = Math.ceil(r * 1.1), l = document.createElement('canvas'); l.width = l.height = Math.ceil(m * 2 * hudSkala);
+      var c2 = l.getContext('2d'); c2.setTransform(hudSkala, 0, 0, hudSkala, m * hudSkala, m * hudSkala);
+      tegnRedskabNu(c2, hvad, 0, 0, r); k = ikonKort[n] = { c: l, m: m };
+    }
+    c.drawImage(k.c, x - k.m, y - k.m, k.m * 2, k.m * 2);
+  }
+  function tegnRedskabNu(c, hvad, x, y, r) {
     c.save(); c.translate(x, y); c.lineWidth = 3.5; c.strokeStyle = KANT; c.lineJoin = 'round'; c.lineCap = 'round';
     if (hvad === 'froe') {
       rr(c, -r * 0.36, -r * 0.42, r * 0.72, r * 0.86, 10); c.fillStyle = '#e5d3ae'; c.fill(); c.stroke();
@@ -735,13 +959,33 @@
       c.fillStyle = '#8a663d'; [-0.18, 0.02, 0.2].forEach(function (d) { c.beginPath(); c.ellipse(d * r, r * 0.25, 5, 3.5, 0, 0, 7); c.fill(); });
       c.fillStyle = '#93bc63'; c.beginPath(); c.ellipse(-r * 0.12, -r * 0.2, 10, 6, -0.7, 0, 7); c.ellipse(r * 0.12, -r * 0.2, 10, 6, 0.7, 0, 7); c.fill();
     } else if (hvad === 'vand') {
-      rr(c, -r * 0.4, -r * 0.1, r * 0.7, r * 0.5, 8); c.fillStyle = '#5f9fc9'; c.fill(); c.stroke();
-      c.beginPath(); c.moveTo(r * 0.3, 0); c.lineTo(r * 0.62, -r * 0.3); c.stroke();
-      c.beginPath(); c.arc(-r * 0.05, -r * 0.2, r * 0.22, Math.PI, 0); c.stroke();
-      c.fillStyle = '#8fc7e8'; [[r * 0.7, -r * 0.5], [r * 0.82, -r * 0.35], [r * 0.6, -r * 0.62]].forEach(function (p) { c.beginPath(); c.ellipse(p[0], p[1], 4, 6, 0, 0, 7); c.fill(); });
+      /* En vandkande: krop, hank over toppen, en lang tud med bruser, og draaber, der falder */
+      var s = r * 0.92;
+      c.translate(-r * 0.08, r * 0.04);
+      c.lineWidth = s * 0.13; c.beginPath(); c.moveTo(-s * 0.36, -s * 0.1); c.quadraticCurveTo(-s * 0.16, -s * 0.66, s * 0.1, -s * 0.12); c.stroke();
+      c.strokeStyle = '#5f9fc9'; c.lineWidth = s * 0.06; c.stroke();
+      c.strokeStyle = KANT; c.lineWidth = 3.5;
+      c.fillStyle = '#5f9fc9'; c.beginPath(); c.moveTo(s * 0.12, s * 0.24); c.lineTo(s * 0.6, -s * 0.26); c.lineTo(s * 0.67, -s * 0.18); c.lineTo(s * 0.16, s * 0.36); c.closePath(); c.fill(); c.stroke();
+      c.save(); c.translate(s * 0.66, -s * 0.25); c.rotate(-0.8);
+      c.fillStyle = '#8fc7e8'; c.beginPath(); c.moveTo(-s * 0.04, -s * 0.05); c.lineTo(s * 0.1, -s * 0.13); c.lineTo(s * 0.1, s * 0.13); c.lineTo(-s * 0.04, s * 0.05); c.closePath(); c.fill(); c.stroke();
+      c.restore();
+      c.fillStyle = '#5f9fc9'; c.beginPath(); c.moveTo(-s * 0.36, -s * 0.12); c.lineTo(s * 0.16, -s * 0.12); c.lineTo(s * 0.22, s * 0.42); c.quadraticCurveTo(-s * 0.1, s * 0.5, -s * 0.42, s * 0.42); c.closePath(); c.fill();
+      c.fillStyle = 'rgba(248,241,230,.45)'; c.beginPath(); c.moveTo(-s * 0.28, -s * 0.06); c.lineTo(-s * 0.18, -s * 0.06); c.lineTo(-s * 0.22, s * 0.36); c.lineTo(-s * 0.32, s * 0.36); c.closePath(); c.fill();
+      c.fillStyle = 'rgba(94,74,58,.15)'; c.beginPath(); c.moveTo(-s * 0.4, s * 0.3); c.lineTo(s * 0.2, s * 0.3); c.lineTo(s * 0.22, s * 0.42); c.quadraticCurveTo(-s * 0.1, s * 0.5, -s * 0.42, s * 0.42); c.closePath(); c.fill();
+      c.beginPath(); c.moveTo(-s * 0.36, -s * 0.12); c.lineTo(s * 0.16, -s * 0.12); c.lineTo(s * 0.22, s * 0.42); c.quadraticCurveTo(-s * 0.1, s * 0.5, -s * 0.42, s * 0.42); c.closePath(); c.stroke();
+      c.fillStyle = '#8fc7e8'; c.beginPath(); c.ellipse(-s * 0.1, -s * 0.12, s * 0.26, s * 0.07, 0, 0, 7); c.fill(); c.stroke();
+      c.lineWidth = 2;
+      [[s * 0.84, -s * 0.12, 1], [s * 0.72, s * 0.02, 0.85], [s * 0.9, s * 0.12, 0.75]].forEach(function (p) {
+        var d = s * 0.075 * p[2];
+        c.fillStyle = '#8fc7e8'; c.beginPath(); c.moveTo(p[0], p[1] - d * 1.6); c.quadraticCurveTo(p[0] + d, p[1] - d * 0.2, p[0], p[1] + d); c.quadraticCurveTo(p[0] - d, p[1] - d * 0.2, p[0], p[1] - d * 1.6); c.fill(); c.stroke();
+      });
     } else {
-      c.fillStyle = '#d9ba8a'; c.beginPath(); c.moveTo(-r * 0.5, -r * 0.1); c.lineTo(r * 0.5, -r * 0.1); c.lineTo(r * 0.36, r * 0.42); c.lineTo(-r * 0.36, r * 0.42); c.closePath(); c.fill(); c.stroke();
-      c.beginPath(); c.arc(0, -r * 0.12, r * 0.36, Math.PI, 0); c.stroke();
+      /* Kurven: den samme flettede kurv som i haven, i lille udgave */
+      flettetHank(c, 0, -r * 0.1, r * 0.34, r * 0.1);
+      var krop = function (cc) { cc.beginPath(); cc.moveTo(-r * 0.5, -r * 0.1); cc.lineTo(r * 0.5, -r * 0.1); cc.lineTo(r * 0.36, r * 0.42); cc.lineTo(-r * 0.36, r * 0.42); cc.closePath(); };
+      flettetKurv(c, krop, -r * 0.5, -r * 0.1, r, r * 0.52, 3, r * 0.06);
+      snoetKant(c, -r * 0.54, r * 0.54, -r * 0.09, r * 0.13);
+      c.strokeStyle = KANT; c.lineWidth = 3; krop(c); c.stroke();
     }
     c.restore();
   }
