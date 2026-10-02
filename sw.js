@@ -674,6 +674,7 @@ const FILER = [
   'games/restaurant/index.html',
   'games/restaurant/js/koekken.js',
   'games/restaurant/js/game.js',
+  'games/restaurant/billeder/ko.png',
   'games/restaurant/billeder/abe.png',
   'games/restaurant/billeder/agurk.png',
   'games/restaurant/billeder/ananas.png',

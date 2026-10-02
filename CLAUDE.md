@@ -206,7 +206,7 @@ hjem-knappen i `js/skal.js`, så en ændring dér slår igennem i alle spil.
 
 Malede billeder ligger i `assets/malet/` (forsiden),
 `games/maskinen/billeder/` (Nøddeskoven), `games/restaurant/billeder/`
-(Skovkøkkenets 16 ingredienser, 3 retter og 12 gæster) og
+(Skovkøkkenets 16 ingredienser, 3 retter, 12 gæster og koen) og
 `games/bogstaver/billeder/` (Bogstavvejens 69 ting, kvadratiske som
 Skovkøkkenets; listen `MALET` i `ting.js` siger, hvilke ting der er malet).
 Rimhulen, Vrimleskoven og Egernreden genbruger Bogstavvejens billeder og ordklip fra
@@ -224,7 +224,8 @@ måneden og bliver brugt op; farv hellere om i kode end at bede om et nyt.
 Noto Emoji bruges stadig, hvor et barn skal kunne genkende en ting med det
 samme: kortene i Stjerneuret, de sidste syv ting i Bogstavvejen (sol,
 sommerfugl, ur, vandmelon, vante, vulkan, yoyo) og de få rekvisitter i
-Skovkøkkenet, der ikke er mad — klokken, hjertet, koen, mælken og bien.
+Skovkøkkenet, der ikke er mad — hjertet, mælken og bien. Skovkøkkenets ko er
+malet som gæsterne, og klokken er Nøddeskovens malede messingklokke.
 
 Skovkøkkenets tolv gæster er lavet med den samme prompt, hvor kun dyret er
 skiftet ud. Det er grunden til, at de ligner hinanden. Skal en gæst laves om,

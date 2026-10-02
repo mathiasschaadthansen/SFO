@@ -61,9 +61,9 @@ console.log('\nRestauranten\n');
 {
   const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
   const BILLEDER = path.join(__dirname, '..', 'games', 'restaurant', 'billeder');
-  // Maden og gaesterne er malede PNG'er i spillets egen mappe; klokken og
-  // hjertet er stadig Noto Emoji.
-  const malet = Object.keys(K.INGREDIENSER).concat(Object.keys(K.RETTER), K.KUNDER);
+  // Maden, gaesterne og koen er malede PNG'er i spillets egen mappe; klokken og
+  // hjertet er stadig Noto Emoji (klokken som reserve for Noeddeskovens malede).
+  const malet = Object.keys(K.INGREDIENSER).concat(Object.keys(K.RETTER), K.KUNDER, ['ko']);
   const noto = ['klokke', 'hjerte'];
   const manglerFil = malet.filter(n => !fs.existsSync(path.join(BILLEDER, n + '.png')))
     .concat(noto.filter(n => !fs.existsSync(path.join(__dirname, '..', 'assets', 'noto', n + '.svg'))));

@@ -41,13 +41,14 @@
   // Konturen er malet, ikke tegnet med tusch: en tynd, varm kant i stedet for
   // en sort streg. MOERK bruges stadig, hvor der skal FYLDES med blaek.
   var KANT = 'rgba(94,74,58,0.42)';
-  // Maden og gaesterne er malede PNG'er i spillets egen mappe. Hjertet, koen,
+  // Maden, gaesterne og koen er malede PNG'er i spillets egen mappe. Hjertet,
   // maelken og bien er stadig Noto Emoji (klokken ogsaa, hvis den malede mangler). sti() vaelger den rigtige mappe,
   // saa resten af koden bare siger navnet.
   var MALET = 'billeder/', NOTO = '../../assets/noto/';
   var MALET_NAVNE = {};
   Object.keys(K.INGREDIENSER).concat(Object.keys(K.RETTER), K.KUNDER)
     .forEach(function (n) { MALET_NAVNE[n] = true; });
+  MALET_NAVNE.ko = true;
   function sti(navn) {
     return MALET_NAVNE[navn] ? MALET + navn + '.png' : NOTO + navn + '.svg';
   }
