@@ -505,7 +505,7 @@
           ]
         }
       ],
-      brik: { x: 0.5, y: 0.68 },
+      brik: { x: 0.5, y: 0.8 },
       opgave: {
         type: 'spor', bogstav: 'S', ord: 'S som i sne.', eksempel: 'sne',
         find: [{ rigtige: ['sol', 'slange'], andre: ['kat', 'hus'] }, { rigtige: ['sko', 'stol'], andre: ['mus', 'bil'] }]
