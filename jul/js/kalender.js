@@ -42,17 +42,24 @@
    *   opgave: den lille opgave efter historien, se nedenfor.
    *   udkast: true, saa laenge teksten kun er et resume.
    *
-   * Opgaverne (alt, de siger, staar her, saa det kan indtales):
-   *   tael   { ting, antal, spoerg }                       tryk paa hver ting, stemmen taeller med
-   *   se     { runder: [{ ting, antal }], max, spoerg }    tingene vises kort, svaret gives paa en talraekke 1..max
-   *   flest  { runder: [{ venstre, hoejre, ting }], spoerg } tryk paa den bunke, der er flest i
-   *   spor   { bogstav, ord }                               tegn bogstavet med fingeren; bagefter "S som i sne."
-   *   forlyd { lyd, eksempel, runder: [{ rigtig, andre }] } "Hvad starter med J, ligesom jul?"
-   *   rim    { runder: [{ ord, rigtig, andre }] }          "Her har du ordet kat. Hvad rimer på det?"
-   *   klap   { runder: [{ ord }] }                          klap stavelserne paa trommen
-   *   pynt   { spoerg }                                     haeng pynt paa juletraeet, intet rigtigt eller forkert
-   *   venner { spoerg }                                     vennerne kommer, og man taeller dem
-   *   puslespil { spoerg }                                  laeg den sidste brik, og det faerdige billede vises
+   * Opgaverne (alt, de siger, staar her, saa det kan indtales). Hver opgave er 2-4 minutter
+   * i flere dele, let foerst og saa svaerere; opgaver.js goer dem til dele (se dér):
+   *   tael   { runder: [{ ting, antal, spoerg, efter: [{ plus | minus, tekst, stil, spoerg }] }] }
+   *          tael 8-15 ting, og bagefter "Der kommer to til. Hvor mange er der nu?" paa en talraekke
+   *   se     { ting, max, spoerg, runder: [{ antal, moenster, vis, mangler }] }
+   *          tingene ses kort (terning, tierramme), svaret paa en talraekke; mangler: "... foer der er ti?"
+   *   flest  { ting, spoerg, runder: [{ venstre, hoejre, raekke }] }  flest, og saa "Hvor mange flere er der?"
+   *   regn   { ting, runder: [{ tekst, foer, plus | minus, daek, figur }] }
+   *          en regnehistorie i tre saetninger; daek: tingene ligger under noget, saa man skal taenke
+   *   spor   { bogstav, ord, eksempel, find: [{ rigtige, andre }], hvilket: [{ ord, valg }] }
+   *          det store og det lille bogstav, to billeder med lyden, og hvilket bogstav et ord starter med
+   *   forlyd { lyd, eksempel, runder: [{ rigtige, andre }], hvilket: [{ ord, valg }] }
+   *   rim    { runder: [{ ord, rigtig, andre }], ikke: [[tre ord]], par: [[fire ord]] }
+   *   klap   { runder: [{ ord }], flest: [[to ord]] }
+   *   pynt   { spoerg, moenstre: [{ moenster: 'AB' | 'AAB' | 'ABC', dele, vist, mangler, valg }] }
+   *          guirlandens moenstre, og saa fri pynt paa juletraeet
+   *   venner { spoerg, grupper: [{ tekst, ting, foer }], sorter: [figurer] }
+   *   puslespil { spoergLoese, spoerg }   fem loese brikker og saa Nis' sidste brik
    * Ordene i forlyd, rim og klap er Bogstavvejens og Rimhulens ting, saa billeder og ordklip findes.
    */
   var DAGE = [
@@ -106,7 +113,15 @@
         }
       ],
       brik: { x: 0.5, y: 0.8 },
-      opgave: { type: 'tael', ting: 'julekugle', antal: 5, spoerg: 'Kan I tælle kuglerne på juletræet? Tryk på dem én ad gangen.' }
+      opgave: {
+        type: 'tael',
+        runder: [
+          { ting: 'julekugle', antal: 8, spoerg: 'Kan I tælle kuglerne på juletræet? Tryk på dem én ad gangen.',
+            efter: [{ plus: 2 }, { minus: 1, tekst: 'Sanne tager én.' }] },
+          { ting: 'æble', antal: 12, spoerg: 'Stormen har blæst æblerne ned i sneen. Kan I tælle dem?',
+            efter: [{ minus: 4, tekst: 'Pelle samler fire op.' }] }
+        ]
+      }
     },
     {
       dag: 2, titel: 'Egons nøddelager', sted: 'Egernreden', spil: 'games/egern/', emne: 'tal', moeder: ['egon'],
@@ -157,7 +172,14 @@
         }
       ],
       brik: { x: 0.55, y: 0.35 },
-      opgave: { type: 'se', ting: 'nød', max: 5, runder: [{ antal: 3 }, { antal: 5 }, { antal: 4 }], spoerg: 'Kig godt. Hvor mange nødder så I?' }
+      opgave: {
+        type: 'se', ting: 'nød', max: 10, spoerg: 'Kig godt. Hvor mange nødder så I?',
+        runder: [
+          { antal: 5, moenster: 'terning', vis: 2.5 }, { antal: 6, moenster: 'terning', vis: 2 },
+          { antal: 7, moenster: 'tierramme', vis: 2, mangler: true }, { antal: 9, moenster: 'tierramme', vis: 1.5, mangler: true },
+          { antal: 8, moenster: 'tierramme', vis: 1, mangler: true }
+        ]
+      }
     },
     {
       dag: 3, titel: 'Brunkager hos Gustav', sted: 'Skovkøkkenet', spil: 'games/restaurant/', emne: 'tal', moeder: ['gustav'],
@@ -205,7 +227,16 @@
         }
       ],
       brik: { x: 0.45, y: 0.6 },
-      opgave: { type: 'tael', ting: 'kage', antal: 6, spoerg: 'Kan I tælle kagerne på pladen? Tryk på dem én ad gangen.' }
+      opgave: {
+        type: 'regn', ting: 'kage',
+        foerst: { antal: 9, spoerg: 'Gustav har bagt brunkager. Kan I tælle dem? Tryk på dem én ad gangen.' },
+        runder: [
+          { tekst: 'Gustav har fem kager. Han bager tre mere. Hvor mange har han nu?', foer: 5, plus: 3, figur: ['gustav'] },
+          { tekst: 'Der ligger syv kager på pladen. Nogen spiser to. Hvor mange er der tilbage?', foer: 7, minus: 2 },
+          { tekst: 'Seks kager ligger under viskestykket. Gustav bager tre mere. Hvor mange er der nu?', foer: 6, plus: 3, daek: 'klud', figur: ['gustav'] },
+          { tekst: 'Ti kager ligger under viskestykket. Nogen tager tre. Hvor mange er der tilbage?', foer: 10, minus: 3, daek: 'klud' }
+        ]
+      }
     },
     {
       dag: 4, titel: 'Den frosne dæmning', sted: 'Bæverdammen', spil: 'games/baever/', emne: 'tal', moeder: ['bodil'],
@@ -255,7 +286,10 @@
         }
       ],
       brik: { x: 0.5, y: 0.7 },
-      opgave: { type: 'flest', ting: 'stamme', runder: [{ venstre: 4, hoejre: 2 }, { venstre: 3, hoejre: 6 }, { venstre: 5, hoejre: 4 }], spoerg: 'Hvor er der flest stammer?' }
+      opgave: {
+        type: 'flest', ting: 'stamme', spoerg: 'Hvor er der flest stammer?',
+        runder: [{ venstre: 7, hoejre: 4, raekke: true }, { venstre: 5, hoejre: 9, raekke: true }, { venstre: 6, hoejre: 8 }, { venstre: 10, hoejre: 7 }, { venstre: 8, hoejre: 9 }]
+      }
     },
     {
       dag: 5, titel: 'Sneboldene', sted: 'Boldbanen', spil: 'games/klatbold/', emne: 'tal', moeder: ['klaus', 'klara'],
@@ -303,7 +337,16 @@
         }
       ],
       brik: { x: 0.5, y: 0.6 },
-      opgave: { type: 'flest', ting: 'snebold', runder: [{ venstre: 5, hoejre: 3 }, { venstre: 2, hoejre: 4 }, { venstre: 6, hoejre: 5 }], spoerg: 'Hvor er der flest snebolde?' }
+      opgave: {
+        type: 'regn', ting: 'snebold',
+        foerst: { antal: 10, spoerg: 'Klaus og Klara har lavet snebolde. Kan I tælle dem?' },
+        runder: [
+          { tekst: 'Klaus har fem snebolde. Klara har tre. Hvor mange har de tilsammen?', foer: 5, plus: 3, figur: ['klaus', 'klara'] },
+          { tekst: 'Der ligger ni snebolde. Klaus kaster fire. Hvor mange er der tilbage?', foer: 9, minus: 4, figur: ['klaus'] },
+          { tekst: 'Fire snebolde ligger bag snemanden. Klaus triller fem til. Hvor mange er der nu?', foer: 4, plus: 5, daek: 'snemand', figur: ['klaus'] },
+          { tekst: 'Otte snebolde ligger bag snemanden. Klara triller to væk. Hvor mange er der tilbage?', foer: 8, minus: 2, daek: 'snemand', figur: ['klara'] }
+        ]
+      }
     },
     {
       dag: 6, titel: 'Kælketuren', sted: 'Susebanen', spil: 'games/racer/', emne: 'tal', moeder: ['rikke'],
@@ -352,7 +395,14 @@
         }
       ],
       brik: { x: 0.72, y: 0.62 },
-      opgave: { type: 'tael', ting: 'gran', antal: 6, spoerg: 'Kan I tælle juletræerne langs banen? Tryk på dem én ad gangen.' }
+      opgave: {
+        type: 'tael',
+        runder: [
+          { ting: 'gran', antal: 11, spoerg: 'Kan I tælle juletræerne langs banen? Tryk på dem én ad gangen.',
+            efter: [{ plus: 2, tekst: 'Rikke planter to til.' }, { minus: 3, stil: 'sne', tekst: 'Sneen dækker tre.', spoerg: 'Hvor mange kan I se nu?' }] },
+          { ting: 'stjerne', antal: 14, spoerg: 'Nu kommer stjernerne frem. Kan I tælle dem?' }
+        ]
+      }
     },
     {
       dag: 7, titel: 'Syv stjerner', sted: 'Stjerneuret', spil: 'games/klokken/', emne: 'tal', moeder: ['milo'],
@@ -400,7 +450,13 @@
         }
       ],
       brik: { x: 0.38, y: 0.32 },
-      opgave: { type: 'se', ting: 'stjerne', max: 10, runder: [{ antal: 7 }, { antal: 5 }, { antal: 8 }], spoerg: 'Kig godt. Hvor mange stjerner så I?' }
+      opgave: {
+        type: 'se', ting: 'stjerne', max: 10, spoerg: 'Kig godt. Hvor mange stjerner så I?',
+        runder: [
+          { antal: 6, moenster: 'terning', vis: 2 }, { antal: 7, vis: 2, mangler: true }, { antal: 10, vis: 1.5 },
+          { antal: 8, vis: 1.2, mangler: true }, { antal: 9, vis: 1, mangler: true }
+        ]
+      }
     },
 
     /* ---------- Uge 2: bogstaver og lyde ---------- */
@@ -450,7 +506,10 @@
         }
       ],
       brik: { x: 0.5, y: 0.68 },
-      opgave: { type: 'spor', bogstav: 'S', ord: 'S som i sne.' }
+      opgave: {
+        type: 'spor', bogstav: 'S', ord: 'S som i sne.', eksempel: 'sne',
+        find: [{ rigtige: ['sol', 'slange'], andre: ['kat', 'hus'] }, { rigtige: ['sko', 'stol'], andre: ['mus', 'bil'] }]
+      }
     },
     {
       dag: 9, titel: 'Julebrevene', sted: 'Himmelvejen', spil: 'games/flyv/', emne: 'bogstaver', moeder: ['sanne'],
@@ -498,7 +557,11 @@
         }
       ],
       brik: { x: 0.62, y: 0.42 },
-      opgave: { type: 'forlyd', lyd: 'J', eksempel: 'jul', runder: [{ rigtig: 'juletræ', andre: ['hus', 'bil'] }, { rigtig: 'jakke', andre: ['sol', 'fisk'] }, { rigtig: 'jordbær', andre: ['kat', 'tog'] }] }
+      opgave: {
+        type: 'forlyd', lyd: 'J', eksempel: 'jul',
+        runder: [{ rigtige: ['juletræ'], andre: ['hus', 'bil', 'sol'] }, { rigtige: ['jakke', 'jordbær'], andre: ['kat', 'tog'] }],
+        hvilket: [{ ord: 'jordbær', valg: ['J', 'S', 'O'] }, { ord: 'sol', valg: ['S', 'J', 'A'] }, { ord: 'juletræ', valg: ['S', 'O', 'J'] }]
+      }
     },
     {
       dag: 10, titel: 'Julekort hos Rasmus', sted: 'Tegnestuen', spil: 'games/tegn/', emne: 'bogstaver', moeder: ['rasmus'],
@@ -545,7 +608,11 @@
         }
       ],
       brik: { x: 0.3, y: 0.7 },
-      opgave: { type: 'spor', bogstav: 'N', ord: 'N som i nisse.' }
+      opgave: {
+        type: 'spor', bogstav: 'N', ord: 'N som i nisse.', eksempel: 'nisse',
+        find: [{ rigtige: ['næse', 'nøgle'], andre: ['fisk', 'bil'] }],
+        hvilket: [{ ord: 'nød', valg: ['N', 'J', 'S'] }, { ord: 'slange', valg: ['S', 'N', 'J'] }]
+      }
     },
     {
       dag: 11, titel: 'Kajas kane', sted: 'Vrimleskoven', spil: 'games/find/', emne: 'bogstaver', moeder: ['kaja'],
@@ -591,7 +658,14 @@
         }
       ],
       brik: { x: 0.6, y: 0.4 },
-      opgave: { type: 'forlyd', lyd: 'K', eksempel: 'kane', runder: [{ rigtig: 'kage', andre: ['sol', 'mus'] }, { rigtig: 'kat', andre: ['bi', 'tog'] }, { rigtig: 'krone', andre: ['hat', 'ugle'] }] }
+      opgave: {
+        type: 'forlyd', lyd: 'K', eksempel: 'kane',
+        runder: [
+          { rigtige: ['kat'], andre: ['sol', 'mus', 'bi'] }, { rigtige: ['kage', 'krone'], andre: ['hat', 'ugle'] },
+          { rigtige: ['ko', 'kanin'], andre: ['gave', 'fisk'] }
+        ],
+        hvilket: [{ ord: 'kage', valg: ['K', 'J', 'N'] }, { ord: 'næse', valg: ['N', 'K', 'S'] }, { ord: 'jakke', valg: ['K', 'J', 'S'] }]
+      }
     },
     {
       dag: 12, titel: 'Snemanden i haven', sted: 'Årstidshaven', spil: 'games/have/', emne: 'bogstaver', moeder: [],
@@ -637,7 +711,11 @@
         }
       ],
       brik: { x: 0.45, y: 0.78 },
-      opgave: { type: 'spor', bogstav: 'G', ord: 'G som i gulerod.' }
+      opgave: {
+        type: 'spor', bogstav: 'G', ord: 'G som i gulerod.', eksempel: 'gulerod',
+        find: [{ rigtige: ['gris', 'gave'], andre: ['hat', 'sol'] }],
+        hvilket: [{ ord: 'gulerod', valg: ['G', 'K', 'N'] }, { ord: 'kat', valg: ['K', 'G', 'S'] }]
+      }
     },
     {
       dag: 13, titel: 'Is på havet', sted: 'Boblehavet', spil: 'games/bobler/', emne: 'bogstaver', moeder: ['emil', 'ella'],
@@ -684,7 +762,11 @@
         }
       ],
       brik: { x: 0.58, y: 0.48 },
-      opgave: { type: 'forlyd', lyd: 'E', eksempel: 'Emil', runder: [{ rigtig: 'elefant', andre: ['tog', 'ko'] }, { rigtig: 'egern', andre: ['sko', 'hund'] }, { rigtig: 'edderkop', andre: ['bil', 'måne'] }] }
+      opgave: {
+        type: 'forlyd', lyd: 'E', eksempel: 'Emil',
+        runder: [{ rigtige: ['elefant'], andre: ['tog', 'ko', 'hus'] }, { rigtige: ['egern', 'edderkop'], andre: ['sko', 'bil'] }],
+        hvilket: [{ ord: 'egern', valg: ['E', 'K', 'G'] }, { ord: 'gave', valg: ['G', 'E', 'J'] }, { ord: 'nøgle', valg: ['N', 'S', 'E'] }]
+      }
     },
     {
       dag: 14, titel: 'Pakken på trappen', sted: 'Nøddeskoven', spil: 'games/maskinen/', emne: 'bogstaver', moeder: ['sanne'],
@@ -731,7 +813,11 @@
         }
       ],
       brik: { x: 0.5, y: 0.75 },
-      opgave: { type: 'spor', bogstav: 'P', ord: 'P som i Pelle.' }
+      opgave: {
+        type: 'spor', bogstav: 'P', ord: 'P som i Pelle.', eksempel: 'Pelle',
+        find: [{ rigtige: ['pingvin', 'pandekage'], andre: ['sol', 'mus'] }, { rigtige: ['pizza', 'pil'], andre: ['kat', 'egern'] }],
+        hvilket: [{ ord: 'paraply', valg: ['P', 'K', 'E'] }]
+      }
     },
 
     /* ---------- Uge 3: rim og stavelser ---------- */
@@ -782,7 +868,12 @@
         }
       ],
       brik: { x: 0.52, y: 0.62 },
-      opgave: { type: 'rim', runder: [{ ord: 'bjørn', rigtig: 'ørn', andre: ['hus', 'kage'] }, { ord: 'sol', rigtig: 'stol', andre: ['bil', 'fisk'] }, { ord: 'mus', rigtig: 'hus', andre: ['sko', 'ugle'] }] }
+      opgave: {
+        type: 'rim',
+        runder: [{ ord: 'bjørn', rigtig: 'ørn', andre: ['hus', 'kage', 'fisk'] }, { ord: 'mus', rigtig: 'hus', andre: ['sko', 'ugle', 'bil'] }],
+        ikke: [['sol', 'stol', 'kat'], ['kat', 'hat', 'fisk']],
+        par: [['ko', 'sko', 'bil', 'fisk']]
+      }
     },
     {
       dag: 16, titel: 'Risengrød', sted: 'Skovkøkkenet', spil: 'games/restaurant/', emne: 'rim', moeder: ['gustav'],
@@ -829,7 +920,11 @@
         }
       ],
       brik: { x: 0.5, y: 0.6 },
-      opgave: { type: 'klap', runder: [{ ord: 'kage' }, { ord: 'juletræ' }, { ord: 'pandekage' }] }
+      opgave: {
+        type: 'klap',
+        runder: [{ ord: 'gris' }, { ord: 'kage' }, { ord: 'æble' }, { ord: 'gulerod' }, { ord: 'pandekage' }],
+        flest: [['is', 'juletræ'], ['tomat', 'ananas']]
+      }
     },
     {
       dag: 17, titel: 'Egons julesang', sted: 'Egernreden', spil: 'games/egern/', emne: 'rim', moeder: ['egon'],
@@ -873,7 +968,12 @@
         }
       ],
       brik: { x: 0.45, y: 0.5 },
-      opgave: { type: 'rim', runder: [{ ord: 'is', rigtig: 'gris', andre: ['bil', 'måne'] }, { ord: 'tog', rigtig: 'bog', andre: ['kat', 'sol'] }, { ord: 'ø', rigtig: 'frø', andre: ['hund', 'ko'] }] }
+      opgave: {
+        type: 'rim',
+        runder: [{ ord: 'is', rigtig: 'gris', andre: ['bil', 'måne', 'hat'] }, { ord: 'tog', rigtig: 'bog', andre: ['kat', 'sol', 'ugle'] }],
+        ikke: [['ø', 'frø', 'hund'], ['ko', 'sko', 'bil']],
+        par: [['kat', 'hat', 'sol', 'ko']]
+      }
     },
     {
       dag: 18, titel: 'Turen til månen', sted: 'Stjerneuret', spil: 'games/klokken/', emne: 'rim', moeder: ['milo'],
@@ -919,7 +1019,11 @@
         }
       ],
       brik: { x: 0.68, y: 0.35 },
-      opgave: { type: 'klap', runder: [{ ord: 'raket' }, { ord: 'måne' }, { ord: 'paraply' }] }
+      opgave: {
+        type: 'klap',
+        runder: [{ ord: 'sol' }, { ord: 'måne' }, { ord: 'raket' }, { ord: 'paraply' }, { ord: 'regnbue' }],
+        flest: [['fly', 'raket'], ['robot', 'paraply']]
+      }
     },
     {
       dag: 19, titel: 'Klatternes sang', sted: 'Boldbanen', spil: 'games/klatbold/', emne: 'rim', moeder: ['klaus', 'klara'],
@@ -963,7 +1067,12 @@
         }
       ],
       brik: { x: 0.5, y: 0.45 },
-      opgave: { type: 'rim', runder: [{ ord: 'ko', rigtig: 'sko', andre: ['hat', 'fisk'] }, { ord: 'bil', rigtig: 'pil', andre: ['sol', 'mus'] }, { ord: 'hund', rigtig: 'mund', andre: ['kage', 'tog'] }] }
+      opgave: {
+        type: 'rim',
+        runder: [{ ord: 'ko', rigtig: 'sko', andre: ['hat', 'fisk', 'måne'] }, { ord: 'bil', rigtig: 'pil', andre: ['sol', 'mus', 'kage'] }],
+        ikke: [['hund', 'mund', 'tog'], ['sol', 'stol', 'and']],
+        par: [['is', 'gris', 'bog', 'ur']]
+      }
     },
     {
       dag: 20, titel: 'Bodils gaver', sted: 'Bæverdammen', spil: 'games/baever/', emne: 'rim', moeder: ['bodil'],
@@ -1008,7 +1117,11 @@
         }
       ],
       brik: { x: 0.5, y: 0.68 },
-      opgave: { type: 'klap', runder: [{ ord: 'gave' }, { ord: 'sommerfugl' }, { ord: 'træ' }] }
+      opgave: {
+        type: 'klap',
+        runder: [{ ord: 'træ' }, { ord: 'gave' }, { ord: 'egern' }, { ord: 'sommerfugl' }, { ord: 'edderkop' }],
+        flest: [['bi', 'sommerfugl'], ['æble', 'elefant']]
+      }
     },
     {
       dag: 21, titel: 'Rikkes rimetur', sted: 'Susebanen', spil: 'games/racer/', emne: 'rim', moeder: ['rikke'],
@@ -1053,7 +1166,12 @@
         }
       ],
       brik: { x: 0.35, y: 0.65 },
-      opgave: { type: 'rim', runder: [{ ord: 'fly', rigtig: 'sky', andre: ['ko', 'hat'] }, { ord: 'and', rigtig: 'vand', andre: ['bil', 'mus'] }, { ord: 'ur', rigtig: 'mur', andre: ['sol', 'fisk'] }] }
+      opgave: {
+        type: 'rim',
+        runder: [{ ord: 'fly', rigtig: 'sky', andre: ['ko', 'hat', 'bil'] }, { ord: 'and', rigtig: 'vand', andre: ['mus', 'ugle', 'fisk'] }],
+        ikke: [['ur', 'mur', 'sol'], ['salat', 'tomat', 'kanin']],
+        par: [['pingvin', 'banan', 'kanin', 'tomat']]
+      }
     },
 
     /* ---------- Faellesskab og jul ---------- */
@@ -1099,7 +1217,16 @@
         }
       ],
       brik: { x: 0.58, y: 0.3 },
-      opgave: { type: 'pynt', spoerg: 'Hjælp med at pynte juletræet til festen. Træk pynten op på grenene.' }
+      opgave: {
+        type: 'pynt', spoerg: 'Hjælp med at pynte juletræet til festen. Træk pynten op på grenene.',
+        moenstre: [
+          { moenster: 'AB', dele: ['roed', 'blaa'], vist: 5, valg: ['roed', 'blaa', 'gul'] },
+          { moenster: 'AB', dele: ['stjerne', 'klokke'], vist: 6, valg: ['klokke', 'stjerne', 'lys'] },
+          { moenster: 'AAB', dele: ['gul', 'roed'], vist: 5, valg: ['gul', 'roed', 'blaa'] },
+          { moenster: 'AAB', dele: ['stjerne', 'lys'], vist: 7, valg: ['lys', 'stjerne', 'klokke'] },
+          { moenster: 'ABC', dele: ['roed', 'blaa', 'gul'], vist: 7, mangler: 2, valg: ['gul', 'roed', 'blaa'] }
+        ]
+      }
     },
     {
       dag: 23, titel: 'Lillejuleaften', sted: 'Nøddeskoven', spil: 'games/maskinen/', emne: 'faellesskab', moeder: ['sanne'],
@@ -1142,7 +1269,14 @@
         }
       ],
       brik: { x: 0.5, y: 0.18 },
-      opgave: { type: 'venner', spoerg: 'Nu kommer vennerne for at hjælpe. Kan I tælle dem?' }
+      opgave: {
+        type: 'venner', spoerg: 'Nu kommer vennerne for at hjælpe. Kan I tælle dem?',
+        grupper: [
+          { tekst: 'Fire venner hænger pynt op. Tre venner fejer sne. Hvor mange venner er der i alt?', ting: ['gustav', 'egon', 'bodil', 'rikke', 'kaja', 'emil', 'ella'], foer: 4 },
+          { tekst: 'Fem venner bærer grangrene. Fire venner sætter lys i vinduerne. Hvor mange venner er der i alt?', ting: ['klaus', 'klara', 'milo', 'rasmus', 'bo', 'ulla', 'sanne', 'gustav', 'egon'], foer: 5 }
+        ],
+        sorter: ['egon', 'sanne', 'bo', 'kaja', 'ulla', 'gustav']
+      }
     },
     {
       dag: 24, titel: 'Juleaften', sted: 'Nøddeskoven', spil: 'games/maskinen/', emne: 'faellesskab', moeder: ['sanne', 'nis'],
@@ -1188,7 +1322,10 @@
         }
       ],
       brik: { x: 0.5, y: 0.7 },
-      opgave: { type: 'puslespil', spoerg: 'Læg den sidste brik i puslespillet.' }
+      opgave: {
+        type: 'puslespil', spoergLoese: 'Vennerne har lagt fem brikker frem. Læg dem i puslespillet.',
+        spoerg: 'Læg den sidste brik i puslespillet.'
+      }
     }
   ];
 

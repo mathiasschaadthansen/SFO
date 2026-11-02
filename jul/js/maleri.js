@@ -7,7 +7,8 @@
  * et lille maleri af hvert sted med stedets navn til historierne. Figurerne er
  * spillenes egne malede billeder (Opgaver.FIGURER). Desuden tingene i opgaverne,
  * der ikke findes som billeder: julekugler, lys, stjerner, stammer, juletraeet og
- * Nissen Nis, og brikkerne med den gyldne kant.
+ * Nissen Nis, brikkerne med den gyldne kant, og Gustavs viskestykke og
+ * snebunkerne, der daekker tingene i regnehistorierne.
  *
  * Alt tegnes paa et 2D-canvas; ingen DOM ud over Image til billederne.
  */
@@ -528,10 +529,53 @@
     c.restore();
   }
 
+  /* ---------- det, der daekker tingene i regnehistorierne ---------- */
+
+  /** Gustavs viskestykke: ternet i roedt og papir, med bloede folder og en boelget kant forneden. */
+  function klud(c, x, y, b, h) {
+    c.save();
+    c.shadowColor = 'rgba(94,74,58,.3)'; c.shadowBlur = 16; c.shadowOffsetY = 8;
+    function form() {
+      c.beginPath(); c.moveTo(x + 10, y); c.lineTo(x + b - 10, y); c.quadraticCurveTo(x + b, y, x + b, y + 10);
+      c.lineTo(x + b, y + h - 8);
+      for (var k = 6; k >= 0; k--) c.quadraticCurveTo(x + b * (k + 0.5) / 6, y + h + (k % 2 ? 7 : -3), x + b * k / 6, y + h - 4);
+      c.lineTo(x, y + 10); c.quadraticCurveTo(x, y, x + 10, y); c.closePath();
+    }
+    form(); c.fillStyle = PAPIR; c.fill();
+    c.shadowColor = 'transparent';
+    c.save(); form(); c.clip();
+    var t = Math.max(14, Math.min(b, h) / 6);
+    c.fillStyle = 'rgba(217,95,69,.55)';
+    for (var i = 0; i * t < b; i += 2) c.fillRect(x + i * t, y, t, h + 10);
+    for (var j = 0; j * t < h + 10; j += 2) c.fillRect(x, y + j * t, b, t);
+    var g = c.createLinearGradient(x, y, x + b, y);
+    g.addColorStop(0, 'rgba(94,74,58,.12)'); g.addColorStop(0.35, 'rgba(255,255,255,.12)'); g.addColorStop(0.7, 'rgba(94,74,58,.1)'); g.addColorStop(1, 'rgba(255,255,255,.1)');
+    c.fillStyle = g; c.fillRect(x, y, b, h + 10);
+    c.restore();
+    form(); c.strokeStyle = 'rgba(94,74,58,.35)'; c.lineWidth = 2; c.stroke();
+    c.restore();
+  }
+  /** En bunke sne, der daekker noget: bloede, hvide buer med en lille blaa skygge. */
+  function snebunke(c, x, bund, b, h) {
+    c.save();
+    c.fillStyle = 'rgba(143,199,232,.35)';
+    c.beginPath(); c.ellipse(x, bund, b * 0.52, h * 0.16, 0, 0, 7); c.fill();
+    c.fillStyle = '#fbf7f0';
+    c.beginPath(); c.moveTo(x - b / 2, bund);
+    c.bezierCurveTo(x - b * 0.48, bund - h * 0.7, x - b * 0.2, bund - h * 1.02, x, bund - h);
+    c.bezierCurveTo(x + b * 0.24, bund - h * 1.0, x + b * 0.5, bund - h * 0.64, x + b / 2, bund);
+    c.closePath(); c.fill();
+    c.fillStyle = 'rgba(143,199,232,.3)';
+    c.beginPath(); c.ellipse(x + b * 0.16, bund - h * 0.28, b * 0.2, h * 0.16, 0, 0, 7); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.9)';
+    c.beginPath(); c.ellipse(x - b * 0.12, bund - h * 0.72, b * 0.14, h * 0.1, -0.4, 0, 7); c.fill();
+    c.restore();
+  }
+
   window.Maleri = {
     KUGLEFARVER: KUGLEFARVER, hent: hent, klar: klar, naarHentet: naarHentet, tone: tone, rr: rr, saa: saa, rnd: rnd,
     julekugle: julekugle, stjerne: stjerne, lys: lys, stamme: stamme, ting: ting, juletrae: juletrae, gran: gran,
     figur: figur, nis: nis, vinterscene: vinterscene, motiv: motiv, pladsholder: pladsholder,
-    brikSti: brikSti, brik: brik, gnist: gnist, stjerneSti: stjerneSti
+    brikSti: brikSti, brik: brik, gnist: gnist, stjerneSti: stjerneSti, klud: klud, snebunke: snebunke
   };
 })();
