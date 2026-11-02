@@ -1112,3 +1112,39 @@ tallene), at brikkerne ligger inde i billedet, og at puslespillets 24 brikker
 dækker motivet og kan lægges. De to sidste tjek, at alle billeder og alt, der
 siges, findes på disken og i `klip.json`, fejler med vilje, indtil billederne
 er malet og stemmen er indtalt.
+
+### Opgaveark til 0. klasse
+
+Til lærere og pædagoger er der printvenlige opgaveark, ét eller to pr. dag,
+der bygger videre på det, dagens historie øvede: tal og mængder (tæl og skriv,
+terningmønstre, flest og færrest, tierrammer, plus og minus med billeder,
+talrækken og klokken syv), bogstaverne S, J, N, K, G, E og P (stort og lille i
+grundskrift med startprik og pile, skrivelinjer, lyden først og et skjult
+billede), rim og stavelser (forbind, kryds ved det, der ikke rimer, klap og
+sortér) og fællesskab (guirlandens mønstre, en invitation at klippe og folde,
+et samtaleark, tegn dig selv til festen, puslespillet at klippe og et
+kalender-ark). Forrest er en side til læreren og en oversigt, bagerst facit.
+Børnene skal ikke kunne læse: piktogrammer viser, hvad man gør, og en linje
+nederst på hvert ark siger, hvad det øver, og hvad læreren kan sige.
+
+Arkene er ikke en del af appen og står ikke i `sw.js`, og der er ingen
+printknap. PDF'en laves med et værktøj og sendes til lærerne; den ligger ikke
+i repoet (den står i `.gitignore`):
+
+```bash
+node vaerktoej/lav-jul-ark.js [pelles-julekalender-opgaveark.pdf]
+```
+
+Det kræver Playwright med Chromium som `lav-bog-pdf.js` (`PLAYWRIGHT_MODUL`
+og `CHROMIUM` kan pege på en installation uden for repoet). Siden, der printes
+fra, ligger i `vaerktoej/jul-ark/`: indholdet er data i `ark.js` (ret dér),
+tingene og bogstaverne tegnes i `tegn.js`, og `sider.js` stiller arkene op.
+Bogstaver og tal skrives med Bogstavvejens streger (`glyffer.js`), så strøg og
+retning er de samme som i appen, og puslespillets brikker er appens
+(`jul/js/puslespil.js`). Ordenes billeder er Bogstavvejens og Rimhulens malede
+billeder, lavet om til stregtegninger med et kantfilter i canvas, så de kan
+farvelægges. Alt er sort-hvidt, og skriften er en rund skrift, hvis maskinen
+har en (aldrig fra nettet). Værktøjet melder, hvis noget ikke kan være på
+siden. `test/jul-ark.test.js` tjekker dagene og ugernes emner, facit,
+regnestykkerne, rimene efter `Rim.RIM`, stavelserne efter `Rim.STAVELSER`,
+bogstaverne i `glyffer.js` og at billederne findes.

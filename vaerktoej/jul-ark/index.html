@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<title>Pelles julekalender – opgaveark</title>
+<link rel="icon" href="data:,">
+<!--
+  Opgavearkene til Pelles julekalender. Ikke en del af appen og ikke i sw.js:
+  siden aabnes af vaerktoej/lav-jul-ark.js, der skriver PDF'en.
+  Kan ogsaa aabnes i en browser fra en lokal server (npm start) og printes direkte.
+-->
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #d9d4cf; }
+  body {
+    /* En rund, laesevenlig skrift, hvis maskinen har en; ellers en almindelig sans-serif. Aldrig fra nettet. */
+    font-family: ui-rounded, "SF Pro Rounded", "Nunito", "Varela Round", "Arial Rounded MT Bold", "Quicksand", "Comfortaa", "DejaVu Sans", system-ui, sans-serif;
+    color: #2b2522; font-size: 10pt; line-height: 1.35;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  #sider { display: flex; flex-direction: column; align-items: center; gap: 8mm; padding: 8mm 0; }
+  .side {
+    width: 210mm; height: 297mm; padding: 11mm 14mm 10mm; background: #fff; overflow: hidden;
+    display: flex; flex-direction: column; position: relative;
+  }
+  svg { display: block; overflow: visible; }
+  @media print {
+    html, body { background: #fff; }
+    #sider { display: block; padding: 0; }
+    .side { page-break-after: always; break-after: page; }
+  }
+
+  /* ---------- arkenes hoved ---------- */
+  .arkhoved { flex: none; height: 25mm; border-bottom: 0.4mm solid #2b2522; margin-bottom: 3mm; position: relative; }
+  .arkhoved .sted { position: absolute; left: 26mm; top: 16.5mm; font-size: 8.5pt; color: #6f665f; }
+  .arkhoved .navn { position: absolute; right: 0; top: 14mm; display: flex; align-items: flex-end; gap: 2mm; font-size: 8.5pt; color: #6f665f; }
+  .arkhoved .navn i { display: block; width: 52mm; border-bottom: 0.35mm solid #2b2522; height: 6mm; }
+
+  .indhold { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; min-height: 0; }
+  .opgave { break-inside: avoid; }
+  .ophoved { display: flex; align-items: center; gap: 2.5mm; margin-bottom: 2.5mm; }
+  .ophoved p { margin: 0; font-size: 9.5pt; color: #4a413b; }
+  .ophoved svg { flex: none; }
+
+  .laerer { flex: none; border-top: 0.3mm dashed #8d847c; padding-top: 2mm; margin-top: 2mm; font-size: 8.2pt; color: #5a514a; line-height: 1.3; }
+  .laerer b { color: #2b2522; margin-right: 1mm; }
+
+  .spoergsmaal { margin-top: 4mm; border: 0.35mm solid #8d847c; border-radius: 3mm; padding: 3mm 5mm; font-size: 10.5pt; }
+  .spoergsmaal ol { margin: 1.5mm 0 0; padding-left: 6mm; }
+  .spoergsmaal li { margin: 1mm 0; }
+
+  /* ---------- forsiden ---------- */
+  .forside h3, .oversigt h2, .facit h2 { margin: 4mm 0 1.5mm; font-size: 12.5pt; }
+  .forside .undertitel { text-align: center; margin: 1mm 0 3mm; font-size: 13pt; color: #4a413b; letter-spacing: 0.02em; }
+  .forside p { margin: 0 0 2mm; }
+  .forside .spalter { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; }
+  .forside ul { margin: 0; padding-left: 5mm; }
+  .forside ul.uger { list-style: none; padding: 0; }
+  .forside ul.uger li { margin-bottom: 2mm; }
+  .forside ul.uger span { color: #5a514a; font-size: 9pt; }
+  .forside ul.brug li { margin-bottom: 1mm; }
+  .forside .ikoner { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2mm 4mm; margin-bottom: 3mm; }
+  .forside .ikoner div { display: flex; align-items: center; gap: 2mm; font-size: 9pt; }
+  .forside .lille { font-size: 8.5pt; color: #5a514a; margin-top: auto; }
+
+  /* ---------- oversigten ---------- */
+  table.dage { width: 100%; border-collapse: collapse; font-size: 8.3pt; }
+  table.dage th { text-align: left; border-bottom: 0.4mm solid #2b2522; padding: 1mm 1.5mm; }
+  table.dage td { border-bottom: 0.2mm solid #d6cfc8; padding: 0.45mm 1.5mm; vertical-align: middle; line-height: 1.15; }
+  table.dage td span { color: #6f665f; }
+  table.dage td.nr { width: 11mm; }
+  table.dage tr.bogstaver td, table.dage tr.faellesskab td { background: #f6f3f0; }
+
+  /* ---------- facit ---------- */
+  .facitliste { columns: 2; column-gap: 7mm; font-size: 9pt; line-height: 1.3; }
+  .facitdag { break-inside: avoid; margin-bottom: 2.2mm; }
+  .facitdag ul { margin: 0.5mm 0 0; padding-left: 4mm; }
+  .facitdag p { margin: 0.5mm 0 0; color: #6f665f; }
+</style>
+</head>
+<body>
+<div id="sider"></div>
+<script src="../../games/bogstaver/js/glyffer.js"></script>
+<script src="../../games/bogstaver/js/ting.js"></script>
+<script src="../../games/rim/js/rim.js"></script>
+<script src="../../jul/js/puslespil.js"></script>
+<script src="ark.js"></script>
+<script src="tegn.js"></script>
+<script src="sider.js"></script>
+</body>
+</html>
