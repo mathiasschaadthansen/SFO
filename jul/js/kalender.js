@@ -449,7 +449,7 @@
           ]
         }
       ],
-      brik: { x: 0.38, y: 0.32 },
+      brik: { x: 0.36, y: 0.55 },
       opgave: {
         type: 'se', ting: 'stjerne', max: 10, spoerg: 'Kig godt. Hvor mange stjerner så I?',
         runder: [
