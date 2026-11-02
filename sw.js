@@ -960,6 +960,10 @@ const FILER = [
  */
 const JUL = 'sfo-jul';
 const FILER_JUL = [
+  'jul/billeder/dag01-1.jpg',
+  'jul/billeder/dag01-2.jpg',
+  'jul/billeder/dag01-3.jpg',
+  'jul/billeder/kalender.jpg'
 ];
 
 function adresse(f) { return new URL(f, self.location).href; }
