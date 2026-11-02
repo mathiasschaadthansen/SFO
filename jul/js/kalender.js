@@ -394,7 +394,7 @@
           ]
         }
       ],
-      brik: { x: 0.72, y: 0.62 },
+      brik: { x: 0.7, y: 0.87 },
       opgave: {
         type: 'tael',
         runder: [
