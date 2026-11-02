@@ -1075,17 +1075,23 @@ i det store puslespil i opgaven, så dér tager Pelle den bare med.
 **Opgaverne** står i `js/opgaver.js` (regler og alt, der siges, uden DOM, så et
 værktøj til printbare opgaveark kan genbruge dem) og `js/lege.js` (skærmene).
 Ingen point, ingen tid, ingen straf: et forkert tryk ryster blidt, og man
-prøver igen. `tael`: tryk på hver ting, stemmen tæller med, og til sidst "Der
-var fem." `se`: tingene ses kort i et fast mønster (terning til seks,
-femmerstruktur over), og svaret gives på en talrække. `flest`: tryk på den
-bunke, der er flest i. `spor`: Bogstavvejens streger og sporing
-(`glyffer.js`, `spor.js`) med retningsreglerne, bagefter "S som i sne."
-`forlyd` og `rim`: tre kort med Bogstavvejens og Rimhulens malede billeder, og
-ordklippene "Her har du ordet kat." spilles hele, for sig ("Her har du ordet
-kat." "Hvad rimer på det?"). `klap`: Rimhulens tromme og stavelser. `pynt`:
-træk pynt op på juletræet, og tryk på fluebenet. `venner`: vennerne kommer én
-ad gangen; tryk på dem og tæl. `puslespil`: den sidste brik trækkes på plads,
-og billedet lyser op. Alt, opgaverne siger, kommer fra `Opgaver.saetninger()`
+prøver igen. Hver opgave er flere dele, let først og så sværere, i alt 2-4
+minutter; `Opgaver.forbered()` giver delene, og `Opgaver.runde()` afgør, hvad
+der er rigtigt, så skærmen og testen bruger de samme regler. Efter hver del
+er der en lille fejring uden ord, og pilen under højttaleren springer en del
+over. Uge 1: tælle 8-14 ting med "der kommer to til" og "Sanne tager én"
+bagefter (svaret på en talrække til 10 eller 20), se hurtigt op til ti i
+terning og tierramme med "hvor mange mangler til ti", flest med "hvor mange
+flere", og små regnehistorier (`regn`), hvor tingene til sidst er dækket af et
+viskestykke eller en snebunke. Uge 2: dagens store og lille bogstav sporet
+med Bogstavvejens streger (`glyffer.js`, `spor.js`), find to af fire billeder,
+der starter med lyden, og "hvilket bogstav starter det med?" med tre
+bogstaver. Uge 3: rim med fire kort, "hvilket ord rimer ikke?", find rimparret,
+klap fem ord og "hvilket ord har flest klap?". Til sidst mønstre på
+guirlanden (AB, AAB, ABC) og fri pynt, tæl vennerne, læg dem sammen og sortér
+dem, der kan flyve, og den 24. lægges de sidste seks brikker. Ordklippene
+"Her har du ordet kat." spilles hele, for sig, og spørgsmålet kommer bagefter
+som sin egen sætning. Alt, opgaverne siger, kommer fra `Opgaver.saetninger()`
 som hele sætninger, også talordene fra "En." til "Fireogtyve."
 
 **Stemmen** er `js/stemme.js` med `lyd/klip.json` som `{ sætning: fil }`, som i
