@@ -226,7 +226,7 @@
           ]
         }
       ],
-      brik: { x: 0.45, y: 0.6 },
+      brik: { x: 0.72, y: 0.66 },
       opgave: {
         type: 'regn', ting: 'kage',
         foerst: { antal: 9, spoerg: 'Gustav har bagt brunkager. Kan I tælle dem? Tryk på dem én ad gangen.' },
