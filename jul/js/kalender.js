@@ -58,7 +58,7 @@
   var DAGE = [
     /* ---------- Uge 1: tal og maengder ---------- */
     {
-      dag: 1, titel: 'Stjernen går i brikker', sted: 'Nøddeskoven', spil: 'games/maskinen/', emne: 'tal', moeder: ['sanne'],
+      dag: 1, titel: 'Stormen', sted: 'Nøddeskoven', spil: 'games/maskinen/', emne: 'tal', moeder: ['sanne'],
       afsnit: [
         {
           billede: 'billeder/dag01-1.jpg',

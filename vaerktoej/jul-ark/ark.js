@@ -66,7 +66,7 @@
   var DAGE = [
     /* ---------- Uge 1: tal og maengder ---------- */
     {
-      dag: 1, titel: 'Stjernen går i brikker', sted: 'Nøddeskoven', emne: 'tal',
+      dag: 1, titel: 'Stormen', sted: 'Nøddeskoven', emne: 'tal',
       ark: [{
         navn: 'Tæl og skriv 1–5',
         opgaver: [
