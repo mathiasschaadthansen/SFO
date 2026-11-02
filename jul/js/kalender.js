@@ -756,12 +756,12 @@
             'Bo vender sig i søvne og mumler noget. Bo elsker rim. Selv når han sover, taler han i rim.',
             '– Bjørn, mumler Bo. Bjørn og ...',
             'Ord rimer, når de lyder ens til sidst. Bjørn og ørn rimer, fordi de begge slutter med ørn.',
-            { spoerg: 'Bjørn og ... en stor fugl, der flyver højt. Hvad rimer på bjørn?', svar: 'Ørn. Bjørn og ørn rimer.' },
+            { spoerg: 'Bjørn og en stor fugl, der flyver højt. Hvad rimer på bjørn?', svar: 'Ørn. Bjørn og ørn rimer.' },
             'Bo smiler i søvne og mumler videre.',
             '– Mus, mumler Bo. Mus og ...',
-            { spoerg: 'Mus og ... noget, man bor i. Hvad rimer på mus?', svar: 'Hus. Mus og hus rimer.' },
+            { spoerg: 'Mus og noget, man bor i. Hvad rimer på mus?', svar: 'Hus. Mus og hus rimer.' },
             '– Sol, mumler Bo. Sol og ...',
-            { spoerg: 'Sol og ... noget, man sidder på. Hvad rimer på sol?', svar: 'Stol. Sol og stol rimer.' },
+            { spoerg: 'Sol og noget, man sidder på. Hvad rimer på sol?', svar: 'Stol. Sol og stol rimer.' },
             'Pelle og Sanne må holde sig for munden for ikke at grine. Bo er sjov, selv når han sover.'
           ]
         },
@@ -848,12 +848,12 @@
           billede: 'billeder/dag17-2.jpg',
           tekst: [
             '– Min sang starter sådan her, siger Egon og synger. Ude er det koldt, og vi spiser is. Og i stalden står en lille ...',
-            { spoerg: 'Is og ... et dyr, der siger øf. Hvad rimer på is?', svar: 'Gris. Is og gris rimer.' },
+            { spoerg: 'Is og et dyr, der siger øf. Hvad rimer på is?', svar: 'Gris. Is og gris rimer.' },
             '– Gris, synger Egon glad. Og så videre.',
             '– Julemanden kommer med et tog. Og han har med sig en ...',
-            { spoerg: 'Tog og ... noget, man læser i. Hvad rimer på tog?', svar: 'Bog. Tog og bog rimer.' },
+            { spoerg: 'Tog og noget, man læser i. Hvad rimer på tog?', svar: 'Bog. Tog og bog rimer.' },
             '– Og så det sidste vers, siger Egon. Ude på en ø, der sidder en lille ...',
-            { spoerg: 'Ø og ... et lille, grønt dyr, der hopper. Hvad rimer på ø?', svar: 'Frø. Ø og frø rimer.' },
+            { spoerg: 'Ø og et lille, grønt dyr, der hopper. Hvad rimer på ø?', svar: 'Frø. Ø og frø rimer.' },
             '– Nu er sangen færdig, siger Egon. Is og gris, tog og bog, ø og frø. Det er den bedste sang, jeg har lavet.'
           ]
         },
@@ -938,11 +938,11 @@
           billede: 'billeder/dag19-2.jpg',
           tekst: [
             'Klara synger den første linje. På marken står en ko. Den har fået nye ...',
-            { spoerg: 'Ko og ... noget, man har på fødderne. Hvad rimer på ko?', svar: 'Sko. Ko og sko rimer.' },
+            { spoerg: 'Ko og noget, man har på fødderne. Hvad rimer på ko?', svar: 'Sko. Ko og sko rimer.' },
             'Klaus synger den næste linje. Julemanden kører i bil. Og han skyder med en ...',
-            { spoerg: 'Bil og ... noget, der flyver fra en bue. Hvad rimer på bil?', svar: 'Pil. Bil og pil rimer.' },
+            { spoerg: 'Bil og noget, der flyver fra en bue. Hvad rimer på bil?', svar: 'Pil. Bil og pil rimer.' },
             'Klara synger den sidste linje. I sneen sidder en hund. Den har en kage i ...',
-            { spoerg: 'Hund og ... det, man spiser med. Hvad rimer på hund?', svar: 'Mund. Hund og mund rimer.' },
+            { spoerg: 'Hund og det, man spiser med. Hvad rimer på hund?', svar: 'Mund. Hund og mund rimer.' },
             '– Nu kan vi hele sangen, siger Klaus og Klara. Og de synger den fra start til slut, så højt, at sneen falder af træerne.',
             'Mens de synger, ser Pelle noget i sneen ved målet. Små fodspor. Der er nogen, der har stået og lyttet.'
           ]
@@ -1026,13 +1026,13 @@
           billede: 'billeder/dag21-2.jpg',
           tekst: [
             'Højt oppe flyver et fly forbi. Rikke råber: Fly, fly, oppe i en ...',
-            { spoerg: 'Fly og ... noget hvidt og blødt på himlen. Hvad rimer på fly?', svar: 'Sky. Fly og sky rimer.' },
+            { spoerg: 'Fly og noget hvidt og blødt på himlen. Hvad rimer på fly?', svar: 'Sky. Fly og sky rimer.' },
             'De suser forbi søen. På isen står en and og kigger ned.',
             '– And, and, du står på frosset ...',
-            { spoerg: 'And og ... det, der er i søen. Hvad rimer på and?', svar: 'Vand. And og vand rimer.' },
+            { spoerg: 'And og det, der er i søen. Hvad rimer på and?', svar: 'Vand. And og vand rimer.' },
             'De kører forbi Gustavs gård. På muren hænger et stort ur.',
             '– Ur, ur, du hænger på en ...',
-            { spoerg: 'Ur og ... det, uret hænger på. Hvad rimer på ur?', svar: 'Mur. Ur og mur rimer.' },
+            { spoerg: 'Ur og det, uret hænger på. Hvad rimer på ur?', svar: 'Mur. Ur og mur rimer.' },
             '– Fly og sky, and og vand, ur og mur, råber Rikke. Det er den hurtigste rimetur i verden.'
           ]
         },
