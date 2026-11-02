@@ -657,7 +657,7 @@
           ]
         }
       ],
-      brik: { x: 0.6, y: 0.4 },
+      brik: { x: 0.235, y: 0.55 },
       opgave: {
         type: 'forlyd', lyd: 'K', eksempel: 'kane',
         runder: [
