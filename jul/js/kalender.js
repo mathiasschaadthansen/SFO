@@ -336,7 +336,7 @@
           ]
         }
       ],
-      brik: { x: 0.5, y: 0.6 },
+      brik: { x: 0.51, y: 0.65 },
       opgave: {
         type: 'regn', ting: 'snebold',
         foerst: { antal: 10, spoerg: 'Klaus og Klara har lavet snebolde. Kan I tælle dem?' },
