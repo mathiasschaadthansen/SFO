@@ -963,6 +963,9 @@ const FILER_JUL = [
   'jul/billeder/dag01-1.jpg',
   'jul/billeder/dag01-2.jpg',
   'jul/billeder/dag01-3.jpg',
+  'jul/billeder/dag02-1.jpg',
+  'jul/billeder/dag02-2.jpg',
+  'jul/billeder/dag02-3.jpg',
   'jul/billeder/kalender.jpg'
 ];
 

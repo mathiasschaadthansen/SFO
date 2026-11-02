@@ -157,7 +157,7 @@
         {
           billede: 'billeder/dag02-3.jpg',
           tekst: [
-            'Der er kun ét hul tilbage. Det sidder helt oppe i toppen af stubben, og laget er væk. Sanne flyver derop og kigger ned.',
+            'Der er kun ét hul tilbage. Det sidder helt oppe i toppen af stubben, og låget er væk. Sanne flyver derop og kigger ned.',
             '– Der ligger nødder, siger hun. Og der ligger noget mere. Noget, der glimter.',
             'Egon klatrer op med sin store hale bag sig. Han stikker poten ned i hullet, og så kommer den op igen med en lille brik med gylden kant.',
             'Kan I se den? Den ligger lige dér mellem nødderne.',
@@ -171,7 +171,7 @@
           ]
         }
       ],
-      brik: { x: 0.55, y: 0.35 },
+      brik: { x: 0.53, y: 0.2 },
       opgave: {
         type: 'se', ting: 'nød', max: 10, spoerg: 'Kig godt. Hvor mange nødder så I?',
         runder: [
