@@ -556,7 +556,7 @@
           ]
         }
       ],
-      brik: { x: 0.62, y: 0.42 },
+      brik: { x: 0.65, y: 0.6 },
       opgave: {
         type: 'forlyd', lyd: 'J', eksempel: 'jul',
         runder: [{ rigtige: ['juletræ'], andre: ['hus', 'bil', 'sol'] }, { rigtige: ['jakke', 'jordbær'], andre: ['kat', 'tog'] }],
