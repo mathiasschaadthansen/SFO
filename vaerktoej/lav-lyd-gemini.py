@@ -10,6 +10,11 @@ Bruges til alle spillets stemmer, paa to maader:
 * have og flyv taler i hele saetninger. Saetningerne laeses fra spillets egen kode
   (Haven.saetninger() og Oe.saetninger()), filnavnene laves af saetningen, og
   lyd/klip.json skrives som { "saetning": "fil.mp3" }.
+* jul (Pelles julekalender, mappen jul/) er ogsaa et saetningsspil: historiernes
+  replikker (Kalender.replikker(), delt i saetninger som js/stemme.js deler dem)
+  og opgavernes saetninger (Opgaver.saetninger(Kalender)). Klippene kodes med
+  32 kbit/s, fordi der er cirka 1700 af dem, og de kommer i FILER_JUL i sw.js
+  (via vaerktoej/registrer-jul.js), ikke i FILER.
 * bogstaver, restaurant, klokken, maskinen, find, rim og bog har faste filnavne
   (bogstav_A.mp3, bestil_b1a.mp3 ...), som spillene allerede kender. Her laves
   klippene om i de samme filer, og listen over dem er den samme som i
@@ -29,7 +34,7 @@ Koer igen, naar en saetning er aendret: kun de nye laves, og klip til
 saetninger, spillet ikke laengere siger, slettes.
 
 Valg:
-    --spil have|flyv|bogstaver|restaurant|klokken|maskinen|find|rim|bog
+    --spil have|flyv|baever|egern|tegn|jul|bogstaver|restaurant|klokken|maskinen|find|rim|bog
     --stemme <navn>  Kore (standard). Andre: Aoede, Zephyr, Sulafat, Achernar ...
     --model <navn>   gemini-3.8-flash-tts (standard)
     --alle           lav ogsaa klip, der findes i forvejen (de faste spil laver altid alle,
@@ -37,6 +42,7 @@ Valg:
     --kun <tekst>    lav kun saetninger, der indeholder teksten (fx --kun gulerød)
     --proev          vis, hvad der ville blive lavet, uden at kalde Gemini
     --pr-kald <n>    saetninger i ét kald (standard 12); de deles op ved pauserne bagefter
+    --maks-tegn <n>  kun jul: hoejst saa mange tegn i ét kald (standard 900), saa optagelsen ikke bliver for lang
     --registrer      lav ikke noget, men skriv klip.json og sw.js ud fra filerne
 
 Gemini giver kun 100 kald om dagen til gemini-3.8-flash-tts, ogsaa med betaling (uden
@@ -55,12 +61,12 @@ def arg(navn, standard=None):
     return sys.argv[sys.argv.index(navn) + 1] if navn in sys.argv else standard
 
 
-SAETNINGSSPIL = ('have', 'flyv', 'baever', 'egern', 'tegn')
+SAETNINGSSPIL = ('have', 'flyv', 'baever', 'egern', 'tegn', 'jul')
 FASTE_SPIL = ('bogstaver', 'restaurant', 'klokken', 'maskinen', 'find', 'rim', 'bog')
 SPIL = arg('--spil', 'have')
 if SPIL not in SAETNINGSSPIL + FASTE_SPIL:
     raise SystemExit('--spil skal vaere en af: ' + ', '.join(SAETNINGSSPIL + FASTE_SPIL))
-MAPPE = 'bog' if SPIL == 'bog' else 'games/' + SPIL
+MAPPE = SPIL if SPIL in ('bog', 'jul') else 'games/' + SPIL
 UD = os.path.join(ROD, MAPPE, 'lyd')
 MODEL = arg('--model', 'gemini-3.8-flash-tts')
 STEMME = arg('--stemme', 'Kore')
@@ -73,6 +79,10 @@ if SPIL == 'bogstaver':
     STIL += (" Single letters are said with their Danish alphabet names, the way Danish children learn the alphabet in school "
              "(A is \"a\", F is \"æf\", H is \"hå\", J is \"jåd\", K is \"kå\", Q is \"ku\", R is \"ær\", W is \"dobbelt-ve\", Z is \"sæt\"). "
              "Numbers are said as plain Danish number words.")
+if SPIL == 'jul':
+    STIL = ("Voice: warm, calm, friendly female storyteller reading a Danish Christmas story aloud to six-year-olds. "
+            "Unhurried and cosy, with a little extra warmth and wonder. Lines starting with a dash are spoken by the characters. "
+            "Numbers are said as plain Danish number words. Standard Danish pronunciation, no dialect.")
 if SPIL == 'bog':
     STIL = ("Voice: warm, calm, friendly female storyteller reading a Danish picture book aloud to six-year-olds. "
             "Unhurried, with natural pauses between sentences and a little extra warmth in the rhymes. "
@@ -88,6 +98,12 @@ def saetninger():
         kode = "const { Figurer } = require(%r); console.log(JSON.stringify(Figurer.saetninger()));" % os.path.join(ROD, 'games', 'tegn', 'js', 'figurer.js')
     elif SPIL == 'egern':
         kode = "const { Egern } = require(%r); console.log(JSON.stringify(Egern.saetninger()));" % os.path.join(ROD, 'games', 'egern', 'js', 'egern.js')
+    elif SPIL == 'jul':
+        # Historiernes replikker delt i saetninger, praecis som js/stemme.js deler dem, og opgavernes saetninger
+        kode = ("const { Kalender } = require(%r); const { Opgaver } = require(%r); const { Stemme } = require(%r);"
+                "const ud = []; const laeg = t => Stemme.saetninger(t).forEach(s => { if (ud.indexOf(s) < 0) ud.push(s); });"
+                "Kalender.replikker().forEach(laeg); Opgaver.saetninger(Kalender).forEach(laeg);"
+                "console.log(JSON.stringify(ud));") % (os.path.join(ROD, 'jul', 'js', 'kalender.js'), os.path.join(ROD, 'jul', 'js', 'opgaver.js'), os.path.join(ROD, 'js', 'stemme.js'))
     elif SPIL == 'baever':
         kode = "const { Daemning } = require(%r); console.log(JSON.stringify(Daemning.saetninger()));" % os.path.join(ROD, 'games', 'baever', 'js', 'daemning.js')
     else:
@@ -161,8 +177,9 @@ def klargoer(pcm, sr):
 def mp3(pcm, sr):
     import lameenc
     k = lameenc.Encoder()
-    # Bogens sider er op til 40 sekunder lange; med 40 kbit/s holder de sig under 200 KB, og tale lyder stadig rent
-    k.set_bit_rate(40 if SPIL == 'bog' else 48); k.set_in_sample_rate(sr); k.set_channels(1); k.set_quality(2)
+    # Bogens sider er op til 40 sekunder lange; med 40 kbit/s holder de sig under 200 KB, og tale lyder stadig rent.
+    # Julekalenderen har cirka 1700 klip; med 32 kbit/s fylder de mindre, og tale lyder stadig klart.
+    k.set_bit_rate(40 if SPIL == 'bog' else 32 if SPIL == 'jul' else 48); k.set_in_sample_rate(sr); k.set_channels(1); k.set_quality(2)
     ud = array.array('h', pcm)
     if sys.byteorder == 'big':
         ud.byteswap()
@@ -337,6 +354,13 @@ def registrer(liste=None):
     with open(os.path.join(UD, 'klip.json'), 'w', encoding='utf-8') as f:
         json.dump(klip, f, ensure_ascii=False, indent=0, sort_keys=True)
         f.write('\n')
+    if SPIL == 'jul':
+        # Julekalenderens klip ligger i sin egen cache: FILER_JUL i sw.js skrives af registrer-jul.js
+        subprocess.check_call(['node', os.path.join(ROD, 'vaerktoej', 'registrer-jul.js')])
+        mangler = [t for t in liste if t not in klip]
+        if mangler:
+            print('%d saetninger mangler stadig klip (enhedens stemme siger dem): %s' % (len(mangler), ' | '.join(mangler[:4])))
+        return len(klip)
     p = os.path.join(ROD, 'sw.js')
     s = open(p, encoding='utf-8').read()
     # Ogsaa den sidste linje i FILER, som ikke har komma; ellers kom den med to gange, og addAll afviser dubletter
@@ -354,6 +378,24 @@ def registrer(liste=None):
     return len(klip)
 
 
+# Julekalenderens saetninger kan vaere lange; saa mange tegn hoejst i ét kald, saa optagelsen ikke bliver for lang
+MAKS_TEGN = int(arg('--maks-tegn', '900')) if SPIL == 'jul' else 0
+
+
+def bundter(opgaver):
+    """Del saetningerne i bundter paa hoejst PR_KALD (og for julekalenderen hoejst MAKS_TEGN tegn)."""
+    ud, bundt, tegn = [], [], 0
+    for t in opgaver:
+        if bundt and (len(bundt) >= PR_KALD or (MAKS_TEGN and tegn + len(t) > MAKS_TEGN)):
+            ud.append(bundt)
+            bundt, tegn = [], 0
+        bundt.append(t)
+        tegn += len(t)
+    if bundt:
+        ud.append(bundt)
+    return ud
+
+
 def lav():
     liste = saetninger()
     kun = arg('--kun')
@@ -364,10 +406,11 @@ def lav():
     if proev:
         for t in opgaver:
             print('  %-44s %s' % (filnavn(t), t))
+        print('%d kald til Gemini (hoejst %d saetninger%s i ét kald).' % (len(bundter(opgaver)), PR_KALD, ' og %d tegn' % MAKS_TEGN if MAKS_TEGN else ''))
         return
     lavet, fejl = 0, []
-    for k in range(0, len(opgaver), PR_KALD):
-        bundt = [(t, os.path.join(UD, filnavn(t))) for t in opgaver[k:k + PR_KALD]]
+    for bundt_tekster in bundter(opgaver):
+        bundt = [(t, os.path.join(UD, filnavn(t))) for t in bundt_tekster]
         try:
             ok, f = lav_flere(bundt)
         except Stop:

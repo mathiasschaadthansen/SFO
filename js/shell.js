@@ -3,7 +3,10 @@
 
   var grid = document.getElementById('grid');
 
+  var maaned = new Date().getMonth();
   window.SPIL.forEach(function (spil) {
+    // Julekalenderen vises kun i november og december
+    if (spil.maaneder && spil.maaneder.indexOf(maaned) < 0) return;
     var a = document.createElement('a');
     a.className = 'card';
     a.href = spil.sti;

@@ -52,6 +52,15 @@ const FILER = [
   'bog/lyd/stjerneuret.mp3',
   'bog/lyd/skovkoekkenet.mp3',
   'bog/lyd/NOTICE.md',
+  'jul/',
+  'jul/index.html',
+  'jul/js/kalender.js',
+  'jul/js/puslespil.js',
+  'jul/js/opgaver.js',
+  'jul/js/maleri.js',
+  'jul/js/lege.js',
+  'jul/js/game.js',
+  'jul/lyd/klip.json',
   'games/racer/',
   'games/racer/index.html',
   'games/racer/js/track.js',
@@ -933,26 +942,78 @@ const FILER = [
 ];
 
 /*
+ * Pelles julekalender har mange og store filer: cirka 75 malede billeder og
+ * 1700 smaa stemmeklip, maaske 35 MB. De ligger i deres egen cache, JUL, som
+ * IKKE skifter navn med VERSION, saa de ikke hentes igen, hver gang appen
+ * udgives. Ved install hentes kun de filer, der mangler i den; ved activate
+ * ryddes filer ud, der ikke laengere staar i FILER_JUL. En jul-fil, der ikke kan
+ * hentes, vaelter ikke installationen (den proeves igen ved naeste version, og
+ * den gemmes, naar den bruges), men appens egen FILER skal stadig fejle hoejlydt.
+ *
+ * Fordi en fil, der allerede ligger i JUL, aldrig hentes igen, skal et AENDRET
+ * BILLEDE HAVE ET NYT FILNAVN (fx dag01-1b.jpg). Lydfilernes navne har allerede
+ * et stykke af en hash af teksten, saa en ny saetning faar et nyt navn af sig selv.
+ *
+ * Kode, index.html, kalender.js og klip.json staar i den almindelige FILER.
+ * FILER_JUL skrives af vaerktoej/registrer-jul.js ud fra jul/billeder/ og
+ * jul/lyd/klip.json; ret den ikke i haanden.
+ */
+const JUL = 'sfo-jul';
+const FILER_JUL = [
+];
+
+function adresse(f) { return new URL(f, self.location).href; }
+
+/*
  * Hver fil hentes med cache: 'reload', saa browserens EGEN cache springes over.
  * Uden det kan en ny version blive fyldt med de gamle filer: cachen skifter navn
  * til den nye VERSION, men indholdet er det samme, og iPad'en viser det gamle
  * spil, selv om der er udgivet et nyt. Det skete i september 2026, hvor kun de
  * filer, der var helt nye, kom med — resten kom fra browserens cache.
  */
+
+/* Hent de jul-filer, der mangler i JUL, seks ad gangen. Fejler aldrig: en fil, der ikke kom, hentes senere. */
+function hentJul() {
+  return caches.open(JUL).then((c) => c.keys().then((noegler) => {
+    const har = new Set(noegler.map((r) => r.url));
+    const mangler = FILER_JUL.filter((f) => !har.has(adresse(f)));
+    let i = 0;
+    function naeste() {
+      if (i >= mangler.length) return Promise.resolve();
+      const f = mangler[i++];
+      return fetch(new Request(f, { cache: 'reload' }))
+        .then((svar) => (svar.ok ? c.put(f, svar) : null))
+        .catch(() => null)
+        .then(naeste);
+    }
+    return Promise.all([naeste(), naeste(), naeste(), naeste(), naeste(), naeste()]);
+  })).catch(() => null);
+}
+
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(VERSION)
       .then((c) => c.addAll(FILER.map((f) => new Request(f, { cache: 'reload' }))))
+      .then(() => hentJul())
       .then(() => self.skipWaiting())
   );
 });
+
+/* Gamle versioner slettes, men JUL beholdes; kun filer, der ikke laengere staar i FILER_JUL, ryddes ud af den. */
+function ryddJul() {
+  const skal = new Set(FILER_JUL.map(adresse));
+  return caches.open(JUL)
+    .then((c) => c.keys().then((noegler) => Promise.all(noegler.filter((r) => !skal.has(r.url)).map((r) => c.delete(r)))))
+    .catch(() => null);
+}
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
       .then((navne) => Promise.all(
-        navne.filter((n) => n !== VERSION).map((n) => caches.delete(n))
+        navne.filter((n) => n !== VERSION && n !== JUL).map((n) => caches.delete(n))
       ))
+      .then(() => ryddJul())
       .then(() => self.clients.claim())
   );
 });
@@ -963,9 +1024,15 @@ self.addEventListener('activate', (e) => {
  * samme — caches.match rammer forbi, og uden net fejler faldet tilbage til
  * fetch. Resultatet var, at appen kunne aabnes offline, men ingen af spillene
  * kunne. Derfor proeves index.html i mappen, foer der gives op.
+ *
+ * Der slaas op i begge caches: appens VERSION og julekalenderens JUL.
  */
+function iCache(req) {
+  return caches.open(VERSION).then((c) => c.match(req))
+    .then((traef) => traef || caches.open(JUL).then((c) => c.match(req)));
+}
 function fraCachen(req) {
-  return caches.match(req).then((traef) => {
+  return iCache(req).then((traef) => {
     if (traef) return traef;
     if (req.mode === 'navigate' && new URL(req.url).pathname.endsWith('/')) {
       return caches.match(new URL('index.html', req.url).href);
@@ -974,9 +1041,21 @@ function fraCachen(req) {
   });
 }
 
+/* En jul-fil, der ikke kom med ved install, gemmes, naar den hentes, saa den er der naeste gang uden net. */
+const JUL_ADRESSER = new Set(FILER_JUL.map(adresse));
+function hentOgGem(req) {
+  return fetch(req).then((svar) => {
+    if (svar.ok && JUL_ADRESSER.has(req.url)) {
+      const kopi = svar.clone();
+      caches.open(JUL).then((c) => c.put(req.url, kopi)).catch(() => null);
+    }
+    return svar;
+  });
+}
+
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    fraCachen(e.request).then((traef) => traef || fetch(e.request))
+    fraCachen(e.request).then((traef) => traef || hentOgGem(e.request))
   );
 });

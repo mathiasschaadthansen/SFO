@@ -36,6 +36,11 @@ Spillene indtil nu:
   bladet? Med to spillere gemmer man for hinanden. **Ryst og hæld**: find alle
   måder at dele fem, syv eller ti på.
 
+Og så, ikke et spil, men på forsiden ved siden af bogen fra 1. november til
+31. december: **Pelles julekalender** (mappen `jul`), 24 låger med en
+fortælling i 24 dele, en lille opgave hver dag og en brik til Pelles
+puslespil.
+
 ## Kom i gang
 
 ```bash
@@ -153,6 +158,17 @@ bog/
   udkast/*.png          skærmklip af Gemini-udkastet, kun til at sammenligne med; ikke i appen
   lyd/*.mp3             oplæsningen, ét klip pr. opslag (se lyd/NOTICE.md)
 test/bog.test.js        tegner alle ti opslag uden browser og tjekker tekst, navne, nøgle og filer
+jul/
+  js/kalender.js        de 24 dage: historierne, billederne, brikken og opgaven — ingen DOM
+  js/puslespil.js       puslespillets 24 brikker: form, tappe, plads og læggelegen — ingen DOM
+  js/opgaver.js         opgavernes regler, mønstre, bunker, ord og alt, de siger — ingen DOM
+  js/maleri.js          det, der tegnes i kode: pladsholderbillederne, juletræet, kuglerne, brikkerne
+  js/lege.js            opgavernes skærme: tæl, se, flest, spor, forlyd, rim, klap, pynt, venner, puslespil
+  js/game.js            kalenderen, historie-afspilleren, lyd og stemme
+  billeder/             de malede billeder, når de findes (kalender.jpg, puslespil.jpg, dagNN-k.jpg)
+  lyd/*.mp3             ét klip pr. sætning (Gemini, Kore, 32 kbit/s); lyd/klip.json siger, hvilken fil der er hvilken sætning
+test/jul.test.js        dagene, lågerne, opgaverne, puslespillet, stemmen og billederne
+vaerktoej/registrer-jul.js  skriver FILER_JUL i sw.js ud fra jul/billeder/ og jul/lyd/klip.json
 test/restaurant.test.js en robot henter på gården, serverer og betaler en hel dag på alle tre stjerner
 ```
 
@@ -351,6 +367,10 @@ Kræver `pip install lameenc`.
   rammen "Her har du ordet kat.".
 - `--spil have|flyv|baever|egern|tegn` laver ét klip pr. sætning ud fra spillets egen kode og
   skriver `lyd/klip.json` og `sw.js`.
+- `--spil jul` gør det samme for julekalenderen: historiernes sætninger og
+  opgavernes (`Kalender.replikker()` og `Opgaver.saetninger(Kalender)`), med
+  32 kbit/s og højst 900 tegn i ét kald (`--maks-tegn`). Filerne kommer i
+  `FILER_JUL` via `vaerktoej/registrer-jul.js`, ikke i `FILER`.
 
 `--proev` viser, hvad der ville blive lavet, og `--kun <tekst>` laver kun det,
 der passer. Uden betaling på nøglen giver Gemini kun cirka 10 klip om dagen;
@@ -1013,3 +1033,82 @@ og tjekker, at nøglen tegnes præcis dér, hvor opslaget siger, at alle lånte
 billeder findes, at hvert opslags sted hedder det samme som spillet, at den,
 Pelle møder, nævnes i teksten, at Klaus er rød og Klara blå, og at bogens
 filer er med i service workeren og forrest på forsiden.
+
+## Pelles julekalender (mappen `jul`)
+
+Én fortælling i 24 dele. Pelle Pindsvin har lavet et julepuslespil af træ med
+24 brikker og malet alle vennerne om juletræet på det, men vinterstormen
+blæser brikkerne ud over hele den lille verden. Hver dag besøger Pelle og
+Skaden Sanne et af spillenes steder, og børnene finder én brik og lægger den i
+puslespillet. Juleaften er puslespillet helt. Indholdet står i
+`jul/js/kalender.js` (dagene, teksten, billederne, brikkens plads og
+opgaven); resten af mappen er bygget mod den struktur.
+
+Kortet på forsiden står lige efter bogen og vises kun i november og december
+efter iPad'ens dato (`maaneder: [10, 11]` i `js/games.js`). Ligesom bogen er
+kalenderen ikke et spil og har ingen knap ind i spillene.
+
+**Kalenderen** er 24 låger rundt om puslespillet, med uret fra øverst til
+venstre. Lågerne frem til i dag kan åbnes (`Kalender.aaben`), fremtidige ryster
+blidt ved et tryk, og tidligere dages låger står åbne med deres brik. Det
+bestemmes kun af datoen; intet gemmes. Tidligere dages brikker ligger altid på
+plads; dagens brik ligger der, når den er fundet i dag (kun i hukommelsen).
+`?dag=N` i adressen lader, som om det er den N. december — til voksne og test.
+Baggrunden er `billeder/kalender.jpg`, og motivet på puslespillet er
+`billeder/puslespil.jpg` (4:3); indtil de findes, tegnes Nøddeskoven i sne og
+juleaften om juletræet i kode med spillenes malede figurer.
+
+**Historien** vises i tre afsnit med hvert sit billede (`billeder/dagNN-k.jpg`,
+4:3, ellers en pladsholder med stedets navn). Stemmen læser én sætning ad
+gangen, og sætningen står som undertekst på en papirstrimmel til den voksne. Ved
+et spørgsmål (`{ spoerg, svar }`) holdes en pause på fem sekunder med et
+pulserende øre, så børnene kan svare højt; et tryk springer pausen over. De
+store knapper er pause/fortsæt og et afsnit tilbage og frem; afsnittene skifter
+selv, når stemmen er færdig. Er der ingen stemme (et klip mangler, og enheden
+har ingen dansk stemme), går afspilleren videre efter en beregnet tid pr.
+sætning. I tredje afsnit glimter dagens brik i billedet (`brik.x`/`brik.y`).
+Et tryk på den, og den flyver ind i et lille puslespil, mens historien holder
+pause; bagefter læses resten, og så kommer opgaven. Er historien færdig, før
+brikken er fundet, spørger stemmen efter den. Juleaften lægges den sidste brik
+i det store puslespil i opgaven, så dér tager Pelle den bare med.
+
+**Opgaverne** står i `js/opgaver.js` (regler og alt, der siges, uden DOM, så et
+værktøj til printbare opgaveark kan genbruge dem) og `js/lege.js` (skærmene).
+Ingen point, ingen tid, ingen straf: et forkert tryk ryster blidt, og man
+prøver igen. `tael`: tryk på hver ting, stemmen tæller med, og til sidst "Der
+var fem." `se`: tingene ses kort i et fast mønster (terning til seks,
+femmerstruktur over), og svaret gives på en talrække. `flest`: tryk på den
+bunke, der er flest i. `spor`: Bogstavvejens streger og sporing
+(`glyffer.js`, `spor.js`) med retningsreglerne, bagefter "S som i sne."
+`forlyd` og `rim`: tre kort med Bogstavvejens og Rimhulens malede billeder, og
+ordklippene "Her har du ordet kat." spilles hele, for sig ("Her har du ordet
+kat." "Hvad rimer på det?"). `klap`: Rimhulens tromme og stavelser. `pynt`:
+træk pynt op på juletræet, og tryk på fluebenet. `venner`: vennerne kommer én
+ad gangen; tryk på dem og tæl. `puslespil`: den sidste brik trækkes på plads,
+og billedet lyser op. Alt, opgaverne siger, kommer fra `Opgaver.saetninger()`
+som hele sætninger, også talordene fra "En." til "Fireogtyve."
+
+**Stemmen** er `js/stemme.js` med `lyd/klip.json` som `{ sætning: fil }`, som i
+de andre sætningsspil. Klippene laves med
+`vaerktoej/lav-lyd-gemini.py --spil jul` (cirka 1400 sætninger, godt hundrede
+kald).
+
+**Offline.** Billederne og klippene bliver mange (cirka 75 billeder og 1700
+klip, måske 35 MB), så de ligger i service workerens egen cache, `sfo-jul`,
+som ikke skifter navn med `VERSION` og derfor ikke hentes forfra ved hver
+udgivelse. Listen er `FILER_JUL` i `sw.js`, og den skrives af
+`node vaerktoej/registrer-jul.js` ud fra `jul/billeder/` og `jul/lyd/klip.json`.
+Ved install hentes kun de jul-filer, der mangler i cachen (med `cache:
+'reload'`); en jul-fil, der ikke kan hentes, vælter ikke installationen (appens
+egen `FILER` fejler stadig højlydt). Ved activate ryddes filer ud, der ikke
+længere står i `FILER_JUL`. Fordi en fil i `sfo-jul` aldrig hentes igen, skal
+**et ændret billede have et nyt filnavn**; lydfilernes navne har allerede en
+hash af teksten. Koden, `index.html`, `kalender.js` og `klip.json` står i den
+almindelige `FILER`.
+
+Testen (`test/jul.test.js`) tjekker dagene og ugernes emner, lågerne, at hver
+opgave er gyldig (forlyd, rim efter `Rim.RIM`, stavelser, bogstavet kan tegnes,
+tallene), at brikkerne ligger inde i billedet, og at puslespillets 24 brikker
+dækker motivet og kan lægges. De to sidste tjek, at alle billeder og alt, der
+siges, findes på disken og i `klip.json`, fejler med vilje, indtil billederne
+er malet og stemmen er indtalt.

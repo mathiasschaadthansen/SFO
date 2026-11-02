@@ -5,6 +5,7 @@
  * og skrive én blok her. Menuen bygger sig selv ud fra listen.
  *
  * farve: kortets baggrund. Dæmpede, malede toner — én pr. spil.
+ * maaneder: valgfrit. Kortet vises kun i de maaneder (0 = januar), efter enhedens dato.
  * art:   valgfrit billede eller inline-SVG der tegnes i kortets højre side.
  *        Billederne ligger i assets/malet/ og er malet i samme stil som
  *        figurerne i Maskinen. Nye filer skal med i FILER i sw.js.
@@ -19,6 +20,20 @@ window.SPIL = [
     art: '<div class="art">' +
          '<img src="bog/billeder/skade.png" alt="" style="left:64px;top:0;width:46px">' +
          '<img src="assets/malet/pindsvin.png" alt="" style="left:4px;top:26px;width:70px">' +
+         '</div>'
+  },
+  {
+    // Kun fra 1. november til 31. december efter iPad'ens dato (maaneder 10 og 11, januar er 0).
+    // Ligesom bogen er det ikke et spil og har ingen knap ind i spillene.
+    id: 'jul',
+    navn: 'Pelles julekalender',
+    tekst: 'Åbn en låge hver dag i december, hør historien, og find en brik til Pelles puslespil.',
+    sti: 'jul/',
+    farve: '#d8e6ec',
+    maaneder: [10, 11],
+    art: '<div class="art">' +
+         '<img src="games/bogstaver/billeder/juletrae.png" alt="" style="left:46px;top:0;width:66px">' +
+         '<img src="assets/malet/pindsvin.png" alt="" style="left:0;top:30px;width:66px">' +
          '</div>'
   },
   {

@@ -68,6 +68,19 @@ const ikkePaaDisk = alleFiler.filter(f => !f.endsWith('/') && !fs.existsSync(pat
 tjek('alle filer i FILER findes paa disken', ikkePaaDisk.length === 0, 'mangler: ' + ikkePaaDisk.slice(0, 5).join());
 const dubletter = alleFiler.filter((f, i) => alleFiler.indexOf(f) !== i);
 tjek('ingen fil staar to gange i FILER (addAll afviser dubletter)', dubletter.length === 0, 'to gange: ' + dubletter.join());
+// Julekalenderens billeder og lyd ligger i deres egen cache (FILER_JUL), som ikke hentes forfra ved hver VERSION.
+// Den skrives af vaerktoej/registrer-jul.js; er den tom, er billederne og stemmen ikke lavet endnu.
+const julBlok = sw.match(/const FILER_JUL = \[([\s\S]*?)\];/);
+tjek('service workeren har listen FILER_JUL til julekalenderens billeder og lyd', !!julBlok);
+const julFiler = julBlok ? [...julBlok[1].matchAll(/'([^']+)'/g)].map(m => m[1]) : [];
+const julIkkePaaDisk = julFiler.filter(f => !fs.existsSync(path.join(ROD, f)));
+tjek('alle filer i FILER_JUL findes paa disken', julIkkePaaDisk.length === 0, 'mangler: ' + julIkkePaaDisk.slice(0, 5).join());
+const julDubletter = julFiler.filter((f, i) => julFiler.indexOf(f) !== i);
+tjek('ingen fil staar to gange i FILER_JUL', julDubletter.length === 0, 'to gange: ' + julDubletter.join());
+const iBegge = julFiler.filter(f => alleFiler.indexOf(f) >= 0);
+tjek('ingen fil staar baade i FILER og FILER_JUL', iBegge.length === 0, iBegge.join());
+tjek('en manglende jul-fil vaelter ikke installationen, men FILER skal stadig hentes med addAll',
+  /c\.addAll\(FILER\.map/.test(sw) && /function hentJul\(\)[\s\S]*?\.catch\(\(\) => null\)/.test(sw));
 const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen', 'rim', 'find', 'flyv', 'have', 'baever', 'egern'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
 tjek('alle spilsider har skallen med hjem-knappen', spilSider.every(h => h.includes('js/skal.js')));
 tjek('menu.js er med i service workerens FILER', sw.includes("'js/menu.js'"));
