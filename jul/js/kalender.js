@@ -285,7 +285,7 @@
           ]
         }
       ],
-      brik: { x: 0.5, y: 0.7 },
+      brik: { x: 0.47, y: 0.68 },
       opgave: {
         type: 'flest', ting: 'stamme', spoerg: 'Hvor er der flest stammer?',
         runder: [{ venstre: 7, hoejre: 4, raekke: true }, { venstre: 5, hoejre: 9, raekke: true }, { venstre: 6, hoejre: 8 }, { venstre: 10, hoejre: 7 }, { venstre: 8, hoejre: 9 }]
