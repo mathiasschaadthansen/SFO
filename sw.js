@@ -1017,6 +1017,9 @@ const FILER_JUL = [
   'jul/billeder/dag19-1.jpg',
   'jul/billeder/dag19-2.jpg',
   'jul/billeder/dag19-3.jpg',
+  'jul/billeder/dag20-1.jpg',
+  'jul/billeder/dag20-2.jpg',
+  'jul/billeder/dag20-3.jpg',
   'jul/billeder/kalender.jpg'
 ];
 

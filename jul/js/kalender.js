@@ -1116,7 +1116,7 @@
           ]
         }
       ],
-      brik: { x: 0.5, y: 0.68 },
+      brik: { x: 0.55, y: 0.63 },
       opgave: {
         type: 'klap',
         runder: [{ ord: 'træ' }, { ord: 'gave' }, { ord: 'egern' }, { ord: 'sommerfugl' }, { ord: 'edderkop' }],
