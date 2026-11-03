@@ -1066,7 +1066,7 @@
           ]
         }
       ],
-      brik: { x: 0.5, y: 0.45 },
+      brik: { x: 0.33, y: 0.25 },
       opgave: {
         type: 'rim',
         runder: [{ ord: 'ko', rigtig: 'sko', andre: ['hat', 'fisk', 'måne'] }, { ord: 'bil', rigtig: 'pil', andre: ['sol', 'mus', 'kage'] }],
