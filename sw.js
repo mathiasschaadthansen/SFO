@@ -1033,6 +1033,7 @@ const FILER_JUL = [
   'jul/billeder/dag24-2.jpg',
   'jul/billeder/dag24-3.jpg',
   'jul/billeder/kalender.jpg',
+  'jul/billeder/puslespil.jpg',
   'jul/lyd/aah_nej_siger_pelle_stille_4f3253.mp3',
   'jul/lyd/da_pelle_gaar_hjem_ser_han_db2016.mp3',
   'jul/lyd/de_har_to_lige_kanter_e589c3.mp3',
