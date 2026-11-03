@@ -761,7 +761,7 @@
           ]
         }
       ],
-      brik: { x: 0.58, y: 0.48 },
+      brik: { x: 0.49, y: 0.6 },
       opgave: {
         type: 'forlyd', lyd: 'E', eksempel: 'Emil',
         runder: [{ rigtige: ['elefant'], andre: ['tog', 'ko', 'hus'] }, { rigtige: ['egern', 'edderkop'], andre: ['sko', 'bil'] }],
