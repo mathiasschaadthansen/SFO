@@ -710,7 +710,7 @@
           ]
         }
       ],
-      brik: { x: 0.45, y: 0.78 },
+      brik: { x: 0.43, y: 0.83 },
       opgave: {
         type: 'spor', bogstav: 'G', ord: 'G som i gulerod.', eksempel: 'gulerod',
         find: [{ rigtige: ['gris', 'gave'], andre: ['hat', 'sol'] }],
