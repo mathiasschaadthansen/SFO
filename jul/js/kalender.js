@@ -812,7 +812,7 @@
           ]
         }
       ],
-      brik: { x: 0.5, y: 0.75 },
+      brik: { x: 0.59, y: 0.6 },
       opgave: {
         type: 'spor', bogstav: 'P', ord: 'P som i Pelle.', eksempel: 'Pelle',
         find: [{ rigtige: ['pingvin', 'pandekage'], andre: ['sol', 'mus'] }, { rigtige: ['pizza', 'pil'], andre: ['kat', 'egern'] }],
