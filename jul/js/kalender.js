@@ -867,7 +867,7 @@
           ]
         }
       ],
-      brik: { x: 0.52, y: 0.62 },
+      brik: { x: 0.6, y: 0.66 },
       opgave: {
         type: 'rim',
         runder: [{ ord: 'bjørn', rigtig: 'ørn', andre: ['hus', 'kage', 'fisk'] }, { ord: 'mus', rigtig: 'hus', andre: ['sko', 'ugle', 'bil'] }],
