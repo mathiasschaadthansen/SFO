@@ -919,7 +919,7 @@
           ]
         }
       ],
-      brik: { x: 0.5, y: 0.6 },
+      brik: { x: 0.53, y: 0.57 },
       opgave: {
         type: 'klap',
         runder: [{ ord: 'gris' }, { ord: 'kage' }, { ord: 'æble' }, { ord: 'gulerod' }, { ord: 'pandekage' }],
