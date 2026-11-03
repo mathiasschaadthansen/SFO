@@ -1165,7 +1165,7 @@
           ]
         }
       ],
-      brik: { x: 0.35, y: 0.65 },
+      brik: { x: 0.37, y: 0.62 },
       opgave: {
         type: 'rim',
         runder: [{ ord: 'fly', rigtig: 'sky', andre: ['ko', 'hat', 'bil'] }, { ord: 'and', rigtig: 'vand', andre: ['mus', 'ugle', 'fisk'] }],
