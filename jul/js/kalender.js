@@ -1216,7 +1216,7 @@
           ]
         }
       ],
-      brik: { x: 0.58, y: 0.3 },
+      brik: { x: 0.63, y: 0.21 },
       opgave: {
         type: 'pynt', spoerg: 'Hjælp med at pynte juletræet til festen. Træk pynten op på grenene.',
         moenstre: [
