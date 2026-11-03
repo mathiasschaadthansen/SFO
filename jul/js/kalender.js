@@ -1268,7 +1268,7 @@
           ]
         }
       ],
-      brik: { x: 0.5, y: 0.18 },
+      brik: { x: 0.69, y: 0.2 },
       opgave: {
         type: 'venner', spoerg: 'Nu kommer vennerne for at hjælpe. Kan I tælle dem?',
         grupper: [
