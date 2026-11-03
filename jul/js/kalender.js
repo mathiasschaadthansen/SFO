@@ -1018,7 +1018,7 @@
           ]
         }
       ],
-      brik: { x: 0.68, y: 0.35 },
+      brik: { x: 0.76, y: 0.36 },
       opgave: {
         type: 'klap',
         runder: [{ ord: 'sol' }, { ord: 'måne' }, { ord: 'raket' }, { ord: 'paraply' }, { ord: 'regnbue' }],
