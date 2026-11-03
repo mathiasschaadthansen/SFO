@@ -607,7 +607,7 @@
           ]
         }
       ],
-      brik: { x: 0.3, y: 0.7 },
+      brik: { x: 0.47, y: 0.62 },
       opgave: {
         type: 'spor', bogstav: 'N', ord: 'N som i nisse.', eksempel: 'nisse',
         find: [{ rigtige: ['næse', 'nøgle'], andre: ['fisk', 'bil'] }],
