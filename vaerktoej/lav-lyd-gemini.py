@@ -37,6 +37,9 @@ Valg:
     --spil have|flyv|baever|egern|tegn|jul|bogstaver|restaurant|klokken|maskinen|find|rim|bog
     --stemme <navn>  Kore (standard). Andre: Aoede, Zephyr, Sulafat, Achernar ...
     --model <navn>   gemini-3.8-flash-tts (standard)
+    --tjek           (saetningsspil) Gemini lytter alle klip og sletter dem, der siger noget
+                     andet end saetningen, fx saetningen to gange; de laves igen naeste gang.
+                     Julekalenderens klip kontrolleres altid saadan, mens de laves.
     --alle           lav ogsaa klip, der findes i forvejen (de faste spil laver altid alle,
                      men husker, hvor langt de naaede, hvis de bliver afbrudt)
     --kun <tekst>    lav kun saetninger, der indeholder teksten (fx --kun gulerød)
@@ -52,7 +55,7 @@ stykker, eller laengderne passer ikke til teksterne), deles bundtet i to og proe
 ned til én saetning ad gangen. Er dagens kald brugt, stopper vaerktoejet, og naeste dag
 fortsaetter det, hvor det slap.
 """
-import base64, hashlib, io, json, os, re, subprocess, sys, time, urllib.error, urllib.request, wave, array
+import base64, hashlib, io, json, os, re, subprocess, sys, time, urllib.error, urllib.request, wave, array, difflib
 
 ROD = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
@@ -205,6 +208,49 @@ def vent_paa_gemini(krop, ventet):
 
 
 
+LYTTER = 'gemini-flash-latest'   # en almindelig model, der kan hoere; den har sin egen, store graense
+
+
+def norm(t):
+    """Tekst til sammenligning: kun bogstaverne, smaa, uden accenter og mellemrum (bitte smaa = bittesmaa)."""
+    t = t.lower().replace('é', 'e')
+    return re.sub(r'[^a-zæøå0-9]+', '', t)
+
+
+def hoert(data):
+    """Hvad Kore siger i et MP3-klip, skrevet af Gemini. None, hvis det ikke kunne lade sig goere."""
+    url = 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent' % LYTTER
+    krop = {'contents': [{'parts': [{'inlineData': {'mimeType': 'audio/mpeg', 'data': base64.b64encode(data).decode()}},
+                                    {'text': 'Skriv præcis det, der siges på dansk, ord for ord. Tal skrives med bogstaver. Svar kun med teksten.'}]}]}
+    hoved = {'Content-Type': 'application/json'}
+    if os.environ.get('GEMINI_API_KEY'):
+        hoved['x-goog-api-key'] = os.environ['GEMINI_API_KEY']
+    for forsoeg in range(4):
+        try:
+            req = urllib.request.Request(url, data=json.dumps(krop).encode(), headers=hoved)
+            with urllib.request.urlopen(req, timeout=90) as r:
+                return json.load(r)['candidates'][0]['content']['parts'][0]['text'].strip()
+        except Exception:
+            time.sleep(3 + forsoeg * 5)
+    return None
+
+
+def siger_rigtigt(tekst, data):
+    """Siger klippet teksten, én gang og intet andet? (True/False, det hoerte)
+    Lytteren hoerer selv forkert af og til (Egon bliver til Igor, God nat til Garnet), saa der
+    sammenlignes paa bogstaverne med god margen. Det, der skal fanges, er en saetning sagt to
+    gange, en halv saetning eller en helt anden saetning."""
+    h = hoert(data)
+    if h is None:
+        return True, '(kunne ikke kontrolleres)'
+    a, b = norm(tekst), norm(h)
+    if len(b) > len(a) * 1.4 + 4 or len(b) < len(a) * 0.6 - 4:
+        return False, h
+    if len(a) < 16:
+        return True, h
+    return difflib.SequenceMatcher(None, a, b).ratio() >= 0.7, h
+
+
 def lav_et(tekst, sti):
     """Lav ét klip og gem det som MP3 i sti. Venter selv, naar Gemini beder om det. Svarer med sekunderne."""
     forventet = 1.0 + len(tekst) * 0.085   # saa laenge taler hun cirka; meget laengere betyder, at noten kom med
@@ -216,6 +262,10 @@ def lav_et(tekst, sti):
             if sek > forventet * 2.2 + 1.5:
                 raise ValueError('%.1f s er for langt til teksten; noten blev nok laest op' % sek)
             data = mp3(lydd, sr)
+            if SPIL == 'jul':
+                ok, h = siger_rigtigt(tekst, data)
+                if not ok:
+                    raise ValueError('hun sagde noget andet: %s' % h)
             with open(sti, 'wb') as f:
                 f.write(data)
             return sek
@@ -234,6 +284,11 @@ def lav_et(tekst, sti):
 PR_KALD = int(arg('--pr-kald', '12'))   # saetninger i ét kald; Gemini giver kun 100 kald om dagen
 NOTE_FLERE = NOTE.replace("\n\n### TRANSCRIPT", " Read every line of the transcript as its own separate utterance, "
                           "and leave a long pause of about two seconds of silence after every line.\n\n### TRANSCRIPT")
+if SPIL == 'jul':
+    # Fortaellestilen giver lange pauser inde i saetningerne, saa skellene mellem linjerne ikke kan findes
+    NOTE_FLERE = NOTE.replace("\n\n### TRANSCRIPT", " Read every line of the transcript as its own separate utterance. "
+                              "Inside a line, keep pauses short, no longer than a quick breath. "
+                              "After every line, leave a long pause of three full seconds of silence.\n\n### TRANSCRIPT")
 
 
 def stilhed(a, sr):
@@ -273,7 +328,7 @@ def del_op(pcm, sr, tekster):
     if n > 1:
         kortest_skel = laengst[n - 2][1]
         naeste = laengst[n - 1][1] if len(laengst) >= n else 0
-        if kortest_skel * 0.02 < 1.0 or naeste > kortest_skel * 0.75:
+        if kortest_skel * 0.02 < (0.9 if SPIL == 'jul' else 1.0) or naeste > kortest_skel * (0.92 if SPIL == 'jul' else 0.75):
             return None
     graenser = [0] + [(p[0] + p[1] // 2) * blok for p in skel] + [len(a)]
     stykker = [a[graenser[k]:graenser[k + 1]] for k in range(n)]
@@ -323,12 +378,39 @@ def lav_flere(opgaver, ventet=0):
     for (t, sti), st in zip(opgaver, stykker):
         try:
             lydd, sek = klargoer(st, sr)
+            data = mp3(lydd, sr)
+            if SPIL == 'jul':
+                ok, h = siger_rigtigt(t, data)
+                if not ok:
+                    # Opdelingen ramte forkert her (eller hun sagde noget andet): lav netop denne saetning alene
+                    print('        "%s" blev til "%s"; laves alene' % (t[:50], h[:50]))
+                    a, f = lav_flere([(t, sti)])
+                    lavet += a
+                    fejl += f
+                    continue
             with open(sti, 'wb') as f:
-                f.write(mp3(lydd, sr))
+                f.write(data)
             lavet.append((t, sti, sek))
         except ValueError as e:
             fejl.append((t, sti, str(e)))
     return lavet, fejl
+
+
+def tjek_alle():
+    """--tjek: Gemini lytter alle klip, der findes, og sletter dem, der siger noget andet, saa de laves igen."""
+    liste = saetninger()
+    slettet, proev = 0, '--proev' in sys.argv
+    for i, t in enumerate(liste):
+        sti = os.path.join(UD, filnavn(t))
+        if not os.path.exists(sti):
+            continue
+        ok, h = siger_rigtigt(t, open(sti, 'rb').read())
+        if not ok:
+            if not proev:
+                os.remove(sti)
+            slettet += 1
+            print('  %s: "%s"  (hun sagde: "%s")' % ('ville slette' if proev else 'slettet', t, h))
+    print('%d klip slettet; de laves igen ved naeste koersel.' % slettet)
 
 
 def laes_klip():
@@ -535,5 +617,7 @@ if __name__ == '__main__':
         lav_faste()
     elif '--registrer' in sys.argv:
         print('%d klip i klip.json og sw.js.' % registrer())
+    elif '--tjek' in sys.argv:
+        tjek_alle()
     else:
         lav()
