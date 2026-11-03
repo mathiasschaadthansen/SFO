@@ -967,7 +967,7 @@
           ]
         }
       ],
-      brik: { x: 0.45, y: 0.5 },
+      brik: { x: 0.6, y: 0.43 },
       opgave: {
         type: 'rim',
         runder: [{ ord: 'is', rigtig: 'gris', andre: ['bil', 'måne', 'hat'] }, { ord: 'tog', rigtig: 'bog', andre: ['kat', 'sol', 'ugle'] }],
