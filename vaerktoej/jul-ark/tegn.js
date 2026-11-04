@@ -160,12 +160,20 @@
             }
             ud += cirkel(pts[0][0], pts[0][1], r0, { fyld: BLAEK, kant: 'none' });
             if ((o.numre || /[0-9]/.test(ch)) && st.length > 1) {   // tal med flere streger (4, 5) faar altid numre, saa raekkefoelgen ses
-              // Starter to streger samme sted (N, E, P), staar det andet nummer paa den anden side af prikken
-              var samme = starter.filter(function (q) { return Math.hypot(q[0] - pts[0][0], q[1] - pts[0][1]) < r0 * 2; }).length;
-              var str = Math.max(2.6, h * 0.075);
-              ud += samme ? tekst(pts[0][0] + r0 * 1.6, pts[0][1] - r0 * 1.2, String(j + 1), { str: str, anker: 'start', vaegt: 700 })
-                : tekst(pts[0][0] - r0 * 1.6, pts[0][1] - r0 * 1.2, String(j + 1), { str: str, anker: 'end', vaegt: 700 });
-              starter.push(pts[0]);
+              // Nummeret staar til venstre for prikken. Starter flere streger samme sted (N, E, P, Æ), staar de
+              // naeste paa den side, hvor stregen gaar hen: vandret mod hoejre -> til hoejre, ned -> under til venstre,
+              // skraat ned til venstre -> til venstre, skraat ned til hoejre -> under til hoejre; er pladsen taget,
+              // bruges den naeste ledige.
+              var PLADS = { venstre: [-1.6, -1.2, 'end'], hoejre: [1.6, -1.2, 'start'], underV: [-1.6, 2.6, 'end'], underH: [1.6, 2.6, 'start'] };
+              var q1 = pts[Math.min(3, pts.length - 1)], ddx = q1[0] - pts[0][0], ddy = q1[1] - pts[0][1];
+              var oenske = Math.abs(ddx) > Math.abs(ddy) * 1.4 ? (ddx > 0 ? 'hoejre' : 'venstre')
+                : Math.abs(ddx) < Math.abs(ddy) * 0.25 ? 'underV' : (ddx < 0 ? 'venstre' : 'underH');
+              var her = starter.filter(function (q) { return Math.hypot(q[0] - pts[0][0], q[1] - pts[0][1]) < r0 * 2; }).map(function (q) { return q[2]; });
+              if (!her.length) oenske = 'venstre';   // alene om prikken: nummeret til venstre, som paa skolens plakater
+              var valg = [oenske, 'venstre', 'hoejre', 'underV', 'underH'].filter(function (k) { return her.indexOf(k) < 0; })[0] || oenske;
+              var plads = PLADS[valg], str = Math.max(2.6, h * 0.075);
+              ud += tekst(pts[0][0] + r0 * plads[0], pts[0][1] + r0 * plads[1], String(j + 1), { str: str, anker: plads[2], vaegt: 700 });
+              starter.push([pts[0][0], pts[0][1], valg]);
             }
           }
         });
