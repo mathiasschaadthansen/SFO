@@ -380,19 +380,24 @@ def lav_flere(opgaver, ventet=0):
         a2, f2 = lav_flere(opgaver[halv:])
         return a1 + a2, f1 + f2
     lavet, fejl = [], []
-    for (t, sti), st in zip(opgaver, stykker):
+    for k, ((t, sti), st) in enumerate(zip(opgaver, stykker)):
         try:
             lydd, sek = klargoer(st, sr)
             data = mp3(lydd, sr)
             if SPIL == 'jul':
                 ok, h = siger_rigtigt(t, data)
                 if not ok:
-                    # Opdelingen ramte forkert her (eller hun sagde noget andet): lav netop denne saetning alene
-                    print('        "%s" blev til "%s"; laves alene' % (t[:50], h[:50]))
+                    # Opdelingen ramte forkert her, og saa er resten af stykkerne ogsaa forskudt. Denne saetning
+                    # laves alene, og resten af bundtet laves igen samlet i ét nyt kald i stedet for én ad gangen.
+                    print('        "%s" blev til "%s"; laves alene, og resten (%d) laves igen samlet' % (t[:50], h[:50], len(opgaver) - k - 1))
                     a, f = lav_flere([(t, sti)])
                     lavet += a
                     fejl += f
-                    continue
+                    if k + 1 < len(opgaver):
+                        a, f = lav_flere(opgaver[k + 1:])
+                        lavet += a
+                        fejl += f
+                    break
             with open(sti, 'wb') as f:
                 f.write(data)
             lavet.append((t, sti, sek))
