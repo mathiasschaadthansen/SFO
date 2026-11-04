@@ -305,58 +305,20 @@
     return ud;
   }
 
-  /** Pelle Pindsvin: en lille stregtegning med kasket og runde briller. (cx, cy) er midten, s hoejden. */
-  function pelle(cx, cy, s, spejl) {
-    var k = s / 100, w = Math.max(0.4, s * 0.012), X = function (x) { return cx + (spejl ? -(x - 50) : (x - 50)) * k; }, Y = function (y) { return cy + (y - 55) * k; };
-    var pigge = [];
-    for (var i = 0; i <= 26; i++) {
-      var a = Math.PI * (1.02 + 0.78 * i / 26), r = i % 2 ? 38 : 46;
-      pigge.push([X(46 + Math.cos(a) * r), Y(78 + Math.sin(a) * r * 0.95)]);
-    }
-    var krop = poly(pigge, false, { fyld: '#fff', w: w });
-    var ansigt = 'M' + n(X(70)) + ' ' + n(Y(38)) + ' C ' + n(X(82)) + ' ' + n(Y(44)) + ' ' + n(X(92)) + ' ' + n(Y(56)) + ' ' + n(X(97)) + ' ' + n(Y(62)) +
-      ' C ' + n(X(92)) + ' ' + n(Y(70)) + ' ' + n(X(84)) + ' ' + n(Y(76)) + ' ' + n(X(76)) + ' ' + n(Y(80)) +
-      ' L ' + n(X(14)) + ' ' + n(Y(80)) + ' Q ' + n(X(4)) + ' ' + n(Y(80)) + ' ' + n(pigge[0][0]) + ' ' + n(pigge[0][1]);
-    return krop + sti(ansigt, { fyld: '#fff', w: w }) +
-      sti('M' + n(X(64)) + ' ' + n(Y(42)) + ' Q ' + n(X(62)) + ' ' + n(Y(60)) + ' ' + n(X(70)) + ' ' + n(Y(78)), { w: w * 0.7 }) +
-      cirkel(X(97), Y(62), 2.6 * k, { fyld: BLAEK, kant: 'none' }) +
-      cirkel(X(80), Y(53), 1.6 * k, { fyld: BLAEK, kant: 'none' }) + cirkel(X(80), Y(53), 5.5 * k, { w: w * 0.7 }) +
-      linje(X(74.5), Y(52), X(68), Y(50), { w: w * 0.6 }) +
-      sti('M' + n(X(84)) + ' ' + n(Y(68)) + ' q ' + n((spejl ? 3 : -3) * k) + ' ' + n(3 * k) + ' ' + n((spejl ? 6 : -6) * k) + ' ' + n(1 * k), { w: w * 0.6 }) +
-      // kasket
-      sti('M' + n(X(58)) + ' ' + n(Y(36)) + ' Q ' + n(X(66)) + ' ' + n(Y(22)) + ' ' + n(X(80)) + ' ' + n(Y(32)) + ' L ' + n(X(90)) + ' ' + n(Y(38)) + ' Q ' + n(X(76)) + ' ' + n(Y(40)) + ' ' + n(X(58)) + ' ' + n(Y(36)) + ' Z', { fyld: '#fff', w: w }) +
-      ellipse(X(30), Y(84), 7 * k, 3.5 * k, { fyld: '#fff', w: w * 0.8 }) + ellipse(X(62), Y(84), 7 * k, 3.5 * k, { fyld: '#fff', w: w * 0.8 });
+  /*
+   * Pelle, Sanne og Nis er tegninger til at farvelaegge (pelle.png, sanne.png, nis.png i denne mappe),
+   * lavet med Gemini ud fra de malede figurer i appen, saa de ligner sig selv. FIGUR: bredde/hoejde for hvert billede og hvilken vej det vender (1 = hoejre).
+   */
+  var FIGUR = { pelle: [283 / 360, 0], sanne: [1, 1], nis: [215 / 360, 0] };
+  function figur(navn, cx, cy, s, spejl) {
+    var f = FIGUR[navn], h = s * 1.05, b = h * f[0], vend = f[1] && !spejl ? -1 : 1;
+    var t = vend < 0 ? ' transform="translate(' + n(2 * cx) + ' 0) scale(-1 1)"' : '';
+    return '<image href="' + navn + '.png" x="' + n(cx - b / 2) + '" y="' + n(cy - h / 2) + '" width="' + n(b) + '" height="' + n(h) + '"' + t + '/>';
   }
 
-  /** Skaden Sanne: krop, lang hale, naeb og en vinge. */
-  function sanne(cx, cy, s, spejl) {
-    var k = s / 100, w = Math.max(0.4, s * 0.012), X = function (x) { return cx + (spejl ? -(x - 50) : (x - 50)) * k; }, Y = function (y) { return cy + (y - 50) * k; };
-    var hale = 'M' + n(X(62)) + ' ' + n(Y(58)) + ' L ' + n(X(98)) + ' ' + n(Y(84)) + ' L ' + n(X(92)) + ' ' + n(Y(90)) + ' L ' + n(X(56)) + ' ' + n(Y(66)) + ' Z';
-    var krop = 'M' + n(X(24)) + ' ' + n(Y(40)) + ' C ' + n(X(30)) + ' ' + n(Y(28)) + ' ' + n(X(56)) + ' ' + n(Y(32)) + ' ' + n(X(66)) + ' ' + n(Y(56)) +
-      ' C ' + n(X(64)) + ' ' + n(Y(70)) + ' ' + n(X(40)) + ' ' + n(Y(74)) + ' ' + n(X(30)) + ' ' + n(Y(62)) + ' C ' + n(X(24)) + ' ' + n(Y(55)) + ' ' + n(X(22)) + ' ' + n(Y(46)) + ' ' + n(X(24)) + ' ' + n(Y(40)) + ' Z';
-    return sti(hale, { fyld: '#fff', w: w }) + linje(X(64), Y(64), X(94), Y(86), { w: w * 0.5 }) + sti(krop, { fyld: '#fff', w: w }) +
-      cirkel(X(26), Y(30), 11 * k, { fyld: '#fff', w: w }) +
-      poly([[X(16), Y(27)], [X(3), Y(31)], [X(16), Y(34)]], true, { fyld: '#fff', w: w }) +
-      cirkel(X(23), Y(28), 1.8 * k, { fyld: BLAEK, kant: 'none' }) +
-      sti('M' + n(X(38)) + ' ' + n(Y(44)) + ' C ' + n(X(48)) + ' ' + n(Y(40)) + ' ' + n(X(60)) + ' ' + n(Y(48)) + ' ' + n(X(64)) + ' ' + n(Y(60)) + ' C ' + n(X(54)) + ' ' + n(Y(60)) + ' ' + n(X(44)) + ' ' + n(Y(56)) + ' ' + n(X(38)) + ' ' + n(Y(44)) + ' Z', { fyld: '#fff', w: w * 0.8 }) +
-      sti('M' + n(X(30)) + ' ' + n(Y(52)) + ' Q ' + n(X(38)) + ' ' + n(Y(66)) + ' ' + n(X(52)) + ' ' + n(Y(67)), { w: w * 0.6 }) +
-      linje(X(40), Y(72), X(38), Y(88), { w: w }) + linje(X(48), Y(71), X(48), Y(88), { w: w }) +
-      linje(X(34), Y(88), X(42), Y(88), { w: w }) + linje(X(44), Y(88), X(52), Y(88), { w: w });
-  }
-
-  /** Nissen Nis: lille, med rod hue (her bare en streg, den farves) og en kvast. */
-  function nis(cx, cy, s) {
-    var k = s / 100, w = Math.max(0.4, s * 0.013), X = function (x) { return cx + (x - 50) * k; }, Y = function (y) { return cy + (y - 50) * k; };
-    return sti('M' + n(X(32)) + ' ' + n(Y(96)) + ' L ' + n(X(36)) + ' ' + n(Y(62)) + ' Q ' + n(X(50)) + ' ' + n(Y(56)) + ' ' + n(X(64)) + ' ' + n(Y(62)) + ' L ' + n(X(68)) + ' ' + n(Y(96)) + ' Z', { fyld: '#fff', w: w }) +
-      linje(X(50), Y(62), X(50), Y(96), { w: w * 0.5 }) +
-      cirkel(X(50), Y(46), 14 * k, { fyld: '#fff', w: w }) +
-      sti('M' + n(X(36)) + ' ' + n(Y(48)) + ' Q ' + n(X(50)) + ' ' + n(Y(72)) + ' ' + n(X(64)) + ' ' + n(Y(48)), { fyld: '#fff', w: w * 0.8 }) +
-      sti('M' + n(X(33)) + ' ' + n(Y(40)) + ' Q ' + n(X(40)) + ' ' + n(Y(4)) + ' ' + n(X(78)) + ' ' + n(Y(14)) + ' Q ' + n(X(62)) + ' ' + n(Y(22)) + ' ' + n(X(67)) + ' ' + n(Y(40)) + ' Z', { fyld: '#fff', w: w }) +
-      rekt(X(30), Y(36), 40 * k, 7 * k, 3 * k, { fyld: '#fff', w: w }) + cirkel(X(80), Y(14), 4.5 * k, { fyld: '#fff', w: w }) +
-      cirkel(X(45), Y(46), 1.4 * k, { fyld: BLAEK, kant: 'none' }) + cirkel(X(55), Y(46), 1.4 * k, { fyld: BLAEK, kant: 'none' }) +
-      cirkel(X(50), Y(50), 2.2 * k, { fyld: '#fff', w: w * 0.7 }) + sti('M' + n(X(45)) + ' ' + n(Y(54)) + ' Q ' + n(X(50)) + ' ' + n(Y(58)) + ' ' + n(X(55)) + ' ' + n(Y(54)), { w: w * 0.6 }) +
-      ellipse(X(40), Y(97), 7 * k, 3 * k, { fyld: '#fff', w: w }) + ellipse(X(60), Y(97), 7 * k, 3 * k, { fyld: '#fff', w: w });
-  }
+  function pelle(cx, cy, s, spejl) { return figur('pelle', cx, cy, s, spejl); }
+  function sanne(cx, cy, s, spejl) { return figur('sanne', cx, cy, s, spejl); }
+  function nis(cx, cy, s) { return figur('nis', cx, cy, s, true); }
 
   /** Et ur med tallene i grundskrift. o.time: den lille viser; o.stor: den store viser lige op; o.lille: tegn den lille viser. */
   function ur(cx, cy, r, o) {

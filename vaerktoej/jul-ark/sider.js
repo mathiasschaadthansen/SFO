@@ -532,8 +532,9 @@
   function forside() {
     var s = side('forside');
     var titel = T.skrift('Pelles julekalender', { x: B / 2, base: 22, h: 14, anker: 'midte' }).svg;
-    var pynt = T.pelle(26, 40, 40) + T.sanne(B - 26, 34, 36, true) + T.TING.stjerne(B / 2 - 70, 8, 6) + T.TING.stjerne(B / 2 + 72, 10, 5);
-    s.innerHTML = T.svg(B, 46, titel + pynt, 'forsidetitel') +
+    // Pelle og Sanne staar under titlen ved hver sin side, saa de ikke gaar ind over bogstaverne
+    var pynt = T.pelle(30, 47, 32) + T.sanne(B - 30, 48, 30, true) + T.TING.stjerne(B / 2 - 70, 8, 6) + T.TING.stjerne(B / 2 + 72, 10, 5);
+    s.innerHTML = T.svg(B, 64, titel + pynt, 'forsidetitel') +
       '<p class="undertitel">– opgaveark til 0. klasse –</p>' +
       '<div class="spalter">' +
       '<div><h3>Historien</h3><p>Pelle Pindsvin har lavet et julepuslespil af træ med 24 brikker og malet alle vennerne om juletræet på det. Men vinterstormen blæser brikkerne ud over hele den lille verden. Hver dag i december besøger Pelle og Skaden Sanne et nyt sted, møder en ven og finder én brik. Undervejs går en lille hjælper rundt i det skjulte – og juleaften er puslespillet helt, og alle er med.</p>' +
