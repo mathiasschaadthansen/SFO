@@ -14,6 +14,7 @@
   'use strict';
 
   var A = window.JulArk, T = window.Tegn, L = T.Linjer, P = window.Puslespil;
+  var MOTIV_STREG = true;   // vaerktoej/jul-ark/puslespil-streg.png findes
   var B = 182;                         // indholdets bredde i mm (A4 minus margen)
   var n = T.n;
 
@@ -449,8 +450,11 @@
     }
   };
 
-  /** Puslespillets motiv: alle vennerne om juletraeet, og en tom plads til Nis nede i hjoernet. */
+  /** Puslespillets motiv: det malede motiv fra appen (jul/billeder/puslespil.jpg) som tegning til at
+      farvelaegge (puslespil-streg.png, lavet med Gemini ud fra det malede billede), saa boernene farver det
+      samme billede, de samler paa iPad'en. Mangler tegningen, tegnes vennerne om juletraeet i kode. */
   function motiv(bb, hh) {
+    if (MOTIV_STREG) return T.rekt(0, 0, bb, hh, 0, { fyld: '#fff', w: 0.9 }) + '<image href="puslespil-streg.png" x="0" y="0" width="' + n(bb) + '" height="' + n(hh) + '" preserveAspectRatio="xMidYMid slice"/>' + T.cirkel(bb * 0.94, hh * 0.88, 9, { w: 0.6, kant: T.GRAA, stiplet: '1.4 1.4', fyld: '#fff' });
     var F = A.FIGURER, ud = T.rekt(0, 0, bb, hh, 0, { fyld: '#fff', w: 0.9 });
     ud += T.sti('M0 ' + n(hh * 0.8) + ' Q ' + n(bb * 0.3) + ' ' + n(hh * 0.74) + ' ' + n(bb * 0.5) + ' ' + n(hh * 0.78) + ' T ' + n(bb) + ' ' + n(hh * 0.76), { w: 0.4, kant: T.GRAA });
     for (var i = 0; i < 9; i++) ud += T.TING.stjerne(8 + i * 21 + (i % 2) * 6, 7 + (i % 3) * 4, 4.5);

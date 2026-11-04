@@ -1133,6 +1133,11 @@ kalender-ark). Forrest er en side til læreren og en oversigt, bagerst facit.
 Børnene skal ikke kunne læse: piktogrammer viser, hvad man gør, og en linje
 nederst på hvert ark siger, hvad det øver, og hvad læreren kan sige.
 
+Puslespillet på dag 24 er appens malede motiv som tegning til at farvelægge
+(`vaerktoej/jul-ark/puslespil-streg.png`, lavet med Gemini ud fra
+`jul/billeder/puslespil.jpg`), så børnene farver det samme billede, som de
+har samlet på iPad'en.
+
 Arkene er ikke en del af appen og står ikke i `sw.js`, og der er ingen
 printknap. PDF'en laves med et værktøj og sendes til lærerne; den ligger ikke
 i repoet (den står i `.gitignore`):
