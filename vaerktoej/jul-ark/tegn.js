@@ -152,14 +152,14 @@
           if (stil === 'spor' && (o.pile !== false || i === 0)) {
             var r0 = Math.max(0.75, w * 1.25);
             if (!lille && (o.pile === undefined || o.pile === true || (o.pile === 'foerste' && i === 0))) {
-              var L = laengde(pts), steder = L > h * 1.4 ? [0.35, 0.75] : [0.55];
+              var L = laengde(pts), steder = L > h * 1.4 ? [0.16, 0.72] : [0.5];   // den foerste pil taet paa starten, saa retningen ses fra prikken
               steder.forEach(function (f) {
                 var p = punktPaa(pts, f), afs = o.vedSiden ? w * 3.2 : 0;
                 ud += pil(p.x + (-p.dy) * afs, p.y + p.dx * afs, p.dx, p.dy, Math.max(0.9, w * 1.9));
               });
             }
             ud += cirkel(pts[0][0], pts[0][1], r0, { fyld: BLAEK, kant: 'none' });
-            if (o.numre && st.length > 1) {
+            if ((o.numre || /[0-9]/.test(ch)) && st.length > 1) {   // tal med flere streger (4, 5) faar altid numre, saa raekkefoelgen ses
               // Starter to streger samme sted (N, E, P), staar det andet nummer paa den anden side af prikken
               var samme = starter.filter(function (q) { return Math.hypot(q[0] - pts[0][0], q[1] - pts[0][1]) < r0 * 2; }).length;
               var str = Math.max(2.6, h * 0.075);
