@@ -328,7 +328,12 @@ def del_op(pcm, sr, tekster):
     if n > 1:
         kortest_skel = laengst[n - 2][1]
         naeste = laengst[n - 1][1] if len(laengst) >= n else 0
-        if kortest_skel * 0.02 < (0.9 if SPIL == 'jul' else 1.0) or naeste > kortest_skel * (0.92 if SPIL == 'jul' else 0.75):
+        # Julekalenderens klip kontrolleres bagefter (Gemini lytter hvert stykke, og et forkert stykke
+        # laves om alene), saa her er det nok, at skellene er de laengste pauser og mindst et halvt sekund.
+        if SPIL == 'jul':
+            if kortest_skel * 0.02 < 0.5:
+                return None
+        elif kortest_skel * 0.02 < 1.0 or naeste > kortest_skel * 0.75:
             return None
     graenser = [0] + [(p[0] + p[1] // 2) * blok for p in skel] + [len(a)]
     stykker = [a[graenser[k]:graenser[k + 1]] for k in range(n)]
@@ -337,7 +342,7 @@ def del_op(pcm, sr, tekster):
     for st, t in zip(stykker, tekster):
         sek = sum(1 for r in stilhed(st, sr)[1] if r > max(rms) * 0.03) * 0.02
         forhold.append(sek / (0.6 + len(t) * 0.06))
-    if max(forhold) > 2.2 * min(forhold):   # i den rigtige raekkefoelge ligger de inden for 1,5 af hinanden
+    if SPIL != 'jul' and max(forhold) > 2.2 * min(forhold):   # i den rigtige raekkefoelge ligger de inden for 1,5 af hinanden
         return None
     if sys.byteorder == 'big':
         for st in stykker:
