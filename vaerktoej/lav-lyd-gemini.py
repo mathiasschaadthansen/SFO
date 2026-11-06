@@ -194,6 +194,8 @@ class Stop(Exception):
     kredit brugt (HTTP 402), og der skal saettes penge ind, foer det nytter at koere igen."""
 
     def besked(self):
+        if self.args and self.args[0] == 'loft':
+            return 'Projektet har naaet sit maanedlige udgiftsloft hos Gemini (HTTP 429). Haev loftet i AI Studio (ai.studio/spend), og koer igen; de klip, der er lavet, bliver liggende.'
         if self.args and self.args[0] == 'kredit':
             return 'Den forudbetalte kredit hos Gemini er brugt (HTTP 402). Saet penge ind i AI Studio, og koer igen; de klip, der er lavet, bliver liggende.'
         return 'Gemini har brugt dagens kald (100 om dagen for denne model). Koer igen i morgen; de klip, der er lavet, bliver liggende.'
@@ -202,6 +204,8 @@ class Stop(Exception):
 def vent_paa_gemini(krop, ventet):
     """Et 429-svar. Graensen pr. minut: vent og proev igen. Graensen pr. dag (100 kald til
     gemini-3.8-flash-tts, ogsaa med betaling): stop, og koer igen i morgen."""
+    if 'spending cap' in krop or 'spend cap' in krop:
+        raise Stop('loft')
     if 'PerDay' in krop and re.search(r'"retryDelay":\s*"(\d{4,})', krop):
         raise Stop()
     m = re.search(r'"retryDelay":\s*"(\d+)', krop)
