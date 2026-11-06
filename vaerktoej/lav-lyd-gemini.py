@@ -190,7 +190,13 @@ def mp3(pcm, sr):
 
 
 class Stop(Exception):
-    """Gemini har sagt stop laenge; koer igen senere."""
+    """Gemini har sagt stop laenge; koer igen senere. Med 'kredit' er den forudbetalte
+    kredit brugt (HTTP 402), og der skal saettes penge ind, foer det nytter at koere igen."""
+
+    def besked(self):
+        if self.args and self.args[0] == 'kredit':
+            return 'Den forudbetalte kredit hos Gemini er brugt (HTTP 402). Saet penge ind i AI Studio, og koer igen; de klip, der er lavet, bliver liggende.'
+        return 'Gemini har brugt dagens kald (100 om dagen for denne model). Koer igen i morgen; de klip, der er lavet, bliver liggende.'
 
 
 def vent_paa_gemini(krop, ventet):
@@ -271,6 +277,8 @@ def lav_et(tekst, sti):
             return sek
         except urllib.error.HTTPError as e:
             krop = e.read().decode('utf-8', 'replace')
+            if e.code == 402:
+                raise Stop('kredit')
             if e.code != 429:
                 raise ValueError('HTTP %d: %s' % (e.code, krop[:300]))
             ventet += vent_paa_gemini(krop, ventet)
@@ -366,6 +374,8 @@ def lav_flere(opgaver, ventet=0):
             break
         except urllib.error.HTTPError as e:
             krop = e.read().decode('utf-8', 'replace')
+            if e.code == 402:
+                raise Stop('kredit')
             if e.code != 429:
                 return [], [(t, sti, 'HTTP %d: %s' % (e.code, krop[:200])) for t, sti in opgaver]
             ventet += vent_paa_gemini(krop, ventet)
@@ -505,8 +515,8 @@ def lav():
         bundt = [(t, os.path.join(UD, filnavn(t))) for t in bundt_tekster]
         try:
             ok, f = lav_flere(bundt)
-        except Stop:
-            print('Gemini har brugt dagens kald (100 om dagen for denne model). Koer igen i morgen; de klip, der er lavet, bliver liggende.')
+        except Stop as e:
+            print(e.besked())
             break
         for t, sti, sek in ok:
             lavet += 1
@@ -593,8 +603,8 @@ def lav_faste():
         bundt = opgaver[k:k + PR_KALD]
         try:
             ok, fl = lav_flere([(t, os.path.join(UD, f)) for f, t in bundt])
-        except Stop:
-            print('Gemini har brugt dagens kald (100 om dagen for denne model). Koer igen i morgen; den fortsaetter, hvor den slap.')
+        except Stop as e:
+            print(e.besked())
             return
         for t, sti, sek in ok:
             nr += 1
