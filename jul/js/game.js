@@ -2,18 +2,20 @@
  * Pelles julekalender: skaermen, lyden og stemmen.
  *
  * Kalenderen er forsiden (overlayet, saa pilen i hjoernet altid foerer hertil):
- * 24 laager rundt om Pelles puslespil. Laagerne frem til i dag kan aabnes,
- * fremtidige ryster blidt, og tidligere dages laager staar aabne. Det bestemmes
- * KUN af datoen (Kalender.aaben); intet gemmes. Dagens brik ligger paa plads,
- * naar den er fundet i dag, og alle tidligere dages brikker ligger der altid.
+ * én laage pr. skoledag (Kalender.LAAGER, 14 laager) rundt om Pelles puslespil
+ * med 24 brikker. Laagerne frem til dagens skoledag kan aabnes, fremtidige
+ * ryster blidt, og tidligere dages laager staar aabne. Det bestemmes KUN af
+ * datoen (Kalender.aaben); intet gemmes. Dagens brikker ligger paa plads, naar
+ * de er fundet i dag, og alle tidligere dages brikker ligger der altid.
  * ?dag=N i adressen lader, som om det er den N. december (til voksne og test).
  *
- * Et tryk paa en laage aabner dagens historie: tre afsnit med hvert sit billede
+ * Et tryk paa en laage aabner dagens historier (én eller to i traek), hver med
+ * tre afsnit med hvert sit billede
  * (billeder/dagNN-k.jpg, ellers en pladsholder i kode), og stemmen laeser
  * replikkerne én saetning ad gangen med underteksten paa en papirstrimmel. Ved
  * et spoergsmaal holdes en pause med et pulserende oere, saa boernene kan svare
- * hoejt. I tredje afsnit glimter brikken i billedet; et tryk paa den, og den
- * flyver ind i et lille puslespil. Bagefter kommer dagens opgave (lege.js),
+ * hoejt. I hver histories tredje afsnit glimter brikken i billedet; et tryk paa
+ * den, og den flyver ind i et lille puslespil. Bagefter kommer laagens opgave (lege.js),
  * en lille fejring og tilbage til kalenderen.
  *
  * Mangler et klip, siger enhedens stemme det, og er der ingen stemme (fx i en
@@ -47,12 +49,14 @@
   var DATO = hentDato();
   var fundet = {};          // brikker fundet i denne omgang (kun i hukommelsen)
   var aabnet = {};          // laager aabnet i denne omgang
-  function kanAabnes(dag) { return K.aaben(dag, DATO); }
-  function erIDag(dag) { return DATO.getMonth() === 11 && DATO.getDate() === dag; }
-  function staarAaben(dag) { return kanAabnes(dag) && (!erIDag(dag) || !!aabnet[dag]); }
+  /* Laagerne har numre 1-14 (skoledage); brikkerne hoerer til historierne (dag 1-24). */
+  function kanAabnes(nr) { return K.aaben(nr, DATO); }
+  function idagNr() { return DATO.getMonth() === 11 && K.hverdag(DATO) ? K.skoledag(DATO) : 0; }
+  function erIDag(nr) { return nr === idagNr(); }
+  function staarAaben(nr) { return kanAabnes(nr) && (!erIDag(nr) || !!aabnet[nr]); }
   function paaPlads(dag) {
     var m = DATO.getMonth();
-    if (m === 11) return dag < DATO.getDate() || !!fundet[dag];
+    if (m === 11) { var nr = K.laageFor(dag).nr; return nr < K.skoledag(DATO) || (nr <= K.skoledag(DATO) && !K.hverdag(DATO)) || !!fundet[dag]; }
     return m !== 10;
   }
 
@@ -287,22 +291,23 @@
   var LAAGEFARVER = ['#e9a08c', '#9fc6e2', '#b9d48f', '#f2d58f', '#c1aee6', '#efb48a'];
   var laager = [], ramme = null, kalNy = null, kalTid = 0;
 
-  /** Laagerne rundt om puslespillet, med uret fra oeverst til venstre: 8 foroven, 4 til hoejre, 8 forneden, 4 til venstre. */
+  /** Laagerne rundt om puslespillet, med uret fra oeverst til venstre: 5 foroven, 2 til hoejre, 5 forneden, 2 til venstre. */
   function kalLayout() {
     var V = 66, Hm = 16, TOP = H > 520 ? 70 : 64, BUND = H > 520 ? 14 : 8;
-    // Siderne skal have plads til to raekker og fire laager med luft imellem: 6 laager og 5 mellemrum i hoejden
-    var d = Math.max(34, Math.min(100, (W - V - Hm - 7 * 12) / 8, (H - TOP - BUND) / 6.5));
-    var spann = W - V - Hm, dx = (spann - d) / 7;
-    var yTop = TOP, yBund = H - BUND - d, R = yBund - (yTop + d), gy = (R - 4 * d) / 5;
+    var N = K.LAAGER.length, NT = 5, NS = (N - 2 * NT) / 2;
+    // Siderne skal have plads til to raekker og NS laager med luft imellem
+    var d = Math.max(34, Math.min(100, (W - V - Hm - (NT - 1) * 12) / NT, (H - TOP - BUND) / (NS + 2 + (NS + 1) * 0.6)));
+    var spann = W - V - Hm, dx = (spann - d) / (NT - 1);
+    var yTop = TOP, yBund = H - BUND - d, R = yBund - (yTop + d), gy = (R - NS * d) / (NS + 1);
     var pos = [];
-    for (var i = 0; i < 8; i++) pos.push([V + i * dx, yTop]);
-    for (var j = 0; j < 4; j++) pos.push([W - Hm - d, yTop + d + gy * (j + 1) + j * d]);
-    for (var k = 0; k < 8; k++) pos.push([W - Hm - d - k * dx, yBund]);
-    for (var l = 0; l < 4; l++) pos.push([V, yBund - gy * (l + 1) - (l + 1) * d]);
+    for (var i = 0; i < NT; i++) pos.push([V + i * dx, yTop]);
+    for (var j = 0; j < NS; j++) pos.push([W - Hm - d, yTop + d + gy * (j + 1) + j * d]);
+    for (var k = 0; k < NT; k++) pos.push([W - Hm - d - k * dx, yBund]);
+    for (var l = 0; l < NS; l++) pos.push([V, yBund - gy * (l + 1) - (l + 1) * d]);
     var gamle = laager;
     laager = pos.map(function (p, n) {
       var g = gamle[n] || {};
-      return { dag: n + 1, x: p[0], y: p[1], d: d, ryst: g.ryst || 0, sving: g.sving || 0, aabner: g.aabner || false };
+      return { nr: n + 1, x: p[0], y: p[1], d: d, ryst: g.ryst || 0, sving: g.sving || 0, aabner: g.aabner || false };
     });
     // Puslespillet i midten, i en trae-ramme
     var x0 = V + d + 18, x1 = W - Hm - d - 18, y0 = yTop + d + 14, y1 = yBund - 14;
@@ -311,7 +316,7 @@
   }
 
   function tegnLaage(c, l, t) {
-    var x = l.x, y = l.y, d = l.d, aaben = staarAaben(l.dag), idag = erIDag(l.dag) && !aabnet[l.dag];
+    var x = l.x, y = l.y, d = l.d, aaben = staarAaben(l.nr), idag = erIDag(l.nr) && !aabnet[l.nr], dage = K.LAAGER[l.nr - 1].dage;
     var sving = aaben ? 1 : l.sving;
     c.save();
     if (l.ryst > 0) { c.translate(x + d / 2, y + d); c.rotate(Math.sin(l.ryst * 34) * 0.09 * l.ryst); c.translate(-x - d / 2, -y - d); }
@@ -321,26 +326,29 @@
       c.save(); c.shadowColor = 'rgba(240,196,106,.95)'; c.shadowBlur = 20 + 16 * p;
       M.rr(c, x - ud, y - ud, d + 2 * ud, d + 2 * ud, d * 0.22, 'rgba(240,196,106,' + (0.65 + 0.35 * p) + ')'); c.restore();
     }
-    // Indersiden: varmt lys og dagens brik, hvis den er fundet
+    // Indersiden: varmt lys og laagens brikker (én eller to), naar de er fundet
     if (sving > 0) {
       var g = c.createRadialGradient(x + d / 2, y + d / 2, 2, x + d / 2, y + d / 2, d * 0.7);
       g.addColorStop(0, '#f8e3b4'); g.addColorStop(1, '#b18a56');
       M.rr(c, x, y, d, d, d * 0.18, g, '#8a663d', 3);
-      if (paaPlads(l.dag)) {
-        var br = P.brik(l.dag), cb = d * 0.4, ch = cb * CELLE;
-        c.save(); c.translate(x + d / 2 - cb / 2, y + d / 2 - ch / 2);
-        M.brik(c, br, cb, ch, motivKilde(), t + l.dag * 0.3, 0.3);
-        c.restore();
-      } else {
-        M.gnist(c, x + d / 2, y + d / 2, d * 0.18, 0.6 + 0.4 * Math.sin(t * 4 + l.dag));
-      }
+      dage.forEach(function (dag, i) {
+        var mx = x + d / 2 + (dage.length > 1 ? (i - 0.5) * d * 0.4 : 0);
+        if (paaPlads(dag)) {
+          var br = P.brik(dag), cb = d * (dage.length > 1 ? 0.32 : 0.4), ch = cb * CELLE;
+          c.save(); c.translate(mx - cb / 2, y + d / 2 - ch / 2);
+          M.brik(c, br, cb, ch, motivKilde(), t + dag * 0.3, 0.3);
+          c.restore();
+        } else {
+          M.gnist(c, mx, y + d / 2, d * 0.14, 0.6 + 0.4 * Math.sin(t * 4 + dag));
+        }
+      });
     }
     // Selve laagen, haengslet i venstre side
     var vinkel = Math.min(1, sving) * Math.PI * 0.62, kx = Math.cos(vinkel);
     if (kx > 0.02 || sving === 0) {
       c.save();
       c.translate(x, y); c.transform(kx, -Math.sin(vinkel) * 0.12, 0, 1, 0, 0);
-      var farve = LAAGEFARVER[(l.dag * 5) % LAAGEFARVER.length];
+      var farve = LAAGEFARVER[(l.nr * 5) % LAAGEFARVER.length];
       c.shadowColor = 'rgba(107,85,68,.22)'; c.shadowBlur = 8; c.shadowOffsetY = 5;
       M.rr(c, 0, 0, d, d, d * 0.18, farve);
       c.shadowColor = 'transparent';
@@ -350,7 +358,7 @@
       M.rr(c, d * 0.09, d * 0.09, d * 0.82, d * 0.82, d * 0.12, null, 'rgba(94,74,58,.22)', 2);
       c.fillStyle = KANT; c.textAlign = 'center'; c.textBaseline = 'middle';
       c.font = '800 ' + Math.round(d * 0.44) + 'px ui-rounded,"SF Pro Rounded",system-ui,sans-serif';
-      c.fillText(String(l.dag), d * 0.5, d * 0.53);
+      c.fillText(String(l.nr), d * 0.5, d * 0.53);
       c.fillStyle = '#b18a56'; c.beginPath(); c.arc(d * 0.84, d * 0.5, d * 0.045, 0, 7); c.fill();
       c.restore();
     }
@@ -376,7 +384,7 @@
       if (paaPlads(br.dag)) return;
       c.save(); c.translate(r.x + br.kol * r.cb, r.y + br.raek * r.ch);
       M.brikSti(c, br, r.cb, r.ch);
-      var idag = erIDag(br.dag);
+      var idag = erIDag(K.laageFor(br.dag).nr);
       c.setLineDash([5, 6]);
       c.strokeStyle = idag ? 'rgba(240,196,106,' + (0.6 + 0.4 * Math.sin(t * 3)) + ')' : 'rgba(138,102,61,.35)';
       c.lineWidth = idag ? 3 : 1.5; c.stroke();
@@ -385,7 +393,7 @@
     var motivB = motivKilde();
     P.BRIKKER.forEach(function (br) {
       if (!paaPlads(br.dag)) return;
-      var ny = kalNy && kalNy.dag === br.dag, k = ny ? 1 + Math.max(0, Math.sin(Math.min(1, kalNy.t) * Math.PI)) * 0.25 : 1;
+      var ny = kalNy && kalNy.dage.indexOf(br.dag) >= 0, k = ny ? 1 + Math.max(0, Math.sin(Math.min(1, kalNy.t) * Math.PI)) * 0.25 : 1;
       c.save();
       c.translate(r.x + (br.kol + 0.5) * r.cb, r.y + (br.raek + 0.5) * r.ch); c.scale(k, k); c.translate(-r.cb / 2, -r.ch / 2);
       M.brik(c, br, r.cb, r.ch, motivB, t + br.dag * 0.37, ny ? 1 : 0);
@@ -415,23 +423,27 @@
     var r = kal.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
     var l = laager.filter(function (q) { return x >= q.x - 6 && x <= q.x + q.d + 6 && y >= q.y - 6 && y <= q.y + q.d + 6; })[0];
     if (!l) return;
-    if (!kanAabnes(l.dag)) { l.ryst = 1; dunk(); return; }        // fremtidig laage: blid rysten, ingen straf
-    aabnet[l.dag] = true;
+    if (!kanAabnes(l.nr)) { l.ryst = 1; dunk(); return; }        // fremtidig laage: blid rysten, ingen straf
+    aabnet[l.nr] = true;
     aabnerNu = l;
     if (l.sving < 1) { l.aabner = true; melodi([523, 659, 784], 90); } else tone(660, 0.12);
     fest(kalPartikler, l.x + l.d / 2, l.y + l.d / 2, 16, 180, 'gnist');
-    setTimeout(function () { aabnerNu = null; startHistorie(K.DAGE[l.dag - 1]); }, l.sving < 1 ? 850 : 350);
+    setTimeout(function () { aabnerNu = null; startHistorie(K.LAAGER[l.nr - 1]); }, l.sving < 1 ? 850 : 350);
   });
 
-  function visKalender(nyDag) {
+  /** Tilbage til kalenderen. nyLaage: laagen, der lige er klaret; dens nye brikker gnistrer paa plads. */
+  function visKalender(nyLaage) {
     tie();
     if (hist) hist.gen++;
     skaerm = 'kalender'; hist = null; leg = null;
     overlay.hidden = false; styring.hidden = true; undertekst.hidden = true;
-    if (nyDag && paaPlads(nyDag)) {
-      kalNy = { dag: nyDag, t: 0 };
-      var br = P.brik(nyDag);
-      if (ramme) setTimeout(function () { fest(kalPartikler, ramme.x + (br.kol + 0.5) * ramme.cb, ramme.y + (br.raek + 0.5) * ramme.ch, 26, 220, 'gnist'); melodi([784, 988, 1175], 90); }, 300);
+    var nye = nyLaage ? K.LAAGER[nyLaage - 1].dage.filter(paaPlads) : [];
+    if (nye.length) {
+      kalNy = { dage: nye, t: 0 };
+      if (ramme) setTimeout(function () {
+        nye.forEach(function (dag) { var br = P.brik(dag); fest(kalPartikler, ramme.x + (br.kol + 0.5) * ramme.cb, ramme.y + (br.raek + 0.5) * ramme.ch, 26, 220, 'gnist'); });
+        melodi([784, 988, 1175], 90);
+      }, 300);
     }
   }
 
@@ -452,23 +464,35 @@
   }
   function visLinje(t) { linje.textContent = t; }
   function opdaterPrikker() {
-    prikker.innerHTML = [0, 1, 2].map(function (i) { return '<i class="' + (i === hist.afsnit ? 'her' : i < hist.afsnit ? 'set' : '') + '"></i>'; }).join('');
+    prikker.innerHTML = hist.liste.map(function (x, i) { return '<i class="' + (i === hist.afsnit ? 'her' : i < hist.afsnit ? 'set' : '') + '"></i>'; }).join('');
   }
 
-  function startHistorie(dag) {
+  /** Laagens historier i traek: liste er alle afsnittene, hvert med sin dag og sit nummer (0-2) i historien. */
+  function startHistorie(L) {
     tie();
     overlay.hidden = true; styring.hidden = false; undertekst.hidden = false;
     skaerm = 'historie'; leg = null;
-    dag.afsnit.forEach(function (a) { M.hent('jul:' + a.billede); });
-    hist = { dag: dag, f: O.forbered(dag), afsnit: 0, replik: 0, del: 0, saetning: 0, pause: false, lyt: null, slut: false, gen: 0,
-             brik: { taget: false, lagt: false, flyv: null, lomme: 0 }, vent: 0, tid: 0 };
+    var liste = [], brikker = {};
+    L.dage.forEach(function (n) {
+      var dag = K.DAGE[n - 1];
+      dag.afsnit.forEach(function (a, i) { M.hent('jul:' + a.billede); liste.push({ a: a, dag: dag, nr: i }); });
+      brikker[n] = { taget: false, lagt: false, flyv: null, lomme: 0 };
+    });
+    hist = { laage: L, liste: liste, dag: liste[0].dag, f: O.forberedLaage(L, K), afsnit: 0, replik: 0, del: 0, saetning: 0, pause: false, lyt: null, slut: false, gen: 0,
+             brikker: brikker, brik: brikker[L.dage[0]], vent: 0, tid: 0 };
     knapPause.innerHTML = PAUSE;
     placerUndertekst();
     visAfsnit(0);
   }
+  /** Er vi i en histories tredje afsnit, hvor brikken ligger? Og er det laagens sidste afsnit? */
+  function brikAfsnit() { return hist.liste[hist.afsnit].nr === 2; }
+  function sidsteAfsnit() { return hist.afsnit === hist.liste.length - 1; }
+  /** Videre efter en historie: naeste historie, eller opgaven efter den sidste. */
+  function videre() { if (sidsteAfsnit()) startOpgave(); else visAfsnit(hist.afsnit + 1); }
   function visAfsnit(n) {
     tie();
-    hist.afsnit = n; hist.replik = 0; hist.del = 0; hist.saetning = 0; hist.slut = false; hist.lyt = null; hist.vent = 0;
+    hist.afsnit = n; hist.dag = hist.liste[n].dag; hist.brik = hist.brikker[hist.dag.dag];
+    hist.replik = 0; hist.del = 0; hist.saetning = 0; hist.slut = false; hist.lyt = null; hist.vent = 0;
     hist.pause = false; knapPause.innerHTML = PAUSE;
     opdaterPrikker();
     hist.gen++;
@@ -480,7 +504,7 @@
   function laes() {
     if (!hist || hist.pause || hist.brik.flyv) return;
     hist.gen++;
-    var g = hist.gen, a = hist.dag.afsnit[hist.afsnit], r = a.tekst[hist.replik];
+    var g = hist.gen, a = hist.liste[hist.afsnit].a, r = a.tekst[hist.replik];
     if (!r) { afsnitSlut(); return; }
     var dele = typeof r === 'string' ? [r] : [r.spoerg, null, r.svar];
     if (hist.del >= dele.length) { hist.replik++; hist.del = 0; hist.saetning = 0; laes(); return; }
@@ -497,27 +521,29 @@
   function afsnitSlut() {
     hist.slut = true;
     var g = hist.gen;
-    if (hist.afsnit < 2) { setTimeout(function () { if (hist && g === hist.gen && !hist.pause) visAfsnit(hist.afsnit + 1); }, 1300); return; }
-    if (hist.brik.lagt) { setTimeout(function () { if (hist && g === hist.gen) startOpgave(); }, 900); return; }
+    if (!brikAfsnit()) { setTimeout(function () { if (hist && g === hist.gen && !hist.pause) visAfsnit(hist.afsnit + 1); }, 1300); return; }
+    if (hist.brik.lagt) { setTimeout(function () { if (hist && g === hist.gen && !hist.pause) videre(); }, 900); return; }
     if (!hist.brik.taget) { hist.vent = 0; visLinje(O.TEKST.findBrikken); sige(O.TEKST.findBrikken); }
   }
   function startOpgave() {
     if (!hist) return;
-    var dag = hist.dag, f = hist.f;
+    var dag = hist.dag, L = hist.laage, f = hist.f;
     tie();
     styring.hidden = true; undertekst.hidden = true;
     skaerm = 'opgave';
-    leg = LEGE[f.type] ? LEGE[f.type](f, dag, J, function () { opgaveFaerdig(dag, f); }) : null;
+    leg = LEGE[f.type] ? LEGE[f.type](f, dag, J, function () { opgaveFaerdig(L, f); }) : null;
     hist = null;
-    if (!leg) opgaveFaerdig(dag, f);
+    if (!leg) opgaveFaerdig(L, f);
   }
-  function opgaveFaerdig(dag, f) {
-    if (f.type === 'puslespil') fundet[dag.dag] = true;
+  /** Er historien juleaften, hvor den sidste brik laegges i det store puslespil i opgaven? */
+  function erPusleDag(dag) { return dag.opgave && dag.opgave.type === 'puslespil'; }
+  function opgaveFaerdig(L, f) {
+    f.dele.forEach(function (x) { if (x.type === 'puslespil') fundet[x.dag] = true; });
     skaerm = 'fejring';
     melodi([523, 659, 784, 1047, 1319], 110);
     fest(partikler, W * 0.3, H * 0.4, 40, 320); fest(partikler, W * 0.7, H * 0.4, 40, 320);
     setTimeout(function () { if (skaerm === 'fejring') fest(partikler, W * 0.5, H * 0.3, 50, 360); }, 500);
-    sige(f.fejring, function () { setTimeout(function () { if (skaerm === 'fejring') visKalender(dag.dag); }, 1400); });
+    sige(f.fejring, function () { setTimeout(function () { if (skaerm === 'fejring') visKalender(L.nr); }, 1400); });
   }
 
   /** Hvor brikken ligger i billedet, og hvor stor den er. */
@@ -536,10 +562,10 @@
     melodi([784, 988, 1175], 80);
     var f = billedFelt(), p = brikIBilledet(f);
     fest(partikler, p.x, p.y, 20, 200, 'gnist');
-    if (hist.f.type === 'puslespil') {
+    if (erPusleDag(hist.dag)) {
       // Juleaften laegges den sidste brik i det store puslespil i opgaven; her tager Pelle den bare med.
       bk.lomme = 0.0001; bk.lagt = true;
-      if (hist.slut) { var g0 = hist.gen; setTimeout(function () { if (hist && g0 === hist.gen) startOpgave(); }, 1400); }
+      if (hist.slut) { var g0 = hist.gen; setTimeout(function () { if (hist && g0 === hist.gen) videre(); }, 1400); }
       return;
     }
     // Historien holder pause, mens brikken flyver ind i puslespillet
@@ -565,7 +591,7 @@
   function flyvSlut() {
     var bk = hist.brik;
     bk.flyv = null; bk.lagt = true;
-    if (hist.slut) startOpgave(); else laes();
+    if (hist.slut) videre(); else laes();
   }
 
   function opdaterHistorie(dt) {
@@ -582,7 +608,8 @@
       if (!bk.flyv.landet && bk.flyv.t >= 1.9) brikLandet();
       if (bk.flyv.ud > 0) { bk.flyv.ud += dt * 2; if (bk.flyv.ud >= 1) flyvSlut(); }
     }
-    if (hist.slut && hist.afsnit === 2 && !bk.taget) {
+    if (!hist || hist.brik !== bk) return;     // flyvningen sluttede, og opgaven eller naeste historie er begyndt
+    if (hist.slut && brikAfsnit() && !bk.taget) {
       hist.vent += dt;
       if (hist.vent > 16) { hist.vent = 0; sige(O.TEKST.findBrikken); }
     }
@@ -601,19 +628,19 @@
   }
 
   function tegnHistorie(c, dt) {
-    var f = billedFelt(), t = hist.tid, dag = hist.dag, a = dag.afsnit[hist.afsnit], sti = 'jul:' + a.billede;
+    var f = billedFelt(), t = hist.tid, dag = hist.dag, a = hist.liste[hist.afsnit].a, sti = 'jul:' + a.billede;
     c.fillStyle = '#e5d3ae'; c.fillRect(0, 0, W, H);
     // Billedet i en bloed ramme med skygge
     c.save(); c.shadowColor = 'rgba(94,74,58,.35)'; c.shadowBlur = 24; c.shadowOffsetY = 10;
     M.rr(c, f.x - 6, f.y - 6, f.b + 12, f.h + 12, 18, PAPIR); c.restore();
     c.save(); c.beginPath(); c.roundRect(f.x, f.y, f.b, f.h, 12); c.clip();
     if (M.klar(sti)) c.drawImage(M.hent(sti), f.x, f.y, f.b, f.h);
-    else c.drawImage(pladsholder(dag, hist.afsnit, f.b, f.h), f.x, f.y, f.b, f.h);
+    else c.drawImage(pladsholder(dag, hist.liste[hist.afsnit].nr, f.b, f.h), f.x, f.y, f.b, f.h);
     c.restore();
 
     var bk = hist.brik;
-    // Brikken i tredje afsnit: den glimter, til den er taget
-    if (hist.afsnit === 2) {
+    // Brikken i historiens tredje afsnit: den glimter, til den er taget
+    if (brikAfsnit()) {
       var p = brikIBilledet(f), motivB = motivKilde();
       if (!bk.taget) {
         var glans = hist.slut ? 1 : 0.5, puls = 1 + Math.sin(t * 4) * 0.05 * (hist.slut ? 2 : 1);
@@ -689,8 +716,8 @@
   knapFrem.addEventListener('click', function () {
     if (!hist || hist.brik.flyv) return;
     tone(660, 0.1);
-    if (hist.afsnit < 2) { visAfsnit(hist.afsnit + 1); return; }
-    if (hist.brik.lagt) { startOpgave(); return; }
+    if (!brikAfsnit()) { visAfsnit(hist.afsnit + 1); return; }
+    if (hist.brik.lagt) { videre(); return; }
     tie(); hist.gen++; hist.lyt = null; hist.pause = false; knapPause.innerHTML = PAUSE;
     afsnitSlut();
   });
@@ -720,7 +747,7 @@
     var p = punkt(e);
     if (skaerm === 'historie' && hist) {
       if (hist.lyt) { hist.lyt.varer = 0; return; }                 // et tryk springer pausen over
-      if (hist.afsnit === 2 && !hist.brik.taget && !hist.pause) {
+      if (brikAfsnit() && !hist.brik.taget && !hist.pause) {
         var f = billedFelt(), b = brikIBilledet(f);
         if (Math.hypot(p[0] - b.x, p[1] - b.y) < Math.max(56, b.cb * 1.1)) tagBrik();
       }
@@ -774,6 +801,6 @@
     skaerm: function () { return skaerm; }, hist: function () { return hist; }, leg: function () { return leg; },
     laager: function () { return laager; }, ramme: function () { return ramme; }, billedFelt: billedFelt,
     brik: function () { return hist ? brikIBilledet(billedFelt()) : null; }, fundet: fundet, dato: DATO,
-    startHistorie: function (n) { startHistorie(K.DAGE[n - 1]); }, startOpgave: function (n) { startHistorie(K.DAGE[n - 1]); startOpgave(); }
+    startHistorie: function (n) { startHistorie(K.LAAGER[n - 1]); }, startOpgave: function (n) { startHistorie(K.LAAGER[n - 1]); startOpgave(); }
   };
 })();

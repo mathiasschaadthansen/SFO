@@ -419,6 +419,22 @@
    * sidste er forkert (eller null, hvis man ikke kan goere noget forkert).
    * Skaermen (lege.js) spoerger reglerne, og testens robot spiller med dem.
    */
+  /**
+   * Laagens opgave: de foerste (letteste) dele af hver af laagens historiers opgaver, i traek.
+   * L er en laage fra Kalender.LAAGER ({ dage, opgave: { dag: antal dele } }). Hver del beholder
+   * sin dag, saa legen kan finde dagens figurer.
+   */
+  function forberedLaage(L, Kalender) {
+    var dele = [], forste = null;
+    L.dage.forEach(function (n) {
+      var f = forbered(Kalender.DAGE[n - 1]);
+      if (!forste) forste = f;
+      var antal = L.opgave && L.opgave[n] != null ? L.opgave[n] : f.dele.length;
+      dele = dele.concat(f.dele.slice(0, antal));
+    });
+    dele.forEach(function (x, i) { x.nr = i; });
+    return { type: forste.type, laage: L.nr, dag: L.dage[L.dage.length - 1], fejring: forste.fejring, dele: dele };
+  }
   function andetTal(svar, max) { return svar === 1 ? 2 : svar - 1 >= 1 && svar - 1 <= max ? svar - 1 : 1; }
   var REGLER = {
     tael: {
@@ -600,7 +616,7 @@
     TALORD: TALORD, TEKST: TEKST, TING: TING, FIGURER: FIGURER, VENNER: VENNER, FLYVER: FLYVER, PYNT: PYNT, KUGLER: KUGLER,
     LOESE: LOESE, NIS: NIS,
     tal: tal, talord: talord, derVar: derVar, flereEnd: flereEnd, jaDetEr: jaDetEr, ord: ord, tingBillede: tingBillede, tingFindes: tingFindes,
-    moenster: moenster, taelPladser: taelPladser, bunke: bunke, guirlande: guirlande, glyfNavn: glyfNavn, forbered: forbered,
+    moenster: moenster, taelPladser: taelPladser, bunke: bunke, guirlande: guirlande, glyfNavn: glyfNavn, forbered: forbered, forberedLaage: forberedLaage,
     runde: runde, replikker: replikker, dagensReplikker: dagensReplikker, saetningerAf: saetningerAf, saetninger: saetninger, ordene: ordene
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);

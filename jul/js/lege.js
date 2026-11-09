@@ -1239,7 +1239,9 @@
     function start(n) {
       gen++; J.tie(); nr = n; skifter = false;
       var del = f.dele[nr], L = LEGE[del.type], g = gen;
-      aktuel = L ? L(del, dag, vagt(g), function () { if (g === gen) delFaerdig(); }) : null;
+      // En laage kan have dele fra to historier: hver del faar sin egen dag (figurerne, Pelle moeder)
+      var dagen = (window.Kalender && del.dag && window.Kalender.DAGE[del.dag - 1]) || dag;
+      aktuel = L ? L(del, dagen, vagt(g), function () { if (g === gen) delFaerdig(); }) : null;
       if (!aktuel) delFaerdig();
     }
     /** Den lille fejring: en melodi, konfetti, og prikken bliver til en stjerne. */

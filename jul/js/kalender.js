@@ -101,14 +101,14 @@
             'Pelle graver forsigtigt med poterne. Og dér ligger den: én lille brik med en gylden kant.',
             'Kan I se den? Den glimter i sneen.',
             '– Når vi kan finde én, siger Sanne, så kan vi også finde resten. Jeg kan se alt, der glimter, når jeg flyver højt oppe. Jeg leder hver eneste dag.',
-            '– Og jeg går med, siger Pelle. Vi finder en brik om dagen, til vi har dem alle sammen. Og juleaften lægger vi puslespillet sammen.',
+            '– Og jeg går med, siger Pelle. Vi finder én brik ad gangen, til vi har dem alle sammen. Og juleaften lægger vi puslespillet sammen.',
             'Pelle lægger brikken i en lille æske.',
             { spoerg: 'Hvor mange brikker har Pelle fundet nu?', svar: 'Én. Én brik er fundet.' },
             'Da Pelle går hjem, ser han noget mærkeligt i sneen. Små, bitte små fodspor. Meget mindre end hans egne. Hvem mon har gået her?',
             'Højt oppe flyver Sanne en sidste tur. Hun kalder ned til Pelle, at hun kan se noget glimte. Langt væk, oppe i en gammel stub, hvor der bor et egern.',
             '– Så går vi derhen i morgen, siger Pelle. God nat, Sanne.',
             '– God nat, Pelle.',
-            'I morgen åbner vi låge nummer to.'
+            'Næste gang åbner vi låge nummer to.'
           ]
         }
       ],
@@ -118,8 +118,8 @@
         runder: [
           { ting: 'julekugle', antal: 8, spoerg: 'Kan I tælle kuglerne på juletræet? Tryk på dem én ad gangen.',
             efter: [{ plus: 2 }, { minus: 1, tekst: 'Sanne tager én.' }] },
-          { ting: 'æble', antal: 12, spoerg: 'Stormen har blæst æblerne ned i sneen. Kan I tælle dem?',
-            efter: [{ minus: 4, tekst: 'Pelle samler fire op.' }] }
+          { ting: 'æble', antal: 7, spoerg: 'Stormen har blæst æblerne ned i sneen. Kan I tælle dem?',
+            efter: [{ minus: 2, tekst: 'Pelle samler to op.' }] }
         ]
       }
     },
@@ -167,7 +167,7 @@
             'Egon giver Pelle tre nødder med på vejen. En til Pelle, en til Sanne, og en til den, der har brug for den.',
             'Da de går, kigger Sanne op i luften. Langt væk stiger der røg op fra en skorsten. Det dufter af kanel og sirup. Og midt i røgen glimter det.',
             '– Det er Skovkøkkenet, siger Sanne. Der skal vi hen i morgen.',
-            'I morgen åbner vi låge nummer tre.'
+            'Næste morgen går de derhen.'
           ]
         }
       ],
@@ -175,9 +175,8 @@
       opgave: {
         type: 'se', ting: 'nød', max: 10, spoerg: 'Kig godt. Hvor mange nødder så I?',
         runder: [
-          { antal: 5, moenster: 'terning', vis: 2.5 }, { antal: 6, moenster: 'terning', vis: 2 },
-          { antal: 7, moenster: 'tierramme', vis: 2, mangler: true }, { antal: 9, moenster: 'tierramme', vis: 1.5, mangler: true },
-          { antal: 8, moenster: 'tierramme', vis: 1, mangler: true }
+          { antal: 3, moenster: 'terning', vis: 3 }, { antal: 4, moenster: 'terning', vis: 3 },
+          { antal: 5, moenster: 'terning', vis: 2.5 }, { antal: 6, moenster: 'terning', vis: 2.5 }
         ]
       }
     },
@@ -198,9 +197,9 @@
         {
           billede: 'billeder/dag03-2.jpg',
           tekst: [
-            'Gustav lægger kagerne på bagepladen. Tre på den første række.',
-            '– Og tre på den næste række, siger han.',
-            'Tre og tre er seks. Seks kager på pladen.',
+            'Gustav lægger kagerne på bagepladen. Fire på den første række.',
+            '– Og to på den næste række, siger han.',
+            'Fire og to er seks. Seks kager på pladen.',
             'Pladen kommer i ovnen, og de venter. Det er svært at vente, når det dufter så godt. Pelle tæller langsomt til ti, og så tæller han til ti igen.',
             'Endelig er kagerne færdige. Gustav sætter pladen i vindueskarmen, så de kan blive kolde.',
             'Men da de kigger igen, er der noget, der ikke passer.',
@@ -216,21 +215,21 @@
           tekst: [
             'Gustav vil bage en plade til. Han stikker armen ned i den store melsæk og ...',
             '– Hov, siger han. Der er noget hårdt i melet.',
-            'Han trækker poten op. Den er hvid af mel, og i den holder han en lille brik med gylden kant. Den må være faldet ned gennem skorstenen i stormen.',
+            'Han trækker armen op. Den er hvid af mel, og mellem klovene holder han en lille brik med gylden kant. Den må være faldet ned gennem skorstenen i stormen.',
             'Kan I se den? Den glimter i melsækken.',
             'Pelle blæser melet af brikken og lægger den i sin æske.',
-            { spoerg: 'I går havde Pelle to brikker. Nu får han én til. Hvor mange har han så?', svar: 'Tre. To og én er tre.' },
+            { spoerg: 'Pelle havde to brikker. Nu får han én til. Hvor mange har han så?', svar: 'Tre. To og én er tre.' },
             'Gustav pakker brunkager ind i et viskestykke til dem. Tre til Pelle, tre til Sanne, og én ekstra, som Pelle lægger i sneen uden for døren. Til den, der var sulten.',
             'Da de går hjem, er solen ved at gå ned. Sanne flyver højt op og kigger ud over landet. Langt væk ligger et vand, der er frosset til is. Og nede i isen glimter det.',
             '– Det er ved Bæverdammen, siger Sanne.',
-            'I morgen åbner vi låge nummer fire.'
+            'Næste gang åbner vi låge nummer tre.'
           ]
         }
       ],
       brik: { x: 0.72, y: 0.66 },
       opgave: {
         type: 'regn', ting: 'kage',
-        foerst: { antal: 9, spoerg: 'Gustav har bagt brunkager. Kan I tælle dem? Tryk på dem én ad gangen.' },
+        foerst: { antal: 9, spoerg: 'Gustav har bagt kager. Kan I tælle dem? Tryk på dem én ad gangen.' },
         runder: [
           { tekst: 'Gustav har fem kager. Han bager tre mere. Hvor mange har han nu?', foer: 5, plus: 3, figur: ['gustav'] },
           { tekst: 'Der ligger syv kager på pladen. Nogen spiser to. Hvor mange er der tilbage?', foer: 7, minus: 2 },
@@ -278,11 +277,11 @@
             '– Det kan jeg klare, siger Bodil. Hun løfter sin store, flade hale og slår den ned i isen.',
             { spoerg: 'Tæl med, hver gang Bodil slår. Bank. Bank. Bank.', svar: 'Tre. Tre gange, og så knækker isen.' },
             'Isen knækker med et lille knæk, og Bodil fisker brikken op med poten. Den er kold og våd, men den er hel.',
-            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Fire. Én for hver dag.' },
+            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Fire. Tre og én er fire.' },
             '– Tak, Bodil, siger Pelle. Og til foråret kommer jeg og hjælper dig med dæmningen.',
             'På vejen hjem hører de nogen grine. Langt væk, på en stor, hvid bane, ruller der to runde væsner rundt i sneen. Det ene er rødt, og det andet er blåt.',
             '– Klatterne, siger Sanne. Og der er noget, der glimter hos dem.',
-            'I morgen åbner vi låge nummer fem.'
+            'Næste morgen går de hen til Boldbanen.'
           ]
         }
       ],
@@ -323,7 +322,7 @@
         {
           billede: 'billeder/dag05-3.jpg',
           tekst: [
-            'Af alle ti snebolde bygger de en stor snemand. To store kugler forneden, en mindre ovenpå, og et hoved med to kastanjer til øjne.',
+            'Nu vil de bygge en snemand. To store kugler forneden, en mindre ovenpå, og et hoved med to kastanjer til øjne.',
             'Men da de sætter den midterste kugle på plads, ser Sanne noget. Inde i sneen, lige midt i snemandens mave, glimter det.',
             'Kan I se det? Det glimter i snemandens mave.',
             '– Den må være blevet trillet med, siger Klaus. Da jeg lavede den store snebold.',
@@ -333,7 +332,7 @@
             'Snemanden har nu et lille hul i maven. Klara stopper en kastanje i hullet. Så ser det ud, som om snemanden har en navle. Alle griner.',
             'Sanne flyver højt op. Bag bakken ligger der en lang, snoet bane med juletræer langs kanten.',
             '– Susebanen, siger Sanne. Dér glimter det.',
-            'I morgen åbner vi låge nummer seks.'
+            'Næste gang åbner vi låge nummer fire.'
           ]
         }
       ],
@@ -366,7 +365,7 @@
         {
           billede: 'billeder/dag06-2.jpg',
           tekst: [
-            'Langs banen står der mange små juletræer. Rikke tæller de første, mens de kører forbi.',
+            'Rikke synger en tællesang, mens de suser ned ad bakken.',
             { spoerg: 'Tæl med på fingrene. En. To. Tre. Fire. Fem. Seks.', svar: 'Seks fingre er oppe.' },
             '– Seks, siger Rikke. Det er en hel hånd og én finger mere.',
             'Pelle holder alle fem fingre op på den ene pote og én finger på den anden.',
@@ -391,7 +390,7 @@
             'Det er ved at blive mørkt, og de første stjerner kommer frem. Sanne kigger op. Højt oppe, helt oppe mellem stjernerne, er der noget, der glimter.',
             '– Stjerneuret, siger Sanne. Men det er så højt oppe. Hvordan skal vi komme derop?',
             '– Det ved jeg, hvem der kan hjælpe med, siger Pelle.',
-            'I morgen åbner vi låge nummer syv.'
+            'De venter på bakken, til det er helt mørkt.'
           ]
         }
       ],
@@ -399,9 +398,9 @@
       opgave: {
         type: 'tael',
         runder: [
-          { ting: 'gran', antal: 11, spoerg: 'Kan I tælle juletræerne langs banen? Tryk på dem én ad gangen.',
-            efter: [{ plus: 2, tekst: 'Rikke planter to til.' }, { minus: 3, stil: 'sne', tekst: 'Sneen dækker tre.', spoerg: 'Hvor mange kan I se nu?' }] },
-          { ting: 'stjerne', antal: 14, spoerg: 'Nu kommer stjernerne frem. Kan I tælle dem?' }
+          { ting: 'gran', antal: 6, spoerg: 'Kan I tælle juletræerne langs banen? Tryk på dem én ad gangen.',
+            efter: [{ plus: 2, tekst: 'Rikke planter to til.' }, { minus: 1, stil: 'sne', tekst: 'Sneen dækker ét.', spoerg: 'Hvor mange kan I se nu?' }] },
+          { ting: 'stjerne', antal: 7, spoerg: 'Nu kommer stjernerne frem. Kan I tælle dem?' }
         ]
       }
     },
@@ -441,12 +440,12 @@
             'Milo svæver ud fra raketten i sin rumdragt. Han tager forsigtigt brikken og svæver tilbage.',
             '– Den har svævet heroppe siden stormen, siger Milo. Den lignede næsten en stjerne.',
             'Pelle lægger brikken i sin æske. Han kigger på dem alle sammen.',
-            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Syv. En hel uge.' },
+            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Syv. Seks og én er syv.' },
             '– Syv dage er en uge, siger Milo. Mandag, tirsdag, onsdag, torsdag, fredag, lørdag og søndag.',
             'Raketten flyver ned igen og lander blødt på bakken. Pelle gaber. Det har været en lang dag.',
             'Men før han går ind, kigger Sanne ned over landet. Langt væk, på en vej, hvor der står store bogstaver i sneen, glimter det.',
             '– Bogstavvejen, siger Sanne. Der skal vi hen i morgen.',
-            'I morgen åbner vi låge nummer otte.'
+            'Næste gang åbner vi låge nummer fem.'
           ]
         }
       ],
@@ -454,8 +453,8 @@
       opgave: {
         type: 'se', ting: 'stjerne', max: 10, spoerg: 'Kig godt. Hvor mange stjerner så I?',
         runder: [
-          { antal: 6, moenster: 'terning', vis: 2 }, { antal: 7, vis: 2, mangler: true }, { antal: 10, vis: 1.5 },
-          { antal: 8, vis: 1.2, mangler: true }, { antal: 9, vis: 1, mangler: true }
+          { antal: 4, moenster: 'terning', vis: 3 }, { antal: 6, moenster: 'terning', vis: 2.5 }, { antal: 10, vis: 2.5 },
+          { antal: 8, vis: 2.5, mangler: true }, { antal: 9, vis: 2, mangler: true }
         ]
       }
     },
@@ -496,13 +495,13 @@
             'Kan I se det? Det glimter i bunden af S.',
             'Pelle graver forsigtigt. Det er en brik med gylden kant.',
             '– Den har ligget her hele tiden, siger Ulla. Lige under sneen. Den ville gerne findes af et S.',
-            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Otte. Én for hver dag.' },
+            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Otte. Syv og én er otte.' },
             'Pelle takker Ulla. Hun vinker farvel med fjeren og begynder på næste bogstav.',
             'Sanne ser lidt alvorlig ud.',
             '– I morgen har jeg en vigtig opgave, siger hun. Jeg skal flyve julebreve ud på Himmelvejen. Men jeg så noget glimte derude. Vil du med, Pelle?',
             '– Kan jeg det, spørger Pelle. Jeg kan jo ikke flyve.',
             '– Du kan sidde på min ryg, siger Sanne. Du er lille nok.',
-            'I morgen åbner vi låge nummer ni.'
+            'Næste morgen er Pelle klar.'
           ]
         }
       ],
@@ -549,11 +548,11 @@
             'Kan I se det? Det glimter i fuglehuset under broen.',
             'Pelle strækker sig og tager den. En brik med gylden kant.',
             '– Den må være blæst herind i stormen, siger Sanne. Godt den havde et hus at være i.',
-            { spoerg: 'I går havde Pelle otte brikker. Nu får han én til. Hvor mange har han så?', svar: 'Ni. Otte og én er ni.' },
+            { spoerg: 'Pelle havde otte brikker. Nu får han én til. Hvor mange har han så?', svar: 'Ni. Otte og én er ni.' },
             'De flyver hjem i det sidste lys. Pelle holder fast i fjerene og smiler hele vejen.',
             'Over skoven kan de se et hus med store vinduer og lys indenfor. Derinde bevæger der sig noget med lange, blanke arme.',
             '– Det er Tegnestuen, siger Sanne. Og inde ved vinduet glimter det.',
-            'I morgen åbner vi låge nummer ti.'
+            'Næste gang åbner vi låge nummer seks.'
           ]
         }
       ],
@@ -604,7 +603,7 @@
             'Rasmus giver Pelle et julekort. Der er tegnet et stort P på det. P som i Pelle.',
             'Sanne flyver op på taget og kigger ud. Langt væk ligger en skov fyldt med små huse og masser af ting. I et af vinduerne glimter det.',
             '– Vrimleskoven, siger Sanne.',
-            'I morgen åbner vi låge nummer elleve.'
+            'Næste gang åbner vi låge nummer syv.'
           ]
         }
       ],
@@ -651,10 +650,10 @@
             'Kaja banker forsigtigt på. En gammel mus åbner døren og smiler.',
             '– Den fløj ind ad min skorsten i stormen, siger musen. Jeg har passet godt på den.',
             'Musen giver Pelle en brik med gylden kant.',
-            { spoerg: 'I går havde Pelle ti brikker. Nu får han én til. Hvor mange har han så?', svar: 'Elleve. Ti og én er elleve.' },
+            { spoerg: 'Hvor mange brikker har Pelle fundet i dag?', svar: 'Én. Og dagen er ikke slut endnu.' },
             'Kaja kører dem hjem på kanen. Da de kommer forbi Pelles have, kigger Sanne ned. Haven er helt hvid. Men midt i sneen glimter det.',
             '– Den er i din egen have, Pelle, siger Sanne.',
-            'I morgen åbner vi låge nummer tolv.'
+            'Så hopper de af kanen og går ind i haven.'
           ]
         }
       ],
@@ -702,12 +701,12 @@
             'Pop. Guleroden kommer op. Og i hullet efter den glimter det.',
             'Kan I se det? Det glimter i hullet efter guleroden.',
             'Det er en brik med gylden kant. Den har ligget i Pelles egen have hele tiden.',
-            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Tolv. Halvdelen af alle brikkerne.' },
-            '– Halvdelen, siger Pelle. Vi har fundet halvdelen. Tolv er fundet, og tolv mangler.',
+            { spoerg: 'Først fandt Pelle én brik, og nu én til. Hvor mange har han fundet i dag?', svar: 'To. Én og én er to.' },
+            '– Halvdelen, siger Pelle. Vi har fundet halvdelen af brikkerne.',
             'Pelle sætter guleroden på snemanden. Nu har den en flot, orange næse. Snemanden ser ud, som om den smiler.',
             'Sanne flyver op i æbletræet. Herfra kan hun se helt ud til havet. Langs stranden er vandet frosset, og ude på isen glimter det.',
             '– Boblehavet, siger Sanne.',
-            'I morgen åbner vi låge nummer tretten.'
+            'Næste gang åbner vi låge nummer otte.'
           ]
         }
       ],
@@ -754,11 +753,11 @@
             '– Så varmer vi den, siger Ella.',
             'Emil og Ella tager deres vanter af og lægger hænderne på boblen. Pelle puster varm luft på den. Det tager lang tid. Men så siger det pop.',
             'Boblen springer, og ud kommer en brik med gylden kant.',
-            { spoerg: 'I går havde Pelle tolv brikker. Nu får han én til. Hvor mange har han så?', svar: 'Tretten. Tolv og én er tretten.' },
+            { spoerg: 'Hvor mange brikker har Pelle fundet i dag?', svar: 'Én. Én brik i dag.' },
             'Emil og Ella tager vanterne på igen. Deres hænder er røde og kolde, men de smiler.',
             'Sanne flyver højt op og kigger hjem mod skoven. Hun kigger og kigger. Og så glimter det. Lige ved Pelles eget hus.',
             '– Pelle, siger hun. Der er noget ved din dør.',
-            'I morgen åbner vi låge nummer fjorten.'
+            'Næste gang åbner vi låge nummer ni.'
           ]
         }
       ],
@@ -804,12 +803,12 @@
             'Pelle åbner pakken. Indeni ligger der en brik med gylden kant. Og en lillebitte tegning af en nissehue.',
             'Kan I se brikken? Den glimter i den lille pakke.',
             '– Der er nogen, der hjælper os, hvisker Pelle. Nogen, der er meget lille og meget venlig.',
-            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Fjorten. Ti og fire er fjorten.' },
+            { spoerg: 'Hvor mange huller er der tilbage i puslespillet nu?', svar: 'Ti. Lige så mange som fingrene på to hænder.' },
             'Pelle kigger ud i mørket. Små fodspor går ned ad trappen og forsvinder ind mellem træerne.',
             '– Tak, råber Pelle ud i skoven. Hvem du end er.',
             'Sanne kigger mod bakkerne. Inde i en mørk hule langt væk glimter det svagt.',
             '– Rimhulen, siger Sanne. Men der skal vi være meget stille. Der sover nogen.',
-            'I morgen åbner vi låge nummer femten.'
+            'Næste gang åbner vi låge nummer ti.'
           ]
         }
       ],
@@ -861,10 +860,10 @@
             '– Hvordan får vi den uden at vække ham, hvisker Sanne.',
             'Pelle tager sin bløde vante af. Langsomt, langsomt lægger han vanten i Bos pote, og langsomt, langsomt tager han brikken.',
             'Bo knuger vanten ind til sig og smiler. Vante og tante, mumler han. Og så snorker han videre.',
-            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Femten. Ti og fem er femten.' },
+            { spoerg: 'Hvor mange huller er der tilbage nu?', svar: 'Ni. Én færre end ti.' },
             'De lister ud af hulen. Udenfor dufter det af noget sødt og varmt. Det kommer helt fra Skovkøkkenet.',
             '– Det dufter af risengrød, siger Sanne. Og ved skorstenen glimter det.',
-            'I morgen åbner vi låge nummer seksten.'
+            'Så går de hen til Skovkøkkenet.'
           ]
         }
       ],
@@ -912,11 +911,11 @@
             'Kan I se det? Det glimter i bunden af gryden.',
             'Gustav fisker det op med en stor ske. Det er en brik med gylden kant. Den må være faldet ned i risen, da han fik sækken hjem fra markedet.',
             '– Heldigvis fik den ikke grød på, siger Gustav. Kun lidt kanel.',
-            { spoerg: 'I går havde Pelle femten brikker. Nu får han én til. Hvor mange har han så?', svar: 'Seksten. Femten og én er seksten.' },
+            { spoerg: 'Hvor mange huller er der tilbage nu?', svar: 'Otte. Én færre end ni.' },
             'Før de går, sætter Gustav en ny lille skål grød ud ved døren. Med en klat smør i midten.',
             'Sanne flyver op på taget. Over skoven kan hun se den gamle stub og øverst i træet ved siden af en rund rede. Dér glimter det.',
             '– Egon, siger Sanne. Vi skal hen til Egon igen.',
-            'I morgen åbner vi låge nummer sytten.'
+            'Næste gang åbner vi låge nummer elleve.'
           ]
         }
       ],
@@ -960,11 +959,11 @@
             'Kan I se det? Det glimter i reden.',
             '– Nå, siger Egon. Den har jeg siddet på hele tiden. Jeg troede, det var en hård kvist.',
             'Han giver Pelle en brik med gylden kant.',
-            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Sytten. Ti og syv er sytten.' },
+            { spoerg: 'Hvor mange huller er der tilbage nu?', svar: 'Syv. Én færre end otte.' },
             'Egon synger sangen én gang til, så de kan lære den. Pelle nynner med hele vejen ned ad træet.',
             'Det er blevet mørkt. Månen står stor og rund på himlen. Og lige ved siden af månen glimter det.',
             '– Ved månen, siger Sanne. Så skal vi have fat i Milo igen.',
-            'I morgen åbner vi låge nummer atten.'
+            'Sanne kalder på Milo, og de venter på bakken.'
           ]
         }
       ],
@@ -1011,11 +1010,11 @@
             'Milo svæver ud med sin paraply over hovedet og samler brikken op. Den er dækket af fint, sølvagtigt støv.',
             '– Hvordan kom den helt herop, spørger Pelle.',
             '– Det var en meget stærk storm, siger Milo.',
-            { spoerg: 'I går havde Pelle sytten brikker. Nu får han én til. Hvor mange har han så?', svar: 'Atten. Sytten og én er atten.' },
+            { spoerg: 'Hvor mange huller er der tilbage nu?', svar: 'Seks. Én færre end syv.' },
             'Raketten lander blødt på bakken. Milo vinker farvel og flyver tilbage til Stjerneuret.',
             'Fra bakken kan de høre sang. Det kommer fra Boldbanen. To stemmer, en høj og en dyb. Og ved målet glimter det.',
             '– Klatterne, siger Sanne. De øver på noget.',
-            'I morgen åbner vi låge nummer nitten.'
+            'Næste gang åbner vi låge nummer tolv.'
           ]
         }
       ],
@@ -1059,11 +1058,11 @@
             'Kan I se det? Det glimter i målnettet.',
             'Klara hopper op og triller den ned med sin bløde, blå arm. Det er en brik med gylden kant.',
             '– Mål, råber Klaus.',
-            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Nitten. Ti og ni er nitten.' },
+            { spoerg: 'Hvor mange huller er der tilbage nu?', svar: 'Fem. Én færre end seks.' },
             'Pelle kigger efter fodsporene. De går ud af målet, rundt om snemanden og ind i skoven. Ved snemanden ligger der en lille, rød tråd.',
             'Sanne flyver op over træerne. Ved Bæverdammen sidder Bodil og gnaver i noget. Spånerne flyver omkring hende, og mellem spånerne glimter det.',
             '– Bodil laver noget, siger Sanne.',
-            'I morgen åbner vi låge nummer tyve.'
+            'Så går de hen til Bæverdammen.'
           ]
         }
       ],
@@ -1109,11 +1108,11 @@
             'Kan I se det? Det glimter mellem spånerne.',
             '– Den var inde i en af mine stammer, siger Bodil. Jeg gnavede den fri, da jeg lavede sommerfuglen.',
             'Hun giver Pelle en brik med gylden kant.',
-            { spoerg: 'I går havde Pelle nitten brikker. Nu får han én til. Hvor mange har han så?', svar: 'Tyve. Ti og ti er tyve.' },
-            '– Tyve, siger Pelle. Nu mangler der kun fire.',
+            { spoerg: 'Hvor mange huller er der tilbage nu?', svar: 'Fire. Én færre end fem.' },
+            '– Nu mangler der kun fire, siger Pelle.',
             'Sanne holder sin lille træfugl i næbbet hele vejen hjem.',
             'Fra bakken kan de se Susebanen. Rikke kører sin sidste tur med kælken før jul. Og i et af svingene glimter det.',
-            'I morgen åbner vi låge nummer enogtyve.'
+            'Næste gang åbner vi låge nummer tretten.'
           ]
         }
       ],
@@ -1157,12 +1156,12 @@
             'Og lige foran Pelles næse, i snedriven, glimter det.',
             'Kan I se det? Det glimter i snedriven.',
             'Pelle børster sneen af sin kasket og samler den op. En brik med gylden kant.',
-            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Enogtyve. Tyve og én er enogtyve.' },
+            { spoerg: 'Hvor mange huller er der tilbage nu?', svar: 'Tre. Én færre end fire.' },
             '– Nu mangler der kun tre, siger Rikke.',
             'De trækker kælken op ad bakken sammen. Det er tungt, men det går, når man er tre.',
             'På toppen stopper Sanne og kigger ud over hele verden.',
             '– I morgen skal jeg flyve en vigtig tur, siger hun. Jeg skal invitere alle vennerne til juleaften. Og der er noget, jeg vil fortælle dig undervejs, Pelle.',
-            'I morgen åbner vi låge nummer toogtyve.'
+            'Næste morgen flyver de af sted.'
           ]
         }
       ],
@@ -1211,9 +1210,9 @@
             'De flyver hjem. Og da de flyver hen over Gustavs tag, ser Sanne det. Oppe på vejrhanen, der drejer i vinden, sidder der noget fast. Det glimter.',
             'Kan I se det? Det glimter på vejrhanen.',
             'Sanne napper det med næbbet. En brik med gylden kant.',
-            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Toogtyve. Nu mangler der kun to.' },
+            { spoerg: 'Hvor mange huller er der tilbage nu?', svar: 'To. Nu mangler der kun to.' },
             'Pelle lægger den lille invitation under juletræet. Lige der, hvor de så de første fodspor.',
-            'I morgen åbner vi låge nummer treogtyve.'
+            'Næste gang åbner vi låge nummer fjorten.'
           ]
         }
       ],
@@ -1249,7 +1248,7 @@
             'Gustav kommer med en kurv brunkager. Egon kommer med nødder. Bodil har sine træfigurer med, og Klaus og Klara triller ind og synger deres sang. Rikke trækker kælken fuld af grangrene. Ulla, Rasmus, Kaja, Emil og Ella kommer sammen. Og Milo lander med sin raket.',
             'Alle hjælper. Nogen hænger pynt op. Nogen fejer sne. Nogen sætter lys i vinduerne.',
             'Så lægger de alle brikkerne frem på den store stub under juletræet. De lægger dem sammen, én efter én, og billedet kommer langsomt frem.',
-            { spoerg: 'I går havde Pelle toogtyve brikker. Hvor mange mangler der, før der er fireogtyve?', svar: 'To. Toogtyve og to er fireogtyve.' },
+            { spoerg: 'Hvor mange huller er der i puslespillet?', svar: 'To. To brikker mangler stadig.' },
             'Puslespillet er næsten helt. Men oppe i hjørnet er der to huller. To brikker mangler stadig.'
           ]
         },
@@ -1260,18 +1259,18 @@
             'Pelle og Sanne sidder alene ved juletræet. Sanne kigger op i grenene. Helt oppe i toppen af træet, hvor stormen begyndte, glimter det.',
             'Kan I se det? Det glimter i toppen af juletræet.',
             'Sanne flyver op og henter den. En brik med gylden kant. Den har siddet fast i træet hele tiden, lige over deres hoveder.',
-            { spoerg: 'Hvor mange brikker har Pelle nu?', svar: 'Treogtyve. Kun én mangler.' },
+            { spoerg: 'Hvor mange huller er der tilbage nu?', svar: 'Ét. Kun én brik mangler.' },
             'Pelle lægger brikken i puslespillet. Nu er der kun ét hul tilbage, oppe i hjørnet.',
             'Invitationen under juletræet er væk. Nogen har taget den.',
             'Før han går i seng, sætter Pelle en lille skål risengrød ud ved døren. Han bruger den lillebitte skål, som Bodil har lavet. Med en klat smør i midten.',
             '– God nat, hvem du end er, hvisker Pelle. Vi ses i morgen, håber jeg.',
-            'I morgen åbner vi den sidste låge. Låge nummer fireogtyve.'
+            'Og så bliver det endelig juleaften.'
           ]
         }
       ],
       brik: { x: 0.69, y: 0.2 },
       opgave: {
-        type: 'venner', spoerg: 'Nu kommer vennerne for at hjælpe. Kan I tælle dem?',
+        type: 'venner', spoerg: 'Nu kommer vennerne for at hjælpe. Kan I tælle dem?', venner: ['egon', 'gustav', 'bodil', 'klaus', 'klara', 'rikke', 'milo', 'kaja'],
         grupper: [
           { tekst: 'Fire venner hænger pynt op. Tre venner fejer sne. Hvor mange venner er der i alt?', ting: ['gustav', 'egon', 'bodil', 'rikke', 'kaja', 'emil', 'ella'], foer: 4 },
           { tekst: 'Fem venner bærer grangrene. Fire venner sætter lys i vinduerne. Hvor mange venner er der i alt?', ting: ['klaus', 'klara', 'milo', 'rasmus', 'bo', 'ulla', 'sanne', 'gustav', 'egon'], foer: 5 }
@@ -1287,7 +1286,7 @@
           tekst: [
             'Det er juleaften. Sneen ligger blød og hvid over hele Nøddeskoven, og det er helt stille.',
             'Lysene i juletræet brænder, og alle vennerne er kommet. Gustav, Egon, Bodil, Klaus og Klara, Rikke, Milo, Ulla, Rasmus, Kaja, Emil og Ella. Selv Bo er vågnet og kommet, gabende og glad, med Pelles vante i poten.',
-            'Puslespillet ligger på stubben under træet. Treogtyve brikker. Kun én mangler.',
+            'Puslespillet ligger på stubben under træet. Kun én brik mangler.',
             'Pelle har lige set, at skålen ved døren er tom. Slikket helt ren.',
             'Så rasler det i grenene, helt nede ved jorden. Alle bliver stille.'
           ]
@@ -1311,7 +1310,7 @@
             'Pelle tager Nis i hånden. Sammen lægger de den sidste brik i puslespillet.',
             'Klik.',
             'Kan I hjælpe? Læg den sidste brik i puslespillet.',
-            { spoerg: 'Hvor mange brikker er der i puslespillet nu?', svar: 'Fireogtyve. Alle brikkerne er fundet.' },
+            { spoerg: 'Hvor mange huller er der tilbage nu?', svar: 'Ingen. Alle brikkerne er fundet.' },
             'Puslespillet er helt. Og det er præcis det billede, Pelle malede: alle vennerne om juletræet, juleaften.',
             'Men Pelle tager sin pensel frem. Og helt nede i hjørnet maler han en lille nisse med en rød hue. Så er alle med på billedet.',
             'Så tager alle hinanden i hånden. Pelle og Sanne, Nis og Bo, Gustav og Egon og Bodil, Klaus og Klara, Rikke og Milo, Ulla og Rasmus, Kaja og Emil og Ella. De danser om juletræet og synger Egons sang og Klatternes sang. Is og gris, tog og bog, ko og sko.',
@@ -1330,13 +1329,65 @@
     }
   ];
 
-  /**
-   * Maa lagen aabnes paa denne dato? I december aabner lagerne frem til i dag, i november er
-   * de alle lukket, og resten af aaret (efter jul) kan de alle aabnes. dato er en Date.
+  /*
+   * Kalenderen koerer kun paa skoledage: én laage pr. hverdag fra 1. december til juleferien
+   * (fredag 18. december 2026, 14 skoledage). De 24 historier er flettet sammen to og to, saa
+   * de fleste laager har to historier lige efter hinanden og finder to brikker. Hver laage
+   * har én opgave, sat sammen af de foerste (letteste) dele af historiernes opgaver:
+   * opgave { dag: antal dele }. Puslespillet har stadig 24 brikker, én pr. historie.
    */
-  function aaben(dag, dato) {
+  var LAAGER = [
+    { nr: 1, dage: [1], opgave: { 1: 5 } },
+    { nr: 2, dage: [2, 3], opgave: { 2: 3, 3: 2 } },
+    { nr: 3, dage: [4, 5], opgave: { 4: 3, 5: 2 } },
+    { nr: 4, dage: [6, 7], opgave: { 6: 3, 7: 2 } },
+    { nr: 5, dage: [8, 9], opgave: { 8: 3, 9: 2 } },
+    { nr: 6, dage: [10], opgave: { 10: 5 } },
+    { nr: 7, dage: [11, 12], opgave: { 11: 3, 12: 2 } },
+    { nr: 8, dage: [13], opgave: { 13: 5 } },
+    { nr: 9, dage: [14], opgave: { 14: 5 } },
+    { nr: 10, dage: [15, 16], opgave: { 15: 3, 16: 3 } },
+    { nr: 11, dage: [17, 18], opgave: { 17: 3, 18: 3 } },
+    { nr: 12, dage: [19, 20], opgave: { 19: 3, 20: 3 } },
+    { nr: 13, dage: [21, 22], opgave: { 21: 3, 22: 3 } },
+    { nr: 14, dage: [23, 24], opgave: { 23: 2, 24: 2 } }
+  ];
+
+  /** Den laage, en historie (dag 1-24) hoerer til. */
+  function laageFor(dag) {
+    for (var i = 0; i < LAAGER.length; i++) if (LAAGER[i].dage.indexOf(dag) >= 0) return LAAGER[i];
+    return null;
+  }
+  /** Hvilken skoledag i december datoen er: antal hverdage fra 1. december til og med datoen (0 foer december). */
+  function skoledag(dato) {
+    if (dato.getMonth() !== 11) return 0;
+    var n = 0;
+    for (var d = 1; d <= dato.getDate(); d++) {
+      var u = new Date(dato.getFullYear(), 11, d, 12).getDay();
+      if (u !== 0 && u !== 6) n++;
+    }
+    return n;
+  }
+  /** Er datoen en hverdag? */
+  function hverdag(dato) { var u = dato.getDay(); return u !== 0 && u !== 6; }
+  /** Datoen, laage nr aabner: den nr. hverdag i december det aar. */
+  function datoFor(nr, aar) {
+    var n = 0;
+    for (var d = 1; d <= 31; d++) {
+      var dato = new Date(aar, 11, d, 12);
+      if (hverdag(dato) && ++n === nr) return dato;
+    }
+    return null;
+  }
+
+  /**
+   * Maa laagen aabnes paa denne dato? I december aabner laagerne frem til dagens skoledag
+   * (i weekenden fredagens), i november er de alle lukket, og resten af aaret (efter jul)
+   * kan de alle aabnes. nr er laagens nummer (1-14), dato er en Date.
+   */
+  function aaben(nr, dato) {
     var m = dato.getMonth();
-    if (m === 11) return dag <= dato.getDate();
+    if (m === 11) return nr <= skoledag(dato);
     if (m === 10) return false;
     return true;
   }
@@ -1355,5 +1406,5 @@
     return ud;
   }
 
-  rod.Kalender = { TITEL: TITEL, NAVNE: NAVNE, DAGE: DAGE, aaben: aaben, replikker: replikker };
+  rod.Kalender = { TITEL: TITEL, NAVNE: NAVNE, DAGE: DAGE, LAAGER: LAAGER, laageFor: laageFor, skoledag: skoledag, hverdag: hverdag, datoFor: datoFor, aaben: aaben, replikker: replikker };
 })(typeof module !== 'undefined' && module.exports ? module.exports : window);

@@ -50,13 +50,36 @@ console.log('\nPelles julekalender\n');
   tjek('spoergsmaal i historien har baade spoerg og svar', D.every(d => d.afsnit.every(a => a.tekst.every(t => typeof t === 'string' ? t.trim() : t.spoerg && t.svar))));
 }
 
-/* Laagerne */
+/* Laagerne: én pr. skoledag, med én eller to historier */
 {
-  const alle = (dato) => K.DAGE.map(d => K.aaben(d.dag, dato));
-  const aar = 2026;
-  tjek('i november er alle laager lukket', [1, 15, 30].every(n => alle(new Date(aar, 10, n)).every(a => !a)));
-  tjek('i december aabner laagerne til og med dagen', [1, 5, 13, 23, 24].every(n => alle(new Date(aar, 11, n)).every((a, i) => a === (i + 1 <= n))));
-  tjek('efter jul kan alle laager aabnes', [26, 31].map(n => new Date(aar, 11, n)).concat([new Date(aar + 1, 0, 6), new Date(aar + 1, 5, 1)]).every(d => alle(d).every(a => a)));
+  const L = K.LAAGER, aar = 2026;
+  tjek('der er 14 laager, én pr. skoledag fra 1. til 18. december', L.length === 14 && L.every((l, i) => l.nr === i + 1) && K.datoFor(1, aar).getDate() === 1 && K.datoFor(14, aar).getDate() === 18);
+  tjek('laagerne ligger paa hverdage, aldrig i weekenden', L.every(l => K.hverdag(K.datoFor(l.nr, aar))));
+  const raekke = L.reduce((a, l) => a.concat(l.dage), []);
+  tjek('hver historie hoerer til praecis én laage, i raekkefoelge, og hver laage har én eller to', raekke.join() === K.DAGE.map(d => d.dag).join() && L.every(l => l.dage.length >= 1 && l.dage.length <= 2) && K.DAGE.every(d => K.laageFor(d.dag).dage.indexOf(d.dag) >= 0));
+  const alle = (dato) => L.map(l => K.aaben(l.nr, dato));
+  tjek('i november er alle laager lukket', [1, 15, 30].every(n => alle(new Date(aar, 10, n, 12)).every(a => !a)));
+  // 1. dec er tirsdag: fredag 4. er laage 4, weekenden aabner ingen nye, mandag 7. er laage 5
+  tjek('i december aabner laagerne til og med dagens skoledag, og weekenden aabner ingen nye', [[1, 1], [4, 4], [5, 4], [6, 4], [7, 5], [11, 9], [18, 14], [22, 14]].every(([d, n]) => alle(new Date(aar, 11, d, 12)).every((a, i) => a === (i + 1 <= n))));
+  tjek('efter jul kan alle laager aabnes', [26, 31].map(n => new Date(aar, 11, n, 12)).concat([new Date(aar + 1, 0, 6), new Date(aar + 1, 5, 1)]).every(d => alle(d).every(a => a)));
+  const opg = L.map(l => ({ l, f: O.forberedLaage(l, K) }));
+  const skaev = opg.filter(({ l, f }) => !(f.dele.length >= 4 && f.dele.length <= 6 && f.dele.every(x => l.dage.indexOf(x.dag) >= 0) && f.dele.every((x, i) => x.nr === i)));
+  tjek('hver laage har én opgave paa 4-6 dele fra sine egne historier', skaev.length === 0, skaev.map(({ l, f }) => l.nr + ': ' + f.dele.length).join());
+  // Historien slutter med naeste laage, og to historier flettes med en overgang uden "i morgen åbner vi"
+  const sidsteLinje = d => { const a = K.DAGE[d - 1].afsnit[2].tekst; return a[a.length - 1]; };
+  const forkerteSlut = [];
+  L.forEach((l, i) => l.dage.forEach((d, k) => {
+    const t = sidsteLinje(d);
+    if (d === 24) return;
+    if (k === l.dage.length - 1) { if (t !== 'Næste gang åbner vi låge nummer ' + O.TALORD[i + 2] + '.') forkerteSlut.push(d + ': ' + t); }
+    else if (/låge nummer/.test(t)) forkerteSlut.push(d + ': ' + t);
+  }));
+  tjek('historierne slutter med "Næste gang åbner vi låge nummer ...", og den foerste af to med en overgang', forkerteSlut.length === 0, forkerteSlut.slice(0, 3).join(' | '));
+  // Boernene kender tallene til ti: spoergsmaal og svar i historierne bruger ikke stoerre tal
+  const STORE = O.TALORD.slice(11);
+  const store = [];
+  K.DAGE.forEach(d => d.afsnit.forEach(a => a.tekst.forEach(t => { if (typeof t !== 'string') { const x = (t.spoerg + ' ' + t.svar).toLowerCase(); STORE.forEach(n => { if (new RegExp('(^|[^a-zæøå])' + n + '([^a-zæøå]|$)').test(x)) store.push(d.dag + ': ' + n); }); } })));
+  tjek('spoergsmaalene i historierne bruger kun tal til ti', store.length === 0, store.join());
 }
 
 /* Opgaverne: hver dag er flere dele, let foerst og saa svaerere */
@@ -65,7 +88,7 @@ console.log('\nPelles julekalender\n');
   const DELE = ['tael', 'regn', 'se', 'flest', 'spor', 'kort', 'klap', 'moenster', 'pynt', 'venner', 'sorter', 'puslespil'];
   const problemer = [];
   const lyd = w => w.charAt(0).toUpperCase();
-  const talIOrd = (tekst, n) => new RegExp('(^|[^a-zæøå])(' + (n === 1 ? 'en|én|et' : O.TALORD[n]) + ')([^a-zæøå]|$)', 'i').test(tekst);
+  const talIOrd = (tekst, n) => new RegExp('(^|[^a-zæøå])(' + (n === 1 ? 'en|én|et|ét' : O.TALORD[n]) + ')([^a-zæøå]|$)', 'i').test(tekst);
   // Begyndelser, hvor bogstav og lyd ikke passer for et barn: c (s eller k), hj/hv/gj (stumt h og g), q, w, x, z
   const UREN = /^(c|q|w|x|z|hj|hv|gj)/i;
   const G = Glyffer.GLYFFER;
@@ -93,7 +116,7 @@ console.log('\nPelles julekalender\n');
       const m = n + ', del ' + (i + 1) + ' (' + x.type + (x.variant ? ':' + x.variant : '') + ')';
       if (DELE.indexOf(x.type) < 0) { problemer.push(m + ': ukendt del'); return; }
       if (x.type === 'tael') {
-        if (!(x.antal >= 8 && x.antal <= 15 && x.antal % 1 === 0)) problemer.push(m + ': antal ' + x.antal + ', ikke 8-15');
+        if (!(x.antal >= 5 && x.antal <= 10 && x.antal % 1 === 0)) problemer.push(m + ': antal ' + x.antal + ', ikke 5-10 (boernene kender tallene til ti)');
         if (!O.tingFindes(x.ting)) problemer.push(m + ': tingen ' + x.ting + ' kendes ikke');
         if (x.pladser.pos.length !== x.antal) problemer.push(m + ': ' + x.pladser.pos.length + ' pladser til ' + x.antal);
       }
@@ -109,6 +132,7 @@ console.log('\nPelles julekalender\n');
       if (x.type === 'regn') {
         if (x.svar !== x.foer + x.plus - x.minus) problemer.push(m + ': svaret ' + x.svar + ' er ikke ' + x.foer + ' + ' + x.plus + ' - ' + x.minus);
         if (!(x.svar >= 1 && x.svar <= x.max)) problemer.push(m + ': svaret ' + x.svar + ' ligger ikke paa talraekken 1..' + x.max);
+        if (x.max !== 10) problemer.push(m + ': talraekken gaar til ' + x.max + ', boernene kender tallene til ti');
         if (!!x.plus === !!x.minus) problemer.push(m + ': enten plus eller minus');
         if (!x.spoerg || !/\?$/.test(x.spoerg)) problemer.push(m + ': intet spoergsmaal');
         const aendr = x.saetninger[x.saetninger.length - 1];
@@ -205,7 +229,7 @@ console.log('\nPelles julekalender\n');
     });
     // Let foerst, saa svaerere
     const se = f.dele.filter(x => x.type === 'se');
-    if (se.length && (se.length < 4 || se.length > 5 || se.some((x, a) => a && x.vis > se[a - 1].vis) || !(se[se.length - 1].vis < se[0].vis) || !se.some(x => x.moenster.navn === 'tierramme') || !se.some(x => x.moenster.navn === 'terning'))) problemer.push(n + ': se skal have 4-5 runder med terning og tierramme, og de sidste vises kortere');
+    if (se.length && (se.length < 4 || se.length > 5 || se.some((x, a) => a && x.vis > se[a - 1].vis) || !(se[se.length - 1].vis < se[0].vis) || se[0].moenster.navn !== 'terning')) problemer.push(n + ': se skal have 4-5 runder, der begynder med terning, og de sidste vises kortere');
     const regn = f.dele.filter(x => x.type === 'regn' && x.layout === 'gruppe' && !x.figurer);
     if (regn.length && (regn.length < 2 || regn.length > 4 || !regn[regn.length - 1].daek || regn[0].daek)) problemer.push(n + ': 2-4 regnehistorier, de foerste kan ses, og de sidste er delvist daekket');
     const flest = f.dele.filter(x => x.type === 'flest');
