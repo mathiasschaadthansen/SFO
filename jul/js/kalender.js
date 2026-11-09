@@ -200,11 +200,12 @@
           tekst: [
             'Gustav lægger kagerne på bagepladen. Tre på den første række.',
             '– Og tre på den næste række, siger han.',
-            { spoerg: 'Tre kager og tre kager. Hvor mange kager er der på pladen?', svar: 'Seks. Tre og tre er seks.' },
+            'Tre og tre er seks. Seks kager på pladen.',
             'Pladen kommer i ovnen, og de venter. Det er svært at vente, når det dufter så godt. Pelle tæller langsomt til ti, og så tæller han til ti igen.',
             'Endelig er kagerne færdige. Gustav sætter pladen i vindueskarmen, så de kan blive kolde.',
-            'Men da de kigger igen, er der noget, der ikke passer. På den ene række ligger der stadig tre kager. På den anden række ligger der kun to.',
-            { spoerg: 'Hvor mange kager mangler der?', svar: 'Én. Der mangler én kage.' },
+            'Men da de kigger igen, er der noget, der ikke passer.',
+            { spoerg: 'Tæl kagerne på pladen. Hvor mange er der nu?', svar: 'Fem. Der ligger fem kager.' },
+            { spoerg: 'Der var seks kager, og nu er der fem. Hvor mange mangler der?', svar: 'Én. Der mangler én kage.' },
             'På bordet ligger der bitte små krummer. De går hen over bordet, op ad vindueskarmen og ud gennem en lille sprække i vinduet.',
             'Pelle tænker på de små fodspor i sneen. Mon det er den samme, der har været her?',
             '– Så var der én, der var sulten, siger Gustav og smiler. Det er i orden. I julen deler man.'
