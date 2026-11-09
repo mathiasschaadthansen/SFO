@@ -444,7 +444,7 @@
 
     kalenderArk: function () {
       var bb = B, hh = B * 3 / 4, ud = T.rekt(0, 0, bb, hh, 0, { fyld: '#fff', w: 0.9 }) + gitterPuslespil(bb, hh, false), cb = bb / 6, ch = hh / 4;
-      P.BRIKKER.forEach(function (br) { ud += tal(br.dag, (br.kol + 0.5) * cb, (br.raek + 0.5) * ch + 4, 8, { farve: T.GRAA, tyk: 0.6 }); });
+      P.BRIKKER.forEach(function (br) { ud += tal(laage(br.dag), (br.kol + 0.5) * cb, (br.raek + 0.5) * ch + 4, 8, { farve: T.GRAA, tyk: 0.6 }); });
       ud += T.pelle(34, hh + 40, 48) + T.sanne(B - 32, hh + 38, 46, true) + T.trae(B / 2, hh + 8, 64, { kugler: KUGLEPLADS.slice(0, 6) });
       return { h: hh + 74, svg: ud };
     }
@@ -493,13 +493,20 @@
   /* ---------- siderne ---------- */
 
   var EMNE_NAVN = {}; A.UGER.forEach(function (u) { EMNE_NAVN[u.emne] = u.navn; });
+  /* Kalenderen koerer paa skoledage: 14 laager, de fleste med to historier. Arkene hoerer til historierne,
+     men nummeret paa dem er laagens, saa klassen kan finde dagens ark. */
+  var KAL = window.Kalender;
+  function laage(dag) { return KAL.laageFor(dag).nr; }
+  var DATOER = KAL.LAAGER.map(function (l) { return KAL.datoFor(l.nr, 2026); });
+  var UGEDAG = ['søn', 'man', 'tir', 'ons', 'tor', 'fre', 'lør'];
+  function datoTekst(nr) { var d = DATOER[nr - 1]; return UGEDAG[d.getDay()] + ' ' + d.getDate() + '/12'; }
 
   function side(klasse) { var s = el('section', 'side ' + (klasse || '')); document.getElementById('sider').appendChild(s); return s; }
 
   function hoved(s, d) {
     var h = el('header', 'arkhoved');
     var titelB = T.maal(d.titel, 7.2);
-    h.innerHTML = T.svg(26 + titelB + 2, 22, T.laage(0.5, 0.5, 19, 21, d.dag) + T.skrift(d.titel, { x: 26, base: 13, h: 7.2 }).svg, 'titel') +
+    h.innerHTML = T.svg(26 + titelB + 2, 22, T.laage(0.5, 0.5, 19, 21, laage(d.dag)) + T.skrift(d.titel, { x: 26, base: 13, h: 7.2 }).svg, 'titel') +
       '<div class="sted">' + T.esc(d.sted) + ' · ' + T.esc(EMNE_NAVN[d.emne]) + '</div>' +
       '<div class="navn"><span>Navn</span><i></i></div>';
     s.appendChild(h);
@@ -514,7 +521,7 @@
 
   function bygArk(d, ark, nr) {
     var s = side('ark');
-    s.dataset.navn = 'Dag ' + d.dag + (d.ark.length > 1 ? ' (' + (nr + 1) + ')' : '');
+    s.dataset.navn = 'Låge ' + laage(d.dag) + ' · ' + d.titel + (d.ark.length > 1 ? ' (' + (nr + 1) + ')' : '');
     hoved(s, d);
     var ind = el('div', 'indhold');
     ark.opgaver.forEach(function (o) {
@@ -537,10 +544,10 @@
     s.innerHTML = T.svg(B, 64, titel + pynt, 'forsidetitel') +
       '<p class="undertitel">– opgaveark til 0. klasse –</p>' +
       '<div class="spalter">' +
-      '<div><h3>Historien</h3><p>Pelle Pindsvin har lavet et julepuslespil af træ med 24 brikker og malet alle vennerne om juletræet på det. Men vinterstormen blæser brikkerne ud over hele den lille verden. Hver dag i december besøger Pelle og Skaden Sanne et nyt sted, møder en ven og finder én brik. Undervejs går en lille hjælper rundt i det skjulte – og juleaften er puslespillet helt, og alle er med.</p>' +
+      '<div><h3>Historien</h3><p>Pelle Pindsvin har lavet et julepuslespil af træ med 24 brikker og malet alle vennerne om juletræet på det. Men vinterstormen blæser brikkerne ud over hele den lille verden. Hver skoledag åbner klassen en låge med en eller to små historier, hvor Pelle og Skaden Sanne besøger et nyt sted, møder en ven og finder en brik. Undervejs går en lille hjælper rundt i det skjulte – og juleaften er puslespillet helt, og alle er med.</p>' +
       '<p>Historien læses op i appen (Pelles julekalender på forsiden af SFO-appen). Arkene her bygger videre på det, dagens historie øvede, og bruges gerne lige bagefter.</p></div>' +
       '<div><h3>Ugernes emner</h3><ul class="uger">' + A.UGER.map(function (u) {
-        return '<li><b>' + u.fra + '.–' + u.til + '. december</b> ' + T.esc(u.navn) + '<br><span>' + T.esc(UGEBESKRIVELSE[u.emne]) + '</span></li>';
+        return '<li><b>Låge ' + laage(u.fra) + '–' + laage(u.til) + '</b> ' + T.esc(u.navn) + '<br><span>' + T.esc(UGEBESKRIVELSE[u.emne]) + '</span></li>';
       }).join('') + '</ul></div>' +
       '</div>' +
       '<h3>Sådan bruger I arkene</h3><ul class="brug">' + BRUG.map(function (b) { return '<li>' + b + '</li>'; }).join('') + '</ul>' +
@@ -561,17 +568,18 @@
     'Børnene skal ikke kunne læse. Den lille tekst ved hver opgave er til den voksne.',
     'Sig ordene højt sammen ved alle billedopgaver – ved lyde, rim og klap er det det, der hører, ikke det, der står.',
     'Der er ingen point og ingen tid. Et forkert svar er bare et nyt forsøg. Facit står bagerst.',
-    'Kalender-arket (dag 24) kan deles ud den 1. december, så børnene farver en brik hver dag. Dag 22 og 24 skal klippes.'
+    'Én låge pr. skoledag, 1.–18. december, med et ark for hver historie. Kalender-arket (låge 14) kan deles ud den 1. december: børnene farver brikkerne med dagens lågenummer. Arkene til låge 13 og 14 skal klippes.'
   ];
   var IKONFORKLARING = [['blyant', 'skriv eller tegn'], ['farve', 'farvelæg'], ['ring', 'sæt ring om'], ['forbind', 'tegn en streg mellem'], ['kryds', 'sæt kryds'], ['klap', 'klap ordet'], ['saks', 'klip ud'], ['tale', 'vi taler sammen']];
 
   function oversigt() {
     var s = side('oversigt');
     var raekker = A.DAGE.map(function (d) {
-      return '<tr class="' + d.emne + '"><td class="nr">' + T.svg(8, 8.6, T.laage(0.3, 0.3, 7.4, 8, d.dag)) + '</td><td><b>' + T.esc(d.titel) + '</b><br><span>' + T.esc(d.sted) + '</span></td>' +
+      var nr = laage(d.dag), foerste = KAL.LAAGER[nr - 1].dage[0] === d.dag;
+      return '<tr class="' + d.emne + (foerste ? ' ny' : '') + '"><td class="nr">' + (foerste ? T.svg(8, 8.6, T.laage(0.3, 0.3, 7.4, 8, nr)) + ' <span class="dato">' + datoTekst(nr) + '</span>' : '') + '</td><td><b>' + T.esc(d.titel) + '</b><br><span>' + T.esc(d.sted) + '</span></td>' +
         '<td>' + T.esc(EMNE_NAVN[d.emne]) + (d.bogstav ? ': ' + d.bogstav : '') + '</td><td>' + d.ark.map(function (a) { return T.esc(a.navn); }).join(' · ') + '</td></tr>';
     }).join('');
-    s.innerHTML = '<h2>Oversigt over dagene</h2><table class="dage"><thead><tr><th>Dag</th><th>Historien</th><th>Emne</th><th>Ark</th></tr></thead><tbody>' + raekker + '</tbody></table>';
+    s.innerHTML = '<h2>Oversigt over lågerne</h2><table class="dage"><thead><tr><th>Låge</th><th>Historien</th><th>Emne</th><th>Ark</th></tr></thead><tbody>' + raekker + '</tbody></table>';
   }
 
   /** Facit som tekst til hver opgave, eller null, hvis der intet facit er. */
@@ -609,7 +617,7 @@
     A.DAGE.forEach(function (d) {
       var linjer = [];
       d.ark.forEach(function (a) { a.opgaver.forEach(function (o) { var t = facitTekst(o); if (t) linjer.push(T.esc(t)); }); });
-      html += '<div class="facitdag"><b>' + d.dag + '. ' + T.esc(d.titel) + '</b>' + (linjer.length ? '<ul>' + linjer.map(function (l) { return '<li>' + l + '</li>'; }).join('') + '</ul>' : '<p>Ingen facit – her er alle svar gode.</p>') + '</div>';
+      html += '<div class="facitdag"><b>Låge ' + laage(d.dag) + ' · ' + T.esc(d.titel) + '</b>' + (linjer.length ? '<ul>' + linjer.map(function (l) { return '<li>' + l + '</li>'; }).join('') + '</ul>' : '<p>Ingen facit – her er alle svar gode.</p>') + '</div>';
     });
     s.innerHTML = html + '</div>';
   }

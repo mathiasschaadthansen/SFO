@@ -65,11 +65,13 @@
   .forside .lille { font-size: 8.5pt; color: #5a514a; margin-top: auto; }
 
   /* ---------- oversigten ---------- */
-  table.dage { width: 100%; border-collapse: collapse; font-size: 8.3pt; }
+  table.dage { width: 100%; border-collapse: collapse; font-size: 8pt; }
   table.dage th { text-align: left; border-bottom: 0.4mm solid #2b2522; padding: 1mm 1.5mm; }
-  table.dage td { border-bottom: 0.2mm solid #d6cfc8; padding: 0.45mm 1.5mm; vertical-align: middle; line-height: 1.15; }
+  table.dage td { border-bottom: 0.2mm solid #d6cfc8; padding: 0.3mm 1.5mm; vertical-align: middle; line-height: 1.15; }
   table.dage td span { color: #6f665f; }
-  table.dage td.nr { width: 11mm; }
+  table.dage td.nr { width: 17mm; white-space: nowrap; }
+  table.dage td.nr .dato { font-size: 2.4mm; }
+  table.dage tr.ny td { border-top: 0.4mm solid #b9afa6; }
   table.dage tr.bogstaver td, table.dage tr.faellesskab td { background: #f6f3f0; }
 
   /* ---------- facit ---------- */
@@ -85,6 +87,7 @@
 <script src="../../games/bogstaver/js/ting.js"></script>
 <script src="../../games/rim/js/rim.js"></script>
 <script src="../../jul/js/puslespil.js"></script>
+<script src="../../jul/js/kalender.js"></script>
 <script src="ark.js"></script>
 <script src="tegn.js"></script>
 <script src="sider.js"></script>

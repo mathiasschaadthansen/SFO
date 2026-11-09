@@ -96,13 +96,13 @@
       ark: [{
         navn: 'Plus med billeder og farv så mange',
         opgaver: [
-          { type: 'regne', ikon: 'blyant', tekst: 'Tre kager og tre kager. Hvor mange er der i alt? Skriv tallet.', stykker: [{ ting: 'kage', a: 3, op: '+', b: 3, facit: 6 }] },
+          { type: 'regne', ikon: 'blyant', tekst: 'Fire kager og to kager. Hvor mange er der i alt? Skriv tallet.', stykker: [{ ting: 'kage', a: 4, op: '+', b: 2, facit: 6 }] },
           { type: 'taelSkriv', ikon: 'blyant', tekst: 'Én kage er væk fra pladen. Tæl kagerne, der er tilbage. Skriv tallet.', prikket: false,
             raekker: [{ ting: 'kage', antal: 5, mangler: 1, facit: 5 }] },
           { type: 'farvSaa', ikon: 'farve', tekst: 'Farvelæg lige så mange kager, som tallet siger.', ting: 'kage',
             raekker: [{ antal: 2, vist: 5, facit: 2 }, { antal: 4, vist: 6, facit: 4 }, { antal: 6, vist: 7, facit: 6 }] }
         ],
-        laerer: 'Øver: at lægge to mængder sammen og at tælle et bestemt antal fra en større mængde. Sig: „Gustav lægger tre kager på den ene række og tre på den anden. Hvor mange er det?“ Første gang uden prikkede tal.'
+        laerer: 'Øver: at lægge to mængder sammen og at tælle et bestemt antal fra en større mængde. Sig: „Gustav lægger fire kager på den ene række og to på den anden. Hvor mange er det?“ Første gang uden prikkede tal.'
       }]
     },
     {
@@ -140,7 +140,7 @@
           { type: 'tegnSaa', ikon: 'blyant', tekst: 'Tegn seks kugler på juletræet.', ting: 'kugle', ramme: 'trae', felter: [{ antal: 6, facit: 6 }] },
           { type: 'regne', ikon: 'blyant', tekst: 'Fem juletræer og ét mere. Hvor mange er det?', stykker: [{ ting: 'gran', a: 5, op: '+', b: 1, facit: 6 }] }
         ],
-        laerer: 'Øver: talrækken til ti og fem og én. Sig: „Rikke kører langsomt, så vi kan tælle juletræerne langs banen. Tæl højt med, og find de tal, sneen har dækket.“'
+        laerer: 'Øver: talrækken til ti og fem og én. Sig: „Rikke synger en tællesang, mens de kører. Tæl højt med til ti, og find de tal, sneen har dækket.“'
       }]
     },
     {
@@ -457,9 +457,9 @@
       }, {
         navn: 'Kalender-ark',
         opgaver: [
-          { type: 'kalenderArk', ikon: 'farve', tekst: 'Farv dagens brik hver dag i december. Tallet viser dagen.' }
+          { type: 'kalenderArk', ikon: 'farve', tekst: 'Farv dagens brikker hver skoledag. Tallet viser lågen.' }
         ],
-        laerer: 'Kalender-arket kan med fordel deles ud den 1. december. Hver dag farver børnene brikken med dagens tal – den samme plads, som brikken får i appens puslespil. Juleaften er det hele farvet.'
+        laerer: 'Kalender-arket kan med fordel deles ud den 1. december. Hver skoledag farver børnene de brikker, der har dagens lågenummer – én eller to, de samme pladser, som brikkerne får i appens puslespil. Den sidste skoledag er det hele farvet.'
       }]
     }
   ];
