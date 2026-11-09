@@ -84,7 +84,9 @@ if SPIL == 'bogstaver':
              "Numbers are said as plain Danish number words.")
 if SPIL == 'jul':
     STIL = ("Voice: warm, calm, friendly female storyteller reading a Danish Christmas story aloud to six-year-olds. "
-            "Unhurried and cosy, with a little extra warmth and wonder. Lines starting with a dash are spoken by the characters. "
+            "Unhurried and cosy, with a little extra warmth and wonder. Use one and the same narrator voice for every line. "
+            "Lines starting with a dash are what a character says: read them in your own storyteller voice with only a little expression, "
+            "and never switch to a different voice, pitch or accent for a character. "
             "Numbers are said as plain Danish number words. Standard Danish pronunciation, no dialect.")
 if SPIL == 'bog':
     STIL = ("Voice: warm, calm, friendly female storyteller reading a Danish picture book aloud to six-year-olds. "

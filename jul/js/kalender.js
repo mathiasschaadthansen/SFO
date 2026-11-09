@@ -74,7 +74,7 @@
             'Det er et julepuslespil. Pelle har savet det ud af træ, og det har fireogtyve brikker. Hver brik har sin egen form og en tynd, gylden kant, der glimter.',
             'På puslespillet har Pelle malet et billede af alle sine venner. De står om juletræet og holder hinanden i hånden, og det er juleaften.',
             '– Det er min julegave til dem alle sammen, siger Pelle. Juleaften lægger vi det sammen.',
-            'Pelle bærer puslespillet ud i sneen og lægger det på den store stub under juletræet. Træet er det største i hele skoven, og der hænger kogler og kastanjer og små røde æbler på grenene.',
+            'Pelle lægger puslespillet i en flad trækasse og bærer det ud i sneen under juletræet. Træet er det største i hele skoven, og der hænger kogler og kastanjer og små røde æbler på grenene.',
             'Oppe i en gren sidder Skaden Sanne. Hun elsker alt, der glimter, og de gyldne kanter glimter i det sidste lys fra solen.',
             '– Hvor er det smukt, siger Sanne. Må jeg se?'
           ]
@@ -82,15 +82,15 @@
         {
           billede: 'billeder/dag01-2.jpg',
           tekst: [
-            'Sanne hopper ned på stubben. Hun kigger på brikkerne, og så kigger hun på hjørnerne.',
+            'Sanne hopper ned ved kassen. Hun kigger på brikkerne, og så kigger hun på hjørnerne.',
             '– Brikkerne i hjørnerne er de letteste, siger Pelle. De har to lige kanter.',
             { spoerg: 'Hvor mange hjørner har et puslespil?', svar: 'Fire. Ét, to, tre, fire hjørner.' },
             'Men lige i det samme kommer der et vindstød. Et stort, koldt vindstød. Det er vinterstormen.',
-            'Træet svajer frem og tilbage, sneen hvirvler op, og alle brikkerne letter fra stubben. Fireogtyve små brikker flyver op i luften. Stormen tager dem med sig, ud over skoven, ud over bakkerne og ud i hele verden.',
+            'Træet svajer frem og tilbage, sneen hvirvler op, og alle brikkerne letter fra kassen. Fireogtyve små brikker flyver op i luften. Stormen tager dem med sig, ud over skoven, ud over bakkerne og ud i hele verden.',
             'Og så er det stille igen.',
             '– Åh nej, siger Pelle stille. Mit puslespil.',
             'Sanne sætter sig ved siden af ham i sneen. Pelle er ked af det, og det er helt i orden at være ked af det. Sanne sætter sig tæt op ad ham, så han ikke er alene.',
-            { spoerg: 'Hvor mange brikker ligger der på stubben nu?', svar: 'Ingen. Stubben er tom.' }
+            { spoerg: 'Hvor mange brikker ligger der i kassen nu?', svar: 'Ingen. Kassen er tom.' }
           ]
         },
         {
@@ -103,7 +103,7 @@
             '– Når vi kan finde én, siger Sanne, så kan vi også finde resten. Jeg kan se alt, der glimter, når jeg flyver højt oppe. Jeg leder hver eneste dag.',
             '– Og jeg går med, siger Pelle. Vi finder en brik om dagen, til vi har dem alle sammen. Og juleaften lægger vi puslespillet sammen.',
             'Pelle lægger brikken i en lille æske.',
-            { spoerg: 'Hvor mange brikker har Pelle i æsken nu?', svar: 'Én. Én brik er fundet.' },
+            { spoerg: 'Hvor mange brikker har Pelle fundet nu?', svar: 'Én. Én brik er fundet.' },
             'Da Pelle går hjem, ser han noget mærkeligt i sneen. Små, bitte små fodspor. Meget mindre end hans egne. Hvem mon har gået her?',
             'Højt oppe flyver Sanne en sidste tur. Hun kalder ned til Pelle, at hun kan se noget glimte. Langt væk, oppe i en gammel stub, hvor der bor et egern.',
             '– Så går vi derhen i morgen, siger Pelle. God nat, Sanne.',
