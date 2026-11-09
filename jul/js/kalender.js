@@ -261,9 +261,9 @@
             '– Når den ene bunke er meget større, kan man se det med det samme, siger Bodil. Men nu bliver det svært.',
             'Hun skubber stammerne rundt med halen. Nu ligger der fire stammer i den ene bunke og fem stammer i den anden.',
             '– Når de næsten er lige store, så må man tælle, siger Bodil.',
-            { spoerg: 'Fire stammer og fem stammer. Hvor er der flest?', svar: 'Ved de fem. Fem er én mere end fire.' },
+            { spoerg: 'Fire stammer og fem stammer. Vis det med fingrene. Hvor er der flest?', svar: 'Ved de fem. Fem er én mere end fire.' },
             'Til sidst lægger Bodil tre stammer i hver bunke.',
-            { spoerg: 'Tre og tre. Hvor er der flest nu?', svar: 'Ingen af dem. Der er lige mange.' },
+            { spoerg: 'Tre og tre. Vis det med fingrene. Hvor er der flest nu?', svar: 'Ingen af dem. Der er lige mange.' },
             '– Lige mange, siger Bodil tilfreds. Så er det retfærdigt.'
           ]
         },

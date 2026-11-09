@@ -2501,6 +2501,7 @@ const FILER_JUL = [
   'jul/lyd/vil_i_klappe_navnene_paa_gaverne_0f5bda.mp3',
   'jul/lyd/vil_i_koere_med_693c66.mp3',
   'jul/lyd/vinden_suser_og_alt_dernede_bliver_03821d.mp3',
+  'jul/lyd/vis_det_med_fingrene_67435e.mp3',
   'jul/lyd/vrimleskoven_siger_sanne_7fcfd9.mp3'
 ];
 
