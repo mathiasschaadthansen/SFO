@@ -948,9 +948,9 @@
             '– Gris, synger Egon glad. Og så videre.',
             '– Julemanden kommer med et tog. Og han har med sig en ...',
             { spoerg: 'Tog og noget, man læser i. Hvad rimer på tog?', svar: 'Bog. Tog og bog rimer.' },
-            '– Og så det sidste vers, siger Egon. Ude på en ø, der sidder en lille ...',
-            { spoerg: 'Ø og et lille, grønt dyr, der hopper. Hvad rimer på ø?', svar: 'Frø. Ø og frø rimer.' },
-            '– Nu er sangen færdig, siger Egon. Is og gris, tog og bog, ø og frø. Det er den bedste sang, jeg har lavet.'
+            '– Og så det sidste vers, siger Egon. I sneen står der en lille ko. Og på fødderne har den et par ...',
+            { spoerg: 'Ko og noget, man har på fødderne. Hvad rimer på ko?', svar: 'Sko. Ko og sko rimer.' },
+            '– Nu er sangen færdig, siger Egon. Is og gris, tog og bog, ko og sko. Det er den bedste sang, jeg har lavet.'
           ]
         },
         {
