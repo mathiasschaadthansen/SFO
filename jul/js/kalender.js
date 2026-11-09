@@ -366,8 +366,8 @@
         {
           billede: 'billeder/dag06-2.jpg',
           tekst: [
-            'Langs banen står der små juletræer. Rikke kører lidt langsommere, så de kan tælle dem.',
-            { spoerg: 'Tæl med. En. To. Tre. Fire. Fem. Seks.', svar: 'Seks juletræer langs banen.' },
+            'Langs banen står der mange små juletræer. Rikke tæller de første, mens de kører forbi.',
+            { spoerg: 'Tæl med på fingrene. En. To. Tre. Fire. Fem. Seks.', svar: 'Seks fingre er oppe.' },
             '– Seks, siger Rikke. Det er en hel hånd og én finger mere.',
             'Pelle holder alle fem fingre op på den ene pote og én finger på den anden.',
             { spoerg: 'Fem og én. Hvor mange er det?', svar: 'Seks. Fem og én er seks.' },
