@@ -989,6 +989,40 @@ nødderne flyver op i Egons kurv, og cirklerne foroven tæller omgangen.
 `vaerktoej/lav-lyd-gemini.py --spil egern` ud fra `Egern.saetninger()`;
 replikkerne sættes sammen af hele sætninger ("Ja!" og "Tre og to er fem.").
 
+## Isvigen (mappen `hvalros`)
+
+Hvalrossen Helle ligger på sit isflag ude i vigen, og Pelle står inde på
+kysten. Spillet øver de to ting, der skal til for at læse de første ord: at
+høre lydene i et ord og trække dem sammen (lydering), og at gøre det samme
+med bogstaverne på papir. Helle er tegnet i kode, til `billeder/helle.png` er
+malet (prompten står i `billeder/PROMPT.md`). Pelle og alle tingene er lånt
+fra Nøddeskoven og Bogstavvejen, ord og billeder via Rimhulens ordliste.
+
+**Isflagerne.** Helle brummer et ord i lyde ("Sss, ooo, lll."), og tre
+isflager med billeder vugger nederst. Den, der passer, glider op på den næste
+plads, og Pelle hopper ud på den. Et forkert tryk får flagen til at vippe, og
+Helle brummer igen. Ingen straf. De to forkerte begynder altid med en anden
+lyd. Fem isflager, så er Pelle ude hos Helle. Én stjerne: korte ord (is, ko,
+bi, ur) og nogle på tre bogstaver, kun lyd. To stjerner: tre bogstaver, og
+bogstaverne lyser ét ad gangen, mens Helle brummer. Tre stjerner: Helle siger
+ingenting; ordet står der, og man læser selv. Et tryk på et bogstav siger dets
+lyd. Højttaleren øverst til højre siger det hele igen.
+
+**Flaskeposten.** Bagefter flyder tre flasker ind, og sedlen foldes ud. Et tryk
+på et ord får Helle til at lydere det (kun de lydrette: tingene og en, et,
+på) og sige det; "Det" og "er" siger hun bare. Én stjerne: ét ord med store
+bogstaver, find billedet. To stjerner: en lille sætning ("Det er en sol."),
+find billedet. Tre stjerner: gør det, der står ("Giv Pelle en ost.", "Læg
+hatten på isflagen."), ved at trække tingen hen til Helle, Pelle eller
+isflagen.
+
+**Stemmen** er 161 sætninger fra `Helle.saetninger()`, lavet med
+`vaerktoej/lav-lyd-gemini.py --spil hvalros`. De er ikke indtalt endnu, så
+enhedens egen stemme siger det hele, og testen melder det som info. Så snart
+der ligger ét klip, kræver testen, at alt er indtalt. Ordene selv er
+Bogstavvejens ordklip ("Her har du ordet sol."). Spillet går aldrig i stå
+uden lyd: en vagt sender det videre, hvis intet kan høres.
+
 ## Bogen om Nøddeskoven (mappen `bog`)
 
 En lille billedbog, der binder spillene sammen: Pelle Pindsvin har tabt sin

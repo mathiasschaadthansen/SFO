@@ -64,7 +64,7 @@ def arg(navn, standard=None):
     return sys.argv[sys.argv.index(navn) + 1] if navn in sys.argv else standard
 
 
-SAETNINGSSPIL = ('have', 'flyv', 'baever', 'egern', 'tegn', 'jul')
+SAETNINGSSPIL = ('have', 'flyv', 'baever', 'egern', 'tegn', 'hvalros', 'jul')
 FASTE_SPIL = ('bogstaver', 'restaurant', 'klokken', 'maskinen', 'find', 'rim', 'bog')
 SPIL = arg('--spil', 'have')
 if SPIL not in SAETNINGSSPIL + FASTE_SPIL:
@@ -88,6 +88,9 @@ if SPIL == 'jul':
             "Lines starting with a dash are what a character says: read them in your own storyteller voice with only a little expression, "
             "and never switch to a different voice, pitch or accent for a character. "
             "Numbers are said as plain Danish number words. Standard Danish pronunciation, no dialect.")
+if SPIL == 'hvalros':
+    STIL += (" Lines like \"Sss, ooo, lll.\" are the sounds of the letters in a word, said slowly and stretched, the way a teacher "
+             "sounds out a word for a child learning to read: the sound, never the letter name, and a short pause between them.")
 if SPIL == 'bog':
     STIL = ("Voice: warm, calm, friendly female storyteller reading a Danish picture book aloud to six-year-olds. "
             "Unhurried, with natural pauses between sentences and a little extra warmth in the rhymes. "
@@ -103,6 +106,8 @@ def saetninger():
         kode = "const { Figurer } = require(%r); console.log(JSON.stringify(Figurer.saetninger()));" % os.path.join(ROD, 'games', 'tegn', 'js', 'figurer.js')
     elif SPIL == 'egern':
         kode = "const { Egern } = require(%r); console.log(JSON.stringify(Egern.saetninger()));" % os.path.join(ROD, 'games', 'egern', 'js', 'egern.js')
+    elif SPIL == 'hvalros':
+        kode = "const { Helle } = require(%r); console.log(JSON.stringify(Helle.saetninger()));" % os.path.join(ROD, 'games', 'hvalros', 'js', 'helle.js')
     elif SPIL == 'jul':
         # Historiernes replikker delt i saetninger, praecis som js/stemme.js deler dem, og opgavernes saetninger
         kode = ("const { Kalender } = require(%r); const { Opgaver } = require(%r); const { Stemme } = require(%r);"

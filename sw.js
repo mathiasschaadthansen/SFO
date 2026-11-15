@@ -938,7 +938,12 @@ const FILER = [
   'games/egern/lyd/tre_og_tre_er_seks_e98848.mp3',
   'games/egern/lyd/tryk_paa_egon_igen_30494f.mp3',
   'games/egern/lyd/tryk_paa_egon_saa_kaster_han_972074.mp3',
-  'games/egern/lyd/tryk_paa_oejet_naar_du_er_7e513b.mp3'
+  'games/egern/lyd/tryk_paa_oejet_naar_du_er_7e513b.mp3',
+  'games/hvalros/',
+  'games/hvalros/index.html',
+  'games/hvalros/js/helle.js',
+  'games/hvalros/js/game.js',
+  'games/hvalros/lyd/klip.json'
 ];
 
 /*

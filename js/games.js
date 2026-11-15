@@ -210,5 +210,16 @@ window.SPIL = [
          '<img src="games/bogstaver/billeder/noed.png" alt="" style="left:6px;top:52px;width:36px">' +
          '<img src="games/bogstaver/billeder/egern.png" alt="" style="left:40px;top:0;width:72px">' +
          '</div>'
+  },
+  {
+    id: 'hvalros',
+    navn: 'Isvigen',
+    tekst: 'Lyt til Helles brum og find ordet, så Pelle kan hoppe ud til hende. Læs flaskeposten bagefter.',
+    farve: '#d4e6ef',
+    sti: 'games/hvalros/',
+    art: '<div class="art">' +
+         '<img src="games/bogstaver/billeder/fisk.png" alt="" style="left:6px;top:46px;width:44px">' +
+         '<img src="games/maskinen/billeder/pindsvin.png" alt="" style="left:46px;top:6px;width:66px">' +
+         '</div>'
   }
 ];

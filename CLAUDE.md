@@ -84,12 +84,12 @@ To slags spil:
   (`ting()`, `restaurant()`, `klokken()` …), som Gemini-værktøjet også bruger.
   Bogstaver og tal indtales rene ("A.", "Tre."), og ordene i rammen "Her har
   du ordet kat.".
-- **Hele sætninger** (Himmelvejen, Årstidshaven, Bæverdammen, Egernreden, Tegnestuen): hver sætning er ét klip, og
+- **Hele sætninger** (Himmelvejen, Årstidshaven, Bæverdammen, Egernreden, Tegnestuen, Isvigen): hver sætning er ét klip, og
   `lyd/klip.json` er `{ sætning: fil }`. `js/stemme.js` deler en replik i
   sætninger og spiller den længste række, der har ét klip, så en sammensat
   replik ("Pelle ønsker sig to gulerødder. Og så én agurk.") er flere klip i
   træk. Sætningerne står i spillets kode (`Haven.saetninger()`,
-  `Oe.saetninger()`, `Daemning.saetninger()`, `Egern.saetninger()`, `Figurer.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
+  `Oe.saetninger()`, `Daemning.saetninger()`, `Egern.saetninger()`, `Figurer.saetninger()`, `Helle.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
   Ændrer du en sætning, så kør værktøjet igen. Byg nye replikker af hele
   sætninger, aldrig et klip midt i en sætning.
 
@@ -165,6 +165,7 @@ spillet. Koden er ikke doebt om: modulerne hedder stadig `Klatbold`, `Bobler`,
 | Årstidshaven | `games/have/` | `test/have.test.js` |
 | Bæverdammen | `games/baever/` | `test/baever.test.js` |
 | Egernreden | `games/egern/` | `test/egern.test.js` |
+| Isvigen | `games/hvalros/` | `test/hvalros.test.js` |
 | Bogen om Nøddeskoven | `bog/` | `test/bog.test.js` |
 
 Bogen er ikke et spil: den ligger forrest på forsiden, har ingen knap ind i
