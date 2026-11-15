@@ -6,6 +6,8 @@
  *
  * farve: kortets baggrund. Dæmpede, malede toner — én pr. spil.
  * maaneder: valgfrit. Kortet vises kun i de maaneder (0 = januar), efter enhedens dato.
+ * laast: valgfrit. Kortet kraever koden (KODE i js/shell.js), indtil spillet er klar til alle.
+ * proeve: valgfrit. Tilfoejes adressen, naar koden er tastet uden for december.
  * art:   valgfrit billede eller inline-SVG der tegnes i kortets højre side.
  *        Billederne ligger i assets/malet/ og er malet i samme stil som
  *        figurerne i Maskinen. Nye filer skal med i FILER i sw.js.
@@ -31,6 +33,9 @@ window.SPIL = [
     sti: 'jul/',
     farve: '#d8e6ec',
     maaneder: [10, 11],
+    laast: true,
+    // Foer december aabner koden kalenderen, som den ser ud 18. december, saa de voksne kan proeve den
+    proeve: '?dag=18',
     art: '<div class="art">' +
          '<img src="games/bogstaver/billeder/juletrae.png" alt="" style="left:46px;top:0;width:66px">' +
          '<img src="assets/malet/pindsvin.png" alt="" style="left:0;top:30px;width:66px">' +
@@ -217,6 +222,7 @@ window.SPIL = [
     tekst: 'Lyt til Helles brum og find ordet, så Pelle kan hoppe ud til hende. Læs flaskeposten bagefter.',
     farve: '#d4e6ef',
     sti: 'games/hvalros/',
+    laast: true,
     art: '<div class="art">' +
          '<img src="games/bogstaver/billeder/fisk.png" alt="" style="left:6px;top:46px;width:44px">' +
          '<img src="games/maskinen/billeder/pindsvin.png" alt="" style="left:46px;top:6px;width:66px">' +
