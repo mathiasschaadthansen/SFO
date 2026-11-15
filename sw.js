@@ -943,6 +943,7 @@ const FILER = [
   'games/hvalros/index.html',
   'games/hvalros/js/helle.js',
   'games/hvalros/js/game.js',
+  'games/hvalros/billeder/helle.png',
   'games/hvalros/lyd/klip.json'
 ];
 

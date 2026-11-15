@@ -994,8 +994,8 @@ replikkerne sættes sammen af hele sætninger ("Ja!" og "Tre og to er fem.").
 Hvalrossen Helle ligger på sit isflag ude i vigen, og Pelle står inde på
 kysten. Spillet øver de to ting, der skal til for at læse de første ord: at
 høre lydene i et ord og trække dem sammen (lydering), og at gøre det samme
-med bogstaverne på papir. Helle er tegnet i kode, til `billeder/helle.png` er
-malet (prompten står i `billeder/PROMPT.md`). Pelle og alle tingene er lånt
+med bogstaverne på papir. Helle er malet med Canvas AI-billedgenerator ud fra
+`billeder/PROMPT.md` (se `billeder/NOTICE.md`); mangler billedet, tegnes hun i kode. Pelle og alle tingene er lånt
 fra Nøddeskoven og Bogstavvejen, ord og billeder via Rimhulens ordliste.
 
 **Isflagerne.** Helle brummer et ord i lyde ("Sss, ooo, lll."), og tre
