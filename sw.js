@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v114';
+const VERSION = 'sfo-spil-v115';
 
 const FILER = [
   './',
@@ -2682,11 +2682,17 @@ function hentJul() {
   })).catch(() => null);
 }
 
+/*
+ * Installationen venter kun paa appens egne filer (FILER), ikke paa julens 23 MB.
+ * Ventede den ogsaa paa julen, skulle en telefon hente omkring 40 MB, foer den nye
+ * version tog over, og blev appen lukket undervejs, begyndte det forfra: de nye
+ * spil viste sig aldrig. Det skete med v112-v114 i november 2026. Julens filer
+ * hentes nu ved siden af, efter aktiveringen og igen, hver gang en side aabnes.
+ */
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(VERSION)
       .then((c) => c.addAll(FILER.map((f) => new Request(f, { cache: 'reload' }))))
-      .then(() => hentJul())
       .then(() => self.skipWaiting())
   );
 });
@@ -2708,7 +2714,17 @@ self.addEventListener('activate', (e) => {
       .then(() => ryddJul())
       .then(() => self.clients.claim())
   );
+  // Julen hentes ved siden af, ikke i waitUntil: saa laenge aktiveringen venter,
+  // besvarer service workeren ingen sider, og de nye spil viste sig ikke.
+  hentJulEngang();
 });
+
+/* Kun én hentning af julen ad gangen; bliver den afbrudt, tager den naeste fat, hvor den slap. */
+let julIgang = null;
+function hentJulEngang() {
+  if (!julIgang) julIgang = hentJul().then(() => { julIgang = null; });
+  return julIgang;
+}
 
 /*
  * Forsiden linker til mapper: games/racer/, games/restaurant/ og saa videre.
@@ -2747,6 +2763,8 @@ function hentOgGem(req) {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  // Hver gang en side aabnes, hentes det, der mangler af julen, hvis en tidligere hentning blev afbrudt
+  if (e.request.mode === 'navigate') e.waitUntil(hentJulEngang());
   e.respondWith(
     fraCachen(e.request).then((traef) => traef || hentOgGem(e.request))
   );

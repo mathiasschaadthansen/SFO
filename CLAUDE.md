@@ -310,6 +310,13 @@ skal den samme prompt bruges igen — prompten står i
   indholdet var uændret, og iPad'en viste det gamle spil. Kun helt nye filer
   kom igennem, så det lignede, at "kun ikonerne" var skiftet. Det skete én
   gang i september 2026 og kostede en hel udgivelse.
+- **Installationen må ikke vente på julen.** Julekalenderens 23 MB
+  (`FILER_JUL`) hentes ved siden af, efter aktiveringen og igen, hver gang en
+  side åbnes — aldrig i `install` eller i `waitUntil` i `activate`. Fra v112
+  til v114 ventede den nye version på dem, så en telefon skulle hente cirka
+  40 MB, før de nye spil viste sig, og en afbrudt hentning begyndte forfra.
+  En service worker besvarer heller ingen sider, mens `activate` venter.
+  `test/assets.test.js` fanger det.
 
 ## Sprog
 

@@ -79,6 +79,11 @@ const julDubletter = julFiler.filter((f, i) => julFiler.indexOf(f) !== i);
 tjek('ingen fil staar to gange i FILER_JUL', julDubletter.length === 0, 'to gange: ' + julDubletter.join());
 const iBegge = julFiler.filter(f => alleFiler.indexOf(f) >= 0);
 tjek('ingen fil staar baade i FILER og FILER_JUL', iBegge.length === 0, iBegge.join());
+// Installationen maa ikke vente paa julens 23 MB: saa saa en telefon aldrig de nye spil (v112-v114)
+const installBlok = (sw.match(/addEventListener\('install'[\s\S]*?\n\}\);/) || [''])[0];
+const aktiverBlok = (sw.match(/addEventListener\('activate'[\s\S]*?\n\}\);/) || [''])[0];
+tjek('installationen og aktiveringen venter kun paa FILER, og julen hentes ved siden af',
+  !/hentJul/.test(installBlok) && !/\.then\(\(\) => hentJul/.test(aktiverBlok) && /\n  \);\n[\s\S]*hentJulEngang\(\)/.test(aktiverBlok));
 tjek('en manglende jul-fil vaelter ikke installationen, men FILER skal stadig hentes med addAll',
   /c\.addAll\(FILER\.map/.test(sw) && /function hentJul\(\)[\s\S]*?\.catch\(\(\) => null\)/.test(sw));
 const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen', 'rim', 'find', 'flyv', 'have', 'baever', 'egern', 'hvalros'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));
