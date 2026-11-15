@@ -1017,9 +1017,8 @@ hatten på isflagen."), ved at trække tingen hen til Helle, Pelle eller
 isflagen.
 
 **Stemmen** er 161 sætninger fra `Helle.saetninger()`, lavet med
-`vaerktoej/lav-lyd-gemini.py --spil hvalros`. De er ikke indtalt endnu, så
-enhedens egen stemme siger det hele, og testen melder det som info. Så snart
-der ligger ét klip, kræver testen, at alt er indtalt. Ordene selv er
+`vaerktoej/lav-lyd-gemini.py --spil hvalros` (Gemini, Kore, november 2026),
+og testen kræver, at alt er indtalt. Ordene selv er
 Bogstavvejens ordklip ("Her har du ordet sol."). Spillet går aldrig i stå
 uden lyd: en vagt sender det videre, hvis intet kan høres.
 

@@ -27,7 +27,7 @@
   });
 
   /*
-   * Kodeordet. Nye ting (julekalenderen, Isvigen) kan kun aabnes med koden, til de
+   * Kodeordet. Nye ting (nu kun julekalenderen) kan kun aabnes med koden, til de
    * er klar til alle. Det er en laas for boernene, ikke en sikkerhed: koden staar
    * her, og intet gemmes, saa den skal tastes hver gang. Fjern laast: true i
    * js/games.js for at aabne for alle.
