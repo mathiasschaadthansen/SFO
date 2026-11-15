@@ -75,11 +75,22 @@ console.log('\nPelles julekalender\n');
     else if (/låge nummer/.test(t)) forkerteSlut.push(d + ': ' + t);
   }));
   tjek('historierne slutter med "Næste gang åbner vi låge nummer ...", og den foerste af to med en overgang', forkerteSlut.length === 0, forkerteSlut.slice(0, 3).join(' | '));
-  // Boernene kender tallene til ti: spoergsmaal og svar i historierne bruger ikke stoerre tal
+  // Boernene kender tallene til ti: spoergsmaal og svar i historierne bruger ikke stoerre tal. Brikkerne er
+  // undtagelsen (laereren: der maa gerne taelles hoejt ved brikkerne), og der siges svaret som "ti og fire".
   const STORE = O.TALORD.slice(11);
-  const store = [];
-  K.DAGE.forEach(d => d.afsnit.forEach(a => a.tekst.forEach(t => { if (typeof t !== 'string') { const x = (t.spoerg + ' ' + t.svar).toLowerCase(); STORE.forEach(n => { if (new RegExp('(^|[^a-zæøå])' + n + '([^a-zæøå]|$)').test(x)) store.push(d.dag + ': ' + n); }); } })));
-  tjek('spoergsmaalene i historierne bruger kun tal til ti', store.length === 0, store.join());
+  const store = [], brikker = [];
+  K.DAGE.forEach(d => d.afsnit.forEach(a => a.tekst.forEach(t => {
+    if (typeof t === 'string') return;
+    const x = (t.spoerg + ' ' + t.svar).toLowerCase();
+    if (/brik/.test(t.spoerg)) {
+      if (/huller/.test(x)) brikker.push(d.dag + ': ' + t.spoerg);
+      if (d.dag >= 11 && t.svar.split('.')[0] !== O.TALORD[d.dag - (/Toogtyve\. To brikker/.test(t.svar) ? 1 : 0)].replace(/^./, c => c.toUpperCase())) brikker.push(d.dag + ': ' + t.svar);
+      return;
+    }
+    STORE.forEach(n => { if (new RegExp('(^|[^a-zæøå])' + n + '([^a-zæøå]|$)').test(x)) store.push(d.dag + ': ' + n); });
+  })));
+  tjek('spoergsmaalene i historierne bruger kun tal til ti (undtagen brikkerne)', store.length === 0, store.join());
+  tjek('brikkerne taelles helt op (ikke huller), og svaret er dagens antal', brikker.length === 0, brikker.join(' | '));
 }
 
 /* Opgaverne: hver dag er flere dele, let foerst og saa svaerere */
