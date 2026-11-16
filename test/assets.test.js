@@ -84,6 +84,9 @@ const installBlok = (sw.match(/addEventListener\('install'[\s\S]*?\n\}\);/) || [
 const aktiverBlok = (sw.match(/addEventListener\('activate'[\s\S]*?\n\}\);/) || [''])[0];
 tjek('installationen og aktiveringen venter kun paa FILER, og julen hentes ved siden af',
   !/hentJul/.test(installBlok) && !/\.then\(\(\) => hentJul/.test(aktiverBlok) && /\n  \);\n[\s\S]*hentJulEngang\(\)/.test(aktiverBlok));
+// En jul-fil, der laves om under samme navn, skal staa i JUL_REV, ellers beholder iPad'en den gamle
+const julRev = [...((sw.match(/const JUL_REV = \{([\s\S]*?)\};/) || ['', ''])[1]).matchAll(/'([^']+)':\s*(\d+)/g)].map(m => m[1]);
+tjek('alle filer i JUL_REV staar i FILER_JUL og findes', julRev.length > 0 && julRev.every(f => julFiler.includes(f) && fs.existsSync(path.join(ROD, f))), julRev.filter(f => !julFiler.includes(f)).join());
 tjek('en manglende jul-fil vaelter ikke installationen, men FILER skal stadig hentes med addAll',
   /c\.addAll\(FILER\.map/.test(sw) && /function hentJul\(\)[\s\S]*?\.catch\(\(\) => null\)/.test(sw));
 const spilSider = ['racer', 'klatbold', 'bobler', 'bogstaver', 'restaurant', 'tegn', 'klokken', 'maskinen', 'rim', 'find', 'flyv', 'have', 'baever', 'egern', 'hvalros'].map(s => fs.readFileSync(path.join(ROD, 'games', s, 'index.html'), 'utf8'));

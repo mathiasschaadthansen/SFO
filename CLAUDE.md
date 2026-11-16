@@ -317,6 +317,11 @@ skal den samme prompt bruges igen — prompten står i
   40 MB, før de nye spil viste sig, og en afbrudt hentning begyndte forfra.
   En service worker besvarer heller ingen sider, mens `activate` venter.
   `test/assets.test.js` fanger det.
+- **En jul-fil, der laves om, skal i `JUL_REV`.** Julens cache hentes ikke
+  forfra ved en ny `VERSION`, og lydværktøjet giver et klip det samme navn,
+  når det indtales igen. Står filen ikke i `JUL_REV` i `sw.js` med et højere
+  nummer, beholder en iPad, der allerede har julen, det gamle klip for
+  altid. Fanget med Egon-klippene i november 2026.
 
 ## Sprog
 

@@ -5,7 +5,7 @@
  * Naar du tilfoejer en fil til projektet, skal den med i FILER nedenfor,
  * og VERSION skal taelles op — ellers henter iPad'en den gamle version.
  */
-const VERSION = 'sfo-spil-v115';
+const VERSION = 'sfo-spil-v116';
 
 const FILER = [
   './',
@@ -2664,21 +2664,50 @@ function adresse(f) { return new URL(f, self.location).href; }
  * filer, der var helt nye, kom med — resten kom fra browserens cache.
  */
 
-/* Hent de jul-filer, der mangler i JUL, seks ad gangen. Fejler aldrig: en fil, der ikke kom, hentes senere. */
+/*
+ * Jul-filer, der er lavet om, efter at julen er kommet ud, under det samme navn.
+ * JUL-cachen hentes ikke forfra ved en ny VERSION, saa uden denne liste ville en
+ * iPad, der allerede har julen, beholde det gamle klip for altid. Hver fil her har
+ * et revisionsnummer; den gemte kopi faar nummeret med i headeren x-jul-rev, og en
+ * kopi med et lavere nummer hentes igen. Taeles op, hver gang en jul-fil laves om.
+ */
+const JUL_REV = {
+  // November 2026: Egon blev udtalt "Iigon" i disse klip
+  'jul/lyd/egon_3b295a.mp3': 2,
+  'jul/lyd/egon_klatrer_op_med_sin_store_239907.mp3': 2,
+  'jul/lyd/egon_sidder_i_reden_og_synger_975b34.mp3': 2,
+  'jul/lyd/godmorgen_egon_siger_pelle_aa2c8a.mp3': 2,
+  'jul/lyd/hele_efteraaret_har_egon_samlet_noed_ca84c5.mp3': 2,
+  'jul/lyd/jeg_skriver_en_julesang_siger_egon_95ff01.mp3': 2
+};
+function revAf(f) { return JUL_REV[f] || 1; }
+/* Svaret med revisionsnummeret i en header, saa det kan ses, hvilken udgave cachen har. */
+function medRev(f, svar) {
+  const hoved = new Headers(svar.headers);
+  hoved.set('x-jul-rev', String(revAf(f)));
+  return svar.blob().then((b) => new Response(b, { status: svar.status, statusText: svar.statusText, headers: hoved }));
+}
+
+/* Hent de jul-filer, der mangler i JUL eller er forældede, seks ad gangen. Fejler aldrig: en fil, der ikke kom, hentes senere. */
 function hentJul() {
   return caches.open(JUL).then((c) => c.keys().then((noegler) => {
     const har = new Set(noegler.map((r) => r.url));
-    const mangler = FILER_JUL.filter((f) => !har.has(adresse(f)));
-    let i = 0;
-    function naeste() {
-      if (i >= mangler.length) return Promise.resolve();
-      const f = mangler[i++];
-      return fetch(new Request(f, { cache: 'reload' }))
-        .then((svar) => (svar.ok ? c.put(f, svar) : null))
-        .catch(() => null)
-        .then(naeste);
-    }
-    return Promise.all([naeste(), naeste(), naeste(), naeste(), naeste(), naeste()]);
+    const omlavede = Object.keys(JUL_REV).filter((f) => har.has(adresse(f)));
+    return Promise.all(omlavede.map((f) => c.match(f).then((gemt) =>
+      (gemt && Number(gemt.headers.get('x-jul-rev') || 1) >= revAf(f)) ? null : f)))
+      .then((gamle) => {
+        const mangler = FILER_JUL.filter((f) => !har.has(adresse(f)) || gamle.indexOf(f) >= 0);
+        let i = 0;
+        function naeste() {
+          if (i >= mangler.length) return Promise.resolve();
+          const f = mangler[i++];
+          return fetch(new Request(f, { cache: 'reload' }))
+            .then((svar) => (svar.ok ? medRev(f, svar).then((r) => c.put(f, r)) : null))
+            .catch(() => null)
+            .then(naeste);
+        }
+        return Promise.all([naeste(), naeste(), naeste(), naeste(), naeste(), naeste()]);
+      });
   })).catch(() => null);
 }
 
