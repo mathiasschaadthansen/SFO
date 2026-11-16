@@ -2678,7 +2678,10 @@ const JUL_REV = {
   'jul/lyd/egon_sidder_i_reden_og_synger_975b34.mp3': 2,
   'jul/lyd/godmorgen_egon_siger_pelle_aa2c8a.mp3': 2,
   'jul/lyd/hele_efteraaret_har_egon_samlet_noed_ca84c5.mp3': 2,
-  'jul/lyd/jeg_skriver_en_julesang_siger_egon_95ff01.mp3': 2
+  'jul/lyd/jeg_skriver_en_julesang_siger_egon_95ff01.mp3': 2,
+  'jul/lyd/egon_giver_pelle_tre_noedder_med_e4b71d.mp3': 2,
+  'jul/lyd/godmorgen_godmorgen_siger_egon_8f7aa1.mp3': 2,
+  'jul/lyd/gris_synger_egon_glad_692195.mp3': 2
 };
 function revAf(f) { return JUL_REV[f] || 1; }
 /* Svaret med revisionsnummeret i en header, saa det kan ses, hvilken udgave cachen har. */
