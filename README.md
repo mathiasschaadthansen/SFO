@@ -1057,12 +1057,31 @@ ting med to sanser ("Pizzaen dufter godt, og den smager godt.").
 
 Emil og Ella set forfra er malet i Canva med Boblehavets figurer som forlæg
 (`billeder/NOTICE.md`). En omgang er seks spørgsmål (røntgenøjet 3, 5 eller 7
-organer), og cirklerne foroven tæller den. **Stemmen** er sætningerne fra
+organer, Madens rejse fem trin pr. mad), og cirklerne foroven tæller den. **Stemmen** er sætningerne fra
 `Krop.saetninger()`, lavet med `vaerktoej/lav-lyd-gemini.py --spil krop`; indtil
 de er indtalt, siger enhedens stemme det, og testen melder det som info.
 
-Planlagt til næste omgang: Madens rejse (en gulerod gennem kroppen som en
-kuglebane) og En sund dag (vaske hænder, børste tænder, spise, sove).
+**Madens rejse.** Emil eller Ella spiser fx en gulerod, og maden følges
+gennem kroppen: tryk på munden tre gange for at tygge, træk maden ned gennem
+spiserøret, rør rundt i maven med fingeren, træk den gennem tarmene (så
+flyver der små gnister ud i hænder, fødder og hoved: "Tarmene tager det gode
+fra maden, så du får kræfter i hele kroppen."), og resten kommer ud, når man
+går på toilettet. Vejen er tegnet i kode ud fra pladserne (`madVej` i
+`krop.js`), og maden kan kun trækkes fremad langs den. Én stjerne én mad og en
+stiplet pil, der viser vejen; to stjerner to slags mad, og pilen kommer først,
+hvis man venter; tre stjerner skal man bagefter huske vejen (munden,
+spiserøret, maven, tarmene).
+
+**En sund dag.** Gennem vinduet går dagen fra morgen til aften, og Rasmus
+spørger, hvad kroppen har brug for: mad om morgenen, tandbørsten, sæbe før
+frokost, vand, når man er varm, en bold at lege med og sengen om aftenen.
+Rasmus sammenligner med sig selv ("Om natten sætter jeg stikket i og lader
+op."). Efter sæben vasker man hænder: vand, sæbe, gnid til der er skum, skyl
+og tør. Én stjerne tre kort, og det næste i håndvasken lyser; to stjerner fire
+kort; tre stjerner alle seks, og man finder selv rækkefølgen ("Først skal du
+noget andet."). Ingen mad kaldes sund eller usund, og intet handler om vægt;
+testen holder øje med det. Sæben, tandbørsten, vandhanen og sengen er Noto
+Emoji (`ting/`), æblet og bolden Bogstavvejens og vandet Rimhulens.
 
 ## Bogen om Nøddeskoven (mappen `bog`)
 

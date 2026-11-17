@@ -254,6 +254,95 @@
     return valgt.length === 1 && valgt[0] === q.sanser[0];
   }
 
+
+  /* ---------- Madens rejse ---------- */
+
+  var MAD = [
+    { ting: 'gulerod', form: 'en gulerod' }, { ting: 'aeble', form: 'et æble' }, { ting: 'banan', form: 'en banan' },
+    { ting: 'pandekage', form: 'en pandekage' }, { ting: 'ost', form: 'et stykke ost' }
+  ];
+  var STATIONER = ['tygge', 'synke', 'mave', 'tarme', 'ud'];
+  var MAD_TEKST = {
+    hej: 'Rasmus vil vide, hvor maden bliver af.',
+    tygge: 'Først skal maden tygges. Tryk på munden.',
+    tygget: 'Nu er maden lille nok til at synke.',
+    synke: 'Træk maden ned gennem spiserøret til maven.',
+    mave: 'Rør rundt i maven med fingeren.',
+    maveFaerdig: 'Maven blander maden med mavesaft, så den bliver til grød.',
+    tarme: 'Træk maden gennem tarmene.',
+    tarmeFaerdig: 'Tarmene tager det gode fra maden, så du får kræfter i hele kroppen.',
+    ud: 'Resten kommer ud, når du går på toilettet.',
+    robot: 'Jeg spiser slet ikke. Jeg lader bare op.',
+    huske: 'Kan du huske vejen? Tryk der, hvor maden kom hen først.',
+    ogSaa: 'Og så?'
+  };
+  /* Vejen, man skal huske med tre stjerner, og hvad stemmen siger ved hvert sted. */
+  var VEJ = [
+    { sted: 'mund', ja: 'Ja, munden.' }, { sted: 'spiseroer', ja: 'Ja, spiserøret.' },
+    { sted: 'mave', ja: 'Ja, maven.' }, { sted: 'tarme', ja: 'Ja, tarmene.' }
+  ];
+  function spiser(figur, m) { return FIGURER[figur].navn + ' spiser ' + m.form + '.'; }
+  /** En omgang: én mad med én stjerne, to med to og tre (og med tre skal vejen huskes bagefter). */
+  function madRunde(stjerner) { return bland(MAD).slice(0, stjerner === 0 ? 1 : 2); }
+  /**
+   * Madens vej gennem figuren, i billedets pixels: spiseroeret fra munden ned til
+   * maven og tarmene som en spiral, der ender i bunden. Bygget ud fra pladserne.
+   */
+  function madVej(figur) {
+    var P = PLADS[figur], I = INDRE[figur];
+    var m = P.mund[0], h = P.hals[0], mv = I.mavesaek[0], t = I.tarme[0];
+    var spiseroer = [];
+    var a = [m[0], m[1] + 6], b = [h[0], h[1]], c = [mv[0] - mv[2] * 0.7, mv[1] - mv[2] * 0.6], d = [mv[0], mv[1]];
+    [[a, b], [b, c], [c, d]].forEach(function (st) {
+      for (var i = 0; i < 12; i++) spiseroer.push([st[0][0] + (st[1][0] - st[0][0]) * i / 12, st[0][1] + (st[1][1] - st[0][1]) * i / 12]);
+    });
+    spiseroer.push(d);
+    var tarme = [d];
+    var start = [t[0] + t[2] * 1.1, t[1] - t[2] * 0.6];
+    for (var j = 1; j <= 8; j++) tarme.push([d[0] + (start[0] - d[0]) * j / 8, d[1] + (start[1] - d[1]) * j / 8]);
+    // Spiralen gaar udefra og ind og saa ned og ud
+    for (var k = 0; k <= 60; k++) {
+      var v = -0.6 + k * 0.32, r = t[2] * 1.25 * (0.95 - k * 0.012);
+      tarme.push([t[0] + Math.cos(v) * r, t[1] + Math.sin(v) * r * 0.62]);
+    }
+    var sidst = tarme[tarme.length - 1];
+    for (var n = 1; n <= 8; n++) tarme.push([sidst[0] + (t[0] - sidst[0]) * n / 8, sidst[1] + (t[1] + t[2] * 1.15 - sidst[1]) * n / 8]);
+    return { mund: m, mave: mv, tarm: t, spiseroer: spiseroer, tarme: tarme,
+      steder: { mund: [m], spiseroer: [[h[0], (h[1] + c[1]) / 2, 22]], mave: [mv], tarme: [t] } };
+  }
+  /** Hvilket sted paa vejen er trykket paa (til at huske vejen)? */
+  function vejSted(figur, x, y) {
+    var st = madVej(figur).steder, bedst = null, str = Infinity;
+    Object.keys(st).forEach(function (n) { st[n].forEach(function (p) { var r = Math.max(p[2], 22); if (Math.hypot(x - p[0], y - p[1]) <= r * 1.2 && r < str) { str = r; bedst = n; } }); });
+    return bedst;
+  }
+
+  /* ---------- En sund dag ---------- */
+
+  var DAG = [
+    { id: 'mad', tid: 'morgen', situation: 'Det er morgen, og maven knurrer.', spoerg: 'Hvad skal du have?', svar: 'aeble', ja: 'Ja. Maden giver kroppen kræfter.', robot: 'Jeg får kræfter fra mit batteri.' },
+    { id: 'taender', tid: 'morgen', situation: 'Du har spist morgenmad.', spoerg: 'Hvad skal tænderne have?', svar: 'tandboerste', ja: 'Ja. Når du børster tænder, bliver de rene og stærke.', robot: 'Jeg har ingen tænder, men jeg bliver pudset.' },
+    { id: 'haender', tid: 'middag', situation: 'Du har leget i sandkassen, og nu skal du spise.', spoerg: 'Hvad gør du først?', svar: 'saebe', ja: 'Ja. Sæbe vasker bakterierne af hænderne.', robot: 'Mine hænder skal bare tørres af.', vask: true },
+    { id: 'vand', tid: 'middag', situation: 'Du har løbet rundt og er helt varm.', spoerg: 'Hvad har du brug for?', svar: 'vand', ja: 'Ja. Kroppen har brug for vand, når den er tørstig.', robot: 'Jeg må aldrig få vand. Så kortslutter jeg.' },
+    { id: 'lege', tid: 'eftermiddag', situation: 'Kroppen vil gerne bevæge sig.', spoerg: 'Hvad kan du gøre?', svar: 'bold', ja: 'Ja. Når du løber og leger, bliver kroppen stærk.', robot: 'Jeg skal smøres, så jeg kan bevæge mig.' },
+    { id: 'sove', tid: 'aften', situation: 'Det er aften, og du gaber.', spoerg: 'Hvad har kroppen brug for nu?', svar: 'seng', ja: 'Ja. Når du sover, hviler kroppen og vokser.', robot: 'Om natten sætter jeg stikket i og lader op.' }
+  ];
+  var DAG_KORT = { aeble: B + 'aeble.png', tandboerste: 'ting/tandboerste.svg', saebe: 'ting/saebe.svg', vand: '../rim/billeder/vand.png', bold: B + 'bold.png', seng: 'ting/seng.svg' };
+  var VASK = [
+    { trin: 'vand', siges: 'Først vand på hænderne.' }, { trin: 'saebe', siges: 'Så sæbe.' },
+    { trin: 'gnid', siges: 'Gnid hænderne, til der er masser af skum.' }, { trin: 'skyl', siges: 'Skyl skummet af.' },
+    { trin: 'toer', siges: 'Tør hænderne i håndklædet.' }
+  ];
+  var DAG_TEKST = { hej: 'Rasmus vil vide, hvad en krop har brug for i løbet af en dag.', vask: 'Lad os vaske hænder.', nu: 'Hvad gør du nu?', foerst: 'Først skal du noget andet.', rene: 'Nu er hænderne rene.' };
+  /** Dagen fra morgen til aften. Én stjerne tre kort, to stjerner fire, tre stjerner alle seks. */
+  function dagRunde(stjerner) {
+    var alle = Object.keys(DAG_KORT), n = [3, 4, 6][stjerner];
+    return DAG.map(function (d) {
+      var andre = bland(alle.filter(function (k) { return k !== d.svar; })).slice(0, n - 1);
+      return { id: d.id, tid: d.tid, situation: d.situation, spoerg: d.spoerg, svar: d.svar, ja: d.ja, robot: d.robot, vask: !!d.vask, kort: bland([d.svar].concat(andre)) };
+    });
+  }
+
   /* ---------- Alt, der siges, som hele saetninger ---------- */
 
   function saetningerAf(t) { return (String(t).match(/[^.!?]+[.!?]+|[^.!?]+$/g) || []).map(function (s) { return s.trim(); }).filter(Boolean); }
@@ -268,6 +357,12 @@
     Object.keys(ORGANER).forEach(function (o) { laeg(find(o)); laeg('Det er ' + ORGANER[o].bestemt + '.'); fundet(o).forEach(laeg); });
     Object.keys(SANSER).forEach(function (s) { laeg(SANSER[s].ja); laeg(SANSER[s].robot); });
     TING.concat(TING_TO).forEach(function (t) { laeg(t.saetning); });
+    Object.keys(MAD_TEKST).forEach(function (k) { laeg(MAD_TEKST[k]); });
+    VEJ.forEach(function (v) { laeg(v.ja); });
+    Object.keys(FIGURER).forEach(function (f) { MAD.forEach(function (m) { laeg(spiser(f, m)); }); });
+    DAG.forEach(function (d) { laeg(d.situation); laeg(d.spoerg); laeg(d.ja); laeg(d.robot); });
+    VASK.forEach(function (v) { laeg(v.siges); });
+    Object.keys(DAG_TEKST).forEach(function (k) { laeg(DAG_TEKST[k]); });
     return ud;
   }
 
@@ -276,6 +371,9 @@
     TING: TING, TING_TO: TING_TO, RUNDE: RUNDE, TEKST: TEKST,
     hvorEr: hvorEr, pegPaa: pegPaa, trykPaa: trykPaa, derEr: derEr, detEr: detEr, pegRunde: pegRunde, ramte: ramte, rigtigtTryk: rigtigtTryk, naer: naer,
     find: find, roentgenRunde: roentgenRunde, organ: organ, paaOrgan: paaOrgan, fundet: fundet,
-    sanseRunde: sanseRunde, sanseSvar: sanseSvar, saetninger: saetninger, saetningerAf: saetningerAf
+    sanseRunde: sanseRunde, sanseSvar: sanseSvar,
+    MAD: MAD, STATIONER: STATIONER, MAD_TEKST: MAD_TEKST, VEJ: VEJ, spiser: spiser, madRunde: madRunde, madVej: madVej, vejSted: vejSted,
+    DAG: DAG, DAG_KORT: DAG_KORT, VASK: VASK, DAG_TEKST: DAG_TEKST, dagRunde: dagRunde,
+    saetninger: saetninger, saetningerAf: saetningerAf
   };
 })(typeof window !== 'undefined' ? window : module.exports);

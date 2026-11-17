@@ -1114,7 +1114,11 @@ const FILER = [
   'games/krop/billeder/emil.png',
   'games/krop/billeder/ella.png',
   'games/krop/ting/oere.svg',
-  'games/krop/ting/haand.svg'
+  'games/krop/ting/haand.svg',
+  'games/krop/ting/saebe.svg',
+  'games/krop/ting/tandboerste.svg',
+  'games/krop/ting/vandhane.svg',
+  'games/krop/ting/seng.svg'
 ];
 
 /*

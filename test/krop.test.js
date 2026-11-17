@@ -108,6 +108,30 @@ console.log('\nKropshuset\n');
   tjek('sansekortene findes', Object.keys(K.SANSER).every(s => fs.existsSync(path.join(MAPPE, K.SANSER[s].kort))));
 }
 
+/* Robotten foelger maden og lever en sund dag */
+{
+  const problemer = [];
+  for (const f of Object.keys(K.FIGURER)) {
+    const v = K.madVej(f), F = K.FIGURER[f];
+    [...v.spiseroer, ...v.tarme].forEach(([x, y]) => { if (x < 0 || x > F.b || y < 0 || y > F.h) problemer.push(f + ': vejen gaar uden for billedet'); });
+    for (let i = 1; i < v.spiseroer.length; i++) if (v.spiseroer[i][1] < v.spiseroer[i - 1][1] - 1) problemer.push(f + ': spiseroeret gaar opad');
+    for (let i = 1; i < v.tarme.length; i++) if (Math.hypot(v.tarme[i][0] - v.tarme[i - 1][0], v.tarme[i][1] - v.tarme[i - 1][1]) > 30) problemer.push(f + ': hul i tarmene ved punkt ' + i);
+    if (Math.hypot(v.spiseroer[v.spiseroer.length - 1][0] - v.tarme[0][0], v.spiseroer[v.spiseroer.length - 1][1] - v.tarme[0][1]) > 1) problemer.push(f + ': spiseroeret og tarmene moedes ikke i maven');
+    K.VEJ.forEach(w => { const c = v.steder[w.sted][0]; if (K.vejSted(f, c[0], c[1]) !== w.sted) problemer.push(f + ': ' + w.sted + ' kan ikke trykkes paa'); });
+  }
+  for (let s = 0; s < 3; s++) for (let r = 0; r < 50; r++) { const m = K.madRunde(s); if (m.length !== (s === 0 ? 1 : 2) || new Set(m.map(x => x.ting)).size !== m.length) problemer.push((s + 1) + '*: maden'); }
+  tjek('madens vej er sammenhaengende og inde i Emil og Ella, og vejen kan huskes', problemer.length === 0, problemer.slice(0, 3).join(' | '));
+  tjek('al maden har et malet billede', K.MAD.every(m => fs.existsSync(path.join(ROD, 'games', 'bogstaver', 'billeder', m.ting + '.png'))));
+  const dag = [];
+  for (let s = 0; s < 3; s++) for (let r = 0; r < 100; r++) K.dagRunde(s).forEach(q => {
+    if (q.kort.length !== [3, 4, 6][s] || new Set(q.kort).size !== q.kort.length || q.kort.filter(k => k === q.svar).length !== 1) dag.push((s + 1) + '*: kortene ' + q.kort);
+  });
+  tjek('dagen gaar fra morgen til aften, og hvert spoergsmaal har ét rigtigt kort', dag.length === 0 && K.DAG[0].tid === 'morgen' && K.DAG[K.DAG.length - 1].tid === 'aften', dag.slice(0, 3).join(' | '));
+  tjek('alle kortene til dagen findes', Object.keys(K.DAG_KORT).every(k => fs.existsSync(path.join(MAPPE, K.DAG_KORT[k]))));
+  tjek('haandvasken er vand, saebe, gnid, skyl og toer i den raekkefoelge', K.VASK.map(v => v.trin).join() === 'vand,saebe,gnid,skyl,toer');
+  tjek('ingen mad kaldes sund eller usund, og intet om vaegt', !/usund|fed|tyk|slank|vægt|kalorie/i.test(JSON.stringify([K.DAG, K.MAD_TEKST, K.DAG_TEKST])));
+}
+
 /* Stemmen */
 {
   const alle = K.saetninger();
@@ -120,6 +144,12 @@ console.log('\nKropshuset\n');
   });
   Object.keys(K.ORGANER).forEach(o => replikker.push(K.find(o), K.fundet(o).join(' '), 'Det er ' + K.ORGANER[o].bestemt + '. ' + K.find(o)));
   Object.keys(K.SANSER).forEach(s => replikker.push(K.SANSER[s].ja + ' ' + K.SANSER[s].robot, K.SANSER[s].ja + ' ' + K.TEKST.enTil));
+  Object.keys(K.FIGURER).forEach(f => K.MAD.forEach(m => replikker.push(K.spiser(f, m) + ' ' + K.MAD_TEKST.tygge)));
+  replikker.push(K.MAD_TEKST.ud + ' ' + K.MAD_TEKST.robot);
+  K.VEJ.forEach(v => replikker.push(v.ja));
+  K.DAG.forEach(d => replikker.push(d.situation + ' ' + d.spoerg, d.ja + ' ' + d.robot, K.TEKST.igen + ' ' + d.spoerg));
+  K.VASK.forEach(v => replikker.push(K.DAG_TEKST.vask + ' ' + v.siges, K.DAG_TEKST.foerst + ' ' + v.siges));
+  replikker.push(K.DAG_TEKST.vask + ' ' + K.DAG_TEKST.nu, K.DAG_TEKST.rene);
   K.TING.concat(K.TING_TO).forEach(t => replikker.push(t.saetning + ' ' + K.TEKST.hvad, t.saetning + ' ' + K.TEKST.hvilkeTo, K.TEKST.igen + ' ' + t.saetning));
   const kendt = {}; alle.forEach(t => { kendt[t] = 'x'; });
   const udenFor = [...new Set(replikker)].filter(t => !Stemme.del(t, kendt));
@@ -146,7 +176,7 @@ console.log('\nKropshuset\n');
   tjek('pilen i hjoernet kender menuen', /Skal\.menuKnap\(visMenu\)/.test(game));
   tjek('ingen browser-storage og ingen netvaerk', !/localStorage|sessionStorage|indexedDB|https?:\/\//.test(game + logik));
   tjek('spillet gaar ikke i staa uden lyd: en vagt sender det videre', /var vagt = setTimeout\(videre/.test(game));
-  const billeder = Object.keys(K.FIGURER).map(f => 'games/krop/' + K.FIGURER[f].billede);
+  const billeder = Object.keys(K.FIGURER).map(f => 'games/krop/' + K.FIGURER[f].billede).concat(Object.keys(K.DAG_KORT).map(k => path.normalize('games/krop/' + K.DAG_KORT[k])), ['games/krop/ting/vandhane.svg']);
   const laant = ['games/bogstaver/billeder/robot.png'].concat(Object.keys(K.SANSER).map(s => path.normalize('games/krop/' + K.SANSER[s].kort)))
     .concat(K.TING.concat(K.TING_TO).map(t => 'games/bogstaver/billeder/' + t.ting + '.png'));
   const alleFiler = billeder.concat(laant);
