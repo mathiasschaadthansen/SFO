@@ -1105,7 +1105,16 @@ const FILER = [
   'games/hvalros/lyd/uuu_rrr_961a58.mp3',
   'games/hvalros/lyd/vvv_2dc1b3.mp3',
   'games/hvalros/lyd/yyy_057abc.mp3',
-  'games/hvalros/billeder/helle.png'
+  'games/hvalros/billeder/helle.png',
+  'games/krop/',
+  'games/krop/index.html',
+  'games/krop/js/krop.js',
+  'games/krop/js/game.js',
+  'games/krop/lyd/klip.json',
+  'games/krop/billeder/emil.png',
+  'games/krop/billeder/ella.png',
+  'games/krop/ting/oere.svg',
+  'games/krop/ting/haand.svg'
 ];
 
 /*

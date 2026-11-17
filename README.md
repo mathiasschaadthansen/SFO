@@ -1022,6 +1022,48 @@ og testen kræver, at alt er indtalt. Ordene selv er
 Bogstavvejens ordklip ("Her har du ordet sol."). Spillet går aldrig i stå
 uden lyd: en vagt sender det videre, hvis intet kan høres.
 
+## Kropshuset (mappen `krop`)
+
+Robotten Rasmus (fra Bogstavvejen og Tegnestuen) vil gerne vide, hvordan en
+menneskekrop virker, og Emil og Ella fra Boblehavet viser ham det. Spillet
+sammenligner hele tiden kroppen med Rasmus' robotkrop: "Min albue er en
+skrue." Logikken står i `js/krop.js`, skærmen i `js/game.js`.
+
+**Hvor er din albue?** Rasmus spørger, barnet peger på sin egen albue og
+trykker så på Emils eller Ellas. Et forkert tryk siger, hvad man ramte ("Det
+er knæet. Prøv igen."), så også fejl lærer barnet et ord. Efter to forkerte
+tryk lyser det rigtige sted blidt. Én stjerne: hoved, hår, øje, øre, næse,
+mund, hånd, arm, mave, ben og fod. To stjerner: knæ, albue, skulder, hals,
+hage, pande, kind, finger, tæer og bryst. Tre stjerner: ankel, håndled,
+øjenbryn, hofte, lår og skinneben. Med to spillere står Emil og Ella ved siden
+af hinanden, og hver trykker på sin figur. Pladserne er aflæst på et gitter
+over billederne (`PLADS` i `krop.js`); et tryk er rigtigt inden for 1,25 gange
+pladsens radius, og et forkert tryk er den mindste plads, det rammer, så
+næsen er næsen og ikke hovedet omkring den.
+
+**Røntgenøjet.** Under fingeren ser man ind i kroppen, som med Rasmus'
+røntgenøje: knoglerne, hjertet, lungerne, hjernen, maven og tarmene, tegnet i
+kode ud fra kropsdelenes pladser. Rasmus beder om ét organ ad gangen ("Find
+hjertet."), og når fingeren slippes over det, fortæller han om det ("Læg
+hånden på dit bryst, og mærk det banke."). Det, man leder efter, tjekkes
+først, så kraniet kan findes, selv om hjernen ligger inden i. Én stjerne
+hjernen, hjertet og maven; to stjerner også lungerne, kraniet og ribbenene;
+tre stjerner også tarmene, rygraden og lårbenet.
+
+**Sanserne.** "Fuglen synger. Hvad bruger du?" Barnet trykker på øret.
+Kortene er Bogstavvejens malede øje og næse, Rimhulens mund og Noto Emojis øre
+og hånd (`ting/`). Én stjerne tre kort, to stjerner alle fem, tre stjerner en
+ting med to sanser ("Pizzaen dufter godt, og den smager godt.").
+
+Emil og Ella set forfra er malet i Canva med Boblehavets figurer som forlæg
+(`billeder/NOTICE.md`). En omgang er seks spørgsmål (røntgenøjet 3, 5 eller 7
+organer), og cirklerne foroven tæller den. **Stemmen** er sætningerne fra
+`Krop.saetninger()`, lavet med `vaerktoej/lav-lyd-gemini.py --spil krop`; indtil
+de er indtalt, siger enhedens stemme det, og testen melder det som info.
+
+Planlagt til næste omgang: Madens rejse (en gulerod gennem kroppen som en
+kuglebane) og En sund dag (vaske hænder, børste tænder, spise, sove).
+
 ## Bogen om Nøddeskoven (mappen `bog`)
 
 En lille billedbog, der binder spillene sammen: Pelle Pindsvin har tabt sin

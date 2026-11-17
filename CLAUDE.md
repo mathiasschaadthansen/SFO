@@ -67,6 +67,12 @@ delene altid giver helheden, at Ryst og hæld finder alle måder, og at alt,
 der siges, er indtalt. Designet bygger på research (README, Egernreden); lav
 ikke delene om til en del-helhedsmodel med tal i cirkler, og gå ikke tilbage
 til tre svarkort.
+Kropshus-testen tjekker, at hver kropsdel har en plads på både Emil og Ella,
+og at et tryk midt på den er rigtigt, også når den sidder inden i en større
+(næsen i hovedet), at hvert organ kan findes med røntgenøjet (kraniet om
+hjernen), at hver ting har det rigtige antal rigtige sansekort, og at alt,
+der siges, er indtalt. Laves Emil eller Ella om, skal pladserne i `krop.js`
+aflæses igen.
 
 **Stemme.** Hele appen taler med den samme stemme: Google Gemini
 (`gemini-3.8-flash-tts`, stemmen Kore). Klippene er små MP3-filer i hvert spils
@@ -84,12 +90,12 @@ To slags spil:
   (`ting()`, `restaurant()`, `klokken()` …), som Gemini-værktøjet også bruger.
   Bogstaver og tal indtales rene ("A.", "Tre."), og ordene i rammen "Her har
   du ordet kat.".
-- **Hele sætninger** (Himmelvejen, Årstidshaven, Bæverdammen, Egernreden, Tegnestuen, Isvigen): hver sætning er ét klip, og
+- **Hele sætninger** (Himmelvejen, Årstidshaven, Bæverdammen, Egernreden, Tegnestuen, Isvigen, Kropshuset): hver sætning er ét klip, og
   `lyd/klip.json` er `{ sætning: fil }`. `js/stemme.js` deler en replik i
   sætninger og spiller den længste række, der har ét klip, så en sammensat
   replik ("Pelle ønsker sig to gulerødder. Og så én agurk.") er flere klip i
   træk. Sætningerne står i spillets kode (`Haven.saetninger()`,
-  `Oe.saetninger()`, `Daemning.saetninger()`, `Egern.saetninger()`, `Figurer.saetninger()`, `Helle.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
+  `Oe.saetninger()`, `Daemning.saetninger()`, `Egern.saetninger()`, `Figurer.saetninger()`, `Helle.saetninger()`, `Krop.saetninger()`), og testen kræver, at alt, spillet kan sige, er indtalt.
   Ændrer du en sætning, så kør værktøjet igen. Byg nye replikker af hele
   sætninger, aldrig et klip midt i en sætning.
 
@@ -166,6 +172,7 @@ spillet. Koden er ikke doebt om: modulerne hedder stadig `Klatbold`, `Bobler`,
 | Bæverdammen | `games/baever/` | `test/baever.test.js` |
 | Egernreden | `games/egern/` | `test/egern.test.js` |
 | Isvigen | `games/hvalros/` | `test/hvalros.test.js` |
+| Kropshuset | `games/krop/` | `test/krop.test.js` |
 | Bogen om Nøddeskoven | `bog/` | `test/bog.test.js` |
 
 Bogen er ikke et spil: den ligger forrest på forsiden, har ingen knap ind i
@@ -216,7 +223,8 @@ Vrimleskoven har byens seks malede stykker i `games/find/billeder/` (husene
 forrest i byen er tegnet i kode, fordi tingene skal kunne sidde i vinduerne).
 Boldbanens klatter har en malet krop i `games/klatbold/billeder/`: ét
 Canva-billede, farvet om i kode til de seks farver, med ansigtet fjernet, så
-koden tegner ansigt og øjne. Bæveren Bodil ligger i `games/baever/billeder/`; stammerne og pladsen er
+koden tegner ansigt og øjne. Kropshusets Emil og Ella set forfra ligger i
+`games/krop/billeder/` (Canva, med Boblehavets figurer som forlæg). Bæveren Bodil ligger i `games/baever/billeder/`; stammerne og pladsen er
 tegnet i kode. Boblehavets figurer ligger i
 `games/bobler/billeder/`, ét malet billede pr. figur, og `MALEDE` i spillets
 `game.js` siger, hvilke der er malet; resten er Kenney-sprites endnu.

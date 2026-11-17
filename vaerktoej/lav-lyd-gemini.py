@@ -64,7 +64,7 @@ def arg(navn, standard=None):
     return sys.argv[sys.argv.index(navn) + 1] if navn in sys.argv else standard
 
 
-SAETNINGSSPIL = ('have', 'flyv', 'baever', 'egern', 'tegn', 'hvalros', 'jul')
+SAETNINGSSPIL = ('have', 'flyv', 'baever', 'egern', 'tegn', 'hvalros', 'krop', 'jul')
 FASTE_SPIL = ('bogstaver', 'restaurant', 'klokken', 'maskinen', 'find', 'rim', 'bog')
 SPIL = arg('--spil', 'have')
 if SPIL not in SAETNINGSSPIL + FASTE_SPIL:
@@ -108,6 +108,8 @@ def saetninger():
         kode = "const { Egern } = require(%r); console.log(JSON.stringify(Egern.saetninger()));" % os.path.join(ROD, 'games', 'egern', 'js', 'egern.js')
     elif SPIL == 'hvalros':
         kode = "const { Helle } = require(%r); console.log(JSON.stringify(Helle.saetninger()));" % os.path.join(ROD, 'games', 'hvalros', 'js', 'helle.js')
+    elif SPIL == 'krop':
+        kode = "const { Krop } = require(%r); console.log(JSON.stringify(Krop.saetninger()));" % os.path.join(ROD, 'games', 'krop', 'js', 'krop.js')
     elif SPIL == 'jul':
         # Historiernes replikker delt i saetninger, praecis som js/stemme.js deler dem, og opgavernes saetninger
         kode = ("const { Kalender } = require(%r); const { Opgaver } = require(%r); const { Stemme } = require(%r);"

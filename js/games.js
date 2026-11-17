@@ -226,5 +226,16 @@ window.SPIL = [
          '<img src="games/bogstaver/billeder/fisk.png" alt="" style="left:6px;top:46px;width:44px">' +
          '<img src="games/maskinen/billeder/pindsvin.png" alt="" style="left:46px;top:6px;width:66px">' +
          '</div>'
+  },
+  {
+    id: 'krop',
+    navn: 'Kropshuset',
+    tekst: 'Hvor er din albue? Kig ind i kroppen med Rasmus\' røntgenøje, og find ud af, hvad du bruger dine sanser til. 1 eller 2 spillere.',
+    farve: '#f0dccb',
+    sti: 'games/krop/',
+    art: '<div class="art">' +
+         '<img src="games/bogstaver/billeder/robot.png" alt="" style="left:40px;top:4px;width:70px">' +
+         '<img src="games/krop/billeder/emil.png" alt="" style="left:8px;top:10px;height:96px">' +
+         '</div>'
   }
 ];
