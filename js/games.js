@@ -7,6 +7,7 @@
  * farve: kortets baggrund. Dæmpede, malede toner — én pr. spil.
  * maaneder: valgfrit. Kortet vises kun i de maaneder (0 = januar), efter enhedens dato.
  * laast: valgfrit. Kortet kraever koden (KODE i js/shell.js), indtil spillet er klar til alle.
+ *        En dato som '2026-11-30' laaser op af sig selv den dag, efter enhedens dato.
  * proeve: valgfrit. Tilfoejes adressen, naar koden er tastet uden for december.
  * art:   valgfrit billede eller inline-SVG der tegnes i kortets højre side.
  *        Billederne ligger i assets/malet/ og er malet i samme stil som
@@ -33,7 +34,8 @@ window.SPIL = [
     sti: 'jul/',
     farve: '#d8e6ec',
     maaneder: [10, 11],
-    laast: true,
+    // Laast med koden indtil 30. november 2026; saa aabner kortet for alle af sig selv
+    laast: '2026-11-30',
     // Foer december aabner koden kalenderen, som den ser ud 18. december, saa de voksne kan proeve den
     proeve: '?dag=18',
     art: '<div class="art">' +

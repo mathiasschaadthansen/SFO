@@ -1139,7 +1139,10 @@ puslespillet. Juleaften er puslespillet helt. Indholdet står i
 opgaven); resten af mappen er bygget mod den struktur.
 
 Kortet på forsiden står lige efter bogen og vises kun i november og december
-efter iPad'ens dato (`maaneder: [10, 11]` i `js/games.js`). Ligesom bogen er
+efter iPad'ens dato (`maaneder: [10, 11]` i `js/games.js`). Indtil 30. november
+2026 er kortet låst med koden 2412 (`laast: '2026-11-30'`); før december åbner
+koden kalenderen, som den ser ud 18. december, så de voksne kan prøve den. Fra
+den 30. åbner kortet for alle af sig selv efter iPad'ens dato. Ligesom bogen er
 kalenderen ikke et spil og har ingen knap ind i spillene.
 
 **Kalenderen** er 24 låger rundt om puslespillet, med uret fra øverst til

@@ -10,6 +10,13 @@
     '<circle cx="20" cy="29" r="3.2" fill="#6b5545"/></svg>';
 
   var maaned = new Date().getMonth();
+  /* Er kortet laast i dag? laast: true er altid, en dato ('2026-11-30') er indtil den dag, efter enhedens dato. */
+  function erLaast(spil) {
+    if (!spil.laast) return false;
+    if (spil.laast === true) return true;
+    var d = String(spil.laast).split('-');
+    return new Date() < new Date(+d[0], +d[1] - 1, +d[2]);
+  }
   window.SPIL.forEach(function (spil) {
     // Julekalenderen vises kun i november og december
     if (spil.maaneder && spil.maaneder.indexOf(maaned) < 0) return;
@@ -19,18 +26,18 @@
     a.style.background = spil.farve;
     a.innerHTML =
       (spil.art || '') +
-      (spil.laast ? LAAS : '') +
+      (erLaast(spil) ? LAAS : '') +
       '<h2>' + spil.navn + '</h2>' +
       '<p>' + spil.tekst + '</p>';
-    if (spil.laast) a.addEventListener('click', function (e) { e.preventDefault(); spoergKode(spil); });
+    if (erLaast(spil)) a.addEventListener('click', function (e) { e.preventDefault(); spoergKode(spil); });
     grid.appendChild(a);
   });
 
   /*
-   * Kodeordet. Nye ting (nu kun julekalenderen) kan kun aabnes med koden, til de
+   * Kodeordet. Nye ting (nu kun julekalenderen, til 30. november) kan kun aabnes med koden, til de
    * er klar til alle. Det er en laas for boernene, ikke en sikkerhed: koden staar
-   * her, og intet gemmes, saa den skal tastes hver gang. Fjern laast: true i
-   * js/games.js for at aabne for alle.
+   * her, og intet gemmes, saa den skal tastes hver gang. laast i js/games.js er
+   * true (altid) eller en dato, hvor kortet aabner for alle af sig selv.
    */
   function spoergKode(spil) {
     var tastet = '';

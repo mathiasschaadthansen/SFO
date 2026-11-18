@@ -57,6 +57,20 @@ const stier = [...fs.readFileSync(path.join(ROD, 'js', 'games.js'), 'utf8')
   .matchAll(/sti:\s*'([^']+)'/g)].map(m => m[1]);
 const spilStier = stier.filter(s2 => s2.startsWith('games/'));
 tjek('forsiden linker til alle seksten spil', spilStier.length === 16, spilStier.length + ' stier');
+// Julekalenderen er laast med en kode til 30. november og laaser saa op af sig selv (js/shell.js)
+const shell = fs.readFileSync(path.join(ROD, 'js', 'shell.js'), 'utf8');
+tjek('laaste kort spoerger om koden og gemmer intet', /erLaast\(spil\)/.test(shell) && /var KODE = '\d{4}'/.test(shell) && !/localStorage|sessionStorage|indexedDB|cookie/.test(shell));
+{
+  const vm = require('vm');
+  const kort = d => {
+    const grid = { kort: [], appendChild(a) { this.kort.push(a); } };
+    const ctx = { window: { SPIL: [{ id: 'x', navn: 'X', tekst: '', sti: 'x/', laast: '2026-11-30' }], addEventListener() {} }, navigator: {},
+      document: { getElementById: () => grid, addEventListener() {}, createElement: () => ({ style: {}, addEventListener() {} }) } };
+    ctx.Date = class extends Date { constructor(...a) { super(...(a.length ? a : [d])); } };
+    vm.runInNewContext(shell, ctx); return grid.kort[0].innerHTML;
+  };
+  tjek('et kort med en dato er laast dagen foer og aabent fra datoen', /class="laas"/.test(kort('2026-11-29T23:00:00')) && !/class="laas"/.test(kort('2026-11-30T07:00:00')));
+}
 tjek('forsiden linker til bogen', stier.includes('bog/'));
 const udenIndex = stier.filter(s2 => !sw.includes("'" + s2 + "index.html'"));
 tjek('hvert spil forsiden linker til har sin index.html i FILER', udenIndex.length === 0, udenIndex.join());
