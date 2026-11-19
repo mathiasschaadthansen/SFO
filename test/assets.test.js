@@ -57,6 +57,14 @@ const stier = [...fs.readFileSync(path.join(ROD, 'js', 'games.js'), 'utf8')
   .matchAll(/sti:\s*'([^']+)'/g)].map(m => m[1]);
 const spilStier = stier.filter(s2 => s2.startsWith('games/'));
 tjek('forsiden linker til alle seksten spil', spilStier.length === 16, spilStier.length + ' stier');
+// Laerersiden (laerer/) ligger offentligt uden login: den maa intet hente udefra, og opgavearkene skal findes
+{
+  const side = fs.readFileSync(path.join(ROD, 'laerer', 'index.html'), 'utf8');
+  const lokale = [...side.matchAll(/(?:src|href)="([^"#]+)"/g)].map(m => m[1]);
+  tjek('laerersiden henter intet udefra, og alle dens filer findes',
+    !/https?:\/\/|<script/.test(side) && lokale.every(f => fs.existsSync(path.join(ROD, 'laerer', f))) && lokale.includes('opgaveark.pdf'),
+    lokale.filter(f => !fs.existsSync(path.join(ROD, 'laerer', f))).join());
+}
 // Julekalenderen er laast med en kode til 30. november og laaser saa op af sig selv (js/shell.js)
 const shell = fs.readFileSync(path.join(ROD, 'js', 'shell.js'), 'utf8');
 tjek('laaste kort spoerger om koden og gemmer intet', /erLaast\(spil\)/.test(shell) && /var KODE = '\d{4}'/.test(shell) && !/localStorage|sessionStorage|indexedDB|cookie/.test(shell));

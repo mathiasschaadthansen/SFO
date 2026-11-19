@@ -1216,6 +1216,16 @@ dækker motivet og kan lægges. De to sidste tjek, at alle billeder og alt, der
 siges, findes på disken og i `klip.json`, fejler med vilje, indtil billederne
 er malet og stemmen er indtalt.
 
+### Lærersiden (mappen `laerer`)
+
+En vejledning til lærerne ligger på https://mathiasschaadthansen.github.io/SFO/laerer/
+og kræver ingen login: koden, en dag trin for trin med skærmbilleder, de tre
+ugers emner, alle 14 låger og opgavearkene som PDF (`laerer/opgaveark.pdf`).
+Den henter intet udefra og er ikke med i `FILER`, for den er til de voksne og
+ikke til iPad'erne; der er heller ingen knap til den i appen. Ændres
+historierne eller opgaverne, så lav opgavearkene igen direkte til
+`laerer/opgaveark.pdf` med `vaerktoej/lav-jul-ark.js`.
+
 ### Opgaveark til 0. klasse
 
 Til lærere og pædagoger er der printvenlige opgaveark, ét eller to pr. dag,

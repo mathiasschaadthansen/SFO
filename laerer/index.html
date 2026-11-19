@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pelles julekalender i klassen</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../icons/icon-192.png">
+<style>
+/* Layout: én spalte som et ark fra appen; låge-oversigten er en tabel med ugerne som bånd. Farver fra appens malede palet. */
+:root{
+  --papir:#f3eadb; --kort:#fbf6ee; --blaek:#5e4a3a; --blaek-lys:#7a6452; --linje:#e3d4bd;
+  --blaa:#5f9fc9; --blaa-lys:#d8e8f1; --guld:#f0c46a; --groen:#8fae86; --groen-dyb:#5f8240;
+  --skygge:0 6px 0 rgba(107,85,68,.14);
+  --font:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --papir:#2a231d; --kort:#352c25; --blaek:#f1e6d6; --blaek-lys:#cdbba6; --linje:#4a3e34;
+  --blaa:#8fc7e8; --blaa-lys:#2f3f4a; --guld:#e8b95a; --groen:#8fae86; --groen-dyb:#a9c98f;
+  --skygge:0 6px 0 rgba(0,0,0,.28); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --papir:#2a231d; --kort:#352c25; --blaek:#f1e6d6; --blaek-lys:#cdbba6; --linje:#4a3e34;
+  --blaa:#8fc7e8; --blaa-lys:#2f3f4a; --guld:#e8b95a; --groen:#8fae86; --groen-dyb:#a9c98f;
+  --skygge:0 6px 0 rgba(0,0,0,.28); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--papir);color:var(--blaek);font-family:var(--font);font-size:17px;line-height:1.55;font-weight:500}
+.side{max-width:860px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:44px}
+h1,h2,h3{font-weight:900;line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(32px,6vw,48px);letter-spacing:-.01em}
+h2{font-size:26px;margin-bottom:14px}
+h3{font-size:19px}
+p{margin:0;max-width:65ch}
+.tekst{display:flex;flex-direction:column;gap:12px}
+.lille{font-size:15px;color:var(--blaek-lys)}
+
+/* Toppen */
+.top{display:grid;grid-template-columns:1fr minmax(0,380px);gap:28px;align-items:center}
+.top .ind{display:flex;flex-direction:column;gap:14px}
+.etiket{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--blaa)}
+.top img{border-radius:22px;box-shadow:var(--skygge);display:block;width:100%}
+.fakta{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.fakta span{background:var(--kort);border-radius:999px;padding:5px 13px;font-size:15px;font-weight:700;box-shadow:inset 0 0 0 1.5px var(--linje)}
+
+/* Kodeboksen: det vigtigste lige nu */
+.kode{background:var(--blaa-lys);border-radius:24px;padding:22px 24px;display:grid;grid-template-columns:auto 1fr;gap:18px 22px;align-items:center}
+.kode .tal{font-size:40px;font-weight:900;letter-spacing:.18em;background:var(--kort);border-radius:16px;padding:6px 16px 6px 22px;box-shadow:var(--skygge);font-variant-numeric:tabular-nums}
+.kode ol{margin:6px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:4px}
+
+/* Trin for trin: en rigtig rækkefølge, derfor tal */
+.trin{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:22px;counter-reset:t}
+.trin>li{display:grid;grid-template-columns:44px 1fr;gap:16px;counter-increment:t}
+.trin>li::before{content:counter(t);width:44px;height:44px;border-radius:50%;background:var(--guld);color:#5e4a3a;font-weight:900;font-size:20px;display:flex;align-items:center;justify-content:center}
+.trin .indhold{display:flex;flex-direction:column;gap:8px;min-width:0}
+.trin img{border-radius:16px;box-shadow:var(--skygge);max-width:min(100%,520px);margin-top:6px}
+
+/* Ugerne */
+.uger{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ugekort{background:var(--kort);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--skygge)}
+.ugenavn{font-size:13px;font-weight:800;color:var(--blaek-lys);letter-spacing:.04em}
+.ugekort p{font-size:15.5px}
+
+/* Låge-oversigten */
+.tabel{overflow-x:auto;border-radius:20px;background:var(--kort);box-shadow:var(--skygge)}
+table{border-collapse:collapse;width:100%;min-width:600px;font-size:15.5px}
+td,th{padding:10px 14px;text-align:left;vertical-align:top;border-top:1.5px solid var(--linje)}
+tr.uge th{background:var(--blaa-lys);font-weight:900;font-size:15px;border-top:0}
+tr.uge th span{font-weight:700;color:var(--blaek-lys);margin-right:8px}
+td.nr{width:56px}
+.laage{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:var(--guld);color:#5e4a3a;font-weight:900;font-variant-numeric:tabular-nums}
+td.dato{white-space:nowrap;font-weight:700;width:120px}
+.hist+.hist{margin-top:4px}
+.sted{color:var(--blaek-lys);font-size:14px;white-space:nowrap}
+td.tid{width:200px;font-weight:700;white-space:nowrap}
+td.tid .o{font-weight:500;font-size:14px;color:var(--blaek-lys);white-space:normal}
+
+/* Råd og spørgsmål */
+.raad{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.raad div{background:var(--kort);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;box-shadow:inset 0 0 0 1.5px var(--linje)}
+.raad h3{font-size:17px}
+.raad p{font-size:15.5px}
+
+/* Opgavearkene */
+.ark{background:var(--kort);border-radius:24px;padding:22px 24px;display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;justify-content:space-between;box-shadow:var(--skygge)}
+.ark .tekst{flex:1 1 300px}
+.knap{display:inline-block;text-decoration:none;font:inherit;font-weight:900;font-size:17px;border:0;border-radius:18px;padding:14px 22px;background:var(--groen);color:#fff;cursor:pointer;box-shadow:0 5px 0 rgba(95,127,88,.45)}
+.knap:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(95,127,88,.45)}
+.knap:focus-visible{outline:4px solid var(--blaa);outline-offset:3px}
+.knap[disabled]{opacity:.6;cursor:default}
+#arkSvar{font-size:15px;color:var(--blaek-lys);flex-basis:100%}
+
+.fod{font-size:14px;color:var(--blaek-lys);border-top:1.5px solid var(--linje);padding-top:18px}
+
+@media (max-width:720px){
+  .top{grid-template-columns:1fr}
+  .uger,.raad{grid-template-columns:1fr}
+  .kode{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.knap{transition:none}}
+</style>
+</head>
+<body>
+
+
+<div class="side">
+
+<header class="top">
+  <div class="ind">
+    <div class="etiket">Til lærerne i 0. klasse</div>
+    <h1>Pelles julekalender i klassen</h1>
+    <p>En julekalender i SFO Spil-appen med én låge pr. skoledag fra 1. til 18. december. Hver låge er en lille historie, som appen læser op, og en opgave til børnene bagefter. I hver historie finder Pelle en brik til sit julepuslespil, og den sidste skoledag er puslespillet helt.</p>
+    <div class="fakta"><span>14 låger</span><span>3–7 min. historie pr. dag</span><span>2–4 min. opgave</span><span>Virker uden net</span><span>Ingen login, intet gemmes</span></div>
+  </div>
+  <img src="kalender.jpg" alt="Kalenderen i appen: lågerne med tal rundt om Pelles puslespil, hvor de fundne brikker ligger på plads.">
+</header>
+
+<section class="kode" aria-labelledby="proev">
+  <div class="tal" aria-label="Koden er 2 4 1 2">2412</div>
+  <div class="tekst">
+    <h2 id="proev" style="margin:0">Prøv den allerede nu</h2>
+    <p>Kalenderen ligger i appen, men er låst med en kode til og med 29. november, så børnene ikke åbner den før tid.</p>
+    <ol>
+      <li>Åbn SFO Spil og tryk på kortet <b>Pelles julekalender</b>. Det har en lille hængelås.</li>
+      <li>Tast koden <b>2412</b> på tastaturet.</li>
+      <li>Før december åbner kalenderen, som den ser ud den 18. december, så I kan se alle låger og historier.</li>
+    </ol>
+    <p class="lille">Den 30. november forsvinder låsen af sig selv. Så skal I ikke gøre noget, og fra 1. december åbner kalenderen selv dagens låge efter iPad'ens dato.</p>
+  </div>
+</section>
+
+<section aria-labelledby="dag">
+  <h2 id="dag">Sådan går en dag</h2>
+  <ol class="trin">
+    <li><div class="indhold">
+      <h3>Tryk på dagens låge</h3>
+      <p>Kalenderen åbner med lågerne rundt om puslespillet. Dagens låge kan åbnes, de næste ryster bare blidt. Tidligere dages låger står åbne, og deres brikker ligger allerede på plads.</p>
+    </div></li>
+    <li><div class="indhold">
+      <h3>Lyt til historien sammen</h3>
+      <p>Appen læser historien op over tre billeder. Sætningen står som undertekst nederst, så I kan følge med. Knapperne til højre er tilbage, pause og frem.</p>
+      <p>Undervejs stiller historien spørgsmål til børnene, fx "Hvor mange brikker har Pelle nu?". Så holder den fem sekunders pause, mens et øre blinker, så børnene kan svare højt. Bagefter siger historien svaret. Et tryk springer pausen over.</p>
+      <img src="historie.jpg" alt="En historie i appen: et malet billede af Pelle og Sanne i sneen, med underteksten nederst og knapperne til højre.">
+    </div></li>
+    <li><div class="indhold">
+      <h3>Find brikken</h3>
+      <p>I historiens sidste billede glimter en puslespilsbrik. Lad et barn trykke på den, så flyver den ind i puslespillet. Nogle dage har to små historier efter hinanden, og så er der to brikker.</p>
+    </div></li>
+    <li><div class="indhold">
+      <h3>Lav dagens opgave</h3>
+      <p>Bagefter kommer en opgave i 4–6 små dele, let først og så sværere. Svarene gives ved at trykke, fx på en talrække til ti. Der er ingen point og ingen tid, og et forkert tryk ryster bare blidt, så man kan prøve igen. Pilen under højttaleren springer en del over.</p>
+      <img src="opgave.jpg" alt="En opgave i appen: nødder på en stub og en talrække fra 1 til 10 nederst.">
+    </div></li>
+    <li><div class="indhold">
+      <h3>Brug opgavearket, hvis I vil</h3>
+      <p>Til hver låge hører et opgaveark på papir, som følger det samme emne. Arkene og facit kan hentes nederst på siden.</p>
+    </div></li>
+  </ol>
+</section>
+
+<section aria-labelledby="uger">
+  <h2 id="uger">Tre uger, tre emner</h2>
+  <div class="uger"><div class="ugekort"><div class="ugenavn">Uge 1 · 1.–4. december</div><h3>Tal og mængder</h3><p>Tælle, se små mængder hurtigt, hvor er der flest, og små regnehistorier. Alt holder sig til tallene 1–10.</p></div><div class="ugekort"><div class="ugenavn">Uge 2 · 7.–11. december</div><h3>Bogstaver og lyde</h3><p>Skrive dagens bogstav med fingeren, finde ting, der starter med lyden, og hvilket bogstav et ord starter med.</p></div><div class="ugekort"><div class="ugenavn">Uge 3 · 14.–18. december</div><h3>Rim og stavelser</h3><p>Hvad rimer, hvad rimer ikke, og klappe stavelser. Fredag holder Pelle juleaften, og puslespillet bliver helt.</p></div></div>
+</section>
+
+<section aria-labelledby="laager">
+  <h2 id="laager">Alle lågerne</h2>
+  <p class="lille" style="margin-bottom:14px">Tiden er historiens længde, læst op. Stedet er det sted i appen, hvor historien foregår, så børnene kan genkende det fra spillene.</p>
+  <div class="tabel">
+    <table>
+      <thead><tr><th>Låge</th><th>Dato</th><th>Historien</th><th>Tid og opgave</th></tr></thead>
+      <tbody><tr class="uge"><th colspan="4"><span>Uge 1 · 1.–4. december</span> Tal og mængder</th></tr><tr><td class="nr"><span class="laage">1</span></td><td class="dato">tirsdag 1.</td><td><div class="hist"><b>Stormen</b> <span class="sted">Nøddeskoven</span></div></td><td class="tid">ca. 4 min<br><span class="o">tælle, regnehistorie</span></td></tr><tr><td class="nr"><span class="laage">2</span></td><td class="dato">onsdag 2.</td><td><div class="hist"><b>Egons nøddelager</b> <span class="sted">Egernreden</span></div><div class="hist"><b>Brunkager hos Gustav</b> <span class="sted">Skovkøkkenet</span></div></td><td class="tid">ca. 7 min<br><span class="o">se hurtigt, tælle, regnehistorie</span></td></tr><tr><td class="nr"><span class="laage">3</span></td><td class="dato">torsdag 3.</td><td><div class="hist"><b>Den frosne dæmning</b> <span class="sted">Bæverdammen</span></div><div class="hist"><b>Sneboldene</b> <span class="sted">Boldbanen</span></div></td><td class="tid">ca. 6 min<br><span class="o">hvor er der flest, tælle, regnehistorie</span></td></tr><tr><td class="nr"><span class="laage">4</span></td><td class="dato">fredag 4.</td><td><div class="hist"><b>Kælketuren</b> <span class="sted">Susebanen</span></div><div class="hist"><b>Syv stjerner</b> <span class="sted">Stjerneuret</span></div></td><td class="tid">ca. 6 min<br><span class="o">tælle, regnehistorie, se hurtigt</span></td></tr><tr class="uge"><th colspan="4"><span>Uge 2 · 7.–11. december</span> Bogstaver og lyde</th></tr><tr><td class="nr"><span class="laage">5</span></td><td class="dato">mandag 7.</td><td><div class="hist"><b>S i sneen</b> <span class="sted">Bogstavvejen</span></div><div class="hist"><b>Julebrevene</b> <span class="sted">Himmelvejen</span></div></td><td class="tid">ca. 6 min<br><span class="o">skrive bogstavet, første lyd</span></td></tr><tr><td class="nr"><span class="laage">6</span></td><td class="dato">tirsdag 8.</td><td><div class="hist"><b>Julekort hos Rasmus</b> <span class="sted">Tegnestuen</span></div></td><td class="tid">ca. 3 min<br><span class="o">skrive bogstavet, første lyd, hvilket bogstav</span></td></tr><tr><td class="nr"><span class="laage">7</span></td><td class="dato">onsdag 9.</td><td><div class="hist"><b>Kajas kane</b> <span class="sted">Vrimleskoven</span></div><div class="hist"><b>Snemanden i haven</b> <span class="sted">Årstidshaven</span></div></td><td class="tid">ca. 6 min<br><span class="o">første lyd, skrive bogstavet</span></td></tr><tr><td class="nr"><span class="laage">8</span></td><td class="dato">torsdag 10.</td><td><div class="hist"><b>Is på havet</b> <span class="sted">Boblehavet</span></div></td><td class="tid">ca. 3 min<br><span class="o">første lyd, hvilket bogstav</span></td></tr><tr><td class="nr"><span class="laage">9</span></td><td class="dato">fredag 11.</td><td><div class="hist"><b>Pakken på trappen</b> <span class="sted">Nøddeskoven</span></div></td><td class="tid">ca. 3 min<br><span class="o">skrive bogstavet, første lyd, hvilket bogstav</span></td></tr><tr class="uge"><th colspan="4"><span>Uge 3 · 14.–18. december</span> Rim og stavelser</th></tr><tr><td class="nr"><span class="laage">10</span></td><td class="dato">mandag 14.</td><td><div class="hist"><b>Bo sover</b> <span class="sted">Rimhulen</span></div><div class="hist"><b>Risengrød</b> <span class="sted">Skovkøkkenet</span></div></td><td class="tid">ca. 6 min<br><span class="o">rim, hvad rimer ikke, klappe stavelser</span></td></tr><tr><td class="nr"><span class="laage">11</span></td><td class="dato">tirsdag 15.</td><td><div class="hist"><b>Egons julesang</b> <span class="sted">Egernreden</span></div><div class="hist"><b>Turen til månen</b> <span class="sted">Stjerneuret</span></div></td><td class="tid">ca. 5 min<br><span class="o">rim, hvad rimer ikke, klappe stavelser</span></td></tr><tr><td class="nr"><span class="laage">12</span></td><td class="dato">onsdag 16.</td><td><div class="hist"><b>Klatternes sang</b> <span class="sted">Boldbanen</span></div><div class="hist"><b>Bodils gaver</b> <span class="sted">Bæverdammen</span></div></td><td class="tid">ca. 5 min<br><span class="o">rim, hvad rimer ikke, klappe stavelser</span></td></tr><tr><td class="nr"><span class="laage">13</span></td><td class="dato">torsdag 17.</td><td><div class="hist"><b>Rikkes rimetur</b> <span class="sted">Susebanen</span></div><div class="hist"><b>Invitationerne</b> <span class="sted">Himmelvejen</span></div></td><td class="tid">ca. 5 min<br><span class="o">rim, hvad rimer ikke, mønster</span></td></tr><tr><td class="nr"><span class="laage">14</span></td><td class="dato">fredag 18.</td><td><div class="hist"><b>Lillejuleaften</b> <span class="sted">Nøddeskoven</span></div><div class="hist"><b>Juleaften</b> <span class="sted">Nøddeskoven</span></div></td><td class="tid">ca. 6 min<br><span class="o">tælle vennerne, regnehistorie, lægge brikkerne</span></td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="godt">
+  <h2 id="godt">Godt at vide</h2>
+  <div class="raad">
+    <div><h3>Weekender og fridage</h3><p>Lørdag og søndag åbner der ingen nye låger. Mandag åbner den næste. Har I sprunget en dag over, står de tidligere låger stadig åbne, så I kan tage to på én dag.</p></div>
+    <div><h3>Åbn appen med net før 1. december</h3><p>Første gang hentes kalenderens billeder og lyd (cirka 22 MB). Åbn appen på hver iPad, mens den har net, så virker kalenderen bagefter også uden.</p></div>
+    <div><h3>Datoen styrer det hele</h3><p>Kalenderen ser kun på iPad'ens dato. Åbner den forkerte låge, så tjek, at datoen på iPad'en er rigtig.</p></div>
+    <div><h3>Ingen lyd?</h3><p>Skru op for lyden på iPad'en, og tjek lydknappen øverst til højre i kalenderen. Lyden starter først, når man har trykket én gang.</p></div>
+    <div><h3>På storskærm</h3><p>Historien egner sig til at blive vist for hele klassen via AirPlay. Opgaverne kan også laves to og to ved en iPad.</p></div>
+    <div><h3>Intet gemmes</h3><p>Der er ingen login, ingen reklamer og ingen data om børnene. Appen husker ikke, hvem der har svaret hvad, og puslespillet bygges alene ud fra datoen.</p></div>
+  </div>
+</section>
+
+<section class="ark" aria-labelledby="arkene">
+  <div class="tekst">
+    <h2 id="arkene" style="margin:0">Opgavearkene</h2>
+    <p>Én PDF på 38 sider i A4 med en oversigt, et ark for hver historie og facit. Nederst på hvert ark står, hvad opgaven øver. Kalender-arket kan deles ud den 1. december, så børnene farver brikkerne med dagens lågenummer.</p>
+  </div>
+  <a class="knap" href="opgaveark.pdf" download="pelles-julekalender-opgaveark.pdf">Hent opgavearkene (PDF, 7 MB)</a>
+</section>
+
+<footer class="fod">Pelles julekalender er en del af SFO Spil: reklamefri spil til SFO'ens iPads, der virker uden internet.</footer>
+
+</div>
+</body>
+</html>
